@@ -1,0 +1,2 @@
+package = platform.avplayer
+headers = multimedia/player_framework/avplayer.h multimedia/player_framework/avplayer_base.h

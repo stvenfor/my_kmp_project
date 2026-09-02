@@ -1,0 +1,8 @@
+
+TEAM_ID=
+
+PRODUCT_NAME=my_kmp_project
+PRODUCT_BUNDLE_IDENTIFIER=com.example.my_kmp_project.my_kmp_project$(TEAM_ID)
+
+CURRENT_PROJECT_VERSION=1
+MARKETING_VERSION=1.0

@@ -1,0 +1,5 @@
+package = platform.netstack
+headers = demo_net_http_bind.h demo_net_http_ext.h
+headerFilter = demo_net_http_bind.h demo_net_http_ext.h
+staticLibraries = libdemo_net_http.a
+libraryPaths = src/ohosMain/cinterop/libs/ohosArm64 src/ohosMain/cinterop/libs/ohosX64
