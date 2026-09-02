@@ -89,11 +89,19 @@ harmonyApp/entry/src/main/resources/rawfile/composeResources/
 **/libkn.so
 **/libkn_api.h
 
-# Cursor IDE — keep shared rules / mcp; ignore local cache
+# Cursor IDE — keep shared rules / commands / skills / mcp; ignore local cache
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
+!.cursor/commands/
+!.cursor/commands/**
+!.cursor/skills/
+!.cursor/skills/**
 !.cursor/mcp.json
+
+# OpenSpec (tracked)
+!openspec/
+!openspec/**
 
 # Other AI / agent local artifacts
 .agent
@@ -122,7 +130,10 @@ harmonyApp/entry/src/main/resources/rawfile/composeResources/
 .claude-flow/logs/
 .claude-flow/sessions/
 .claude-flow/metrics/
+.claude-flow/daemon.pid
+.claude-flow/daemon-state.json
 .swarm/
+CLAUDE.md.pre-ruflo*
 # AgentDB / vector store local DBs (machine-local, regenerate on use)
 agentdb.rvf
 agentdb.rvf.lock

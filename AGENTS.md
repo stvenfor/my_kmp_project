@@ -4,6 +4,28 @@ Agent guide for **My_kmp_project** — Kotlin Multiplatform + Compose Multiplatf
 
 Versions, plugins, and dependency coordinates live in `gradle/libs.versions.toml`. Read that file; do not restate versions here.
 
+## Agent stack (OpenSpec · Agency Agents · Ruflo)
+
+| Layer | Role | Where |
+|-------|------|--------|
+| **OpenSpec** | Spec-driven changes: propose → apply → archive | `openspec/` + Cursor `/opsx-*` |
+| **Agency Agents** | Domain expert personas via Cursor rules | `.cursor/rules/*.mdc` |
+| **Ruflo** | Multi-agent orchestration / MCP / memory | `.claude-flow/` + `.cursor/mcp.json` |
+
+### Recommended loop
+
+1. **OpenSpec** — `/opsx-propose` (or `/opsx-explore`) to capture intent in `openspec/changes/…`
+2. **Apply** — `/opsx-apply` to implement against the change artifacts
+3. **Experts** — `@software-architect` / `@senior-developer` / `@mobile-app-builder` / `@code-reviewer` as needed
+4. **Ruflo** — use for multi-agent swarms / persistent memory when a single agent is not enough (`npx ruflo …`, MCP server `ruflo`)
+5. **Archive** — `/opsx-archive` when the change is done
+
+Cursor commands: `.cursor/commands/opsx-*.md` · skills: `.cursor/skills/openspec-*/`
+
+Agency divisions installed: **engineering, design, product, testing** (83 rules). Example: `@frontend-developer` · `@ux-architect` · `@test-automation-engineer`.
+
+Ruflo MCP (Cursor): `.cursor/mcp.json` → `npx -y ruflo@latest mcp start`. Health: `npx ruflo doctor --fix`.
+
 ## Map
 
 | Path | Role |

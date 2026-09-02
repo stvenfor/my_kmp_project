@@ -1,0 +1,40 @@
+schema: spec-driven
+
+# Shown to AI when creating OpenSpec artifacts.
+context: |
+  Project: my_kmp_project — Kotlin Multiplatform + Compose Multiplatform demo.
+  Targets: Android, iOS, HarmonyOS (OHOS).
+  Shell: DemoApp with Home + Mine tabs only (no legacy business domains).
+  Package root: com.example.my_kmp_project.
+  Module layout:
+    - composeApp/: shared UI + logic + platform actuals
+    - iosApp/: thin SwiftUI host
+    - harmonyApp/: thin ArkTS/NAPI host for libkn.so
+  Intermediate source sets: networkKtorMain (android+ios), accountSettingsMain (android+ios).
+  Design tokens: DemoColors; immersive shell helpers in core/design.
+  Network: DemoApiHosts / DemoRequestHeaders; OHOS uses Demo_Http_* cinterop.
+  Versions: gradle/libs.versions.toml is the single source of truth.
+  Build: always use ./gradlew wrappers.
+  Conventions:
+    - Prefer commonMain; use expect/actual for platform APIs.
+    - Keep iosApp/harmonyApp thin; feature work in composeApp.
+    - Respond in Simplified Chinese when the user writes in Chinese.
+    - Do not reintroduce FanGroup / tfent / T-Family / paopao branding or business modules.
+
+rules:
+  proposal:
+    - Keep proposals under 500 words
+    - Always include a Non-goals section
+    - Call out Android / iOS / OHOS impact explicitly when relevant
+  tasks:
+    - Prefer small, verifiable tasks (build/test commands when possible)
+    - Prefer ./gradlew :composeApp:compileDebugKotlinAndroid for shared UI changes
+
+operations:
+  apply:
+    guidance:
+      - Prefer commonMain-first edits
+      - Run focused compile/tests after meaningful changes
+  archive:
+    guidance:
+      - Summarize what landed in specs vs what remains out of scope
