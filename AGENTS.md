@@ -153,7 +153,7 @@ Any new or edited `@Composable` / Compose UI must use **valid Jetpack Compose / 
 | `true`（Tab 根） | `padding(bottom = MainBottomBar + nav inset)` |
 | `false`（二级栈页） | `navigationBarsPadding()` |
 
-常量：`ImmersiveInsets.MainBottomBarHeight` = **56.dp**。
+常量：`ImmersiveInsets.MainBottomBarHeight` = **49.dp**（对齐 Flutter NavigationBarTheme height）。
 
 #### 禁止事项
 

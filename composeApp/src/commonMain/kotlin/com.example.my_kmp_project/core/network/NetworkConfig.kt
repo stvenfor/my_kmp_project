@@ -29,11 +29,15 @@ internal object NetworkConfig {
 
     fun effectiveBaseUrl(): String {
         if (buildMode == BuildMode.Release) {
-            return DemoApiHosts.PRODUCT.trimEnd('/')
+            return remapBackendLocalhost(DemoApiHosts.PRODUCT.trimEnd('/'))
         }
         val override = baseUrlOverride.trim().trimEnd('/')
-        if (override.isNotEmpty()) return override
-        return DemoApiHosts.forEnvironment(netEnvironment, baseUrlOverride).trimEnd('/')
+        val raw = if (override.isNotEmpty()) {
+            override
+        } else {
+            DemoApiHosts.forEnvironment(netEnvironment, baseUrlOverride).trimEnd('/')
+        }
+        return remapBackendLocalhost(raw)
     }
 
     fun skipAuthForUrl(url: String): Boolean =

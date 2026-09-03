@@ -12,6 +12,11 @@ export default class EntryAbility extends UIAbility {
       hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
     }
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+    // Deep link: module.json5 declares myai:// skill; forward want.uri into Kotlin
+    // acceptDeepLink when ArkTS↔libkn bridge for router is wired (registry: ohos partial).
+    if (want?.uri) {
+      hilog.info(DOMAIN, 'testTag', 'Pending deep link uri=%{public}s', want.uri);
+    }
   }
 
   onDestroy(): void {

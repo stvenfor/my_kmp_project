@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
  * See `AGENTS.md` → Compose → Immersive / edge-to-edge.
  */
 internal object ImmersiveInsets {
-    /** Android `activity_main` PageNavigationView height — 56dp. */
-    val MainBottomBarHeight: Dp = 56.dp
+    /** Flutter NavigationBarTheme height — 49dp (was 56dp Demo). */
+    val MainBottomBarHeight: Dp = 49.dp
 
     /** Status + navigation bars — login and other full-screen pages without shell bottom bar. */
     val SafeDrawing: WindowInsets
@@ -34,7 +34,7 @@ internal object ImmersiveInsets {
         get() = WindowInsets.statusBars.union(WindowInsets.navigationBars)
 
     /**
-     * Shell content inset policy used by [com.example.my_kmp_project.app.DemoApp]:
+     * Shell content inset policy used by [com.example.my_kmp_project.app.AppShell]:
      * - Tab root (`bottomBarVisible == true`): reserve [bottomBarPadding] for [MainBottomBar].
      * - Secondary stack page: clear only the system navigation / gesture inset.
      */

@@ -36,6 +36,10 @@ multiplatformSettings = "1.3.0"
 # Coil (Android/iOS only — no ohosArm64; keep off commonMain/ohosMain)
 coil = "3.3.0"
 
+# Android camera scan (WebView uses framework WebView — no extra dep)
+camerax = "1.4.2"
+mlkit-barcode = "17.3.0"
+
 [libraries]
 # ----- Testing -----
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -82,6 +86,13 @@ multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", vers
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+
+# ----- Android CameraX + ML Kit barcode (androidMain only) -----
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+mlkit-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "mlkit-barcode" }
 
 # ----- Compose Android (androidx.compose, Android target only) -----
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }

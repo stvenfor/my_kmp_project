@@ -1,7 +1,6 @@
 package com.example.my_kmp_project.feature.shell
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +13,7 @@ internal class MainTabChromeController {
         private set
 
     fun updateBottomBarVisible(visible: Boolean) {
+        if (bottomBarVisible == visible) return
         bottomBarVisible = visible
     }
 }
@@ -23,12 +23,8 @@ internal val LocalMainTabChrome = staticCompositionLocalOf<MainTabChromeControll
 @Composable
 internal fun ReportMainTabRoot(isRoot: Boolean) {
     val chrome = LocalMainTabChrome.current
+    // Do not reset visibility in onDispose — that fights Scaffold padding and can thrash composition.
     LaunchedEffect(isRoot, chrome) {
         chrome?.updateBottomBarVisible(isRoot)
-    }
-    DisposableEffect(chrome) {
-        onDispose {
-            chrome?.updateBottomBarVisible(true)
-        }
     }
 }

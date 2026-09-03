@@ -30,7 +30,13 @@ import my_kmp_project.composeapp.generated.resources.main_tab_me_unselected
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-/** Demo bottom bar: Home + Mine. */
+/**
+ * Main bottom bar: Home / Chat / Community / Mine.
+ *
+ * Flutter uses CupertinoIcons (vector). Compose Multiplatform material-icons-*
+ * is not OHOS-safe in this fork, so we keep tinted PNG placeholders until
+ * dedicated tab assets are exported from Flutter design.
+ */
 @Composable
 internal fun MainBottomBar(
     selected: MainTab,
@@ -40,14 +46,14 @@ internal fun MainBottomBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(DemoColors.Background)
+            .background(DemoColors.TabBarBackground)
             .navigationBarsPadding(),
     ) {
         NavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(MainBottomBarHeight),
-            containerColor = DemoColors.Background,
+            containerColor = DemoColors.TabBarBackground,
             tonalElevation = 0.dp,
             contentColor = DemoColors.TextPrimary,
             windowInsets = WindowInsets(0, 0, 0, 0),
@@ -63,19 +69,17 @@ internal fun MainBottomBar(
                                 if (isSelected) item.selectedIcon() else item.unselectedIcon(),
                             ),
                             contentDescription = item.label,
-                            modifier = Modifier.size(24.dp),
-                            colorFilter = if (isSelected) {
-                                null
-                            } else {
-                                ColorFilter.tint(DemoColors.TextPrimary)
-                            },
+                            modifier = Modifier.size(22.dp),
+                            colorFilter = ColorFilter.tint(
+                                if (isSelected) DemoColors.Accent else DemoColors.TextSecondary,
+                            ),
                         )
                     },
                     label = {
                         Text(
                             text = item.label,
                             fontSize = 10.sp,
-                            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         )
                     },
                     alwaysShowLabel = true,
@@ -83,8 +87,8 @@ internal fun MainBottomBar(
                         selectedIconColor = Color.Unspecified,
                         unselectedIconColor = Color.Unspecified,
                         selectedTextColor = DemoColors.Accent,
-                        unselectedTextColor = DemoColors.TextPrimary,
-                        indicatorColor = Color.Transparent,
+                        unselectedTextColor = DemoColors.TextSecondary,
+                        indicatorColor = DemoColors.Accent.copy(alpha = 0.12f),
                     ),
                 )
             }
@@ -94,10 +98,14 @@ internal fun MainBottomBar(
 
 private fun MainTab.selectedIcon(): DrawableResource = when (this) {
     MainTab.Home -> Res.drawable.main_tab_home_selected
+    MainTab.Chat -> Res.drawable.main_tab_home_selected
+    MainTab.Community -> Res.drawable.main_tab_me_selected
     MainTab.Mine -> Res.drawable.main_tab_me_selected
 }
 
 private fun MainTab.unselectedIcon(): DrawableResource = when (this) {
     MainTab.Home -> Res.drawable.main_tab_home_unselected
+    MainTab.Chat -> Res.drawable.main_tab_home_unselected
+    MainTab.Community -> Res.drawable.main_tab_me_unselected
     MainTab.Mine -> Res.drawable.main_tab_me_unselected
 }

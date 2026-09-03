@@ -16,20 +16,22 @@ internal enum class NetEnvironment {
 /** @deprecated Use [BuildMode]. */
 internal typealias AppEnv = BuildMode
 
-/** Placeholder API hosts for the demo skeleton (no product backends). */
+/**
+ * API hosts aligned with Flutter [EnvConfig] / my_go_study BFF.
+ * Local debug: `http://127.0.0.1:8080` (Android emulator remapped via [remapBackendLocalhost]).
+ */
 internal object DemoApiHosts {
-    const val DEV = "https://httpbin.org"
-    const val TEST = "https://httpbin.org"
-    const val PRODUCT = "https://httpbin.org"
-    const val STAGING = "https://httpbin.org"
+    const val DEV = "http://127.0.0.1:8080"
+    const val TEST = "http://127.0.0.1:8080"
+    const val STAGING = "http://127.0.0.1:8080"
+    const val PRODUCT = "https://api.xiaomaomain.com"
 
     /** Absolute CDN-style hosts that skip Authorization (must NOT match API host). */
     const val AUTH_SKIP_HOST = "cdn.demo.local"
 
     val debugSwitchHosts: List<Pair<String, String>> = listOf(
-        "DEV" to DEV,
-        "TEST" to TEST,
-        "STAGING" to STAGING,
+        "GO_LOCAL" to TEST,
+        "GO_EMU" to "http://10.0.2.2:8080",
         "PRODUCTION" to PRODUCT,
     )
 
@@ -44,8 +46,9 @@ internal object DemoApiHosts {
     fun environmentForHost(url: String): NetEnvironment {
         val normalized = url.trim().trimEnd('/')
         return when (normalized) {
-            DEV.trimEnd('/') -> NetEnvironment.Dev
-            TEST.trimEnd('/') -> NetEnvironment.Test
+            DEV.trimEnd('/'),
+            "http://10.0.2.2:8080",
+            -> NetEnvironment.Test
             STAGING.trimEnd('/') -> NetEnvironment.Staging
             PRODUCT.trimEnd('/') -> NetEnvironment.Product
             else -> if (normalized.isBlank()) NetEnvironment.Test else NetEnvironment.Custom
@@ -55,6 +58,9 @@ internal object DemoApiHosts {
     fun labelForBaseUrl(url: String): String {
         val normalized = url.trim().trimEnd('/')
         return debugSwitchHosts.firstOrNull { it.second.trimEnd('/') == normalized }?.first
-            ?: normalized.ifBlank { "DEFAULT" }
+            ?: when (normalized) {
+                "http://127.0.0.1:8080", "http://10.0.2.2:8080" -> "GO_LOCAL"
+                else -> normalized.ifBlank { "DEFAULT" }
+            }
     }
 }
