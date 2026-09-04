@@ -38,9 +38,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.app.AppContainer
+import com.example.my_kmp_project.component.pay.PayChannel
+import com.example.my_kmp_project.component.pay.PayGateway
+import com.example.my_kmp_project.component.pay.PayResult
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
-import com.example.my_kmp_project.feature.shell.ReportMainTabRoot
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.launch
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.pay_membership_icon_alipay
@@ -49,12 +53,12 @@ import org.jetbrains.compose.resources.painterResource
 
 /**
  * Membership / pay UI closer to Flutter `module_pay`.
- * Channels stay unavailable until real SDK adapters exist (see [FlaggedPayGateway]).
+ * Default gateway is [AppContainer] Bridge pay ([FlaggedPayGateway] + sandbox when enabled).
  */
 @Composable
 internal fun MembershipScreen(
     onBack: () -> Unit,
-    gateway: PayGateway = FlaggedPayGateway(),
+    gateway: PayGateway = AppContainer.get().bridges.pay,
 ) {
     ReportMainTabRoot(isRoot = false)
     var tier by remember { mutableStateOf(MembershipTier.Svip) }
@@ -242,7 +246,12 @@ internal fun MembershipScreen(
                                 statusMessage = when (
                                     val result = gateway.pay(channel, selectedPlanId)
                                 ) {
-                                    is PayResult.Success -> "支付成功（$label）"
+                                    is PayResult.Success ->
+                                        if (result.sandbox) {
+                                            "沙箱支付成功（$label · 非真实扣款）"
+                                        } else {
+                                            "支付成功（$label）"
+                                        }
                                     is PayResult.Cancel -> "已取消支付"
                                     is PayResult.Unavailable ->
                                         "当前渠道未配置 SDK，暂不可用（见 gap registry）"
@@ -263,7 +272,7 @@ internal fun MembershipScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(text = label, color = MembershipTokens.TitleBlack, fontSize = 15.sp)
                         Text(
-                            text = if (configured) "可用" else "渠道未接入 · 不可模拟成功",
+                            text = if (configured) "可用（沙箱或已接入 SDK）" else "渠道未接入",
                             color = if (configured) DemoColors.Accent else DemoColors.Danger,
                             fontSize = 12.sp,
                         )
@@ -292,10 +301,11 @@ internal fun MembershipScreen(
                     scope.launch {
                         val channel = available.firstOrNull()
                         statusMessage = if (channel == null) {
-                            "暂无可用支付渠道：WeChat/Alipay SDK 未接入"
+                            "暂无可用支付渠道：关闭 sandbox 且未接入 SDK"
                         } else {
                             when (val result = gateway.pay(channel, selectedPlanId)) {
-                                is PayResult.Success -> "支付成功"
+                                is PayResult.Success ->
+                                    if (result.sandbox) "沙箱支付成功（非真实扣款）" else "支付成功"
                                 is PayResult.Cancel -> "已取消"
                                 is PayResult.Unavailable -> "渠道不可用"
                                 is PayResult.Failure -> result.message

@@ -1,3 +1,7 @@
+> **⚠ BOUNDARY GATE：** 尖刀期对等冻结已解除，但恢复/继续本 change 实施前必须满足 architect 五层边界。  
+> 权威政策：[`../architect-production-foundation/notes/parity-unfreeze.md`](../architect-production-foundation/notes/parity-unfreeze.md)  
+> 醒目摘要：[`notes/boundary-gate.md`](notes/boundary-gate.md) · 门禁：`bash scripts/check-layer-deps.sh`
+
 ## Context
 
 See `proposal.md` for motivation (1A pixel UI + 2A real three-platform SDKs).

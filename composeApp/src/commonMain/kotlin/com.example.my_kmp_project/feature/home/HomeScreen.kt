@@ -34,37 +34,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.ImmersiveCenterTopAppBar
-import com.example.my_kmp_project.feature.classroom.ClassroomScreen
-import com.example.my_kmp_project.feature.friend.FriendScreen
-import com.example.my_kmp_project.feature.live.LiveScreen
-import com.example.my_kmp_project.feature.media.MediaEntryScreen
-import com.example.my_kmp_project.feature.scan.ScanScreen
-import com.example.my_kmp_project.feature.shell.ReportMainTabRoot
-import com.example.my_kmp_project.feature.web.InAppWebScreen
-import com.example.my_kmp_project.feature.web.OfflineWebFixtureUrl
+import com.example.my_kmp_project.core.router.AppRoute
+import com.example.my_kmp_project.core.router.LocalAppNavigator
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 @Composable
 internal fun HomeScreen() {
     var destination by remember { mutableStateOf<String?>(null) }
+    val navigator = LocalAppNavigator.current
 
     when (val dest = destination) {
-        null -> HomeRootContent(onNavigate = { destination = it })
-        "services" -> AllServicesScreen(onBack = { destination = null })
+        null -> HomeRootContent(
+            onNavigate = { route ->
+                when (route) {
+                    "web" -> navigator?.navigate(AppRoute.InAppWeb(OfflineWebFixtureUrl))
+                    "services" -> navigator?.navigate(AppRoute.AllServices)
+                    "media" -> navigator?.navigate(AppRoute.Media)
+                    "scan" -> navigator?.navigate(AppRoute.Scan)
+                    "friend" -> navigator?.navigate(AppRoute.Friend)
+                    "live" -> navigator?.navigate(AppRoute.Live)
+                    "classroom" -> navigator?.navigate(AppRoute.Classroom)
+                    else -> destination = route
+                }
+            },
+        )
         "search" -> HomeSearchScreen(onBack = { destination = null })
         "report" -> LearningReportScreen(onBack = { destination = null })
         "strategy" -> StrategyScreen(onBack = { destination = null })
-        "media" -> MediaEntryScreen(onBack = { destination = null })
-        "web" -> InAppWebScreen(
-            // Offline fixture: emu without outbound net still shows non-blank body.
-            url = OfflineWebFixtureUrl,
-            onBack = { destination = null },
-        )
-        "scan" -> ScanScreen(onBack = { destination = null })
-        "friend" -> FriendScreen(onBack = { destination = null })
-        "live" -> LiveScreen(onBack = { destination = null })
-        "classroom" -> ClassroomScreen(onBack = { destination = null })
         else -> AllServicesScreen(onBack = { destination = null })
     }
 }

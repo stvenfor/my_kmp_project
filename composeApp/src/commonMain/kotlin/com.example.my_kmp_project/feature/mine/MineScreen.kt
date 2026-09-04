@@ -14,8 +14,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.my_kmp_project.feature.commerce.MembershipScreen
-import com.example.my_kmp_project.feature.shell.ReportMainTabRoot
+import com.example.my_kmp_project.core.router.AppRoute
+import com.example.my_kmp_project.core.router.LocalAppNavigator
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.delay
 
 private enum class MinePage {
@@ -23,7 +24,6 @@ private enum class MinePage {
     About,
     Settings,
     Personalized,
-    Membership,
 }
 
 @Composable
@@ -36,6 +36,7 @@ internal fun MineScreen(
     var page by remember { mutableStateOf(MinePage.Home) }
     var personalizedReturn by remember { mutableStateOf(MinePage.Home) }
     var snackMessage by remember { mutableStateOf<String?>(null) }
+    val navigator = LocalAppNavigator.current
 
     val showSnack: (String) -> Unit = { snackMessage = it }
 
@@ -53,7 +54,9 @@ internal fun MineScreen(
                         personalizedReturn = MinePage.Settings
                         page = MinePage.Personalized
                     },
-                    onOpenMembership = { page = MinePage.Membership },
+                    onOpenMembership = {
+                        navigator?.navigate(AppRoute.Membership)
+                    },
                     onOpenAbout = { page = MinePage.About },
                 )
             }
@@ -63,9 +66,6 @@ internal fun MineScreen(
                     onBack = { page = personalizedReturn },
                     snackbar = showSnack,
                 )
-            }
-            MinePage.Membership -> {
-                MembershipScreen(onBack = { page = MinePage.Settings })
             }
             MinePage.Home -> {
                 ReportMainTabRoot(isRoot = true)

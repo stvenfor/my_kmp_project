@@ -21,3 +21,6 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":core:network")
+include(":core:account")
+include(":ohosAggregate")

@@ -42,26 +42,36 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.ImmersiveInsets.shellContentInsets
 import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.TokenExpiredHandler
+import com.example.my_kmp_project.core.router.AppRoute
 import com.example.my_kmp_project.core.router.AppRoutes
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.bg_splash
-import my_kmp_project.composeapp.generated.resources.ic_splash_logo
-import org.jetbrains.compose.resources.painterResource
 import com.example.my_kmp_project.core.router.DeepLinkRouter
+import com.example.my_kmp_project.core.router.LocalAppNavigator
 import com.example.my_kmp_project.core.router.MainTab
+import com.example.my_kmp_project.core.ui.LocalMainTabChrome
+import com.example.my_kmp_project.core.ui.MainTabChromeController
 import com.example.my_kmp_project.feature.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.AuthSessionState
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
 import com.example.my_kmp_project.feature.chat.ChatScreen
+import com.example.my_kmp_project.feature.classroom.ClassroomScreen
+import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.community.CommunityScreen
+import com.example.my_kmp_project.feature.friend.FriendScreen
+import com.example.my_kmp_project.feature.home.AllServicesScreen
 import com.example.my_kmp_project.feature.home.HomeScreen
+import com.example.my_kmp_project.feature.live.LiveScreen
+import com.example.my_kmp_project.feature.media.MediaEntryScreen
 import com.example.my_kmp_project.feature.mine.MineScreen
-import com.example.my_kmp_project.feature.shell.LocalMainTabChrome
+import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
-import com.example.my_kmp_project.feature.shell.MainTabChromeController
+import com.example.my_kmp_project.feature.web.InAppWebScreen
 import kotlinx.coroutines.delay
+import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.bg_splash
+import my_kmp_project.composeapp.generated.resources.ic_splash_logo
+import org.jetbrains.compose.resources.painterResource
 
 private enum class AppPhase {
     Splash,
@@ -212,9 +222,38 @@ private fun PrivacyConsentPhase(onAccept: () -> Unit) {
 private fun MainShell() {
     var tab by remember { mutableStateOf(MainTab.Home) }
     var authOverlay by remember { mutableStateOf(AuthOverlay.None) }
+    var shellRoute by remember { mutableStateOf<AppRoute?>(null) }
     val tabChrome = remember { MainTabChromeController() }
     var sessionEpoch by remember { mutableStateOf(0) }
     val loggedIn = remember(sessionEpoch) { AccountFacade.current().isLoggedIn }
+
+    fun clearShellRoute() {
+        // Membership overlays Mine Settings (secondary); web/services return to Home root.
+        val restoreBottomBar = shellRoute != AppRoute.Membership
+        shellRoute = null
+        tabChrome.updateBottomBarVisible(restoreBottomBar)
+    }
+
+    val navigator = remember {
+        AppContainer.get().navigation.bind { route ->
+            when (route) {
+                is AppRoute.InAppWeb,
+                AppRoute.AllServices,
+                AppRoute.Membership,
+                AppRoute.Scan,
+                AppRoute.Media,
+                AppRoute.Live,
+                AppRoute.Friend,
+                AppRoute.Classroom,
+                -> {
+                    shellRoute = route
+                    authOverlay = AuthOverlay.None
+                    tabChrome.updateBottomBarVisible(false)
+                }
+                else -> Unit
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         val pending = DeepLinkRouter.consumePending() ?: return@LaunchedEffect
@@ -246,11 +285,13 @@ private fun MainShell() {
     fun selectTab(next: MainTab) {
         if (AuthGate.requiresAuth(next) && !AccountFacade.current().isLoggedIn) {
             AuthGate.rememberPending(next)
+            shellRoute = null
             authOverlay = AuthOverlay.Login
             tabChrome.updateBottomBarVisible(false)
             return
         }
         tab = next
+        shellRoute = null
         authOverlay = AuthOverlay.None
         AuthGate.clearPending()
         tabChrome.updateBottomBarVisible(true)
@@ -259,12 +300,21 @@ private fun MainShell() {
     fun afterAuthSuccess() {
         refreshSession()
         val resume = AuthGate.consumePending() ?: MainTab.Home
+        shellRoute = null
         authOverlay = AuthOverlay.None
         tab = resume
         tabChrome.updateBottomBarVisible(true)
     }
 
-    CompositionLocalProvider(LocalMainTabChrome provides tabChrome) {
+    val shellOverlayActive = shellRoute != null
+    val showBottomBar = authOverlay == AuthOverlay.None &&
+        !shellOverlayActive &&
+        tabChrome.bottomBarVisible
+
+    CompositionLocalProvider(
+        LocalMainTabChrome provides tabChrome,
+        LocalAppNavigator provides navigator,
+    ) {
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
@@ -272,7 +322,7 @@ private fun MainShell() {
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
-                if (authOverlay == AuthOverlay.None && tabChrome.bottomBarVisible) {
+                if (showBottomBar) {
                     MainBottomBar(
                         selected = tab,
                         onSelect = { next -> selectTab(next) },
@@ -284,11 +334,11 @@ private fun MainShell() {
                     modifier = Modifier
                         .fillMaxSize()
                         .shellContentInsets(
-                            bottomBarVisible = authOverlay == AuthOverlay.None &&
-                                tabChrome.bottomBarVisible,
+                            bottomBarVisible = showBottomBar,
                             bottomBarPadding = paddingValues.calculateBottomPadding(),
                         ),
                 ) {
+                    // Keep tab content under shell overlays so Mine local pages survive Membership.
                     when (authOverlay) {
                         AuthOverlay.Login -> LoginScreen(
                             onLoginSuccess = { afterAuthSuccess() },
@@ -312,17 +362,48 @@ private fun MainShell() {
                                 displayName = AccountFacade.current().displayName,
                                 onLoginClick = {
                                     AuthGate.rememberPending(MainTab.Mine)
+                                    shellRoute = null
                                     authOverlay = AuthOverlay.Login
                                     tabChrome.updateBottomBarVisible(false)
                                 },
                                 onLogoutClick = {
                                     AuthRepository.logout()
                                     refreshSession()
+                                    shellRoute = null
                                     tab = MainTab.Home
                                     tabChrome.updateBottomBarVisible(true)
                                 },
                             )
                         }
+                    }
+
+                    when (val route = shellRoute) {
+                        is AppRoute.InAppWeb -> InAppWebScreen(
+                            url = route.url,
+                            onBack = { clearShellRoute() },
+                        )
+                        AppRoute.AllServices -> AllServicesScreen(
+                            onBack = { clearShellRoute() },
+                        )
+                        AppRoute.Membership -> MembershipScreen(
+                            onBack = { clearShellRoute() },
+                        )
+                        AppRoute.Scan -> ScanScreen(
+                            onBack = { clearShellRoute() },
+                        )
+                        AppRoute.Media -> MediaEntryScreen(
+                            onBack = { clearShellRoute() },
+                        )
+                        AppRoute.Live -> LiveScreen(
+                            onBack = { clearShellRoute() },
+                        )
+                        AppRoute.Friend -> FriendScreen(
+                            onBack = { clearShellRoute() },
+                        )
+                        AppRoute.Classroom -> ClassroomScreen(
+                            onBack = { clearShellRoute() },
+                        )
+                        else -> Unit
                     }
                 }
             },

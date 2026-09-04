@@ -37,7 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.feature.shell.ReportMainTabRoot
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 @Composable
 internal fun HomeSearchScreen(onBack: () -> Unit) {

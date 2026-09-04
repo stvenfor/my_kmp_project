@@ -28,7 +28,7 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.CameraPermissionStatus
 import com.example.my_kmp_project.core.platform.PlatformBarcodeScanner
 import com.example.my_kmp_project.core.platform.rememberCameraPermissionController
-import com.example.my_kmp_project.feature.shell.ReportMainTabRoot
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 /**
  * Scan / QR — requests real camera permission; Android/iOS decode barcodes when granted.

@@ -1,3 +1,8 @@
+> **⚠ BOUNDARY GATE：** 实施任何未勾选任务前，先读  
+> [`notes/boundary-gate.md`](notes/boundary-gate.md) 与  
+> [`../architect-production-foundation/notes/parity-unfreeze.md`](../architect-production-foundation/notes/parity-unfreeze.md)。  
+> feature↛feature；支付/推送走 `component/*`；tokens 走 `DesignSystem`；禁止 Home hub 堆 feature import。合入前跑 `scripts/check-layer-deps.sh`。
+
 ## 1. Parity scaffolding & gap registry
 
 - [x] 1.1 Create `openspec/changes/parity-flutter-to-kmp/notes/platform-gap-registry.md` seeded from design D8 with columns capability/android/ios/ohos/blocker/flutter_ref/kmp_ref/follow_up

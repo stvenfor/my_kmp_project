@@ -3,14 +3,18 @@ package com.example.my_kmp_project.feature.mine
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.core.design.DesignSystem
 
 /**
  * Mine page visual tokens mirroring Flutter `MineTheme`
  * (`features/settings/lib/mine/theme/mine_theme.dart`).
+ *
+ * Accent / page background bridge [DesignSystem] so Mine/Membership can migrate
+ * toward core design aliases without a wholesale token move (Spike II 4.4).
  */
 internal object MineTheme {
-    val Accent = Color(0xFF007AFF)
-    val Background = Color(0xFFF2F2F7)
+    val Accent = DesignSystem.Accent
+    val Background = DesignSystem.PageBg
     val Surface = Color(0xFFFFFFFF)
     val FillSecondary = Color(0xFFE9E9EB)
     val LabelPrimary = Color(0xFF000000)

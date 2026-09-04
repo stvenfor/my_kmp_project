@@ -15,7 +15,7 @@ import com.example.my_kmp_project.core.platform.PlatformBackHandler
 import com.example.my_kmp_project.core.platform.PlatformWebView
 import com.example.my_kmp_project.core.platform.WebBridgeHost
 import com.example.my_kmp_project.core.platform.WebViewNavigationHandle
-import com.example.my_kmp_project.feature.shell.ReportMainTabRoot
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 @Composable
 internal fun InAppWebScreen(

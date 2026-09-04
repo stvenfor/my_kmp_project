@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
-import com.example.my_kmp_project.feature.shell.ReportMainTabRoot
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 /**
  * Live list → room entry (mock rooms; push/realtime remain registry gaps).

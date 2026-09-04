@@ -2,21 +2,23 @@ schema: spec-driven
 
 # Shown to AI when creating OpenSpec artifacts.
 context: |
-  Project: my_kmp_project — Kotlin Multiplatform + Compose Multiplatform demo.
-  Targets: Android, iOS, HarmonyOS (OHOS).
-  Shell: DemoApp with Home + Mine tabs only (no legacy business domains).
+  Project: my_kmp_project — Kotlin Multiplatform + Compose Multiplatform.
+  Targets: Android, iOS, HarmonyOS (OHOS) as first-class.
+  Architecture: five layers app/feature/component/core/platform (see docs/adr/0001-production-architecture.md).
+  Shell: AppShell with four tabs Home/Chat/Community/Mine.
   Package root: com.example.my_kmp_project.
   Module layout:
-    - composeApp/: shared UI + logic + platform actuals
+    - composeApp/: shared UI + logic + platform actuals (OHOS aggregate → libkn.so)
     - iosApp/: thin SwiftUI host
     - harmonyApp/: thin ArkTS/NAPI host for libkn.so
   Intermediate source sets: networkKtorMain (android+ios), accountSettingsMain (android+ios).
-  Design tokens: DemoColors; immersive shell helpers in core/design.
+  Design tokens: DemoColors → DesignSystem target; immersive helpers in core/design.
   Network: DemoApiHosts / DemoRequestHeaders; OHOS uses Demo_Http_* cinterop.
   Versions: gradle/libs.versions.toml is the single source of truth.
   Build: always use ./gradlew wrappers.
   Conventions:
     - Prefer commonMain; use expect/actual for platform APIs.
+    - feature ↛ feature; feature → component/core only.
     - Keep iosApp/harmonyApp thin; feature work in composeApp.
     - Respond in Simplified Chinese when the user writes in Chinese.
     - Do not reintroduce FanGroup / tfent / T-Family / paopao branding or business modules.

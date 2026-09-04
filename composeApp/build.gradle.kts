@@ -99,14 +99,7 @@ kotlin {
                     )
                 }
             }
-            val netHttp by cinterops.creating {
-                defFile(file("src/ohosMain/cinterop/net_http.def"))
-                includeDirs(file("src/ohosMain/cinterop/include"))
-                ohosNativeSysroot?.let { sysroot ->
-                    includeDirs(sysroot.resolve("usr/include"))
-                }
-                compilerOpts("-I${file("src/ohosMain/cinterop/include").absolutePath}")
-            }
+            // netHttp cinterop moved to :core:network
         }
     }
 
@@ -117,7 +110,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.collection)
-            implementation(libs.ktor.client.okhttp)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.okhttp)
             implementation(libs.androidx.camera.core)
@@ -127,54 +119,30 @@ kotlin {
             implementation(libs.mlkit.barcode.scanning)
         }
         commonMain.dependencies {
-            implementation(compose.runtime)                     
-            implementation(compose.foundation)                   
+            implementation(projects.core.network)
+            implementation(projects.core.account)
+            implementation(compose.runtime)
+            implementation(compose.foundation)
             implementation(compose.material)
-            implementation(compose.material3)                    
-            implementation(compose.ui)                          
-            implementation(compose.components.resources)         
-            implementation(compose.components.uiToolingPreview)   
-            implementation(libs.kotlinx.coroutines.core)          
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation(compose.components.uiToolingPreview)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.atomicFu)
             implementation(libs.kotlinx.serialization.json)
         }
-          // iOS平台共享代码
-                val iosMain = sourceSets.create("iosMain").apply {
-                    dependsOn(commonMain.get())
-                }
-                // Ktor-backed network (no OHOS variant on Maven — keep off ohosMain)
-                val networkKtorMain = sourceSets.create("networkKtorMain").apply {
-                    dependsOn(commonMain.get())
-                    dependencies {
-                        implementation(libs.ktor.client.core)
-                        implementation(libs.ktor.client.content.negotiation)
-                        implementation(libs.ktor.serialization.kotlinx.json)
-                        implementation(libs.ktor.client.logging)
-                    }
-                }
-                // multiplatform-settings (no OHOS variant — keep off ohosMain)
-                val accountSettingsMain = sourceSets.create("accountSettingsMain").apply {
-                    dependsOn(commonMain.get())
-                    dependencies {
-                        implementation(libs.multiplatform.settings)
-                    }
-                }
-                iosMain.dependsOn(networkKtorMain)
-                iosMain.dependsOn(accountSettingsMain)
-                sourceSets.getByName("androidMain").dependsOn(networkKtorMain)
-                sourceSets.getByName("androidMain").dependsOn(accountSettingsMain)
-                // iOS平台依赖
-                iosMain.dependencies {
-                    implementation(libs.ktor.client.darwin)
-                    implementation(libs.coil.compose)
-                    implementation(libs.coil.network.ktor3)
-                }
-                // iOS平台变体依赖关系
-                listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
-                    sourceSets.getByName(it).dependsOn(iosMain)
-                }
+        val iosMain = sourceSets.create("iosMain").apply {
+            dependsOn(commonMain.get())
+        }
+        iosMain.dependencies {
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
+        }
+        listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
+            sourceSets.getByName(it).dependsOn(iosMain)
+        }
 
-         // OHOS 共享（对应目录 src/ohosMain/，arm64/x64 共用）
         val ohosMain = sourceSets.create("ohosMain").apply {
             dependsOn(commonMain.get())
         }
@@ -193,9 +161,6 @@ kotlin {
         }
         sourceSets.getByName("androidUnitTest").dependencies {
             implementation(libs.kotlin.test)
-            implementation(libs.ktor.client.mock)
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.kotlinx.coroutines.core)
         }
     }
 }
