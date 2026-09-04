@@ -96,6 +96,8 @@ Always use the project wrappers (`./gradlew`), not a system Gradle.
 | OHOS libs → Harmony | `./gradlew :composeApp:publishDebugBinariesToHarmonyApp` |
 | Harmony app | Build/run `harmonyApp/` in DevEco Studio after publishing binaries |
 
+GitHub Actions (`.github/workflows/`): CI runs Android `assembleDebug` + `testDebugUnitTest` on `main` PRs/pushes; debug APK artifacts upload on `main` / `v*` tags (Release on tags). iOS/OHOS not on hosted runners.
+
 Optional: `-PharmonyAppPath=/absolute/path` overrides the Harmony output root (default: repo `harmonyApp/`).
 
 `gradle.properties` sets `rendererBackend=fusion-renderer` for OHOS linking. Change it only when intentionally switching renderers; linker opts in `composeApp/build.gradle.kts` follow this flag.
