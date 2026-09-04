@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val androidOnly = rootProject.findProperty("androidOnly")?.toString()?.toBoolean() == true
+
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -15,16 +17,18 @@ kotlin {
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { /* library — no framework binary */ }
+    if (!androidOnly) {
+        listOf(
+            iosX64(),
+            iosArm64(),
+            iosSimulatorArm64(),
+        ).forEach { /* library — no framework binary */ }
 
-    listOf(
-        ohosArm64(),
-        ohosX64(),
-    ).forEach { /* library — linked via :composeApp / future :ohosAggregate */ }
+        listOf(
+            ohosArm64(),
+            ohosX64(),
+        ).forEach { /* library — linked via :composeApp / future :ohosAggregate */ }
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -41,20 +45,23 @@ kotlin {
             }
         }
 
-        val iosMain = sourceSets.create("iosMain").apply {
-            dependsOn(commonMain.get())
-            dependsOn(accountSettingsMain)
-        }
         sourceSets.getByName("androidMain").dependsOn(accountSettingsMain)
-        listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
-            sourceSets.getByName(it).dependsOn(iosMain)
-        }
 
-        val ohosMain = sourceSets.create("ohosMain").apply {
-            dependsOn(commonMain.get())
+        if (!androidOnly) {
+            val iosMain = sourceSets.create("iosMain").apply {
+                dependsOn(commonMain.get())
+                dependsOn(accountSettingsMain)
+            }
+            listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
+                sourceSets.getByName(it).dependsOn(iosMain)
+            }
+
+            val ohosMain = sourceSets.create("ohosMain").apply {
+                dependsOn(commonMain.get())
+            }
+            sourceSets.getByName("ohosArm64Main").dependsOn(ohosMain)
+            sourceSets.getByName("ohosX64Main").dependsOn(ohosMain)
         }
-        sourceSets.getByName("ohosArm64Main").dependsOn(ohosMain)
-        sourceSets.getByName("ohosX64Main").dependsOn(ohosMain)
     }
 }
 

@@ -13,6 +13,9 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+// GitHub Actions Android CI: ./gradlew ... -PandroidOnly=true (skip iOS/OHOS targets)
+val androidOnly = rootProject.findProperty("androidOnly")?.toString()?.toBoolean() == true
+
 val ohosNativeSysroot: File? = run {
     val localLines = rootProject.file("local.properties").takeIf { it.exists() }?.readLines().orEmpty()
     val fromLocal = localLines.firstOrNull { it.startsWith("local.ohos.native=") }
@@ -32,74 +35,76 @@ kotlin {
         }
     }
 
-    listOf(
-        iosX64(),    
-        iosArm64(),   
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true    
-        }
-    }
-    
-  // 配置OHOS（华为鸿蒙）多架构目标
-    listOf(
-        ohosArm64(),   // 真机 arm64
-        ohosX64()      // 模拟器/开发机 x64
-    ).forEach { ohosTarget ->
-        ohosTarget.binaries.sharedLib {
-            baseName = "kn"
-            // Release 链接阶段的 DevirtualizationAnalysis 对这个 sample 的内存占用过高，容易在 OOM 后失败。
-            if (buildType == NativeBuildType.RELEASE) {
-                optimized = false
+    if (!androidOnly) {
+        listOf(
+            iosX64(),
+            iosArm64(),
+            iosSimulatorArm64()
+        ).forEach { iosTarget ->
+            iosTarget.binaries.framework {
+                baseName = "ComposeApp"
+                isStatic = true
             }
-            export(libs.compose.multiplatform.export)
-            // Limit CAdapter to compose.export + composeApp. Without filtering, OHOS link
-            // NPEs in getKlibModuleOrigin. composeApp must be included so @CName entries
-            // stay alive; keep composeApp API surface mostly internal to shrink exports.
-            // Format: moduleIncludes={outputModule:[modSubstring;...]}
-            binaryOption("outputModule", "kn")
-            binaryOption("moduleIncludes", "{kn:[export;composeApp]}")
-            // libdemo_net_http.a already linked via cinterop netHttp staticLibraries;
-            // do not also pass -ldemo_net_http (lld cannot find it on the sysroot -L path).
-            linkerOpts("-lz", "-lavplayer", "-lnet_http")
+        }
+
+        // 配置OHOS（华为鸿蒙）多架构目标
+        listOf(
+            ohosArm64(),   // 真机 arm64
+            ohosX64()      // 模拟器/开发机 x64
+        ).forEach { ohosTarget ->
+            ohosTarget.binaries.sharedLib {
+                baseName = "kn"
+                // Release 链接阶段的 DevirtualizationAnalysis 对这个 sample 的内存占用过高，容易在 OOM 后失败。
+                if (buildType == NativeBuildType.RELEASE) {
+                    optimized = false
+                }
+                export(libs.compose.multiplatform.export)
+                // Limit CAdapter to compose.export + composeApp. Without filtering, OHOS link
+                // NPEs in getKlibModuleOrigin. composeApp must be included so @CName entries
+                // stay alive; keep composeApp API surface mostly internal to shrink exports.
+                // Format: moduleIncludes={outputModule:[modSubstring;...]}
+                binaryOption("outputModule", "kn")
+                binaryOption("moduleIncludes", "{kn:[export;composeApp]}")
+                // libdemo_net_http.a already linked via cinterop netHttp staticLibraries;
+                // do not also pass -ldemo_net_http (lld cannot find it on the sysroot -L path).
+                linkerOpts("-lz", "-lavplayer", "-lnet_http")
                 // 渲染模式
- 	             // 背景：当 libkn.so 为旧编译产物时，其 DT_NEEDED 可能缺少以下库（正确构建时
- 	             // NativeTasksConfiguration.kt 已通过 -l 选项将它们写入 DT_NEEDED）。
- 	             // 在 build.gradle.kts 中统一补全，避免在 CMakeLists.txt 中硬编码。
- 	             val rendererBackend = rootProject.findProperty("rendererBackend")?.toString() ?: "fusion-renderer"
-                    if (rendererBackend == "fusion-renderer") {
- 	                 linkerOpts(
- 	                     "-lnative_drawing",    // OH_Drawing_*（字体、绘制）
- 	                     "-limage_source",       // OH_ImageSourceNative_*（图像解码）
- 	                     "-lpixelmap",           // OH_PixelMap_*
- 	                     "-lpixelmap_ndk.z",     // OH_PixelMapNdk_*
- 	                     "-lnative_window",      // OH_NativeWindow_*
- 	                     "-lace_napi.z",         // N-API
- 	                     "-lhilog_ndk.z",        // HiLog 日志
- 	                     "-lhitrace_ndk.z",      // HiTrace 性能追踪
- 	                     "-luv",                 // libuv 事件循环
- 	                     "-lunwind",             // 栈展开
- 	                     "-licu",               // ICU 文本处理
- 	                 )
- 	             }
-        }
-        ohosTarget.compilations.getByName("main") {
-            val resource by cinterops.creating {
-                defFile(file("src/ohosMain/cinterop/resource.def"))
-                includeDirs(file("src/ohosMain/cinterop/include"))
-            }
-            val avplayer by cinterops.creating {
-                defFile(file("src/ohosMain/cinterop/avplayer.def"))
-                ohosNativeSysroot?.let { sysroot ->
-                    includeDirs(
-                        sysroot.resolve("usr/include"),
-                        sysroot.resolve("usr/include/multimedia/player_framework"),
+                // 背景：当 libkn.so 为旧编译产物时，其 DT_NEEDED 可能缺少以下库（正确构建时
+                // NativeTasksConfiguration.kt 已通过 -l 选项将它们写入 DT_NEEDED）。
+                // 在 build.gradle.kts 中统一补全，避免在 CMakeLists.txt 中硬编码。
+                val rendererBackend = rootProject.findProperty("rendererBackend")?.toString() ?: "fusion-renderer"
+                if (rendererBackend == "fusion-renderer") {
+                    linkerOpts(
+                        "-lnative_drawing",    // OH_Drawing_*（字体、绘制）
+                        "-limage_source",       // OH_ImageSourceNative_*（图像解码）
+                        "-lpixelmap",           // OH_PixelMap_*
+                        "-lpixelmap_ndk.z",     // OH_PixelMapNdk_*
+                        "-lnative_window",      // OH_NativeWindow_*
+                        "-lace_napi.z",         // N-API
+                        "-lhilog_ndk.z",        // HiLog 日志
+                        "-lhitrace_ndk.z",      // HiTrace 性能追踪
+                        "-luv",                 // libuv 事件循环
+                        "-lunwind",             // 栈展开
+                        "-licu",               // ICU 文本处理
                     )
                 }
             }
-            // netHttp cinterop moved to :core:network
+            ohosTarget.compilations.getByName("main") {
+                val resource by cinterops.creating {
+                    defFile(file("src/ohosMain/cinterop/resource.def"))
+                    includeDirs(file("src/ohosMain/cinterop/include"))
+                }
+                val avplayer by cinterops.creating {
+                    defFile(file("src/ohosMain/cinterop/avplayer.def"))
+                    ohosNativeSysroot?.let { sysroot ->
+                        includeDirs(
+                            sysroot.resolve("usr/include"),
+                            sysroot.resolve("usr/include/multimedia/player_framework"),
+                        )
+                    }
+                }
+                // netHttp cinterop moved to :core:network
+            }
         }
     }
 
@@ -132,28 +137,30 @@ kotlin {
             implementation(libs.atomicFu)
             implementation(libs.kotlinx.serialization.json)
         }
-        val iosMain = sourceSets.create("iosMain").apply {
-            dependsOn(commonMain.get())
-        }
-        iosMain.dependencies {
-            implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor3)
-        }
-        listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
-            sourceSets.getByName(it).dependsOn(iosMain)
-        }
+        if (!androidOnly) {
+            val iosMain = sourceSets.create("iosMain").apply {
+                dependsOn(commonMain.get())
+            }
+            iosMain.dependencies {
+                implementation(libs.coil.compose)
+                implementation(libs.coil.network.ktor3)
+            }
+            listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
+                sourceSets.getByName(it).dependsOn(iosMain)
+            }
 
-        val ohosMain = sourceSets.create("ohosMain").apply {
-            dependsOn(commonMain.get())
-        }
-        ohosMain.dependencies {
-            api(libs.compose.multiplatform.export)
-        }
-        val ohosArm64Main by getting {
-            dependsOn(ohosMain)
-        }
-        val ohosX64Main by getting {
-            dependsOn(ohosMain)
+            val ohosMain = sourceSets.create("ohosMain").apply {
+                dependsOn(commonMain.get())
+            }
+            ohosMain.dependencies {
+                api(libs.compose.multiplatform.export)
+            }
+            val ohosArm64Main by getting {
+                dependsOn(ohosMain)
+            }
+            val ohosX64Main by getting {
+                dependsOn(ohosMain)
+            }
         }
 
         commonTest.dependencies {
@@ -224,43 +231,45 @@ fun String.capitalizeUS(): String = this.replaceFirstChar {
 // CPF 对齐：真机 arm64 用 publish*BinariesToHarmonyApp；
 // 模拟器 x86_64 用 publish*BinariesToHarmonyAppX64（需 linkDebugSharedOhosX64 成功）。
 // 参见 https://gitcode.com/CPF-KMP-CMP/kmp-cmp-example
-arrayOf("debug", "release").forEach { type ->
-    tasks.register<Copy>("publish${type.capitalizeUS()}BinariesToHarmonyApp") {
-        group = "harmony"
-        dependsOn("link${type.capitalizeUS()}SharedOhosArm64")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        into(harmonyAppDir)
-        from("build/bin/ohosArm64/${type}Shared/libkn_api.h") {
-            into("entry/src/main/cpp/include/arm64-v8a/")
+if (!androidOnly) {
+    arrayOf("debug", "release").forEach { type ->
+        tasks.register<Copy>("publish${type.capitalizeUS()}BinariesToHarmonyApp") {
+            group = "harmony"
+            dependsOn("link${type.capitalizeUS()}SharedOhosArm64")
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            into(harmonyAppDir)
+            from("build/bin/ohosArm64/${type}Shared/libkn_api.h") {
+                into("entry/src/main/cpp/include/arm64-v8a/")
+            }
+            from(project.file("build/bin/ohosArm64/${type}Shared/libkn.so")) {
+                into("entry/libs/arm64-v8a/")
+            }
+            val composeResourcePackage =
+                "${rootProject.name.lowercase()}.${project.name.lowercase()}.generated.resources"
+            from("src/commonMain/composeResources") {
+                into("entry/src/main/resources/rawfile/composeResources/$composeResourcePackage/")
+            }
         }
-        from(project.file("build/bin/ohosArm64/${type}Shared/libkn.so")) {
-            into("entry/libs/arm64-v8a/")
-        }
-        val composeResourcePackage =
-            "${rootProject.name.lowercase()}.${project.name.lowercase()}.generated.resources"
-        from("src/commonMain/composeResources") {
-            into("entry/src/main/resources/rawfile/composeResources/$composeResourcePackage/")
-        }
-    }
 
-    tasks.register<Copy>("publish${type.capitalizeUS()}BinariesToHarmonyAppX64") {
-        group = "harmony"
-        description =
-            "Publish ohosX64 libkn to harmonyApp (x86_64 emulator). " +
-                "Currently blocked by toolchain: Konan_cxa_demangle on linkDebugSharedOhosX64."
-        dependsOn("link${type.capitalizeUS()}SharedOhosX64")
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        into(harmonyAppDir)
-        from("build/bin/ohosX64/${type}Shared/libkn_api.h") {
-            into("entry/src/main/cpp/include/x86_64/")
-        }
-        from(project.file("build/bin/ohosX64/${type}Shared/libkn.so")) {
-            into("entry/libs/x86_64/")
-        }
-        val composeResourcePackage =
-            "${rootProject.name.lowercase()}.${project.name.lowercase()}.generated.resources"
-        from("src/commonMain/composeResources") {
-            into("entry/src/main/resources/rawfile/composeResources/$composeResourcePackage/")
+        tasks.register<Copy>("publish${type.capitalizeUS()}BinariesToHarmonyAppX64") {
+            group = "harmony"
+            description =
+                "Publish ohosX64 libkn to harmonyApp (x86_64 emulator). " +
+                    "Currently blocked by toolchain: Konan_cxa_demangle on linkDebugSharedOhosX64."
+            dependsOn("link${type.capitalizeUS()}SharedOhosX64")
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            into(harmonyAppDir)
+            from("build/bin/ohosX64/${type}Shared/libkn_api.h") {
+                into("entry/src/main/cpp/include/x86_64/")
+            }
+            from(project.file("build/bin/ohosX64/${type}Shared/libkn.so")) {
+                into("entry/libs/x86_64/")
+            }
+            val composeResourcePackage =
+                "${rootProject.name.lowercase()}.${project.name.lowercase()}.generated.resources"
+            from("src/commonMain/composeResources") {
+                into("entry/src/main/resources/rawfile/composeResources/$composeResourcePackage/")
+            }
         }
     }
 }

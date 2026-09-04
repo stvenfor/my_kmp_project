@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val androidOnly = rootProject.findProperty("androidOnly")?.toString()?.toBoolean() == true
+
 val ohosNativeSysroot: File? = run {
     val localLines = rootProject.file("local.properties").takeIf { it.exists() }?.readLines().orEmpty()
     val fromLocal = localLines.firstOrNull { it.startsWith("local.ohos.native=") }
@@ -26,24 +28,26 @@ kotlin {
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { /* library — no framework binary */ }
+    if (!androidOnly) {
+        listOf(
+            iosX64(),
+            iosArm64(),
+            iosSimulatorArm64(),
+        ).forEach { /* library — no framework binary */ }
 
-    listOf(
-        ohosArm64(),
-        ohosX64(),
-    ).forEach { ohosTarget ->
-        ohosTarget.compilations.getByName("main") {
-            val netHttp by cinterops.creating {
-                defFile(file("src/ohosMain/cinterop/net_http.def"))
-                includeDirs(file("src/ohosMain/cinterop/include"))
-                ohosNativeSysroot?.let { sysroot ->
-                    includeDirs(sysroot.resolve("usr/include"))
+        listOf(
+            ohosArm64(),
+            ohosX64(),
+        ).forEach { ohosTarget ->
+            ohosTarget.compilations.getByName("main") {
+                val netHttp by cinterops.creating {
+                    defFile(file("src/ohosMain/cinterop/net_http.def"))
+                    includeDirs(file("src/ohosMain/cinterop/include"))
+                    ohosNativeSysroot?.let { sysroot ->
+                        includeDirs(sysroot.resolve("usr/include"))
+                    }
+                    compilerOpts("-I${file("src/ohosMain/cinterop/include").absolutePath}")
                 }
-                compilerOpts("-I${file("src/ohosMain/cinterop/include").absolutePath}")
             }
         }
     }
@@ -65,26 +69,29 @@ kotlin {
             }
         }
 
-        val iosMain = sourceSets.create("iosMain").apply {
-            dependsOn(commonMain.get())
-            dependsOn(networkKtorMain)
-            dependencies {
-                implementation(libs.ktor.client.darwin)
-            }
-        }
         sourceSets.getByName("androidMain").dependsOn(networkKtorMain)
         sourceSets.getByName("androidMain").dependencies {
             implementation(libs.ktor.client.okhttp)
         }
-        listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
-            sourceSets.getByName(it).dependsOn(iosMain)
-        }
 
-        val ohosMain = sourceSets.create("ohosMain").apply {
-            dependsOn(commonMain.get())
+        if (!androidOnly) {
+            val iosMain = sourceSets.create("iosMain").apply {
+                dependsOn(commonMain.get())
+                dependsOn(networkKtorMain)
+                dependencies {
+                    implementation(libs.ktor.client.darwin)
+                }
+            }
+            listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
+                sourceSets.getByName(it).dependsOn(iosMain)
+            }
+
+            val ohosMain = sourceSets.create("ohosMain").apply {
+                dependsOn(commonMain.get())
+            }
+            sourceSets.getByName("ohosArm64Main").dependsOn(ohosMain)
+            sourceSets.getByName("ohosX64Main").dependsOn(ohosMain)
         }
-        sourceSets.getByName("ohosArm64Main").dependsOn(ohosMain)
-        sourceSets.getByName("ohosX64Main").dependsOn(ohosMain)
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
