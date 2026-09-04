@@ -4,6 +4,17 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+    # Path filters apply to branch pushes only; tag pushes ignore paths (GitHub docs).
+    paths:
+      - "composeApp/**"
+      - "core/**"
+      - "ohosAggregate/**"
+      - "gradle/**"
+      - "*.gradle.kts"
+      - "gradle.properties"
+      - "gradlew"
+      - "gradlew.bat"
+      - ".github/workflows/android-artifacts.yml"
   workflow_dispatch:
 
 concurrency:
