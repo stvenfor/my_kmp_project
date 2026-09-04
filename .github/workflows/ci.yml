@@ -64,6 +64,15 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Preflight (repos + configure)
+        run: |
+          set -o pipefail
+          echo "=== eazytec ==="
+          curl -sS -I --max-time 30 "https://maven.eazytec-cloud.com/nexus/repository/maven-public/" | head -n 5 || true
+          echo "=== gradle help (androidOnly) ==="
+          ./gradlew help -PandroidOnly=true --no-daemon --stacktrace 2>&1 | tee preflight.log
+        # keep going to assemble; preflight proves configure works
+
       - name: Assemble debug & unit tests
         run: |
           set -o pipefail
@@ -76,9 +85,15 @@ jobs:
           {
             echo "## Gradle failure (last 200 lines)"
             echo '```'
-            tail -n 200 gradle-ci.log || true
+            tail -n 200 gradle-ci.log preflight.log 2>/dev/null || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          # Public check annotations (readable without log download auth)
+          echo "::group::Gradle error lines"
+          cat preflight.log gradle-ci.log 2>/dev/null | grep -E 'FAILURE:|What went wrong|Execution failed|Could not |BUILD FAILED|> Task :.* FAILED|^e: |Caused by:' | tail -n 40 | while IFS= read -r line; do
+            echo "::error::$line"
+          done || true
+          echo "::endgroup::"
 
       - name: Upload test reports on failure
         if: failure()
@@ -86,6 +101,7 @@ jobs:
         with:
           name: test-reports
           path: |
+            preflight.log
             gradle-ci.log
             composeApp/build/reports/tests/
             composeApp/build/test-results/
