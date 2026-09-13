@@ -2,7 +2,8 @@ import { ArkUIViewController, Compose } from '@cpf-kmp-cmp/compose';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
-import { AudioOnPageHide, MainArkUIViewController } from 'libentry.so';
+// Default import = NAPI exports object (do NOT declare a separate `export default` in Index.d.ts).
+import libentry from 'libentry.so';
 import { registerVideoInteropBuilders } from '../ComposeVideoInterops';
 import { registerWebInteropBuilders } from '../ComposeWebInterops';
 
@@ -25,7 +26,6 @@ function formatThrown(error: Object): string {
       if (joined.length > 0) {
         return joined;
       }
-      // NAPI napi_throw_error often surfaces as BusinessError with empty fields.
       if (namePart === 'BusinessError' || namePart === 'Error') {
         return `${namePart} (empty message — filter hilog DemoKN / DemoNapi)`;
       }
@@ -54,17 +54,30 @@ struct Index {
     registerWebInteropBuilders();
     const abi: string = deviceInfo.abiList;
     hilog.info(DOMAIN, 'Compose', 'device abiList=%{public}s', abi);
-    if (MainArkUIViewController === undefined) {
-      hilog.error(DOMAIN, 'Compose', 'MainArkUIViewController is undefined');
+
+    if (libentry === undefined) {
+      hilog.error(DOMAIN, 'Compose', 'libentry.so dlopen failed (default import undefined)');
       this.errorMessage =
-        'libentry.so export MainArkUIViewController is missing.\n' +
+        'libentry.so failed to load (dlopen).\n' +
         `abiList=${abi}\n` +
+        'Check hilog for: Error loading shared library (often libruntime.so).\n' +
         'Run: ./gradlew :composeApp:publishDebugBinariesToHarmonyApp\n' +
-        'Then Clean + Rebuild harmonyApp HAP on this device ABI.';
+        'Then DevEco Clean → Rebuild → uninstall + reinstall.';
       return;
     }
+
+    const createController = libentry.MainArkUIViewController;
+    if (createController === undefined) {
+      hilog.error(DOMAIN, 'Compose', 'MainArkUIViewController missing on loaded libentry');
+      this.errorMessage =
+        'libentry.so loaded but MainArkUIViewController export missing.\n' +
+        `abiList=${abi}\n` +
+        'Rebuild native (napi_init Init must call napi_define_properties).';
+      return;
+    }
+
     try {
-      this.controller = MainArkUIViewController();
+      this.controller = createController();
       const state: string = this.controller ? 'created' : 'not_created';
       hilog.info(DOMAIN, 'Compose', 'controller init state: %{public}s', state);
       if (!this.controller) {
@@ -102,7 +115,9 @@ struct Index {
   }
 
   onPageHide() {
-    AudioOnPageHide?.();
+    if (libentry !== undefined && libentry.AudioOnPageHide !== undefined) {
+      libentry.AudioOnPageHide();
+    }
     if (this.controller) {
       this.controller.onPageHide();
     }

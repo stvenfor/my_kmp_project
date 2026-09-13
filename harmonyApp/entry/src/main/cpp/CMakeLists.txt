@@ -10,35 +10,45 @@ if(DEFINED PACKAGE_FIND_FILE)
 endif()
 
 # 按 ABI 选 libkn.so / libkn_api.h（须与 libs/<abi>/libkn.so 来自同一次 K/N link）
- 	 if(CMAKE_OHOS_ARCH_ABI STREQUAL "x86_64" OR OHOS_ARCH STREQUAL "x86_64")
- 	     set(LIBKN_ABI_DIR "x86_64")
- 	 else()
- 	     set(LIBKN_ABI_DIR "arm64-v8a")
- 	 endif()
- 	 
+if(CMAKE_OHOS_ARCH_ABI STREQUAL "x86_64" OR OHOS_ARCH STREQUAL "x86_64")
+    set(LIBKN_ABI_DIR "x86_64")
+else()
+    set(LIBKN_ABI_DIR "arm64-v8a")
+endif()
 
- include_directories(${NATIVERENDER_ROOT_PATH}
- 	                     ${NATIVERENDER_ROOT_PATH}/include
- 	                     ${NATIVERENDER_ROOT_PATH}/include/${LIBKN_ABI_DIR})
+set(LIBKN_SO "${MODULE_ROOT_PATH}/libs/${LIBKN_ABI_DIR}/libkn.so")
+if(NOT EXISTS "${LIBKN_SO}")
+    message(FATAL_ERROR
+        "Missing ${LIBKN_SO}. Run: ./gradlew :composeApp:publishDebugBinariesToHarmonyApp"
+        " (or publishDebugBinariesToHarmonyAppX64 for emulator).")
+endif()
+
+include_directories(${NATIVERENDER_ROOT_PATH}
+                    ${NATIVERENDER_ROOT_PATH}/include
+                    ${NATIVERENDER_ROOT_PATH}/include/${LIBKN_ABI_DIR})
 
 set(COMPOSE_MODULE_PATH ${MODULE_ROOT_PATH}/oh_modules/@cpf-kmp-cmp/compose)
 list(APPEND CMAKE_PREFIX_PATH ${COMPOSE_MODULE_PATH})
 find_package(compose REQUIRED CONFIG)
 
+add_library(kn SHARED IMPORTED)
+set_target_properties(kn PROPERTIES IMPORTED_LOCATION "${LIBKN_SO}")
+
 add_library(entry SHARED napi_init.cpp)
 
-# Link against ComposeApp shared library to resolve exported symbols
-#add_library(ComposeApp SHARED IMPORTED)
+# Device loader must resolve libkn.so next to libentry.so — never bake host absolute RUNPATH.
+set_target_properties(entry PROPERTIES
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "$ORIGIN"
+    BUILD_RPATH "$ORIGIN"
+)
+target_link_options(entry PRIVATE "-Wl,-rpath,$ORIGIN")
+
 target_link_libraries(entry PUBLIC libace_napi.z.so)
 target_link_libraries(entry PUBLIC libhilog_ndk.z.so)
 target_link_libraries(entry PUBLIC libdeviceinfo_ndk.z.so)
 target_link_libraries(entry PUBLIC librawfile.z.so)
-#target_link_libraries(entry PUBLIC libicu.so)
-
-target_link_libraries(entry PUBLIC ${NATIVERENDER_ROOT_PATH}/../../../libs/${LIBKN_ABI_DIR}/libkn.so)
-# 先链接 libkn.so，再链接 compose里面的skikobridge
+# Link libkn before skikobridge (Compose bridge expects KN symbols available).
+target_link_libraries(entry PUBLIC kn)
 target_link_libraries(entry PUBLIC compose::skikobridge)
 target_link_libraries(entry PUBLIC ${EGL-lib} ${GLES-lib} ${hilog-lib} ${libace-lib} ${libnapi-lib} ${libuv-lib} libc++_shared.so)
-
-
-

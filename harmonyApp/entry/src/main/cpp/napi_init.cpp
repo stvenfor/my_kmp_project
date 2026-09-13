@@ -2,7 +2,6 @@
 #include "napi/native_api.h"
 #include "hilog/log.h"
 #include <rawfile/raw_file_manager.h>
-#include <dlfcn.h>
 
 #ifndef LOG_DOMAIN
 #define LOG_DOMAIN 0x0000
@@ -11,22 +10,10 @@
 #define LOG_TAG "DemoNapi"
 #endif
 
-using ArkUiInitFn = void (*)(napi_env, napi_value);
-
+// androidx_compose_ui_arkui_init is declared in libkn_api.h as (void*, void*).
 static void CallComposeArkUiInit(napi_env env, napi_value exports) {
-    // Prefer libkn export; fall back to dlsym for CMP version renames.
-    ArkUiInitFn initFn = reinterpret_cast<ArkUiInitFn>(
-        dlsym(RTLD_DEFAULT, "androidx_compose_ui_arkui_init"));
-    if (initFn == nullptr) {
-        initFn = reinterpret_cast<ArkUiInitFn>(
-            dlsym(RTLD_DEFAULT, "androidx_compose_ui_arkui_utils_init"));
-    }
-    if (initFn != nullptr) {
-        initFn(env, exports);
-        OH_LOG_INFO(LOG_APP, "Compose ArkUI init ok");
-    } else {
-        OH_LOG_ERROR(LOG_APP, "Compose ArkUI init symbol missing");
-    }
+    androidx_compose_ui_arkui_init(static_cast<void*>(env), static_cast<void*>(exports));
+    OH_LOG_INFO(LOG_APP, "Compose ArkUI init ok");
 }
 
 static napi_value NapiMainArkUIViewController(napi_env env, napi_callback_info info) {
@@ -54,13 +41,14 @@ static napi_value AudioOnPageHide(napi_env env, napi_callback_info info) {
 
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
-    OH_LOG_INFO(LOG_APP, "libentry Init: Compose ArkUI bootstrap");
-    CallComposeArkUiInit(env, exports);
+    OH_LOG_INFO(LOG_APP, "libentry Init: register exports then Compose ArkUI bootstrap");
+    // Register named exports first so ArkTS import succeeds even if Compose init fails.
     napi_property_descriptor desc[] = {
         {"MainArkUIViewController", nullptr, NapiMainArkUIViewController, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AudioOnPageHide", nullptr, AudioOnPageHide, nullptr, nullptr, nullptr, napi_default, nullptr},
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
+    CallComposeArkUiInit(env, exports);
     return exports;
 }
 EXTERN_C_END

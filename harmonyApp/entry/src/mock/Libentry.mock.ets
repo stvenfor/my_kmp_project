@@ -1,7 +1,7 @@
-// Preview/mock only — real device loads libentry.so NAPI (named exports).
+// Preview/mock only — real device loads libentry.so NAPI.
 import { ArkUIViewController } from 'compose/src/main/cpp/types/libcompose_arkui_utils';
 
-const NativeMock: Record<string, Object> = {
+const NativeMock = {
   MainArkUIViewController: (): ArkUIViewController | undefined => undefined,
   AudioOnPageHide: (): void => {},
 };
