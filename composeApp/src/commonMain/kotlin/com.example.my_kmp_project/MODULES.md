@@ -8,7 +8,7 @@ OHOS KMP currently requires a single `libkn.so`. Strategy: **multi-module on And
 
 ```
 :composeApp          # app shell + features + components + remaining core.*
-:core:network        # HTTP façades, Ktor (android/ios), OHOS cinterop client
+:core:network        # HTTP façades; Ktor android/ios/ohosArm64(CIO); ohosX64 cinterop
 :core:account        # AccountFacade + session/privacy stores
 :ohosAggregate       # placeholder — libkn.so still linked from :composeApp
 ```
@@ -49,7 +49,9 @@ com.example.my_kmp_project
 
 | Source set | Module | Used by | Purpose |
 |------------|--------|---------|---------|
-| `networkKtorMain` | `:core:network` | android + ios | Ktor client |
+| `networkKtorMain` | `:core:network` | android + ios + **ohosArm64** | Shared Ktor `ApiClient` (OkHttp / Darwin / CIO) |
 | `accountSettingsMain` | `:core:account` | android + ios | multiplatform-settings KV |
 
-OHOS HTTP lives in `:core:network` (`ohosMain` + `net_http` cinterop). Fat `libkn.so` link remains on `:composeApp` until `:ohosAggregate` takes over.
+- **ohosArm64:** `KtorApiClient` + CIO (CPF Ktor `3.3.3-0.3.0`; HTTPS gate passed; cinterop retired on this target).
+- **ohosX64:** no CPF Ktor `ohosX64` klib — `OhosApiClient` + `net_http` cinterop only.
+- Fat `libkn.so` link remains on `:composeApp` until `:ohosAggregate` takes over.

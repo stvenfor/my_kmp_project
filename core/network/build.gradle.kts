@@ -39,14 +39,18 @@ kotlin {
             ohosArm64(),
             ohosX64(),
         ).forEach { ohosTarget ->
-            ohosTarget.compilations.getByName("main") {
-                val netHttp by cinterops.creating {
-                    defFile(file("src/ohosMain/cinterop/net_http.def"))
-                    includeDirs(file("src/ohosMain/cinterop/include"))
-                    ohosNativeSysroot?.let { sysroot ->
-                        includeDirs(sysroot.resolve("usr/include"))
+            // net_http cinterop only on ohosX64 (no CPF Ktor ohosX64 klib).
+            // ohosArm64 uses Ktor CIO — see networkKtorMain + HttpClientFactory.ohosArm64.
+            if (ohosTarget.name == "ohosX64") {
+                ohosTarget.compilations.getByName("main") {
+                    val netHttp by cinterops.creating {
+                        defFile(file("src/ohosMain/cinterop/net_http.def"))
+                        includeDirs(file("src/ohosMain/cinterop/include"))
+                        ohosNativeSysroot?.let { sysroot ->
+                            includeDirs(sysroot.resolve("usr/include"))
+                        }
+                        compilerOpts("-I${file("src/ohosMain/cinterop/include").absolutePath}")
                     }
-                    compilerOpts("-I${file("src/ohosMain/cinterop/include").absolutePath}")
                 }
             }
         }
@@ -89,7 +93,14 @@ kotlin {
             val ohosMain = sourceSets.create("ohosMain").apply {
                 dependsOn(commonMain.get())
             }
-            sourceSets.getByName("ohosArm64Main").dependsOn(ohosMain)
+            // Arm64: shared Ktor + CIO. X64: cinterop only (design D4 — no ohosX64 Ktor klib).
+            sourceSets.getByName("ohosArm64Main").apply {
+                dependsOn(ohosMain)
+                dependsOn(networkKtorMain)
+                dependencies {
+                    implementation(libs.ktor.client.cio)
+                }
+            }
             sourceSets.getByName("ohosX64Main").dependsOn(ohosMain)
         }
 

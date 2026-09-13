@@ -2,6 +2,7 @@ package com.example.my_kmp_project.core.network
 
 import kotlinx.serialization.json.JsonElement
 
+/** ohosX64-only cinterop client (no CPF Ktor ohosX64 klib). */
 public class OhosApiClient(
     private val onTokenExpired: TokenExpiredHandler? = null,
     private val businessHandlers: NetworkBusinessHandlers? = null,
@@ -104,8 +105,3 @@ public class OhosApiClient(
         }
     }
 }
-
-public actual fun createPlatformApiClient(
-    onTokenExpired: TokenExpiredHandler?,
-    businessHandlers: NetworkBusinessHandlers?,
-): ApiClient = OhosApiClient(onTokenExpired, businessHandlers)

@@ -47,7 +47,7 @@ Ruflo MCP (Cursor): `.cursor/mcp.json` → `npx -y ruflo@latest mcp start`. Heal
 
 | Source set | Used by | Purpose |
 |------------|---------|---------|
-| `networkKtorMain` | android + ios | Ktor client |
+| `networkKtorMain` | android + ios + ohosArm64 | Ktor client (OHOS: CIO; x64 still cinterop) |
 | `accountSettingsMain` | android + ios | `multiplatform-settings` session KV |
 
 Package root: `com.example.my_kmp_project`.
@@ -113,7 +113,7 @@ After changing Kotlin/Compose shared code for Harmony, publish again before DevE
 
 Release OHOS links set `optimized = false` to avoid OOM in DevirtualizationAnalysis; leave that unless you have measured headroom.
 
-OHOS HTTP uses cinterop (`demo_net_http_*` + `libdemo_net_http.a`), not Ktor.
+OHOS HTTP: **ohosArm64** = CPF Ktor `3.3.3-0.3.0` + **CIO** (HTTPS gate passed). **ohosX64** = `net_http` cinterop fallback (no published Ktor ohosX64 klib). See `openspec/changes/adopt-cpf-ktor-ohos/`.
 
 ## Conventions
 

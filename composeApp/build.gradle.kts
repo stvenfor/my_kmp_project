@@ -59,15 +59,16 @@ kotlin {
                     optimized = false
                 }
                 export(libs.compose.multiplatform.export)
-                // Limit CAdapter to compose.export + composeApp. Without filtering, OHOS link
-                // NPEs in getKlibModuleOrigin. composeApp must be included so @CName entries
-                // stay alive; keep composeApp API surface mostly internal to shrink exports.
-                // Format: moduleIncludes={outputModule:[modSubstring;...]}
-                binaryOption("outputModule", "kn")
-                binaryOption("moduleIncludes", "{kn:[export;composeApp]}")
-                // libdemo_net_http.a already linked via cinterop netHttp staticLibraries;
-                // do not also pass -ldemo_net_http (lld cannot find it on the sysroot -L path).
-                linkerOpts("-lz", "-lavplayer", "-lnet_http")
+                // Do NOT use moduleIncludes/outputModule here: that makes libkn DT_NEEDED on
+                // libruntime.so + libstd.so without shipping those SOs, so HAP dlopen fails.
+                // (emitRuntime/emitStdlib also dropped @CName / CAdapter exports in 2.2.21-0.3.0.)
+                // Prefer one self-contained libkn.so with KN runtime linked in.
+                linkerOpts("-lz", "-lavplayer")
+                // net_http only needed when :core:network still uses cinterop (ohosX64 emulator).
+                // ohosArm64 uses CPF Ktor CIO — no -lnet_http.
+                if (ohosTarget.name == "ohosX64") {
+                    linkerOpts("-lnet_http")
+                }
                 // 渲染模式
                 // 背景：当 libkn.so 为旧编译产物时，其 DT_NEEDED 可能缺少以下库（正确构建时
                 // NativeTasksConfiguration.kt 已通过 -l 选项将它们写入 DT_NEEDED）。

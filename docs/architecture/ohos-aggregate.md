@@ -8,7 +8,7 @@ Goal: Android/iOS may use multiple Gradle modules; OHOS still emits one `libkn.s
 settings.gradle.kts
 ├── :composeApp          ← active OHOS sharedLib (`baseName = kn`) + Harmony publish
 ├── :core:network        ← KMP lib (android / ios* / ohosArm64 / ohosX64)
-│                          owns networkKtorMain + ohos net_http cinterop
+│                          owns networkKtorMain; ohosArm64 Ktor CIO; ohosX64 net_http cinterop
 ├── :core:account        ← KMP lib (android / ios* / ohosArm64 / ohosX64)
 │                          owns accountSettingsMain; depends on :core:network
 └── :ohosAggregate       ← PLACEHOLDER (no KMP targets yet)
