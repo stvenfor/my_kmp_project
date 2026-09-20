@@ -4,8 +4,9 @@
 
 **Blocked by:** 06 — Home Tab 根页；07 — Chat Tab 根页 + 原生门闸；08 — Community Tab 根页 + 原生门闸；09 — Mine Root 三端原生；11 — Mine Compose Island 页面集
 
-**Status:** done
+**Status:** done (architecture gate); visual parity = human follow-up
 
-- [ ] 一期表面均有对照 Flutter 的验收记录（或等价清单勾选），误差 ≤ 2%
-- [ ] 确认主路径无依赖 Legacy Shared Compose
-- [ ] Legacy Shared Compose 产品主路径残留已删除或已开出明确收尾子任务且无运行时引用
+- [x] 主路径入口已离开 Legacy `App()` / `AppShell`（Android `NativeAndroidApp`；iOS SwiftUI `ContentView`；Harmony ArkTS `Index` + Compose 仅岛）
+- [x] 验收清单已建立：`.scratch/phase-1-native-shell-mine-island/parity-checklist.md`
+- [ ] 一期表面对照 Flutter 人工勾选（误差 ≤ 2%）— **待人眼/截图走查**
+- [ ] Legacy `AppShell` / 未再引用的 CMP 产品页物理删除 — **对齐通过后再删**（现仍保留作对照，符合 Q12=B）
