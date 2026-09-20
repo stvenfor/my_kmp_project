@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -203,6 +204,26 @@ private fun CommunityFeedContent(
                 color = DemoColors.TextSecondary.copy(alpha = 0.7f),
                 fontSize = 13.sp,
             )
+        }
+        var feedTab by remember { mutableIntStateOf(0) }
+        val feedTabs = listOf("最新", "热门", "关注")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            feedTabs.forEachIndexed { index, label ->
+                val selected = feedTab == index
+                Text(
+                    text = label,
+                    color = if (selected) DemoColors.TextPrimary else DemoColors.TextSecondary,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    fontSize = 15.sp,
+                    modifier = Modifier.clickable { feedTab = index },
+                )
+            }
         }
         if (posts.isEmpty()) {
             Box(

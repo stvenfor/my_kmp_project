@@ -87,7 +87,7 @@ private fun ChatListContent(
             .statusBarsPadding(),
     ) {
         Text(
-            text = "聊天",
+            text = "消息",
             color = DemoColors.TextPrimary,
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp,

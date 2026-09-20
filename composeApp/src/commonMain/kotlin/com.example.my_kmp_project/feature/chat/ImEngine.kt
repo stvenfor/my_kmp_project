@@ -28,27 +28,21 @@ internal class MockImEngine : ImEngine {
     private val conversationState = mutableListOf(
         ImConversation(
             id = "c1",
-            title = "学习助手",
-            lastMessage = "今天的学习报告已生成，点击查看。",
-            updatedAtLabel = "刚刚",
+            title = "Mock好友1",
+            lastMessage = "晚上一起吃饭吗？",
+            updatedAtLabel = "22:50",
         ),
         ImConversation(
             id = "c2",
-            title = "班级群 · 三年级二班",
-            lastMessage = "明天下午的活动改到三点。",
-            updatedAtLabel = "10:24",
+            title = "Mock好友2",
+            lastMessage = "你好",
+            updatedAtLabel = "22:45",
         ),
         ImConversation(
             id = "c3",
-            title = "客服小助手",
-            lastMessage = "您好，有什么可以帮您？",
-            updatedAtLabel = "昨天",
-        ),
-        ImConversation(
-            id = "c4",
-            title = "好友 · 小明",
-            lastMessage = "周末一起复习吧",
-            updatedAtLabel = "周一",
+            title = "Mock好友3",
+            lastMessage = "你好",
+            updatedAtLabel = "22:40",
         ),
     )
 
