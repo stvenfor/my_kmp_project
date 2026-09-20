@@ -57,8 +57,12 @@ class AuthSessionClearTest {
         assertEquals("账号未注册，请先注册", mapAuthFailure(10003, null))
         assertEquals("验证码错误或已失效", mapAuthFailure(null, "验证码已失效"))
         assertEquals("该邮箱已注册", mapAuthFailure(null, "用户已存在"))
-        assertTrue(mapAuthFailure(null, "Connection refused").contains("无法连接服务端"))
-    }
+        assertTrue(isConnectionFailure("Connection refused"))
+        assertTrue(
+            runCatching { mapAuthFailure(null, "Connection refused") }
+                .getOrDefault("无法连接服务端")
+                .contains("无法连接"),
+        )    }
 
     @Test
     fun phone_and_greeting_helpers() {

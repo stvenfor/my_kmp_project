@@ -87,6 +87,9 @@ private enum class AuthOverlay {
 
 /**
  * Product shell: splash → privacy consent → four-tab main chrome with soft-auth gate.
+ *
+ * LEGACY Shared Compose shell — kept for reference (ADR 0002 / Legacy Shared Compose).
+ * Runtime main path: Android [NativeAndroidApp], iOS SwiftUI ContentView, Harmony ArkTS Index.
  */
 @Composable
 internal fun AppShell() {

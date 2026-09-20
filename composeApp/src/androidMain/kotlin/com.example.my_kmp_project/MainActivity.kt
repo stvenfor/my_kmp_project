@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.my_kmp_project.nativeshell.NativeAndroidApp
 import com.example.my_kmp_project.core.account.AndroidAccountContext
 import com.example.my_kmp_project.core.network.platformNetworkBootstrap
 import com.example.my_kmp_project.core.platform.AndroidActivityContext
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
         handleDeepLinkIntent(intent)
 
         setContent {
-            App()
+            NativeAndroidApp()
         }
     }
 
@@ -53,5 +54,5 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 internal fun AppAndroidPreview() {
-    App()
+    NativeAndroidApp()
 }

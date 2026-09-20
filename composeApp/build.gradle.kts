@@ -127,6 +127,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.network)
             implementation(projects.core.account)
+            implementation(projects.core.design)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)
