@@ -50,21 +50,15 @@ internal class MockImEngine : ImEngine {
 
     private val messagesByConversation: MutableMap<String, MutableList<ImMessage>> = mutableMapOf(
         "c1" to mutableListOf(
-            ImMessage("m1", "c1", "学习助手", "欢迎回来，继续今日学习吧。", isSelf = false, timeLabel = "09:00"),
-            ImMessage("m2", "c1", "我", "好的，今天学什么？", isSelf = true, timeLabel = "09:01"),
-            ImMessage("m3", "c1", "学习助手", "今天的学习报告已生成，点击查看。", isSelf = false, timeLabel = "刚刚"),
+            ImMessage("m1", "c1", "Mock好友1", "你好，在吗？", isSelf = false, timeLabel = "22:20"),
+            ImMessage("m2", "c1", "我", "在的，有什么事？", isSelf = true, timeLabel = "22:22"),
+            ImMessage("m3", "c1", "Mock好友1", "晚上一起吃饭吗？", isSelf = false, timeLabel = "22:50"),
         ),
         "c2" to mutableListOf(
-            ImMessage("m4", "c2", "班主任", "各位家长注意通知。", isSelf = false, timeLabel = "10:20"),
-            ImMessage("m5", "c2", "我", "收到，谢谢老师。", isSelf = true, timeLabel = "10:22"),
-            ImMessage("m6", "c2", "班主任", "明天下午的活动改到三点。", isSelf = false, timeLabel = "10:24"),
+            ImMessage("m4", "c2", "Mock好友2", "你好", isSelf = false, timeLabel = "22:45"),
         ),
         "c3" to mutableListOf(
-            ImMessage("m7", "c3", "客服小助手", "您好，有什么可以帮您？", isSelf = false, timeLabel = "昨天"),
-        ),
-        "c4" to mutableListOf(
-            ImMessage("m8", "c4", "小明", "周末一起复习吧", isSelf = false, timeLabel = "周一"),
-            ImMessage("m9", "c4", "我", "好啊，约图书馆。", isSelf = true, timeLabel = "周一"),
+            ImMessage("m5", "c3", "Mock好友3", "你好", isSelf = false, timeLabel = "22:40"),
         ),
     )
 
