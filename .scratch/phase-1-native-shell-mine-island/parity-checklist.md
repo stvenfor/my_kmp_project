@@ -1,24 +1,32 @@
-# Phase-1 UI Parity Checklist
+# Phase-1 UI Parity Checklist (ADR 0002)
 
-Visual Source of Truth: Flutter `my_ai_project` on Android emulator `emulator-5554` (1440×3120).  
-Bar: ≤2% error (UI Parity Bar). Screenshots under `screenshots/{flutter,kmp}/`.
+Visual Source of Truth: Flutter `my_ai_project`. Bar: ≤2% error.
 
-| Surface | Android | Notes vs Flutter SoT |
-|---------|---------|----------------------|
-| Splash | [x] | System + Compose splash |
-| Privacy | [x] | Consent flow present when unset |
-| Tab shell | [x] | 首页 / 聊天 / 社区 / 我的 |
-| Home root | [x] | Feature grid uses synced picsum PNG (`home_feature_*.png`); all_services PNG from Flutter SoT |
-| Chat root | [x] | Title「消息」+ ⌕/✎; Mock好友1–3; unread badge on #1 |
-| Community root | [x] | 最新/热门/关注; 张三/李四/王五 feed copy matches Flutter mock |
-| Mine Root | [~] | Structure matches; session-dependent avatar/store name |
-| Auth | [x] | Native overlay, not island |
-| Mine Island – Settings | [x] | Gear → 设置（环境/深色/语言/会员/个性化/关于） |
-| Shared Design Tokens | [x] | `:core:design` |
+## Ownership (enforced)
 
-iOS / Harmony not verified on this Android emulator pass.
+| Layer | Android | iOS | Harmony |
+|-------|---------|-----|---------|
+| Splash / Privacy | Jetpack | SwiftUI | ArkTS |
+| Tab shell + Home/Chat/Community/Mine **roots** | Jetpack | SwiftUI | ArkTS |
+| Auth / soft gate | Jetpack | SwiftUI | ArkTS |
+| Deferred root entries | Jetpack stub | SwiftUI stub | ArkTS stub |
+| Mine **secondary** only | CMP `MineIsland` | CMP host | CMP host |
+
+| Surface | Android | iOS | Harmony | Notes |
+|---------|---------|-----|---------|-------|
+| Splash | [x] | [x] | [x] | Native |
+| Privacy | [x] | [x] | [x] | Native |
+| Tab shell | [x] | [x] | [x] | Native |
+| Home root | [x] | [x] | [x] | Native; Android uses `home_feature_*.png` |
+| Chat root | [x] | [x] | [x] | Native + soft-auth |
+| Community root | [x] | [x] | [x] | Native + soft-auth |
+| Mine Root | [x] | [x] | [x] | Native |
+| Auth | [x] | [x] | [x] | Native |
+| Deferred stub | [x] | [x] | [x] | 「一期后置 · 原生占位」 |
+| Mine Island | [x] | [x] | [x] | Shared CMP only |
+| Shared Design Tokens | [x] | [x] | [x] | `:core:design` |
 
 ## Legacy Shared Compose removal gate
 
-- [x] Platform entries do not use `App()` / `AppShell` as main path
-- [ ] Physically delete `AppShell` after accepting remaining Mine session-dependent art (~)
+- [x] Main path does not use `App()` / `AppShell` / `SyncedProductShell`
+- [ ] Delete leftover commonMain product screens after pixel accept (Q12=B)

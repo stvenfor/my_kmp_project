@@ -13,18 +13,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeArkUIViewController
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.feature.mine.MineIslandRoute
+import com.example.my_kmp_project.feature.shell.OhosComposeHostRequest
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.initMainHandler
 import platform.ArkTS.ArkTS_Napi_NativeModule.napi_env
 import platform.ArkTS.ArkTS_Napi_NativeModule.napi_value
 import kotlin.experimental.ExperimentalNativeApi
 
-/** Set true to verify ComposeArkUIViewController + NAPI without product UI. */
 private const val OhosSmokeUiOnly: Boolean = false
 
 /**
- * Mine Compose Island host for Harmony Native Shell (ADR 0002).
- * ArkTS owns splash/tabs/Mine Root; this controller is pushed only for secondary Mine pages.
+ * ADR 0002: Harmony Compose host is **Mine island only**.
+ * ArkTS owns splash / tabs / Mine root / auth / deferred stubs.
  */
 @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
 @CName("MainArkUIViewController")
@@ -42,7 +42,7 @@ fun MainArkUIViewController(env: napi_env): napi_value {
                 var closed by remember { mutableStateOf(false) }
                 if (!closed) {
                     MineIsland(
-                        initialRoute = MineIslandRoute.Settings,
+                        initialRoute = OhosComposeHostRequest.mineRoute,
                         onRequestClose = { closed = true },
                     )
                 } else {
@@ -59,18 +59,21 @@ fun MainArkUIViewController(env: napi_env): napi_value {
     }
 }
 
+/** kind ignored for features; routeCode 0=settings, 1=personalized. */
+@OptIn(ExperimentalNativeApi::class)
+@CName("KnSetOhosHost")
+fun KnSetOhosHost(kind: Int, routeCode: Int) {
+    OhosComposeHostRequest.mineRoute =
+        if (routeCode == 1) MineIslandRoute.Personalized else MineIslandRoute.Settings
+}
+
 @OptIn(ExperimentalNativeApi::class)
 @CName("KnAudioOnPageHide")
-fun KnAudioOnPageHide() {
-    // Demo: no media playlist lifecycle.
-}
+fun KnAudioOnPageHide() = Unit
 
 @Composable
 private fun OhosSmokeRoot() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("KMP Demo OHOS Compose OK")
     }
 }

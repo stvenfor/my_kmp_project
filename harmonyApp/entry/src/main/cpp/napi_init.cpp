@@ -39,12 +39,31 @@ static napi_value AudioOnPageHide(napi_env env, napi_callback_info info) {
     return nullptr;
 }
 
+extern "C" void KnSetOhosHost(int kind, int routeCode);
+
+static napi_value NapiSetOhosHost(napi_env env, napi_callback_info info) {
+    size_t argc = 2;
+    napi_value args[2] = {nullptr, nullptr};
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
+    int32_t kind = 0;
+    int32_t routeCode = 0;
+    if (argc >= 1 && args[0] != nullptr) {
+        napi_get_value_int32(env, args[0], &kind);
+    }
+    if (argc >= 2 && args[1] != nullptr) {
+        napi_get_value_int32(env, args[1], &routeCode);
+    }
+    KnSetOhosHost(kind, routeCode);
+    return nullptr;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     OH_LOG_INFO(LOG_APP, "libentry Init: register exports then Compose ArkUI bootstrap");
     // Register named exports first so ArkTS import succeeds even if Compose init fails.
     napi_property_descriptor desc[] = {
         {"MainArkUIViewController", nullptr, NapiMainArkUIViewController, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"SetOhosHost", nullptr, NapiSetOhosHost, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AudioOnPageHide", nullptr, AudioOnPageHide, nullptr, nullptr, nullptr, napi_default, nullptr},
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);

@@ -39,7 +39,7 @@ fun MineIsland(
                     onBack = onRequestClose,
                     onOpenPersonalized = { route = MineIslandRoute.Personalized },
                     onOpenMembership = {
-                        showSnack("后续开放")
+                        showSnack("一期后置 · 会员")
                     },
                     onOpenAbout = { route = MineIslandRoute.About },
                 )

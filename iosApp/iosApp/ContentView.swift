@@ -5,7 +5,6 @@ import ComposeApp
 /// Synced from KMP `DesignTokens` / Flutter VercelTokens.light — do not fork.
 enum DesignTokens {
     static let primary = Color(red: 0x17/255, green: 0x17/255, blue: 0x17/255)
-    static let onPrimary = Color.white
     static let ink = Color(red: 0x17/255, green: 0x17/255, blue: 0x17/255)
     static let body = Color(red: 0x4D/255, green: 0x4D/255, blue: 0x4D/255)
     static let mute = Color(red: 0x88/255, green: 0x88/255, blue: 0x88/255)
@@ -13,15 +12,11 @@ enum DesignTokens {
     static let canvas = Color.white
     static let canvasSoft2 = Color(red: 0xF5/255, green: 0xF5/255, blue: 0xF5/255)
     static let link = Color(red: 0x00/255, green: 0x70/255, blue: 0xF3/255)
-    static let error = Color(red: 0xEE/255, green: 0x00/255, blue: 0x00/255)
-    static let tabBarBackground = Color.white.opacity(0.95)
     static let spacingMd: CGFloat = 16
     static let spacingLg: CGFloat = 24
 }
 
-private enum AppPhase {
-    case splash, privacy, main
-}
+private enum AppPhase { case splash, privacy, main }
 
 private enum MainTab: Int, CaseIterable, Identifiable {
     case home, chat, community, mine
@@ -36,15 +31,17 @@ private enum MainTab: Int, CaseIterable, Identifiable {
     }
 }
 
+/// ADR 0002: SwiftUI owns splash / privacy / tab roots / Mine root / auth.
+/// Compose is only pushed for Mine secondary island and deferred native stubs.
 struct ContentView: View {
     @State private var phase: AppPhase = .splash
     @State private var privacyAccepted = UserDefaults.standard.bool(forKey: "privacy_accepted")
     @State private var tab: MainTab = .home
+    @State private var isLoggedIn = false
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
     @State private var stubTitle: String? = nil
-    @State private var isLoggedIn = false
 
     var body: some View {
         Group {
@@ -56,13 +53,11 @@ struct ContentView: View {
                     }
                 }
             case .privacy:
-                PrivacyView(
-                    onAccept: {
-                        UserDefaults.standard.set(true, forKey: "privacy_accepted")
-                        privacyAccepted = true
-                        phase = .main
-                    }
-                )
+                PrivacyView {
+                    UserDefaults.standard.set(true, forKey: "privacy_accepted")
+                    privacyAccepted = true
+                    phase = .main
+                }
             case .main:
                 mainShell
             }
@@ -71,23 +66,42 @@ struct ContentView: View {
     }
 
     private var mainShell: some View {
-        TabView(selection: $tab) {
+        TabView(selection: Binding(
+            get: { tab },
+            set: { next in
+                if (next == .chat || next == .community) && !isLoggedIn {
+                    tab = next
+                    showLogin = true
+                } else {
+                    tab = next
+                }
+            }
+        )) {
             HomeTabView(onDeferred: { stubTitle = $0 })
-                .tabItem { Text(MainTab.home.title) }
+                .tabItem { Label(MainTab.home.title, systemImage: "house.fill") }
                 .tag(MainTab.home)
-            gated(tab: .chat) {
-                ChatTabView()
+            Group {
+                if isLoggedIn {
+                    ChatTabView()
+                } else {
+                    AuthGateView { showLogin = true }
+                }
             }
-            .tabItem { Text(MainTab.chat.title) }
+            .tabItem { Label(MainTab.chat.title, systemImage: "bubble.left.and.bubble.right.fill") }
             .tag(MainTab.chat)
-            gated(tab: .community) {
-                CommunityTabView()
+            Group {
+                if isLoggedIn {
+                    CommunityTabView()
+                } else {
+                    AuthGateView { showLogin = true }
+                }
             }
-            .tabItem { Text(MainTab.community.title) }
+            .tabItem { Label(MainTab.community.title, systemImage: "person.3.fill") }
             .tag(MainTab.community)
             MineRootView(
                 isLoggedIn: isLoggedIn,
                 onLogin: { showLogin = true },
+                onLogout: { isLoggedIn = false },
                 onOpenSettings: {
                     mineIslandRoute = "settings"
                     showMineIsland = true
@@ -98,15 +112,10 @@ struct ContentView: View {
                 },
                 onDeferred: { stubTitle = $0 }
             )
-            .tabItem { Text(MainTab.mine.title) }
+            .tabItem { Label(MainTab.mine.title, systemImage: "person.crop.circle") }
             .tag(MainTab.mine)
         }
         .tint(DesignTokens.link)
-        .onChange(of: tab) { _, newValue in
-            if (newValue == .chat || newValue == .community) && !isLoggedIn {
-                showLogin = true
-            }
-        }
         .sheet(isPresented: $showLogin) {
             NativeLoginView(
                 onSuccess: {
@@ -120,7 +129,7 @@ struct ContentView: View {
             )
         }
         .fullScreenCover(isPresented: $showMineIsland) {
-            MineIslandHost(route: mineIslandRoute, isPresented: $showMineIsland)
+            MineIslandHost(route: mineIslandRoute)
                 .ignoresSafeArea(.all)
         }
         .sheet(item: Binding(
@@ -130,20 +139,32 @@ struct ContentView: View {
             DeferredStubView(title: item.title) { stubTitle = nil }
         }
     }
-
-    @ViewBuilder
-    private func gated<Content: View>(tab: MainTab, @ViewBuilder content: () -> Content) -> some View {
-        if isLoggedIn {
-            content()
-        } else {
-            AuthGateView(onLogin: { showLogin = true })
-        }
-    }
 }
 
 private struct StubItem: Identifiable {
     let title: String
     var id: String { title }
+}
+
+private struct DeferredStubView: View {
+    var title: String
+    var onClose: () -> Void
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: DesignTokens.spacingMd) {
+                Text(title, font: .title2, color: DesignTokens.ink)
+                Text("一期后置 · 原生占位", color: DesignTokens.body)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭", action: onClose)
+                }
+            }
+            .navigationTitle(title)
+        }
+    }
 }
 
 private struct SplashView: View {
@@ -208,99 +229,12 @@ private struct NativeLoginView: View {
     }
 }
 
-private struct HomeTabView: View {
-    var onDeferred: (String) -> Void
-    private let entries = ["学习报告", "全部服务", "短视频", "直播", "课堂", "二手车"]
-    var body: some View {
-        NavigationStack {
-            List(entries, id: \.self) { item in
-                Button(item) { onDeferred(item) }
-                    .foregroundStyle(DesignTokens.ink)
-            }
-            .navigationTitle("首页")
-            .background(DesignTokens.canvasSoft2)
-        }
-    }
-}
-
-private struct ChatTabView: View {
-    var body: some View {
-        NavigationStack {
-            Text("聊天", color: DesignTokens.ink)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(DesignTokens.canvasSoft2)
-                .navigationTitle("聊天")
-        }
-    }
-}
-
-private struct CommunityTabView: View {
-    var body: some View {
-        NavigationStack {
-            Text("社区", color: DesignTokens.ink)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(DesignTokens.canvasSoft2)
-                .navigationTitle("社区")
-        }
-    }
-}
-
-private struct MineRootView: View {
-    var isLoggedIn: Bool
-    var onLogin: () -> Void
-    var onOpenSettings: () -> Void
-    var onOpenPersonalized: () -> Void
-    var onDeferred: (String) -> Void
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    Text(isLoggedIn ? "已登录" : "未登录", color: DesignTokens.ink)
-                    if !isLoggedIn {
-                        Button("登录", action: onLogin)
-                    }
-                }
-                Section("功能") {
-                    Button("设置", action: onOpenSettings)
-                    Button("个性化设置", action: onOpenPersonalized)
-                    Button("短视频") { onDeferred("短视频") }
-                    Button("二手车") { onDeferred("二手车") }
-                }
-            }
-            .navigationTitle("我的")
-        }
-    }
-}
-
-private struct DeferredStubView: View {
-    var title: String
-    var onClose: () -> Void
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: DesignTokens.spacingMd) {
-                Text(title, font: .title2, color: DesignTokens.ink)
-                Text("后续开放", color: DesignTokens.body)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭", action: onClose)
-                }
-            }
-            .navigationTitle(title)
-        }
-    }
-}
+// MARK: - Compose hosts (island / deferred features only)
 
 private struct MineIslandHost: UIViewControllerRepresentable {
     var route: String
-    @Binding var isPresented: Bool
-
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MineIslandViewController(route: route)
     }
-
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }

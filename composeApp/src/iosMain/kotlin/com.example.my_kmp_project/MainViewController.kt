@@ -7,17 +7,16 @@ import com.example.my_kmp_project.feature.mine.MineIslandRoute
 import platform.UIKit.UIViewController
 
 /**
- * Legacy full-app Compose entry — retained for reference only (ADR 0002).
- * iOS product shell is SwiftUI; use [MineIslandViewController] for the island.
+ * Legacy full-app Compose entry — reference only (ADR 0002).
  */
-@Deprecated("Native SwiftUI shell owns the app; use MineIslandViewController for Mine secondary UI")
+@Deprecated("Native SwiftUI shell owns the app; use MineIslandViewController")
 fun MainViewController() = run {
     platformNetworkBootstrap()
     ComposeUIViewController { App() }
 }
 
 /**
- * Mine Compose Island host for SwiftUI navigation (Mine Island Hosting).
+ * Mine Compose Island host for SwiftUI (ADR 0002 Mine Island Hosting).
  * [route]: settings | personalized | about
  */
 fun MineIslandViewController(route: String = "settings"): UIViewController {
