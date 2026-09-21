@@ -74,7 +74,7 @@ internal object HomeMockData {
         HomeFeatureItem("生活服务"),
         HomeFeatureItem("二手车"),
         HomeFeatureItem("新车关注"),
-        HomeFeatureItem("客户管理"),
+        HomeFeatureItem("AI小石头"),
         HomeFeatureItem("订单中心"),
         HomeFeatureItem("数据分析"),
         HomeFeatureItem("直播带货"),

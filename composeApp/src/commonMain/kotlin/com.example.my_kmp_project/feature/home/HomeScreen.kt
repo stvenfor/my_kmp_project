@@ -51,7 +51,7 @@ internal fun HomeScreen() {
             onNavigate = { route ->
                 when (route) {
                     "web" -> navigator?.navigate(AppRoute.InAppWeb(OfflineWebFixtureUrl))
-                    "services" -> navigator?.navigate(AppRoute.AllServices)
+                    "services" -> destination = "services"
                     "media" -> navigator?.navigate(AppRoute.Media)
                     "scan" -> navigator?.navigate(AppRoute.Scan)
                     "friend" -> navigator?.navigate(AppRoute.Friend)
@@ -64,6 +64,7 @@ internal fun HomeScreen() {
         "search" -> HomeSearchScreen(onBack = { destination = null })
         "report" -> LearningReportScreen(onBack = { destination = null })
         "strategy" -> StrategyScreen(onBack = { destination = null })
+        "services" -> AllServicesScreen(onBack = { destination = null })
         else -> AllServicesScreen(onBack = { destination = null })
     }
 }
@@ -297,11 +298,17 @@ private fun FeatureGrid(onFeature: (String) -> Unit) {
                             .clickable { onFeature(item.label) }
                             .padding(vertical = 8.dp),
                     ) {
-                        HomeAssetIcon(
-                            resource = HomeServiceAssets.featureAt(index),
-                            size = 44.dp,
-                            contentDescription = item.label,
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                        ) {
+                            HomeAssetIcon(
+                                resource = HomeServiceAssets.featureForLabel(item.label),
+                                size = 48.dp,
+                                contentDescription = item.label,
+                            )
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = item.label,

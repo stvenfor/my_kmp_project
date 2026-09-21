@@ -55,6 +55,7 @@ import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
 import com.example.my_kmp_project.feature.chat.ChatScreen
 import com.example.my_kmp_project.feature.community.CommunityScreen
+import com.example.my_kmp_project.feature.home.AllServicesScreen
 import com.example.my_kmp_project.feature.home.HomeScreen
 import com.example.my_kmp_project.feature.mine.MineHomeContent
 import com.example.my_kmp_project.feature.mine.MineIsland
@@ -75,6 +76,7 @@ private enum class AuthOverlay { None, Login, Register }
 private enum class AndroidOverlay {
     None,
     MineIsland,
+    AllServices,
     DeferredStub,
 }
 
@@ -217,7 +219,6 @@ private fun NativeMainScaffold(softAuth: SoftAuthPresenter) {
                 AppRoute.Friend,
                 AppRoute.Membership,
                 AppRoute.Scan,
-                AppRoute.AllServices,
                 is AppRoute.InAppWeb,
                 -> {
                     stubTitle = when (route) {
@@ -227,11 +228,14 @@ private fun NativeMainScaffold(softAuth: SoftAuthPresenter) {
                         AppRoute.Friend -> "好友"
                         AppRoute.Membership -> "会员"
                         AppRoute.Scan -> "扫一扫"
-                        AppRoute.AllServices -> "全部服务"
                         is AppRoute.InAppWeb -> "网页"
                         else -> "后续开放"
                     }
                     overlay = AndroidOverlay.DeferredStub
+                    tabChrome.updateBottomBarVisible(false)
+                }
+                AppRoute.AllServices -> {
+                    overlay = AndroidOverlay.AllServices
                     tabChrome.updateBottomBarVisible(false)
                 }
                 else -> Unit
@@ -259,6 +263,14 @@ private fun NativeMainScaffold(softAuth: SoftAuthPresenter) {
                 MineIsland(
                     initialRoute = islandRoute,
                     onRequestClose = {
+                        overlay = AndroidOverlay.None
+                        tabChrome.updateBottomBarVisible(true)
+                    },
+                )
+            }
+            AndroidOverlay.AllServices -> {
+                AllServicesScreen(
+                    onBack = {
                         overlay = AndroidOverlay.None
                         tabChrome.updateBottomBarVisible(true)
                     },

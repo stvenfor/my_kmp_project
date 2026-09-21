@@ -8,7 +8,7 @@ Bar: ≤2% error (UI Parity Bar). Screenshots under `screenshots/{flutter,kmp}/`
 | Splash | [x] | System + Compose splash |
 | Privacy | [x] | Consent flow present when unset |
 | Tab shell | [x] | 首页 / 聊天 / 社区 / 我的 |
-| Home root | [~] | Layout/copy aligned; service icons still vector vs Flutter photo icons |
+| Home root | [x] | Feature grid uses synced picsum PNG (`home_feature_*.png`); all_services PNG from Flutter SoT |
 | Chat root | [x] | Title「消息」+ ⌕/✎; Mock好友1–3; unread badge on #1 |
 | Community root | [x] | 最新/热门/关注; 张三/李四/王五 feed copy matches Flutter mock |
 | Mine Root | [~] | Structure matches; session-dependent avatar/store name |
@@ -21,4 +21,4 @@ iOS / Harmony not verified on this Android emulator pass.
 ## Legacy Shared Compose removal gate
 
 - [x] Platform entries do not use `App()` / `AppShell` as main path
-- [ ] Physically delete `AppShell` after accepting remaining Home icon art gap (~)
+- [ ] Physically delete `AppShell` after accepting remaining Mine session-dependent art (~)

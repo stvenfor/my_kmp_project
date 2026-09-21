@@ -27,6 +27,16 @@ import my_kmp_project.composeapp.generated.resources.home_all_services_smart_onl
 import my_kmp_project.composeapp.generated.resources.home_all_services_smart_sale
 import my_kmp_project.composeapp.generated.resources.home_all_services_used_car
 import my_kmp_project.composeapp.generated.resources.home_all_services_v_store
+import my_kmp_project.composeapp.generated.resources.home_feature_ai_stone
+import my_kmp_project.composeapp.generated.resources.home_feature_data
+import my_kmp_project.composeapp.generated.resources.home_feature_life
+import my_kmp_project.composeapp.generated.resources.home_feature_live
+import my_kmp_project.composeapp.generated.resources.home_feature_market
+import my_kmp_project.composeapp.generated.resources.home_feature_more
+import my_kmp_project.composeapp.generated.resources.home_feature_newcar
+import my_kmp_project.composeapp.generated.resources.home_feature_order
+import my_kmp_project.composeapp.generated.resources.home_feature_sales
+import my_kmp_project.composeapp.generated.resources.home_feature_usedcar
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -58,21 +68,32 @@ internal object HomeServiceAssets {
         }
     }
 
-    /** Home root feature grid — cycle Flutter service icons (no letter tiles). */
-    private val featureCycle = listOf(
-        Res.drawable.home_all_services_smart_sale,
-        Res.drawable.home_all_services_customer_profile,
-        Res.drawable.home_all_services_used_car,
-        Res.drawable.home_all_services_new_car_deal,
-        Res.drawable.home_all_services_service_management,
-        Res.drawable.home_all_services_business_poster,
-        Res.drawable.home_all_services_intelligence_task,
-        Res.drawable.home_all_services_small_video,
-        Res.drawable.home_all_services_marketing,
-        Res.drawable.home_all_services_all_functions,
-    )
+    /**
+     * Home root feature grid icons — synced from Flutter SoT
+     * (`picsum.photos/seed/{sales,life,...}/200/200` bundled as local PNG).
+     */
+    fun featureForLabel(label: String): DrawableResource = when (label) {
+        "销售顾问" -> Res.drawable.home_feature_sales
+        "生活服务" -> Res.drawable.home_feature_life
+        "二手车" -> Res.drawable.home_feature_usedcar
+        "新车关注" -> Res.drawable.home_feature_newcar
+        "AI小石头", "客户管理" -> Res.drawable.home_feature_ai_stone
+        "订单中心" -> Res.drawable.home_feature_order
+        "数据分析" -> Res.drawable.home_feature_data
+        "直播带货" -> Res.drawable.home_feature_live
+        "营销活动" -> Res.drawable.home_feature_market
+        "更多" -> Res.drawable.home_feature_more
+        else -> Res.drawable.home_all_services_all_functions
+    }
 
-    fun featureAt(index: Int): DrawableResource = featureCycle[index % featureCycle.size]
+    @Deprecated("Use featureForLabel", ReplaceWith("featureForLabel(label)"))
+    fun featureAt(index: Int): DrawableResource {
+        val labels = listOf(
+            "销售顾问", "生活服务", "二手车", "新车关注", "AI小石头",
+            "订单中心", "数据分析", "直播带货", "营销活动", "更多",
+        )
+        return featureForLabel(labels[index % labels.size])
+    }
 
     private val serviceCycle = listOf(
         Res.drawable.home_all_services_online_customer_acquisition,
@@ -93,11 +114,12 @@ internal fun HomeAssetIcon(
     resource: DrawableResource,
     size: Dp = 44.dp,
     contentDescription: String? = null,
+    contentScale: ContentScale = ContentScale.Crop,
 ) {
     Image(
         painter = painterResource(resource),
         contentDescription = contentDescription,
         modifier = Modifier.size(size),
-        contentScale = ContentScale.Fit,
+        contentScale = contentScale,
     )
 }
