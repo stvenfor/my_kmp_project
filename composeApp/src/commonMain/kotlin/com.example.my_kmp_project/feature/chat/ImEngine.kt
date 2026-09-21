@@ -12,6 +12,7 @@ internal data class ImConversation(
     val title: String,
     val lastMessage: String,
     val updatedAtLabel: String,
+    val unreadCount: Int = 0,
 )
 
 internal data class ImMessage(
@@ -31,6 +32,7 @@ internal class MockImEngine : ImEngine {
             title = "Mock好友1",
             lastMessage = "晚上一起吃饭吗？",
             updatedAtLabel = "22:50",
+            unreadCount = 2,
         ),
         ImConversation(
             id = "c2",

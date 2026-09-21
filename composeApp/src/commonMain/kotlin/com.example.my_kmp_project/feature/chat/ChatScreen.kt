@@ -86,14 +86,33 @@ private fun ChatListContent(
             .background(DemoColors.PageBg)
             .statusBarsPadding(),
     ) {
-        Text(
-            text = "消息",
-            color = DemoColors.TextPrimary,
-            fontWeight = FontWeight.Bold,
-            fontSize = 32.sp,
-            letterSpacing = (-0.5).sp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "消息",
+                color = DemoColors.TextPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp,
+                letterSpacing = (-0.5).sp,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "⌕",
+                color = DemoColors.Accent,
+                fontSize = 22.sp,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+            Text(
+                text = "✎",
+                color = DemoColors.Accent,
+                fontSize = 22.sp,
+                modifier = Modifier.padding(end = 8.dp),
+            )
+        }
         if (conversations.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -176,15 +195,37 @@ private fun ConversationRow(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
             Text(
                 text = conversation.lastMessage,
                 color = DemoColors.TextSecondary,
                 fontSize = 15.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
             )
+            if (conversation.unreadCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(20.dp)
+                        .clip(CircleShape)
+                        .background(DemoColors.Danger),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = conversation.unreadCount.toString(),
+                        color = DemoColors.OnPrimary,
+                        fontSize = 11.sp,
+                    )
+                }
+            }
         }
     }
+}
 }
 
 @Composable
