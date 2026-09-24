@@ -1,30 +1,22 @@
 package com.example.my_kmp_project.nativeshell
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,29 +24,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.my_kmp_project.app.AppContainer
-import com.example.my_kmp_project.core.account.AccountFacade
-import com.example.my_kmp_project.core.account.LoggedInUser
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.DesignTokens
-import com.example.my_kmp_project.core.design.ImmersiveInsets.MainBottomBarHeight
 import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.TokenExpiredHandler
+import com.example.my_kmp_project.core.platform.DefaultWebBridgeHost
+import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.router.AppRoutes
+import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.core.router.MainTab
+import com.example.my_kmp_project.feature.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
-import com.example.my_kmp_project.feature.auth.AuthSessionState
+import com.example.my_kmp_project.feature.auth.LoginScreen
+import com.example.my_kmp_project.feature.auth.RegisterScreen
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.home.AllServicesScreen
+import com.example.my_kmp_project.feature.home.HomeWebHandlers
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.feature.mine.MineIslandRoute
+import com.example.my_kmp_project.feature.scan.ScanScreen
+import com.example.my_kmp_project.feature.shell.MainBottomBar
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
+import com.example.my_kmp_project.feature.web.InAppWebScreen
 
 /**
  * Android Jetpack shell (ADR 0002 / Android UI Split).
@@ -67,6 +65,7 @@ internal fun NativeAndroidMain() {
     val softAuth = remember { SoftAuthPresenter() }
     DisposableEffect(Unit) {
         softAuth.sync()
+        HomeWebHandlers.register()
         NetworkFacade.setTokenExpiredHandler(
             TokenExpiredHandler {
                 AuthRepository.logout()
@@ -77,8 +76,10 @@ internal fun NativeAndroidMain() {
     }
 
     var tab by remember { mutableStateOf(MainTab.Home) }
+    var keptTabs by remember { mutableStateOf(setOf(MainTab.Home)) }
     var authOverlay by remember { mutableStateOf(AuthOverlay.None) }
     var overlay by remember { mutableStateOf(ShellOverlay.None) }
+    var webUrl by remember { mutableStateOf("https://example.com") }
     var islandRoute by remember { mutableStateOf(MineIslandRoute.Settings) }
     var deferredTitle by remember { mutableStateOf("后续开放") }
     var bottomBarVisible by remember { mutableStateOf(true) }
@@ -87,6 +88,7 @@ internal fun NativeAndroidMain() {
     fun selectTab(next: MainTab) {
         if (softAuth.trySelectTab(next)) {
             tab = next
+            keptTabs = keptTabs + next
             authOverlay = AuthOverlay.None
             bottomBarVisible = true
         } else {
@@ -95,14 +97,31 @@ internal fun NativeAndroidMain() {
         }
     }
 
+    fun afterAuthSuccess() {
+        val resume = softAuth.onLoginSucceeded()
+        tab = resume
+        keptTabs = keptTabs + resume
+        authOverlay = AuthOverlay.None
+        bottomBarVisible = true
+    }
+
     fun openDeferred(title: String) {
-        when (title) {
-            "全部服务", "更多" -> {
+        when {
+            title == "全部服务" || title == "更多" -> {
                 overlay = ShellOverlay.AllServices
                 bottomBarVisible = false
             }
-            "会员", "商城" -> {
+            title == "会员" || title == "商城" -> {
                 overlay = ShellOverlay.Membership
+                bottomBarVisible = false
+            }
+            title == "扫一扫" -> {
+                overlay = ShellOverlay.Scan
+                bottomBarVisible = false
+            }
+            title.startsWith("http://") || title.startsWith("https://") -> {
+                webUrl = title
+                overlay = ShellOverlay.InAppWeb
                 bottomBarVisible = false
             }
             else -> {
@@ -113,54 +132,98 @@ internal fun NativeAndroidMain() {
         }
     }
 
+    fun closeOverlay() {
+        overlay = ShellOverlay.None
+        bottomBarVisible = authOverlay == AuthOverlay.None
+    }
+
+    LaunchedEffect(Unit) {
+        val pending = DeepLinkRouter.consumePending() ?: return@LaunchedEffect
+        when {
+            pending.route == AppRoutes.Auth.LOGIN -> {
+                authOverlay = AuthOverlay.Login
+                bottomBarVisible = false
+            }
+            pending.tab != null -> {
+                val target = pending.tab
+                if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
+                    AuthGate.rememberPending(target)
+                    authOverlay = AuthOverlay.Login
+                    bottomBarVisible = false
+                } else {
+                    tab = target
+                    keptTabs = keptTabs + target
+                }
+            }
+        }
+    }
+
     when (overlay) {
         ShellOverlay.MineIsland -> {
             MineIsland(
                 initialRoute = islandRoute,
-                onRequestClose = {
-                    overlay = ShellOverlay.None
-                    bottomBarVisible = true
-                },
+                onRequestClose = { closeOverlay() },
             )
         }
         ShellOverlay.AllServices -> {
-            AllServicesScreen(
-                onBack = {
-                    overlay = ShellOverlay.None
-                    bottomBarVisible = true
+            AllServicesScreen(onBack = { closeOverlay() })
+        }
+        ShellOverlay.Membership -> {
+            MembershipScreen(onBack = { closeOverlay() })
+        }
+        ShellOverlay.InAppWeb -> {
+            InAppWebScreen(
+                url = webUrl,
+                onBack = { closeOverlay() },
+                bridge = remember(webUrl) {
+                    DefaultWebBridgeHost(
+                        onClose = { closeOverlay() },
+                        onOpenNative = { payload ->
+                            payload?.let { openDeferred(it) }
+                        },
+                    )
                 },
             )
         }
-        ShellOverlay.Membership -> {
-            MembershipScreen(
-                onBack = {
-                    overlay = ShellOverlay.None
-                    bottomBarVisible = true
+        ShellOverlay.Scan -> {
+            ScanScreen(
+                onBack = { closeOverlay() },
+                onScanResult = { payload ->
+                    val accepted = DeepLinkRouter.accept(payload)
+                    if (accepted == null &&
+                        (payload.startsWith("http://") || payload.startsWith("https://"))
+                    ) {
+                        webUrl = payload
+                        overlay = ShellOverlay.InAppWeb
+                    } else {
+                        showPlatformToast(
+                            if (accepted != null) "已识别链接" else "扫码结果：$payload",
+                        )
+                        closeOverlay()
+                    }
                 },
             )
         }
         ShellOverlay.DeferredStub -> {
             JetpackDeferredStub(
                 title = deferredTitle,
-                onBack = {
-                    overlay = ShellOverlay.None
-                    bottomBarVisible = true
-                },
+                onBack = { closeOverlay() },
             )
         }
         ShellOverlay.None -> when (authOverlay) {
-            AuthOverlay.Login -> JetpackLogin(
+            AuthOverlay.Login -> LoginScreen(
+                onLoginSuccess = { afterAuthSuccess() },
+                onOpenRegister = { authOverlay = AuthOverlay.Register },
                 onBack = {
                     softAuth.dismissGate()
                     authOverlay = AuthOverlay.None
                     tab = MainTab.Home
                     bottomBarVisible = true
                 },
-                onSuccess = {
-                    tab = softAuth.onLoginSucceeded()
-                    authOverlay = AuthOverlay.None
-                    bottomBarVisible = true
-                },
+            )
+            AuthOverlay.Register -> RegisterScreen(
+                onRegistered = { afterAuthSuccess() },
+                onBack = { authOverlay = AuthOverlay.Login },
             )
             AuthOverlay.None -> {
                 Scaffold(
@@ -168,53 +231,66 @@ internal fun NativeAndroidMain() {
                     contentWindowInsets = WindowInsets(0),
                     bottomBar = {
                         if (bottomBarVisible) {
-                            JetpackBottomBar(selected = tab, onSelect = { selectTab(it) })
+                            MainBottomBar(selected = tab, onSelect = { selectTab(it) })
                         }
                     },
                 ) { padding ->
-                    // Bottom bar includes nav inset (Flutter SafeArea). Scaffold padding covers it.
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(padding),
                     ) {
-                        when (tab) {
-                            MainTab.Home -> JetpackHomeRoot(onDeferred = { openDeferred(it) })
-                            MainTab.Chat -> JetpackChatRoot()
-                            MainTab.Community -> JetpackCommunityRoot()
-                            MainTab.Mine -> JetpackMineRoot(
-                                loggedIn = authState.isLoggedIn,
-                                onLogin = {
-                                    authOverlay = AuthOverlay.Login
-                                    bottomBarVisible = false
-                                },
-                                onLogout = {
-                                    AuthRepository.logout()
-                                    softAuth.clearLocalSession()
-                                },
-                                onOpenSettings = {
-                                    islandRoute = MineIslandRoute.Settings
-                                    overlay = ShellOverlay.MineIsland
-                                    bottomBarVisible = false
-                                },
-                                onOpenPersonalized = {
-                                    islandRoute = MineIslandRoute.Personalized
-                                    overlay = ShellOverlay.MineIsland
-                                    bottomBarVisible = false
-                                },
-                                onDeferred = { msg ->
-                                    // MineHomeContent routes real labels via snackbar callback
-                                    when {
-                                        msg == "商城" || msg.startsWith("商城") -> openDeferred("商城")
-                                        msg.contains("会员") -> openDeferred("会员")
-                                        msg.contains("钱包") || msg.contains("课程") ||
-                                            msg.contains("订单") || msg.contains("短信") ||
-                                            msg.contains("计算器") || msg.contains("二手车") ||
-                                            msg.contains("小视频") -> openDeferred(msg)
-                                        else -> openDeferred(msg)
+                        // IndexedStack-style keep-alive for visited tabs.
+                        MainTab.entries.forEach { t ->
+                            if (t in keptTabs) {
+                                val active = t == tab
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .zIndex(if (active) 1f else 0f)
+                                        .graphicsLayer {
+                                            alpha = if (active) 1f else 0f
+                                        },
+                                ) {
+                                    when (t) {
+                                        MainTab.Home -> JetpackHomeRoot(
+                                            onDeferred = { openDeferred(it) },
+                                        )
+                                        MainTab.Chat -> JetpackChatRoot()
+                                        MainTab.Community -> JetpackCommunityRoot()
+                                        MainTab.Mine -> JetpackMineRoot(
+                                            loggedIn = authState.isLoggedIn,
+                                            onLogin = {
+                                                AuthGate.rememberPending(MainTab.Mine)
+                                                authOverlay = AuthOverlay.Login
+                                                bottomBarVisible = false
+                                            },
+                                            onLogout = {
+                                                AuthRepository.logout()
+                                                softAuth.clearLocalSession()
+                                            },
+                                            onOpenSettings = {
+                                                islandRoute = MineIslandRoute.Settings
+                                                overlay = ShellOverlay.MineIsland
+                                                bottomBarVisible = false
+                                            },
+                                            onOpenPersonalized = {
+                                                islandRoute = MineIslandRoute.Personalized
+                                                overlay = ShellOverlay.MineIsland
+                                                bottomBarVisible = false
+                                            },
+                                            onDeferred = { msg ->
+                                                when {
+                                                    msg == "商城" || msg.startsWith("商城") ->
+                                                        openDeferred("商城")
+                                                    msg.contains("会员") -> openDeferred("会员")
+                                                    else -> openDeferred(msg)
+                                                }
+                                            },
+                                        )
                                     }
-                                },
-                            )
+                                }
+                            }
                         }
                     }
                 }
@@ -223,70 +299,15 @@ internal fun NativeAndroidMain() {
     }
 }
 
-private enum class AuthOverlay { None, Login }
-private enum class ShellOverlay { None, MineIsland, DeferredStub, AllServices, Membership }
-
-@Composable
-private fun JetpackBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(MainBottomBarHeight)
-            .background(DemoColors.TabBarBackground)
-            .border(width = 0.5.dp, color = DemoColors.Divider),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        listOf(
-            MainTab.Home to "首页",
-            MainTab.Chat to "聊天",
-            MainTab.Community to "社区",
-            MainTab.Mine to "我的",
-        ).forEach { (tab, label) ->
-            val active = selected == tab
-            val tint = if (active) DemoColors.Accent else DemoColors.TextSecondary
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { onSelect(tab) }
-                    .padding(vertical = 4.dp),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .width(44.dp)
-                        .height(28.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            if (active) DemoColors.Accent.copy(alpha = 0.12f) else Color.Transparent,
-                        ),
-                ) {
-                    Icon(
-                        imageVector = tab.tabIcon(),
-                        contentDescription = label,
-                        modifier = Modifier.size(22.dp),
-                        tint = tint,
-                    )
-                }
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = label,
-                    color = tint,
-                    fontSize = 10.sp,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 11.sp,
-                )
-            }
-        }
-    }
-}
-
-private fun MainTab.tabIcon(): ImageVector = when (this) {
-    MainTab.Home -> TabIcons.Home
-    MainTab.Chat -> TabIcons.Chat
-    MainTab.Community -> TabIcons.Community
-    MainTab.Mine -> TabIcons.Mine
+private enum class AuthOverlay { None, Login, Register }
+private enum class ShellOverlay {
+    None,
+    MineIsland,
+    DeferredStub,
+    AllServices,
+    Membership,
+    InAppWeb,
+    Scan,
 }
 
 @Composable
@@ -309,42 +330,3 @@ private fun JetpackDeferredStub(title: String, onBack: () -> Unit) {
         }
     }
 }
-
-@Composable
-private fun JetpackLogin(onBack: () -> Unit, onSuccess: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DemoColors.PageBg)
-            .statusBarsPadding()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text("登录", color = DemoColors.TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "演示登录（共享会话规则由 SoftAuthPresenter 驱动）",
-            color = DemoColors.TextSecondary,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = {
-                AccountFacade.setSession(
-                    LoggedInUser(
-                        displayName = "演示用户",
-                        token = "demo-token",
-                        userId = "demo",
-                    ),
-                )
-                AuthSessionState.sync()
-                onSuccess()
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-        ) { Text("登录") }
-        TextButton(onClick = onBack) { Text("关闭", color = DemoColors.TextSecondary) }
-    }
-}
-

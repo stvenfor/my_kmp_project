@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,7 @@ import com.example.my_kmp_project.core.account.createPrivacyConsentStore
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.DesignTokens
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.bg_splash
 import my_kmp_project.composeapp.generated.resources.ic_splash_logo
@@ -51,6 +53,7 @@ fun NativeAndroidApp() {
     val privacyStore = remember { createPrivacyConsentStore() }
     var phase by remember { mutableStateOf(NativePhase.Splash) }
     var privacyAccepted by remember { mutableStateOf(privacyStore.isAccepted()) }
+    val scope = rememberCoroutineScope()
 
     when (phase) {
         NativePhase.Splash -> NativeSplash {
@@ -60,6 +63,9 @@ fun NativeAndroidApp() {
             onAccept = {
                 privacyStore.setAccepted(true)
                 privacyAccepted = true
+                scope.launch {
+                    runCatching { AppContainer.get().bridges.push.registerForPush() }
+                }
                 phase = NativePhase.Main
             },
         )
@@ -92,6 +98,8 @@ private fun NativeSplash(onFinished: () -> Unit) {
 
 @Composable
 private fun NativePrivacy(onAccept: () -> Unit) {
+    var denied by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -109,15 +117,27 @@ private fun NativePrivacy(onAccept: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(DesignTokens.Spacing.Md.dp))
         Text(
-            text = "请阅读并同意隐私政策后继续使用本应用。",
+            text = if (denied) {
+                "需同意隐私政策后才能继续使用。请重新选择。"
+            } else {
+                "请阅读并同意隐私政策后继续使用本应用。"
+            },
             color = DemoColors.TextSecondary,
             fontSize = DesignTokens.Typography.BodyMdSp.sp,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(DesignTokens.Spacing.Lg.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(DesignTokens.Spacing.Md.dp)) {
-            TextButton(onClick = { /* Flutter blocks without grant */ }) {
-                Text("不同意", color = DemoColors.TextSecondary)
+            TextButton(
+                onClick = {
+                    if (denied) {
+                        denied = false
+                    } else {
+                        denied = true
+                    }
+                },
+            ) {
+                Text(if (denied) "重新选择" else "不同意", color = DemoColors.TextSecondary)
             }
             Button(
                 onClick = onAccept,

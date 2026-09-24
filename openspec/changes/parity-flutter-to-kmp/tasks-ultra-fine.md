@@ -14,69 +14,69 @@
 # A. 壳 / 鉴权 / 桥接
 
 ## A.0 Splash `/`
-- [~] A.0.1.a 展示闪屏图/Logo，定时进入下一步
-- [ ] A.0.1.i / A.0.1.h 同上
-- [ ] A.0.2 与 Flutter 资源一致（非随机图）
-- [ ] A.0.3 证据：冷启动截图三端
+- [x] A.0.1.a 展示闪屏图/Logo，定时进入下一步
+- [ ] A.0.1.i / A.0.1.h 同上（platform-gap: missing）
+- [x] A.0.2 与 Flutter 资源一致（非随机图）
+- [~] A.0.3 证据：冷启动截图三端（Android 见 notes/evidence/shell/Android/module-A.md）
 
 ## A.1 Main `/main`
-- [~] A.1.1.a 四 Tab 容器（首页/聊天/社区/我的）
+- [x] A.1.1.a 四 Tab 容器（首页/聊天/社区/我的）
 - [ ] A.1.1.i / A.1.1.h
-- [ ] A.1.2 底栏高度 49、选中 pill、图标字重对齐 Flutter
-- [ ] A.1.3 Tab 切换不销毁根状态（或与 Flutter 一致）
-- [ ] A.1.4 soft-auth：未登录进需登录 Tab → 登录 → resume
+- [x] A.1.2 底栏高度 49、选中 pill、图标字重对齐 Flutter（MainBottomBar）
+- [x] A.1.3 Tab 切换不销毁根状态（keptTabs IndexedStack）
+- [x] A.1.4 soft-auth：未登录进需登录 Tab → 登录 → resume
 
 ## A.2 Privacy（壳内，非 RoutePath）
-- [~] A.2.1.a 首次同意弹层
-- [ ] A.2.2 同意持久化，二次启动跳过
-- [ ] A.2.3 不同意保持阻断（对齐 Flutter）
+- [x] A.2.1.a 首次同意弹层
+- [x] A.2.2 同意持久化，二次启动跳过
+- [x] A.2.3 不同意保持阻断（对齐 Flutter 重试文案）
 - [ ] A.2.1.i / A.2.1.h
 
 ## A.3 Auth 路由
 
 ### `/login`
-- [~] A.3.1.a 登录首页 UI（入口：密码/OTP/注册/微信）
-- [ ] A.3.2 各入口导航正确
-- [ ] A.3.3 错误/加载态
+- [x] A.3.1.a 登录首页 UI（入口：密码/OTP/注册；合并页）
+- [x] A.3.2 各入口导航正确（segmented + 注册）
+- [x] A.3.3 错误/加载态
 - [ ] A.3.1.i / A.3.1.h
 
 ### `/login/password`
-- [~] A.3.4.a 账密表单 + 提交
-- [ ] A.3.5 校验文案对齐 Flutter
-- [ ] A.3.6 成功写会话 + 跳转 redirectRoute
+- [x] A.3.4.a 账密表单 + 提交（LoginScreen Email 模式）
+- [x] A.3.5 校验文案对齐 Flutter
+- [x] A.3.6 成功写会话 + 跳转 redirectRoute / pendingTab
 - [ ] A.3.4.i / A.3.4.h
 
 ### `/login/otp`
-- [ ] A.3.7.a 手机号 + 验证码 UI
-- [ ] A.3.8 发码倒计时 / 频控错误
-- [ ] A.3.9 校验登录成功
+- [x] A.3.7.a 手机号 + 验证码 UI
+- [x] A.3.8 发码倒计时 / 频控错误
+- [x] A.3.9 校验登录成功
 - [ ] A.3.7.i / A.3.7.h
 
 ### `/register`
-- [ ] A.3.10.a 注册表单 UI
-- [ ] A.3.11 提交 API + 限流文案
-- [ ] A.3.12 成功后进登录或自动登录
+- [x] A.3.10.a 注册表单 UI
+- [x] A.3.11 提交 API + 限流文案
+- [x] A.3.12 成功后进登录或自动登录
 - [ ] A.3.10.i / A.3.10.h
 
 ### Auth 横切
-- [ ] A.3.13 401 清会话
-- [ ] A.3.14 Token 刷新策略（若 Flutter 有）
-- [ ] A.3.15 微信登录：每端 `done|missing` 登记
-- [ ] A.3.16 验收：guest→login→resume Chat（三端证据）
+- [x] A.3.13 401 清会话
+- [ ] A.3.14 Token 刷新策略（若 Flutter 有）— missing，见 platform-gap
+- [ ] A.3.15 微信登录：每端 `done|missing` 登记 — missing
+- [x] A.3.16 验收：guest→login→resume Chat（Android；证据 module-A.md）
 
 ## A.4 Bridges
 
 ### `/web`
-- [~] A.4.1.a WebView 打开/返回
-- [ ] A.4.2 JS Bridge 方法集对齐 Flutter `WebBridgeRegistry`
-- [ ] A.4.3 Home WebHandlers 注册（`HomeWebHandlers`）
+- [x] A.4.1.a WebView 打开/返回
+- [x] A.4.2 JS Bridge 方法集对齐 Flutter `WebBridgeRegistry`（核心 8 方法）
+- [x] A.4.3 Home WebHandlers 注册（`HomeWebHandlers`）
 - [ ] A.4.1.i / A.4.1.h
 
 ### Scan / Deeplink / Push
-- [ ] A.4.4 扫码权限拒绝 UX
-- [ ] A.4.5 扫码成功回调路由
-- [ ] A.4.6 Deeplink 冷启动
-- [ ] A.4.7 Push 注册 + payload→route（或 missing）
+- [x] A.4.4 扫码权限拒绝 UX
+- [x] A.4.5 扫码成功回调路由
+- [x] A.4.6 Deeplink 冷启动
+- [~] A.4.7 Push 注册 + payload→route（StubPushBridge；厂商 SDK missing）
 - [ ] A.4.4–7 三端
 
 ---

@@ -8,14 +8,33 @@ internal interface WebBridgeHost {
     fun invokeBridge(method: String, payload: String?): String?
 }
 
-/** Documented bridge methods used by Home H5 entries. */
+/** Documented bridge methods used by Home H5 entries (Flutter WebBridgeActions core + Home). */
 internal object WebBridgeMethods {
     const val Close = "close"
     const val GetToken = "getToken"
     const val OpenNative = "openNative"
     const val Pay = "pay"
+    const val ShowToast = "showToast"
+    const val GetEnvironment = "getEnvironment"
+    const val GetUserInfo = "getUserInfo"
+    const val RefreshDashboard = "refreshDashboard"
 
-    val all: List<String> = listOf(Close, GetToken, OpenNative, Pay)
+    val all: List<String> = listOf(
+        Close, GetToken, OpenNative, Pay,
+        ShowToast, GetEnvironment, GetUserInfo, RefreshDashboard,
+    )
+}
+
+/** Action → handler registry (Flutter `WebBridgeRegistry` analogue). */
+internal object WebBridgeRegistry {
+    private val handlers = mutableMapOf<String, (String?) -> String?>()
+
+    fun register(action: String, handler: (String?) -> String?) {
+        handlers[action] = handler
+    }
+
+    fun invoke(action: String, payload: String?): String? =
+        handlers[action]?.invoke(payload)
 }
 
 /**
@@ -33,8 +52,9 @@ internal class DefaultWebBridgeHost(
         lastOpenedUrl = url
     }
 
-    override fun invokeBridge(method: String, payload: String?): String? =
-        when (method) {
+    override fun invokeBridge(method: String, payload: String?): String? {
+        WebBridgeRegistry.invoke(method, payload)?.let { return it }
+        return when (method) {
             WebBridgeMethods.Close -> {
                 onClose()
                 """{"ok":true}"""
@@ -50,8 +70,27 @@ internal class DefaultWebBridgeHost(
             }
             WebBridgeMethods.Pay ->
                 """{"ok":false,"message":"pay unavailable"}"""
+            WebBridgeMethods.ShowToast -> {
+                showPlatformToast(payload?.takeIf { it.isNotBlank() } ?: "")
+                """{"ok":true}"""
+            }
+            WebBridgeMethods.GetEnvironment ->
+                """{"platform":"kmp","app":"my_kmp_project"}"""
+            WebBridgeMethods.GetUserInfo -> {
+                val session = AccountFacade.current()
+                if (!session.isLoggedIn) {
+                    """{"loggedIn":false}"""
+                } else {
+                    val id = session.userId.orEmpty()
+                    val name = session.displayName.orEmpty()
+                    """{"loggedIn":true,"userId":"$id","displayName":"$name"}"""
+                }
+            }
+            WebBridgeMethods.RefreshDashboard ->
+                """{"ok":true}"""
             else -> null
         }
+    }
 }
 
 /**
