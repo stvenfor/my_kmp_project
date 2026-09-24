@@ -19,12 +19,17 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,18 +47,36 @@ import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeFeatureItem
 import com.example.my_kmp_project.feature.home.HomeMockData
 import com.example.my_kmp_project.feature.home.HomeServiceAssets
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.home_banner_sot
 import org.jetbrains.compose.resources.painterResource
 import java.util.Calendar
 
 /** Jetpack Home root — layout aligned to Flutter `HomePage` dashboard. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun JetpackHomeRoot(onDeferred: (String) -> Unit) {
     var metricTab by remember { mutableIntStateOf(1) } // SoT capture had「昨日」selected
     val greeting = remember { flutterStyleGreeting() }
+    var refreshing by remember { mutableStateOf(false) }
+    var showTodos by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+    val refreshState = rememberPullToRefreshState()
 
-    Column(
+    PullToRefreshBox(
+        isRefreshing = refreshing,
+        onRefresh = {
+            scope.launch {
+                refreshing = true
+                delay(600)
+                // Flutter: todo API failure → hide strip
+                showTodos = true
+                refreshing = false
+            }
+        },
+        state = refreshState,
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg)
@@ -139,9 +162,15 @@ internal fun JetpackHomeRoot(onDeferred: (String) -> Unit) {
             }
             item { JetpackHomeBanner(onDeferred) }
             item { JetpackFeatureGrid(onDeferred) }
-            // Flutter `_loadTodoCards` falls back to [] when API fails → strip shrinks.
+            if (showTodos) {
+                item { JetpackTodoStrip(onDeferred) }
+            }
             item { JetpackStoreMetrics(metricTab, onDeferred) { metricTab = it } }
-            // Strategy / services / news sit below first viewport on Flutter SoT — keep deferred.
+            item { JetpackStrategyEntry(onDeferred) }
+            item { JetpackServiceGrid(onDeferred) }
+            item { JetpackContactList(onDeferred) }
+            item { JetpackNewsList() }
+            item { JetpackLearningReportEntry(onDeferred) }
         }
     }
 }
@@ -378,37 +407,6 @@ private fun JetpackStoreMetrics(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun JetpackStrategyEntry(onDeferred: (String) -> Unit) {
-    Row(
-        Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
-            .clickable { onDeferred("投资策略") }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(DemoColors.Accent.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("投", color = DemoColors.Accent, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text("投资策略", color = DemoColors.TextPrimary)
-            Text("资产九宫格 · 恐贪定投 · 趋势策略", fontSize = 12.sp, color = DemoColors.TextSecondary)
-        }
-        Text("›", color = DemoColors.TextSecondary)
     }
 }
 

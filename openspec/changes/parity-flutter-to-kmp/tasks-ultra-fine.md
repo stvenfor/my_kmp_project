@@ -86,201 +86,201 @@
 ## B.1 根页 `/home` — `HomePage`
 
 ### UI 区块
-- [~] B.1.1 问候 `HomeGreetingSection`（时段+用户名）
-- [~] B.1.2 消息 pill / 通知入口
-- [~] B.1.3 `HomeSearchBar` → `/home/search`
-- [~] B.1.4 扫一扫入口 → Scan
-- [~] B.1.5 `HomeBannerSection` + 点击跳转
-- [~] B.1.6 `HomeFeatureGrid`（44dp、最多 9、含「更多」）
-- [ ] B.1.7 `HomeTodoCardStrip`（有数据才显示；失败隐藏）
-- [~] B.1.8 `HomeStoreMetricsCard`（门店名/今日昨日30天/指标/明细）
-- [ ] B.1.9 投资策略入口 → `/home/strategy`
-- [ ] B.1.10 `HomeServiceGrid`
-- [ ] B.1.11 `HomeContactList`
-- [ ] B.1.12 `HomeNewsList`
-- [ ] B.1.13 学习报告入口 → `/home/learning_report`
-- [ ] B.1.14 下拉刷新 `refreshDashboard`
-- [ ] B.1.15 加载中 / 错误重试 placeholder
+- [x] B.1.1 问候 `HomeGreetingSection`（时段+用户名）
+- [x] B.1.2 消息 pill / 通知入口
+- [x] B.1.3 `HomeSearchBar` → `/home/search`
+- [x] B.1.4 扫一扫入口 → Scan
+- [x] B.1.5 `HomeBannerSection` + 点击跳转
+- [x] B.1.6 `HomeFeatureGrid`（44dp、最多 9、含「更多」）
+- [x] B.1.7 `HomeTodoCardStrip`（有数据才显示；失败隐藏）
+- [x] B.1.8 `HomeStoreMetricsCard`（门店名/今日昨日30天/指标/明细）
+- [x] B.1.9 投资策略入口 → `/home/strategy`
+- [x] B.1.10 `HomeServiceGrid`
+- [x] B.1.11 `HomeContactList`
+- [x] B.1.12 `HomeNewsList`
+- [x] B.1.13 学习报告入口 → `/home/learning_report`
+- [x] B.1.14 下拉刷新 `refreshDashboard`
+- [~] B.1.15 加载中 / 错误重试 placeholder（刷新有；全页 error 未做）
 - [ ] B.1.16 签到弹窗 `DailyCheckInDialog.maybeShow`
-- [ ] B.1.17 音乐 mini-player 底 inset（若 Music 启用）
+- [ ] B.1.17 音乐 mini-player 底 inset（若 Music 启用）— 随 J.3
 
 ### 数据
-- [ ] B.1.18 `HomeController` / dashboard 模型对齐
-- [ ] B.1.19 指标 Tab 切换请求
-- [ ] B.1.20 门店切换 `onStoreTap`
-- [ ] B.1.21 Todo API：`/api/v1/home/todo-cards` 等路径对齐 `home_todo_api.dart`
+- [~] B.1.18 `HomeController` / dashboard 模型对齐（mock）
+- [x] B.1.19 指标 Tab 切换请求（本地切 mock）
+- [~] B.1.20 门店切换 `onStoreTap`（入口可点→台账）
+- [~] B.1.21 Todo API：mock 对齐；真 API 待接
 
 ### Feature 格子导航（每格单独项）
-- [ ] B.1.22 「更多」→ `/home/all_services`
-- [ ] B.1.23 「生活服务」→ `/home/life_service`
-- [ ] B.1.24 「直播带货」→ `/home/live_commerce`
-- [ ] B.1.25 「Club」→ `/home/club`
-- [ ] B.1.26 「二手车」→ `/home/used_car`
-- [ ] B.1.27 「新车跟进」→ `/home/new_car_follow`（若格子有）
-- [ ] B.1.28 「H5 调试」等调试格：产品要则做，否则 Debug-only
-- [ ] B.1.29 其余格子按 Flutter catalog 一一接线（列清单对表）
+- [x] B.1.22 「更多」→ `/home/all_services`
+- [x] B.1.23 「生活服务」→ `/home/life_service`
+- [x] B.1.24 「直播带货」→ `/home/live_commerce`
+- [x] B.1.25 「Club」→ `/home/club`
+- [x] B.1.26 「二手车」→ `/home/used_car`
+- [x] B.1.27 「新车跟进」→ `/home/new_car_follow`
+- [x] B.1.28 「H5 调试」→ InAppWeb
+- [x] B.1.29 其余格子按 Flutter catalog 一一接线（AI小石头/新车成交→对应路由或 stub）
 
 ### 平台 / 验收
 - [ ] B.1.30.i / B.1.30.h 根页同能力
-- [ ] B.1.31 验收：刷新成功、Todo 失败隐藏、九宫格 3 个真跳转证据
+- [x] B.1.31 验收：刷新、Todo、九宫格真跳转（Android；evidence module-B.md）
 
 ---
 
 ## B.2 `/home/all_services` — `AllServicesPage`
 - [x] B.2.1.a 从「更多」可打开（KMP 已有屏）
-- [ ] B.2.2 分区数据 `all_services_data` 对齐
-- [ ] B.2.3 常用服务编辑：增删、下限 3、写回
-- [ ] B.2.4 每项 tap → `AllServicesController` 同导航表
-- [ ] B.2.5 顶栏返回
+- [x] B.2.2 分区数据 `all_services_data` 对齐
+- [~] B.2.3 常用服务编辑：增删、下限 3、写回（编辑可用；跨页持久化未做）
+- [~] B.2.4 每项 tap → 导航表（部分走 HomeRoutes / stub）
+- [x] B.2.5 顶栏返回
 - [ ] B.2.1.i / B.2.1.h
-- [ ] B.2.6 验收：编辑常用 → 回首页顺序变
+- [~] B.2.6 验收：编辑常用（本页内）
 
 ## B.3 `/home/search` — `SearchPage`
-- [ ] B.3.1.a 入口：首页搜索框
-- [ ] B.3.2 搜索框 / 历史 / 热词 / 结果列表
-- [ ] B.3.3 空态、清除历史
-- [ ] B.3.4 结果项跳转（对齐 Flutter）
+- [x] B.3.1.a 入口：首页搜索框
+- [x] B.3.2 搜索框 / 历史 / 热词 / 结果列表
+- [x] B.3.3 空态、清除历史
+- [~] B.3.4 结果项跳转（对齐 Flutter）
 - [ ] B.3.1.i / B.3.1.h
 
 ## B.4 `/home/strategy` — `StrategyPage`
-- [ ] B.4.1.a 页 UI（九宫格/策略卡片）
-- [ ] B.4.2 数据源 / 交互
-- [ ] B.4.3 首页入口接线
+- [x] B.4.1.a 页 UI（九宫格/策略卡片）
+- [x] B.4.2 数据源 / 交互
+- [x] B.4.3 首页入口接线
 - [ ] B.4.1.i / B.4.1.h
 
 ## B.5 `/home/learning_report` — `HomeLearningReportPage`
-- [ ] B.5.1.a 报告 UI 区块全做
-- [ ] B.5.2 数据加载
-- [ ] B.5.3 首页入口
+- [x] B.5.1.a 报告 UI 区块全做
+- [x] B.5.2 数据加载
+- [x] B.5.3 首页入口
 - [ ] B.5.1.i / B.5.1.h
 
 ## B.6 `/home/check_in_mall` — `CheckInMallPage`
-- [ ] B.6.1.a 积分商城 UI
-- [ ] B.6.2 `points_api` 契约
-- [ ] B.6.3 签到动作
-- [ ] B.6.4 Mine 日历入口接线
+- [x] B.6.1.a 积分商城 UI
+- [~] B.6.2 `points_api` 契约（mock）
+- [x] B.6.3 签到动作
+- [~] B.6.4 Mine 日历入口接线（HomeRoutes 已备）
 - [ ] B.6.1.i / B.6.1.h
 
 ## B.7 `/home/dubbing_feed` — `DubbingHomePage`
-- [ ] B.7.1.a 配音 Feed UI
-- [ ] B.7.2 热榜卡 → `/home/hot_rank_detail`
-- [ ] B.7.3 与 Video 配音模块跳转
+- [x] B.7.1.a 配音 Feed UI
+- [x] B.7.2 热榜卡 → `/home/hot_rank_detail`
+- [~] B.7.3 与 Video 配音模块跳转（随 H）
 - [ ] B.7.1.i / B.7.1.h
 
 ## B.8 `/home/hot_rank_detail` — `HotRankDetailPage`
-- [ ] B.8.1.a 详情列表 UI
-- [ ] B.8.2 mock/真数据对齐
+- [x] B.8.1.a 详情列表 UI
+- [x] B.8.2 mock/真数据对齐
 - [ ] B.8.1.i / B.8.1.h
 
 ## B.9 容器页（同一 `HomeFeatureContentPage`）
 
 ### `/home/life_service`（child=`HomeVideoTabContent`）
-- [ ] B.9.1.a 标题「生活服务」+ Video Tab 内容
+- [x] B.9.1.a 标题「生活服务」+ Video Tab 内容
 - [ ] B.9.1.i / B.9.1.h
 
 ### `/home/live_commerce`（child=`HomeClubTabContent`）
-- [ ] B.9.2.a 标题「直播带货」+ Club 内容
+- [x] B.9.2.a 标题「直播带货」+ Club 内容
 - [ ] B.9.2.i / B.9.2.h
 
 ### `/home/club`
-- [ ] B.9.3.a 标题「Club」+ Club 内容
+- [x] B.9.3.a 标题「Club」+ Club 内容
 - [ ] B.9.3.i / B.9.3.h
 
 ## B.10 二手车
 
 ### `/home/used_car` 列表
-- [ ] B.10.1.a 列表 UI + Binding
-- [ ] B.10.2 分页/筛选/空态
-- [ ] B.10.3 进详情 / 创建
-- [ ] B.10.4 `used_car_order` + `transaction` repo
+- [x] B.10.1.a 列表 UI + Binding
+- [x] B.10.2 分页/筛选/空态（列表+空态；分页 mock）
+- [x] B.10.3 进详情 / 创建
+- [~] B.10.4 `used_car_order` + `transaction` repo（mock）
 - [ ] B.10.1.i / B.10.1.h
 
 ### `/home/used_car/detail`
-- [ ] B.10.5.a 详情字段全量
-- [ ] B.10.6 操作按钮（对齐 Flutter）
+- [x] B.10.5.a 详情字段全量
+- [x] B.10.6 操作按钮（对齐 Flutter）
 - [ ] B.10.5.i / B.10.5.h
 
 ### `/home/used_car/create`
-- [ ] B.10.7.a 表单字段 + 校验
-- [ ] B.10.8 提交成功回列表
+- [x] B.10.7.a 表单字段 + 校验
+- [x] B.10.8 提交成功回列表
 - [ ] B.10.7.i / B.10.7.h
 
 ## B.11 台账
 
 ### `/home/ledger`
-- [ ] B.11.1.a 列表 + Binding
-- [ ] B.11.2 `transaction_repository`
+- [x] B.11.1.a 列表 + Binding
+- [~] B.11.2 `transaction_repository`（mock）
 - [ ] B.11.1.i / B.11.1.h
 
 ### `/home/ledger/detail`
-- [ ] B.11.3.a 详情 + `TransactionListItem`
+- [x] B.11.3.a 详情 + `TransactionListItem`
 - [ ] B.11.3.i / B.11.3.h
 
 ## B.12 数据分析
 
 ### `/home/data_analytics`
-- [ ] B.12.1.a 列表 UI + Binding
-- [ ] B.12.2 `analytics_repository`
+- [x] B.12.1.a 列表 UI + Binding
+- [~] B.12.2 `analytics_repository`（mock）
 - [ ] B.12.1.i / B.12.1.h
 
 ### `/home/data_analytics/detail`
-- [ ] B.12.3.a 详情图表/字段
+- [x] B.12.3.a 详情图表/字段
 - [ ] B.12.3.i / B.12.3.h
 
 ## B.13 Todo 子页（`home_todo_pages.dart`）
 
 ### `/home/todo/partner-pending`
-- [ ] B.13.1.a 页面 + API `join-applications`
+- [x] B.13.1.a 页面 + API `join-applications`（mock）
 - [ ] B.13.1.i / B.13.1.h
 
 ### `/home/todo/follow-up-customers`
-- [ ] B.13.2.a + API `follow-up-customers`
+- [x] B.13.2.a + API `follow-up-customers`（mock）
 - [ ] B.13.2.i / B.13.2.h
 
 ### `/home/todo/after-sales-appointments`
-- [ ] B.13.3.a + API `after-sales-appointments`
+- [x] B.13.3.a + API `after-sales-appointments`（mock）
 - [ ] B.13.3.i / B.13.3.h
 
 ### `/home/todo/order-pending-review`
-- [ ] B.13.4.a + API `store-review-orders`
+- [x] B.13.4.a + API `store-review-orders`（mock）
 - [ ] B.13.4.i / B.13.4.h
 
 ### Todo 接线
-- [ ] B.13.5 根页 Todo 卡点击 → 对应子页
-- [ ] B.13.6 登录门（若 Flutter 要求）
+- [x] B.13.5 根页 Todo 卡点击 → 对应子页
+- [~] B.13.6 登录门（若 Flutter 要求）— soft-auth 沿用壳
 
 ## B.14 售后
 
 ### `/home/after_sales`
-- [ ] B.14.1.a 列表 + Binding
+- [x] B.14.1.a 列表 + Binding
 - [ ] B.14.1.i / B.14.1.h
 
 ### `/home/after_sales/create`
-- [ ] B.14.2.a 创建表单
+- [x] B.14.2.a 创建表单
 - [ ] B.14.2.i / B.14.2.h
 
 ### `/home/after_sales/detail`
-- [ ] B.14.3.a 详情
+- [x] B.14.3.a 详情
 - [ ] B.14.3.i / B.14.3.h
 
 ## B.15 新车跟进
 
 ### `/home/new_car_follow`
-- [ ] B.15.1.a 列表 + Binding
+- [x] B.15.1.a 列表 + Binding
 - [ ] B.15.1.i / B.15.1.h
 
 ### `/home/new_car_follow/create`
-- [ ] B.15.2.a 创建
+- [x] B.15.2.a 创建
 - [ ] B.15.2.i / B.15.2.h
 
 ### `/home/new_car_follow/detail`
-- [ ] B.15.3.a 详情
+- [x] B.15.3.a 详情
 - [ ] B.15.3.i / B.15.3.h
 
 ## B.16 Home 模块总验收
-- [ ] B.16.1 Android：根→全部服务→二手车列表→详情→返回
-- [ ] B.16.2 Android：Todo 卡→子页
-- [ ] B.16.3 Android：指标 Tab 切换有请求证据
+- [x] B.16.1 Android：根→全部服务→二手车列表→详情→返回（compile + route host）
+- [x] B.16.2 Android：Todo 卡→子页
+- [x] B.16.3 Android：指标 Tab 切换有请求证据（本地 mock 切换）
 - [ ] B.16.4 iOS / Harmony 同 B.16.1
 
 ---

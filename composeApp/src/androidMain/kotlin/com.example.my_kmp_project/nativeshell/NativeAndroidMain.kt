@@ -44,8 +44,9 @@ import com.example.my_kmp_project.feature.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
-import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.home.AllServicesScreen
+import com.example.my_kmp_project.feature.home.HomeRouteHost
+import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.home.HomeWebHandlers
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.feature.mine.MineIslandRoute
@@ -53,6 +54,7 @@ import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
 import com.example.my_kmp_project.feature.web.InAppWebScreen
+import com.example.my_kmp_project.feature.commerce.MembershipScreen
 
 /**
  * Android Jetpack shell (ADR 0002 / Android UI Split).
@@ -80,6 +82,8 @@ internal fun NativeAndroidMain() {
     var authOverlay by remember { mutableStateOf(AuthOverlay.None) }
     var overlay by remember { mutableStateOf(ShellOverlay.None) }
     var webUrl by remember { mutableStateOf("https://example.com") }
+    var homeRoute by remember { mutableStateOf<String?>(null) }
+    var homeRouteStack by remember { mutableStateOf<List<String>>(emptyList()) }
     var islandRoute by remember { mutableStateOf(MineIslandRoute.Settings) }
     var deferredTitle by remember { mutableStateOf("后续开放") }
     var bottomBarVisible by remember { mutableStateOf(true) }
@@ -105,7 +109,35 @@ internal fun NativeAndroidMain() {
         bottomBarVisible = true
     }
 
+    fun openHomeRoute(route: String) {
+        homeRoute = route
+        homeRouteStack = listOf(route)
+        overlay = ShellOverlay.HomeRoute
+        bottomBarVisible = false
+    }
+
+    fun pushHomeRoute(route: String) {
+        homeRoute = route
+        homeRouteStack = homeRouteStack + route
+        overlay = ShellOverlay.HomeRoute
+        bottomBarVisible = false
+    }
+
+    fun popHomeRoute() {
+        if (homeRouteStack.size <= 1) {
+            homeRoute = null
+            homeRouteStack = emptyList()
+            overlay = ShellOverlay.None
+            bottomBarVisible = authOverlay == AuthOverlay.None
+        } else {
+            val next = homeRouteStack.dropLast(1)
+            homeRouteStack = next
+            homeRoute = next.last()
+        }
+    }
+
     fun openDeferred(title: String) {
+        val mapped = HomeRoutes.fromLabel(title)
         when {
             title == "全部服务" || title == "更多" -> {
                 overlay = ShellOverlay.AllServices
@@ -119,11 +151,12 @@ internal fun NativeAndroidMain() {
                 overlay = ShellOverlay.Scan
                 bottomBarVisible = false
             }
-            title.startsWith("http://") || title.startsWith("https://") -> {
-                webUrl = title
+            title.startsWith("http://") || title.startsWith("https://") || title == "H5 调试" || title == "内嵌网页" -> {
+                webUrl = if (title.startsWith("http")) title else "https://example.com"
                 overlay = ShellOverlay.InAppWeb
                 bottomBarVisible = false
             }
+            mapped != null -> openHomeRoute(mapped)
             else -> {
                 deferredTitle = title
                 overlay = ShellOverlay.DeferredStub
@@ -133,6 +166,8 @@ internal fun NativeAndroidMain() {
     }
 
     fun closeOverlay() {
+        homeRoute = null
+        homeRouteStack = emptyList()
         overlay = ShellOverlay.None
         bottomBarVisible = authOverlay == AuthOverlay.None
     }
@@ -167,6 +202,14 @@ internal fun NativeAndroidMain() {
         }
         ShellOverlay.AllServices -> {
             AllServicesScreen(onBack = { closeOverlay() })
+        }
+        ShellOverlay.HomeRoute -> {
+            val route = homeRoute ?: HomeRoutes.Search
+            HomeRouteHost(
+                route = route,
+                onBack = { popHomeRoute() },
+                onNavigate = { pushHomeRoute(it) },
+            )
         }
         ShellOverlay.Membership -> {
             MembershipScreen(onBack = { closeOverlay() })
@@ -308,6 +351,7 @@ private enum class ShellOverlay {
     Membership,
     InAppWeb,
     Scan,
+    HomeRoute,
 }
 
 @Composable
