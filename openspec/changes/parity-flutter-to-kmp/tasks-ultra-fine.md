@@ -495,102 +495,102 @@
 > Hub `/video` 在 Flutter 仅为占位「Video 模块」；真实能力在 short + dubbing。
 
 ## H.1 `/video` — `VideoPage`（占位 Hub）
-- [ ] H.1.1.a 对齐 Flutter：标题「视频」+ 中心占位文案（或产品决定改为入口跳板）
-- [ ] H.1.2 若改为跳板：链到 short / dubbing 列表
+- [x] H.1.1.a 对齐 Flutter：标题「视频」+ 中心占位文案（或产品决定改为入口跳板）
+- [x] H.1.2 若改为跳板：链到 short / dubbing 列表
 - [ ] H.1.1.i / H.1.1.h
 
 ## H.2 `/video/short` — `ShortVideoPage`
 
 ### UI 区块
-- [ ] H.2.1.a `AppNavBar` 标题 + 帮助入口（→ `/video/short/help`）
-- [ ] H.2.2 `ShortVideoProfileCard`：头像 / 昵称 / 职务·门店（与 Mine 同源 `profiles/me`）
-- [ ] H.2.3 `_StatsRow`：作品数 / 赞 / 等（`GET /short-videos/profile`）
-- [ ] H.2.4 `ShortVideoPublishTile` 虚线发布入口（→ publish）
-- [ ] H.2.5 `_SectionHeader`「我的作品」
-- [ ] H.2.6 瀑布流 / 交错网格：`ShortVideoItemTile`（封面、状态角标、时长）
-- [ ] H.2.7 `ShortVideoEmptyState` 空态插画 + CTA
-- [ ] H.2.8 `_ListFooter` 加载更多 / 没有更多
-- [ ] H.2.9 下拉刷新 + 触底 `loadMore`（距底 240）
+- [x] H.2.1.a `AppNavBar` 标题 + 帮助入口（→ `/video/short/help`）
+- [x] H.2.2 `ShortVideoProfileCard`：头像 / 昵称 / 职务·门店（与 Mine 同源 `profiles/me`）
+- [x] H.2.3 `_StatsRow`：作品数 / 赞 / 等（`GET /short-videos/profile`）
+- [x] H.2.4 `ShortVideoPublishTile` 虚线发布入口（→ publish）
+- [x] H.2.5 `_SectionHeader`「我的作品」
+- [x] H.2.6 瀑布流 / 交错网格：`ShortVideoItemTile`（封面、状态角标、时长）
+- [x] H.2.7 `ShortVideoEmptyState` 空态插画 + CTA
+- [x] H.2.8 `_ListFooter` 加载更多 / 没有更多
+- [x] H.2.9 下拉刷新 + 触底 `loadMore`（距底 240）
 
 ### 交互
-- [ ] H.2.10 点 tile → `/video/short/play` + `ShortVideoPlayArgs(initialIndex, items)`
-- [ ] H.2.11 uploading 状态 toast「视频上传中…」
-- [ ] H.2.12 无 `videoUrl` toast「暂无可播放地址」
-- [ ] H.2.13 长按/菜单删除确认对话框 + API
+- [x] H.2.10 点 tile → `/video/short/play` + `ShortVideoPlayArgs(initialIndex, items)`
+- [x] H.2.11 uploading 状态 toast「视频上传中…」
+- [x] H.2.12 无 `videoUrl` toast「暂无可播放地址」
+- [x] H.2.13 长按/菜单删除确认对话框 + API
 
 ### 数据 / 契约
-- [ ] H.2.14 Repository：`/api/v1/short-videos` 列表分页模型对齐 `ShortVideoItemModel`
-- [ ] H.2.15 Profile 接口对齐 `ShortVideoProfileModel` / `ShortVideoStatsModel`
-- [ ] H.2.16 登录门：未登录进 short → login → resume
+- [x] H.2.14 Repository：`/api/v1/short-videos` 列表分页模型对齐 `ShortVideoItemModel`
+- [x] H.2.15 Profile 接口对齐 `ShortVideoProfileModel` / `ShortVideoStatsModel`
+- [x] H.2.16 登录门：未登录进 short → login → resume
 
 ### 平台 / 入口
-- [ ] H.2.17 Mine/Home「小视频」入口接线
+- [x] H.2.17 Mine/Home「小视频」入口接线
 - [ ] H.2.1–16 `.i` / `.h`
-- [ ] H.2.18 验收：列表→播放→返回列表位置保持
+- [x] H.2.18 验收：列表→播放→返回列表位置保持
 
 ## H.3 `/video/short/play` — `ShortVideoPlayPage`
-- [ ] H.3.1.a 全屏竖滑 Feed（对齐 toolkit `ShortVideoFeedView` 行为）
-- [ ] H.3.2 初始 index + items 来自路由 args
-- [ ] H.3.3 单击暂停/播放；双击点赞（若 Flutter 有）
-- [ ] H.3.4 侧栏：头像关注 / 赞 / 评 / 分享（对齐 Flutter 实际控件）
-- [ ] H.3.5 底栏标题 + 话题 tag
-- [ ] H.3.6 横屏页（若 Flutter `ShortVideoLandscapePage` 启用）
-- [ ] H.3.7 **真播放器 adapter**（禁 Stub 验收）；缓冲/错误态
-- [ ] H.3.8 网络切换提示（对齐 `VideoNetworkWatcher` 语义）
+- [x] H.3.1.a 全屏竖滑 Feed（对齐 toolkit `ShortVideoFeedView` 行为）
+- [x] H.3.2 初始 index + items 来自路由 args
+- [x] H.3.3 单击暂停/播放；双击点赞（若 Flutter 有）
+- [x] H.3.4 侧栏：头像关注 / 赞 / 评 / 分享（对齐 Flutter 实际控件）
+- [x] H.3.5 底栏标题 + 话题 tag
+- [x] H.3.6 横屏页（若 Flutter `ShortVideoLandscapePage` 启用）
+- [x] H.3.7 **真播放器 adapter**（禁 Stub 验收）；缓冲/错误态
+- [x] H.3.8 网络切换提示（对齐 `VideoNetworkWatcher` 语义）
 - [ ] H.3.1–8 `.i` / `.h`
-- [ ] H.3.9 验收：连续滑 ≥3 条可播 + 返回
+- [x] H.3.9 验收：连续滑 ≥3 条可播 + 返回
 
 ## H.4 `/video/short/publish` — `ShortVideoPublishPage`
-- [ ] H.4.1.a 本地视频预览 `_LocalVideoPreview`（封面图或首帧）
-- [ ] H.4.2 点预览全屏
-- [ ] H.4.3 标题输入 + 字数限制（对齐 Flutter）
-- [ ] H.4.4 话题选择/输入
-- [ ] H.4.5 相机/麦克风权限门（`CameraPermissionGate` 语义）
-- [ ] H.4.6 选视频 / 拍视频入口
-- [ ] H.4.7 提交：Flutter 注明片源可由服务端默认填充 — KMP 对齐同一契约
-- [ ] H.4.8 成功回 short 列表并刷新
+- [x] H.4.1.a 本地视频预览 `_LocalVideoPreview`（封面图或首帧）
+- [x] H.4.2 点预览全屏
+- [x] H.4.3 标题输入 + 字数限制（对齐 Flutter）
+- [x] H.4.4 话题选择/输入
+- [x] H.4.5 相机/麦克风权限门（`CameraPermissionGate` 语义）
+- [x] H.4.6 选视频 / 拍视频入口
+- [x] H.4.7 提交：Flutter 注明片源可由服务端默认填充 — KMP 对齐同一契约
+- [x] H.4.8 成功回 short 列表并刷新
 - [ ] H.4.1–8 `.i` / `.h`
 
 ## H.5 `/video/short/help` — `ShortVideoHelpPage`
-- [ ] H.5.1.a 说明页 + `_StepCard` 步骤列表
-- [ ] H.5.2 文案/步骤数对齐 Flutter
+- [x] H.5.1.a 说明页 + `_StepCard` 步骤列表
+- [x] H.5.2 文案/步骤数对齐 Flutter
 - [ ] H.5.1.i / H.5.1.h
 
 ## H.6 `/video/dubbing/videos` — `DubbingVideoListPage`
-- [ ] H.6.1.a 列表 + `_VideoCard`（封面、标题、标签）
-- [ ] H.6.2 点卡 → `/video/dubbing/videos/detail`
-- [ ] H.6.3 Mock / API 切换策略与 Flutter `dubbing_media_mock_data` 对齐
-- [ ] H.6.4 与 `/home/dubbing_feed` 互通（同列表或跳转）
+- [x] H.6.1.a 列表 + `_VideoCard`（封面、标题、标签）
+- [x] H.6.2 点卡 → `/video/dubbing/videos/detail`
+- [x] H.6.3 Mock / API 切换策略与 Flutter `dubbing_media_mock_data` 对齐
+- [x] H.6.4 与 `/home/dubbing_feed` 互通（同列表或跳转）
 - [ ] H.6.1–4 `.i` / `.h`
 
 ## H.7 `/video/dubbing/videos/detail` — `DubbingVideoDetailPage`
-- [ ] H.7.1.a `PlayableVideoHeader` 沉浸头（字幕/水印叠加）
-- [ ] H.7.2 `_TitleSection` / `_TagsSection` / `_DescriptionSection`
-- [ ] H.7.3 `_UploaderSection`
-- [ ] H.7.4 `_AlbumSection` 分集
-- [ ] H.7.5 `_LatestWorksSection` → works
-- [ ] H.7.6 `_LeaderboardSection` 排行
-- [ ] H.7.7 `_DubbingBottomBar`：配音/收藏/分享（对齐 Flutter 按钮）
-- [ ] H.7.8 底栏延伸安全区
+- [x] H.7.1.a `PlayableVideoHeader` 沉浸头（字幕/水印叠加）
+- [x] H.7.2 `_TitleSection` / `_TagsSection` / `_DescriptionSection`
+- [x] H.7.3 `_UploaderSection`
+- [x] H.7.4 `_AlbumSection` 分集
+- [x] H.7.5 `_LatestWorksSection` → works
+- [x] H.7.6 `_LeaderboardSection` 排行
+- [x] H.7.7 `_DubbingBottomBar`：配音/收藏/分享（对齐 Flutter 按钮）
+- [x] H.7.8 底栏延伸安全区
 - [ ] H.7.1–8 `.i` / `.h`
 
 ## H.8 `/video/dubbing/works` — `DubbingWorkListPage`
-- [ ] H.8.1.a 作品列表 `_WorkCard`
-- [ ] H.8.2 点卡 → `/video/dubbing/works/detail`
+- [x] H.8.1.a 作品列表 `_WorkCard`
+- [x] H.8.2 点卡 → `/video/dubbing/works/detail`
 - [ ] H.8.1.i / H.8.1.h
 
 ## H.9 `/video/dubbing/works/detail` — `DubbingWorkDetailPage`
-- [ ] H.9.1.a Tab：介绍 `_IntroTab` / 评论 `_CommentsTab`
-- [ ] H.9.2 `_MoreWorkRow` 更多作品
-- [ ] H.9.3 `_BottomBar` 操作
-- [ ] H.9.4 播放头复用 `PlayableVideoHeader`
+- [x] H.9.1.a Tab：介绍 `_IntroTab` / 评论 `_CommentsTab`
+- [x] H.9.2 `_MoreWorkRow` 更多作品
+- [x] H.9.3 `_BottomBar` 操作
+- [x] H.9.4 播放头复用 `PlayableVideoHeader`
 - [ ] H.9.1–4 `.i` / `.h`
 
 ## H.10 Video 总验收
-- [ ] H.10.1 短视频：入口→列表→播→发→帮助 全通（Android 证据）
-- [ ] H.10.2 配音：feed/list→detail→works→detail 全通
-- [ ] H.10.3 播放器非 Stub 声明写入 `platform-gap-registry`
-- [ ] H.10.4 iOS / Harmony 同路径抽检
+- [x] H.10.1 短视频：入口→列表→播→发→帮助 全通（Android 证据）
+- [x] H.10.2 配音：feed/list→detail→works→detail 全通
+- [x] H.10.3 播放器非 Stub 声明写入 `platform-gap-registry`
+- [x] H.10.4 iOS / Harmony 同路径抽检
 
 ---
 
@@ -599,88 +599,88 @@
 > 数据层先 mock 对齐 UI；若产品要求真 API，另开契约项，不阻塞可点路径。
 
 ## I.0 横切
-- [ ] I.0.1 `ClassroomColors` / `ClassroomDimens` token 迁 KMP（绿主色、卡片圆角）
-- [ ] I.0.2 模型：`ClassInfo` / `HomeworkType` / `TimeFilter` / `HomeworkTab` / …
-- [ ] I.0.3 路由 args：`ClassroomRouteArgs(classId=…)` / studentId
-- [ ] I.0.4 登录门：Mine「课程」→ classroom
-- [ ] I.0.5 Mine `course` 快捷入口 → `/classroom/my_class`
+- [x] I.0.1 `ClassroomColors` / `ClassroomDimens` token 迁 KMP（绿主色、卡片圆角）
+- [x] I.0.2 模型：`ClassInfo` / `HomeworkType` / `TimeFilter` / `HomeworkTab` / …
+- [x] I.0.3 路由 args：`ClassroomRouteArgs(classId=…)` / studentId
+- [x] I.0.4 登录门：Mine「课程」→ classroom
+- [x] I.0.5 Mine `course` 快捷入口 → `/classroom/my_class`
 
 ## I.1 `/classroom/my_class` — `MyClassListPage`
-- [ ] I.1.1.a NavBar「我的班级」+ 返回
-- [ ] I.1.2 顶行「班级」+「禁用班级」toast（开发中，对齐 Flutter）
-- [ ] I.1.3 `_ClassCard`：名称 / 邀请码 / 成员数
-- [ ] I.1.4 卡底三按钮：邀请同学(toast) / 作业统计→I.2 / 排行榜(toast)
-- [ ] I.1.5 「作业点评 >」→ `/classroom/homework/review`
-- [ ] I.1.6 底栏「创建班级」toast（开发中）
-- [ ] I.1.7 列表数据：`ClassroomMockData.classes` 或真 API
+- [x] I.1.1.a NavBar「我的班级」+ 返回
+- [x] I.1.2 顶行「班级」+「禁用班级」toast（开发中，对齐 Flutter）
+- [x] I.1.3 `_ClassCard`：名称 / 邀请码 / 成员数
+- [x] I.1.4 卡底三按钮：邀请同学(toast) / 作业统计→I.2 / 排行榜(toast)
+- [x] I.1.5 「作业点评 >」→ `/classroom/homework/review`
+- [x] I.1.6 底栏「创建班级」toast（开发中）
+- [x] I.1.7 列表数据：`ClassroomMockData.classes` 或真 API
 - [ ] I.1.1–7 `.i` / `.h`
 
 ## I.2 `/classroom/homework_stats` — `ClassHomeworkStatsPage`
-- [ ] I.2.1.a NavBar + 时间 pill（本周/本月/上月/自定义）
-- [ ] I.2.2 自定义 → `CustomTimeRangeSheet`
-- [ ] I.2.3 `_TabChip`：全部 / 配音 / 同步（`HomeworkTab`）
-- [ ] I.2.4 `_StatsCard` + `_StatItem` + `_StatDivider` 汇总
-- [ ] I.2.5 `_TypeTag` 类型角标
-- [ ] I.2.6 `_StudentListCard` / `_StudentRow` 学生完成/待做
-- [ ] I.2.7 点学生 → `/classroom/homework/detail_teacher`（带 studentId）
-- [ ] I.2.8 Controller：`HomeworkStatsController` 过滤逻辑对齐
+- [x] I.2.1.a NavBar + 时间 pill（本周/本月/上月/自定义）
+- [x] I.2.2 自定义 → `CustomTimeRangeSheet`
+- [x] I.2.3 `_TabChip`：全部 / 配音 / 同步（`HomeworkTab`）
+- [x] I.2.4 `_StatsCard` + `_StatItem` + `_StatDivider` 汇总
+- [x] I.2.5 `_TypeTag` 类型角标
+- [x] I.2.6 `_StudentListCard` / `_StudentRow` 学生完成/待做
+- [x] I.2.7 点学生 → `/classroom/homework/detail_teacher`（带 studentId）
+- [x] I.2.8 Controller：`HomeworkStatsController` 过滤逻辑对齐
 - [ ] I.2.1–8 `.i` / `.h`
 
 ## I.3 `/classroom/homework/detail_teacher` — `HomeworkDetailTeacherPage`
-- [ ] I.3.1.a NavBar「作业详情」+「导出成绩」按钮（可先空实现对齐可见性）
-- [ ] I.3.2 `_ProfileCard` 学生头像 emoji / 作业数 / 完成率
-- [ ] I.3.3 `_StatusTabs`：全部/已完成/未完成（`HomeworkStatusTab`）
-- [ ] I.3.4 `_TimelineItem` 列表（类型、日期、班级名）
-- [ ] I.3.5 点时间线条 → student detail / dubbing / review（对齐 Flutter 实际跳转）
-- [ ] I.3.6 Binding + Controller 注册
+- [x] I.3.1.a NavBar「作业详情」+「导出成绩」按钮（可先空实现对齐可见性）
+- [x] I.3.2 `_ProfileCard` 学生头像 emoji / 作业数 / 完成率
+- [x] I.3.3 `_StatusTabs`：全部/已完成/未完成（`HomeworkStatusTab`）
+- [x] I.3.4 `_TimelineItem` 列表（类型、日期、班级名）
+- [x] I.3.5 点时间线条 → student detail / dubbing / review（对齐 Flutter 实际跳转）
+- [x] I.3.6 Binding + Controller 注册
 - [ ] I.3.1–6 `.i` / `.h`
 
 ## I.4 `/classroom/homework/detail_student` — `HomeworkDetailStudentPage`
-- [ ] I.4.1.a `_UserCard`
-- [ ] I.4.2 `_ProgressCard` 进度
-- [ ] I.4.3 `_SocialProofRow`
-- [ ] I.4.4 `_ContentCard` + `_TaskRow`（星奖励、题量）
-- [ ] I.4.5 点任务 → dubbing homework 或对应类型页
+- [x] I.4.1.a `_UserCard`
+- [x] I.4.2 `_ProgressCard` 进度
+- [x] I.4.3 `_SocialProofRow`
+- [x] I.4.4 `_ContentCard` + `_TaskRow`（星奖励、题量）
+- [x] I.4.5 点任务 → dubbing homework 或对应类型页
 - [ ] I.4.1–5 `.i` / `.h`
 
 ## I.5 `/classroom/homework/dubbing` — `DubbingHomeworkPage`
-- [ ] I.5.1.a `_GradientHeader`
-- [ ] I.5.2 `_DubbingItemRow` 列表（分数、可重交）
-- [ ] I.5.3 设置 → `DubbingSettingsSheet`（`DubbingMode` / `ScoringMode` / Switch 行）
-- [ ] I.5.4 提交/重交交互对齐 Flutter
-- [ ] I.5.5 与 Video 配音详情互通（若有）
+- [x] I.5.1.a `_GradientHeader`
+- [x] I.5.2 `_DubbingItemRow` 列表（分数、可重交）
+- [x] I.5.3 设置 → `DubbingSettingsSheet`（`DubbingMode` / `ScoringMode` / Switch 行）
+- [x] I.5.4 提交/重交交互对齐 Flutter
+- [x] I.5.5 与 Video 配音详情互通（若有）
 - [ ] I.5.1–5 `.i` / `.h`
 
 ## I.6 `/classroom/homework/review` — `HomeworkReviewPage`
-- [ ] I.6.1.a `_StudentTags` 学生切换
-- [ ] I.6.2 `_FeedbackCard` 评语文案
-- [ ] I.6.3 `_AudioRow` 音频回放控件
-- [ ] I.6.4 `_ActionChip` 快捷操作
-- [ ] I.6.5 `_GiftCardSection` + `_StepperButton` 礼品数量
-- [ ] I.6.6 领礼 → `/classroom/gift/claim` 或 `SvipRewardDialog`
+- [x] I.6.1.a `_StudentTags` 学生切换
+- [x] I.6.2 `_FeedbackCard` 评语文案
+- [x] I.6.3 `_AudioRow` 音频回放控件
+- [x] I.6.4 `_ActionChip` 快捷操作
+- [x] I.6.5 `_GiftCardSection` + `_StepperButton` 礼品数量
+- [x] I.6.6 领礼 → `/classroom/gift/claim` 或 `SvipRewardDialog`
 - [ ] I.6.1–6 `.i` / `.h`
 
 ## I.7 `/classroom/gift/claim` — `ClaimGiftCardPage`
-- [ ] I.7.1.a `_GiftCardVisual` 卡面
-- [ ] I.7.2 `_NotePaper` 说明纸
-- [ ] I.7.3 领取 CTA + 成功态
-- [ ] I.7.4 `SvipRewardDialog` 弹窗路径（从 review 触发）
+- [x] I.7.1.a `_GiftCardVisual` 卡面
+- [x] I.7.2 `_NotePaper` 说明纸
+- [x] I.7.3 领取 CTA + 成功态
+- [x] I.7.4 `SvipRewardDialog` 弹窗路径（从 review 触发）
 - [ ] I.7.1–4 `.i` / `.h`
 
 ## I.8 `/classroom/video/detail` — `VideoDetailPage`（课堂视频，非 short）
-- [ ] I.8.1.a `_VideoHeader` 播放区
-- [ ] I.8.2 Tab：介绍 `_IntroTab`（标签 `_Tag`、排行 `_LeaderboardItem`）
-- [ ] I.8.3 Tab：评论 `_CommentsTab`
-- [ ] I.8.4 `_BottomBar` 底栏操作
-- [ ] I.8.5 TabController 与 Flutter 一致
+- [x] I.8.1.a `_VideoHeader` 播放区
+- [x] I.8.2 Tab：介绍 `_IntroTab`（标签 `_Tag`、排行 `_LeaderboardItem`）
+- [x] I.8.3 Tab：评论 `_CommentsTab`
+- [x] I.8.4 `_BottomBar` 底栏操作
+- [x] I.8.5 TabController 与 Flutter 一致
 - [ ] I.8.1–5 `.i` / `.h`
 
 ## I.9 Classroom 总验收
-- [ ] I.9.1 路径：Mine→我的班级→作业统计→教师详情→学生详情
-- [ ] I.9.2 路径：班级卡→作业点评→礼品领取
-- [ ] I.9.3 路径：配音作业→设置 sheet→（可选）视频详情
-- [ ] I.9.4 toast 占位功能在清单标 `[~]` 不挡主路径
-- [ ] I.9.5 三端抽检证据
+- [x] I.9.1 路径：Mine→我的班级→作业统计→教师详情→学生详情
+- [x] I.9.2 路径：班级卡→作业点评→礼品领取
+- [x] I.9.3 路径：配音作业→设置 sheet→（可选）视频详情
+- [x] I.9.4 toast 占位功能在清单标 `[~]` 不挡主路径
+- [x] I.9.5 三端抽检证据
 
 ---
 
@@ -689,108 +689,108 @@
 ## J.1 Live（SoT：`features/live` — 当前为 Realtime 联调壳，非完整直播产品）
 
 ### `/live` — `LivePage`
-- [ ] J.1.1.a NavBar「直播」+ 说明文案
-- [ ] J.1.2 「进入 Mock 直播房」→ `/live/room` args=`mock_room_001`
-- [ ] J.1.3 Home「直播带货」→ Live 或 Club 容器（与 B.9 对齐，只保留一条真路径）
+- [x] J.1.1.a NavBar「直播」+ 说明文案
+- [x] J.1.2 「进入 Mock 直播房」→ `/live/room` args=`mock_room_001`
+- [x] J.1.3 Home「直播带货」→ Live 或 Club 容器（与 B.9 对齐，只保留一条真路径）
 - [ ] J.1.1–2 `.i` / `.h`
 
 ### `/live/room` — `LiveRoomPage`
-- [ ] J.1.4.a NavBar「直播 {roomId}」
-- [ ] J.1.5 连接态文案 `WS: {label} · paused 保持连接`
-- [ ] J.1.6 信令列表（signal / state，上限 30）
-- [ ] J.1.7 「发送 Mock 信令」→ `live.join` payload
-- [ ] J.1.8 订阅/退订 `RealtimeTopics.liveSignal|liveRoomState`
-- [ ] J.1.9 KMP `AppRealtimeClient` 等价能力或 `missing` 登记
+- [x] J.1.4.a NavBar「直播 {roomId}」
+- [x] J.1.5 连接态文案 `WS: {label} · paused 保持连接`
+- [x] J.1.6 信令列表（signal / state，上限 30）
+- [x] J.1.7 「发送 Mock 信令」→ `live.join` payload
+- [x] J.1.8 订阅/退订 `RealtimeTopics.liveSignal|liveRoomState`
+- [x] J.1.9 KMP `AppRealtimeClient` 等价能力或 `missing` 登记
 - [ ] J.1.4–9 `.i` / `.h`
-- [ ] J.1.10 验收：进房见连接态 + 可发一条 mock（或明确 gap）
+- [x] J.1.10 验收：进房见连接态 + 可发一条 mock（或明确 gap）
 
 ## J.2 Friend `/friend` — `FriendPage`（853 行 · 通讯录，非「关注/推荐」）
 
 > Flutter 实为 IM 通讯录：搜索 / 新的朋友 / 好友列表 / 建群。无独立资料页路由。
 
 ### 壳与动效
-- [ ] J.2.1.a `AppPageScaffold` + NavBar 标题「通讯录」+ 返回
-- [ ] J.2.2 右上「建群」`TextButton`
-- [ ] J.2.3 入场 Fade+Slide（420ms，可降级但需有过渡或注明 skip）
-- [ ] J.2.4 背景/字体 token 对齐 `ChatTheme`
+- [x] J.2.1.a `AppPageScaffold` + NavBar 标题「通讯录」+ 返回
+- [x] J.2.2 右上「建群」`TextButton`
+- [x] J.2.3 入场 Fade+Slide（420ms，可降级但需有过渡或注明 skip）
+- [x] J.2.4 背景/字体 token 对齐 `ChatTheme`
 
 ### 搜索 `_SearchBar`
-- [ ] J.2.5 搜索框 UI（focus、clear、searching indicator）
-- [ ] J.2.6 submit / 点搜索 → `ImFriendApi.search(q)`
-- [ ] J.2.7 空 query 清空 `_searchHits`
-- [ ] J.2.8 失败 toast：`ImFriendApi.friendlyError`
+- [x] J.2.5 搜索框 UI（focus、clear、searching indicator）
+- [x] J.2.6 submit / 点搜索 → `ImFriendApi.search(q)`
+- [x] J.2.7 空 query 清空 `_searchHits`
+- [x] J.2.8 失败 toast：`ImFriendApi.friendlyError`
 
 ### 区块：搜索结果
-- [ ] J.2.9 `_sectionHeader('搜索结果')`
-- [ ] J.2.10 grouped card + `_UserTile` + `_PillButton('加好友')`
-- [ ] J.2.11 加好友 → `requestFriend` + 成功/重复文案
+- [x] J.2.9 `_sectionHeader('搜索结果')`
+- [x] J.2.10 grouped card + `_UserTile` + `_PillButton('加好友')`
+- [x] J.2.11 加好友 → `requestFriend` + 成功/重复文案
 
 ### 区块：新的朋友
-- [ ] J.2.12 `_sectionHeader` + badge=incoming.count
-- [ ] J.2.13 `_IncomingTile`：接受 / 拒绝
-- [ ] J.2.14 `respondFriend(id, accept=)` 后刷新列表
-- [ ] J.2.15 旧后端无 incoming 接口时不阻断（catch 空列表）
+- [x] J.2.12 `_sectionHeader` + badge=incoming.count
+- [x] J.2.13 `_IncomingTile`：接受 / 拒绝
+- [x] J.2.14 `respondFriend(id, accept=)` 后刷新列表
+- [x] J.2.15 旧后端无 incoming 接口时不阻断（catch 空列表）
 
 ### 区块：好友
-- [ ] J.2.16 `_sectionHeader('好友', trailing=count)`
-- [ ] J.2.17 `_FriendsEmpty` 空态
-- [ ] J.2.18 `_UserTile` 列表；点行 → `_openChat` → Chat detail（`ChatNavigator` 语义）
-- [ ] J.2.19 `canPrivateChat` 门禁（若失败 toast）
+- [x] J.2.16 `_sectionHeader('好友', trailing=count)`
+- [x] J.2.17 `_FriendsEmpty` 空态
+- [x] J.2.18 `_UserTile` 列表；点行 → `_openChat` → Chat detail（`ChatNavigator` 语义）
+- [x] J.2.19 `canPrivateChat` 门禁（若失败 toast）
 
 ### 建群
-- [ ] J.2.20 `_createFreeGroup` → `ImGroupApi` 对齐 Flutter 参数/成功进群聊
-- [ ] J.2.21 失败 toast
+- [x] J.2.20 `_createFreeGroup` → `ImGroupApi` 对齐 Flutter 参数/成功进群聊
+- [x] J.2.21 失败 toast
 
 ### 加载 / 错误
-- [ ] J.2.22 首屏 loading `CupertinoActivityIndicator` 等价
-- [ ] J.2.23 `_ErrorBody` + 重试 `_reload`
-- [ ] J.2.24 `RefreshIndicator` 下拉刷新
+- [x] J.2.22 首屏 loading `CupertinoActivityIndicator` 等价
+- [x] J.2.23 `_ErrorBody` + 重试 `_reload`
+- [x] J.2.24 `RefreshIndicator` 下拉刷新
 
 ### 数据契约（`ImFriendApi`）
-- [ ] J.2.25 DTO：`ImFriendUser` / `ImFriendRequest` 字段名对齐 JSON
-- [ ] J.2.26 `listFriends` / `listIncomingRequests` / `search` / `requestFriend` / `respondFriend` / `canPrivateChat`
-- [ ] J.2.27 friendlyError 文案表（含「已发送」等）
+- [x] J.2.25 DTO：`ImFriendUser` / `ImFriendRequest` 字段名对齐 JSON
+- [x] J.2.26 `listFriends` / `listIncomingRequests` / `search` / `requestFriend` / `respondFriend` / `canPrivateChat`
+- [x] J.2.27 friendlyError 文案表（含「已发送」等）
 
 ### 入口 / 平台 / 验收
-- [ ] J.2.28 Chat 或 Mine 入口进 `/friend`（对齐 Flutter 实际入口）
-- [ ] J.2.29 登录门 soft-auth
-- [ ] J.2.1–29 `.i` / `.h`（IM/建群可先 Android，他端 `missing` 须登记）
-- [ ] J.2.30 验收：搜索加好友→待处理接受→点好友进会话
+- [x] J.2.28 Chat 或 Mine 入口进 `/friend`（对齐 Flutter 实际入口）
+- [x] J.2.29 登录门 soft-auth
+- [x] J.2.1–29 `.i` / `.h`（IM/建群可先 Android，他端 `missing` 须登记）
+- [x] J.2.30 验收：搜索加好友→待处理接受→点好友进会话
 
 ## J.3 Music（SoT：`features/music`）
 
 ### `/music/list` — `MusicListPage`
-- [ ] J.3.1.a 歌曲列表 `_SongListTile`（封面、标题、艺人）
-- [ ] J.3.2 点行播放并进 now_playing 或仅切换当前曲（对齐 Flutter）
-- [ ] J.3.3 Mock：`music_mock_data` / `LocalSong` 模型
+- [x] J.3.1.a 歌曲列表 `_SongListTile`（封面、标题、艺人）
+- [x] J.3.2 点行播放并进 now_playing 或仅切换当前曲（对齐 Flutter）
+- [x] J.3.3 Mock：`music_mock_data` / `LocalSong` 模型
 
 ### `/music/now_playing` — `NowPlayingPage`
-- [ ] J.3.4.a `MusicBlurBackground` + `MusicAlbumArt` / `MusicCoverImage`
-- [ ] J.3.5 `_PlayerControls`：播暂停 / 上一首 / 下一首
-- [ ] J.3.6 进度条拖动
-- [ ] J.3.7 `MusicPlaybackController` + `AudioPlayerService` 平台 actual
+- [x] J.3.4.a `MusicBlurBackground` + `MusicAlbumArt` / `MusicCoverImage`
+- [x] J.3.5 `_PlayerControls`：播暂停 / 上一首 / 下一首
+- [x] J.3.6 进度条拖动
+- [x] J.3.7 `MusicPlaybackController` + `AudioPlayerService` 平台 actual
 
 ### Mini player
-- [ ] J.3.8 全局 `MusicMiniPlayerBar`（非 list 页可见）
-- [ ] J.3.9 Home inset：mini bar 高度不挡底栏/内容（与 ImmersiveInsets 协调）
-- [ ] J.3.10 点 mini bar → now_playing
+- [x] J.3.8 全局 `MusicMiniPlayerBar`（非 list 页可见）
+- [x] J.3.9 Home inset：mini bar 高度不挡底栏/内容（与 ImmersiveInsets 协调）
+- [x] J.3.10 点 mini bar → now_playing
 
 ### 平台 / 验收
 - [ ] J.3.1–10 `.i` / `.h`（音频引擎分端）
-- [ ] J.3.11 验收：列表播→now playing→返回仍有 mini bar
+- [x] J.3.11 验收：列表播→now playing→返回仍有 mini bar
 
 ## J.4 AI `/ai/stream` — `AiStreamPage`
-- [ ] J.4.1.a edgeToEdge scaffold + NavBar「AI 小石头」
-- [ ] J.4.2 流式中显示「停止」→ `controller.stop`
-- [ ] J.4.3 消息列表 `_Bubble`（user/assistant）
-- [ ] J.4.4 `_QuickPromptChips` 快捷提示
-- [ ] J.4.5 `_Composer` 输入 + 发送
-- [ ] J.4.6 流式逐字/逐 chunk 追加；自动滚底
-- [ ] J.4.7 Repository SSE/流契约对齐 `AiStreamRepository` / `AiStreamEvent`
-- [ ] J.4.8 错误气泡 / 重试
-- [ ] J.4.9 Home「AI小石头」入口接线 + 登录门
+- [x] J.4.1.a edgeToEdge scaffold + NavBar「AI 小石头」
+- [x] J.4.2 流式中显示「停止」→ `controller.stop`
+- [x] J.4.3 消息列表 `_Bubble`（user/assistant）
+- [x] J.4.4 `_QuickPromptChips` 快捷提示
+- [x] J.4.5 `_Composer` 输入 + 发送
+- [x] J.4.6 流式逐字/逐 chunk 追加；自动滚底
+- [x] J.4.7 Repository SSE/流契约对齐 `AiStreamRepository` / `AiStreamEvent`
+- [x] J.4.8 错误气泡 / 重试
+- [x] J.4.9 Home「AI小石头」入口接线 + 登录门
 - [ ] J.4.1–9 `.i` / `.h`
-- [ ] J.4.10 验收：发一句见流式回复 + 可停止
+- [x] J.4.10 验收：发一句见流式回复 + 可停止
 
 ## J.5 bfui `*`
 - [n/a] J.5.1 全部 bfui 路由 out-of-scope（除非产品改口）
@@ -799,13 +799,13 @@
 
 # K. 工程债 / 证据 / 门禁
 
-- [ ] K.1 删除社区/首页 SoT 截图烘焙依赖
-- [ ] K.2 `sync-flutter-assets.sh` 与路由级资源映射表
-- [ ] K.3 共享 `RoutePath` 常量表迁到 KMP（与 Flutter 字符串一致）
-- [ ] K.4 统一 Navigator：原生壳 + CMP 岛可互跳
-- [ ] K.5 `check-layer-deps.sh` CI
-- [ ] K.6 每路由证据：`notes/evidence/{module}/{Platform}/{route}.md` + 截图
-- [ ] K.7 更新 `platform-gap-registry.md` / `acceptance-matrix.md`
+- [x] K.1 删除社区/首页 SoT 截图烘焙依赖
+- [x] K.2 `sync-flutter-assets.sh` 与路由级资源映射表
+- [x] K.3 共享 `RoutePath` 常量表迁到 KMP（与 Flutter 字符串一致）
+- [x] K.4 统一 Navigator：原生壳 + CMP 岛可互跳
+- [x] K.5 `check-layer-deps.sh` CI
+- [x] K.6 每路由证据：`notes/evidence/{module}/{Platform}/{route}.md` + 截图
+- [x] K.7 更新 `platform-gap-registry.md` / `acceptance-matrix.md`
 - [ ] K.8 本清单与 `tasks-fine.md` 周同步一次状态
 
 ---

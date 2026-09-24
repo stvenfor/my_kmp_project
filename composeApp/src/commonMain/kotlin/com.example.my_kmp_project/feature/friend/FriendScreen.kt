@@ -16,10 +16,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,11 +31,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 internal data class FriendItem(
@@ -42,6 +47,8 @@ internal data class FriendItem(
     val remark: String,
 )
 
+private data class IncomingRequest(val id: String, val name: String)
+
 private object FriendMockData {
     val friends = listOf(
         FriendItem("1", "小明", "刚刚在线", "班级同学 · 周末约图书馆"),
@@ -49,10 +56,14 @@ private object FriendMockData {
         FriendItem("3", "林林", "一周前", "活动组织"),
         FriendItem("4", "客服小助手", "昨天", "官方客服"),
     )
+    val directory = listOf(
+        FriendItem("9", "新同学小周", "未添加", "同校"),
+        FriendItem("10", "外教 Anna", "未添加", "口语"),
+    )
 }
 
 /**
- * Friend list → detail graph (mock relation data; realtime IM still registry `partial`).
+ * IM 通讯录：搜索 / 新的朋友 / 好友列表 / 建群（mock；真 IM 见 gap）。
  */
 @Composable
 internal fun FriendScreen(onBack: () -> Unit) {
@@ -81,12 +92,33 @@ private fun FriendListContent(
     onBack: () -> Unit,
     onOpen: (String) -> Unit,
 ) {
+    var query by remember { mutableStateOf("") }
+    var searchHits by remember { mutableStateOf<List<FriendItem>>(emptyList()) }
+    var incoming by remember {
+        mutableStateOf(
+            listOf(
+                IncomingRequest("i1", "王同学"),
+                IncomingRequest("i2", "李老师"),
+            ),
+        )
+    }
+    var friendList by remember { mutableStateOf(friends) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "好友", onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(
+            title = "通讯录",
+            onBack = onBack,
+            containerColor = DemoColors.PageBg,
+            actions = {
+                TextButton(onClick = { showPlatformToast("建群成功（mock）· 请到聊天 Tab") }) {
+                    Text("建群", color = DemoColors.Accent)
+                }
+            },
+        )
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -94,14 +126,123 @@ private fun FriendListContent(
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "共 ${friends.size} 位好友 · 关系链/IM SDK 见 gap registry",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(DemoColors.Background)
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    BasicTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                        modifier = Modifier.weight(1f),
+                        decorationBox = { inner ->
+                            if (query.isEmpty()) Text("搜索好友", color = DemoColors.Muted)
+                            inner()
+                        },
+                    )
+                    Text(
+                        "搜索",
+                        color = DemoColors.Primary,
+                        fontSize = 14.sp,
+                        modifier = Modifier.clickable {
+                            if (query.isBlank()) {
+                                searchHits = emptyList()
+                            } else {
+                                searchHits = FriendMockData.directory.filter {
+                                    it.name.contains(query.trim())
+                                }
+                                if (searchHits.isEmpty()) {
+                                    showPlatformToast("未找到用户")
+                                }
+                            }
+                        },
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            items(friends, key = { it.id }) { row ->
+            if (searchHits.isNotEmpty()) {
+                item {
+                    Text("搜索结果", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+                    Spacer(Modifier.height(8.dp))
+                }
+                items(searchHits, key = { "hit-${it.id}" }) { hit ->
+                    Row(
+                        Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Avatar(hit.name)
+                        Spacer(Modifier.width(12.dp))
+                        Text(hit.name, Modifier.weight(1f), color = DemoColors.TextPrimary)
+                        Text(
+                            "加好友",
+                            color = DemoColors.Primary,
+                            fontSize = 13.sp,
+                            modifier = Modifier.clickable {
+                                showPlatformToast("已发送好友申请")
+                            },
+                        )
+                    }
+                    HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
+                }
+            }
+            item {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "新的朋友（${incoming.size}）",
+                    fontWeight = FontWeight.SemiBold,
+                    color = DemoColors.TextPrimary,
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            items(incoming, key = { it.id }) { req ->
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Avatar(req.name)
+                    Spacer(Modifier.width(12.dp))
+                    Text(req.name, Modifier.weight(1f), color = DemoColors.TextPrimary)
+                    Text(
+                        "接受",
+                        color = DemoColors.Primary,
+                        fontSize = 13.sp,
+                        modifier = Modifier.clickable {
+                            friendList = friendList + FriendItem(req.id, req.name, "刚刚", "新朋友")
+                            incoming = incoming.filterNot { it.id == req.id }
+                            showPlatformToast("已添加")
+                        },
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        "拒绝",
+                        color = DemoColors.Muted,
+                        fontSize = 13.sp,
+                        modifier = Modifier.clickable {
+                            incoming = incoming.filterNot { it.id == req.id }
+                        },
+                    )
+                }
+                HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
+            }
+            item {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "好友（${friendList.size}）",
+                    fontWeight = FontWeight.SemiBold,
+                    color = DemoColors.TextPrimary,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            if (friendList.isEmpty()) {
+                item {
+                    Text("暂无好友", color = DemoColors.Muted, fontSize = 13.sp)
+                }
+            }
+            items(friendList, key = { it.id }) { row ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -109,20 +250,7 @@ private fun FriendListContent(
                         .padding(vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(DemoColors.Accent.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = row.name.take(1),
-                            color = DemoColors.Accent,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp,
-                        )
-                    }
+                    Avatar(row.name)
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
@@ -142,6 +270,24 @@ private fun FriendListContent(
                 HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
             }
         }
+    }
+}
+
+@Composable
+private fun Avatar(name: String) {
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(DemoColors.Accent.copy(alpha = 0.15f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = name.take(1),
+            color = DemoColors.Accent,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+        )
     }
 }
 
@@ -174,20 +320,15 @@ private fun FriendDetailScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
-                onClick = { /* IM entry reserved — MockImEngine lives under Chat tab */ },
+                onClick = { showPlatformToast("请到聊天 Tab 打开会话（mock）") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = DemoColors.Primary,
                     contentColor = DemoColors.OnPrimary,
                 ),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("发消息（走聊天 Tab / IM 引擎）")
+                Text("发消息")
             }
-            Text(
-                text = "实时关系链与推送未接 SDK，本页仅导航与资料展示。",
-                color = DemoColors.Muted,
-                fontSize = 12.sp,
-            )
         }
     }
 }

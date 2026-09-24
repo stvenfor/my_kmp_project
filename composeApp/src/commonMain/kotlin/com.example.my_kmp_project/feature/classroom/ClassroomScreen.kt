@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 internal data class ClassItem(
@@ -73,7 +74,10 @@ private enum class ClassroomRoute {
  * Classroom multi-page: list → detail → schedule (mock; not list-only).
  */
 @Composable
-internal fun ClassroomScreen(onBack: () -> Unit) {
+internal fun ClassroomScreen(
+    onBack: () -> Unit,
+    onHomeworkStats: (() -> Unit)? = null,
+) {
     var route by remember { mutableStateOf(ClassroomRoute.List) }
     var selectedId by remember { mutableStateOf<String?>(null) }
     val selected = selectedId?.let { id -> ClassroomMockData.classes.firstOrNull { it.id == id } }
@@ -88,6 +92,7 @@ internal fun ClassroomScreen(onBack: () -> Unit) {
                 route = ClassroomRoute.Detail
             },
             onOpenSchedule = { route = ClassroomRoute.Schedule },
+            onHomeworkStats = onHomeworkStats,
         )
         ClassroomRoute.Detail -> {
             if (selected == null) {
@@ -118,6 +123,7 @@ private fun ClassroomListContent(
     onBack: () -> Unit,
     onOpen: (String) -> Unit,
     onOpenSchedule: () -> Unit,
+    onHomeworkStats: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -125,7 +131,7 @@ private fun ClassroomListContent(
             .background(DemoColors.PageBg),
     ) {
         MineTopBar(
-            title = "课堂",
+            title = "我的班级",
             onBack = onBack,
             containerColor = DemoColors.PageBg,
             actions = {
@@ -146,8 +152,23 @@ private fun ClassroomListContent(
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text("班级", color = DemoColors.TextPrimary, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = "禁用班级",
+                        color = DemoColors.Muted,
+                        fontSize = 13.sp,
+                        modifier = Modifier.clickable {
+                            showPlatformToast("功能开发中")
+                        },
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "列表 → 详情 → 课表 · 教室实时态见 gap registry",
+                    text = "列表 → 详情 → 课表 / 作业统计",
                     color = DemoColors.TextSecondary,
                     fontSize = 13.sp,
                 )
@@ -168,10 +189,33 @@ private fun ClassroomListContent(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${row.schedule} · ${row.teacher}",
+                        text = "${row.schedule} · ${row.teacher} · 邀请码 ${row.id}ABC · ${12 + (row.id.toIntOrNull() ?: 0)} 人",
                         color = DemoColors.Muted,
                         fontSize = 12.sp,
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            "邀请同学",
+                            color = DemoColors.Primary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.clickable { showPlatformToast("邀请链接已复制（mock）") },
+                        )
+                        if (onHomeworkStats != null) {
+                            Text(
+                                "作业统计",
+                                color = DemoColors.Primary,
+                                fontSize = 12.sp,
+                                modifier = Modifier.clickable(onClick = onHomeworkStats),
+                            )
+                        }
+                        Text(
+                            "排行榜",
+                            color = DemoColors.Muted,
+                            fontSize = 12.sp,
+                            modifier = Modifier.clickable { showPlatformToast("排行榜开发中") },
+                        )
+                    }
                 }
                 HorizontalDivider(color = DemoColors.Divider)
             }

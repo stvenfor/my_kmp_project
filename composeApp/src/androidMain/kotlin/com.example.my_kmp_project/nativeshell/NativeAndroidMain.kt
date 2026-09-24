@@ -47,6 +47,8 @@ import com.example.my_kmp_project.feature.auth.RegisterScreen
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.community.CommunityRouteHost
 import com.example.my_kmp_project.feature.community.CommunityRoutes
+import com.example.my_kmp_project.feature.content.ContentRouteHost
+import com.example.my_kmp_project.feature.content.ContentRoutes
 import com.example.my_kmp_project.feature.home.AllServicesScreen
 import com.example.my_kmp_project.feature.home.HomeRouteHost
 import com.example.my_kmp_project.feature.home.HomeRoutes
@@ -59,8 +61,6 @@ import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
 import com.example.my_kmp_project.feature.web.InAppWebScreen
-import com.example.my_kmp_project.feature.commerce.MembershipScreen
-
 /**
  * Android Jetpack shell (ADR 0002 / Android UI Split).
  * Tab roots + auth + deferred stubs are Jetpack in androidMain.
@@ -95,6 +95,8 @@ internal fun NativeAndroidMain() {
     var communityVideoUrl by remember { mutableStateOf<String?>(null) }
     var mineRoute by remember { mutableStateOf<String?>(null) }
     var mineRouteStack by remember { mutableStateOf<List<String>>(emptyList()) }
+    var contentRoute by remember { mutableStateOf<String?>(null) }
+    var contentRouteStack by remember { mutableStateOf<List<String>>(emptyList()) }
     var islandRoute by remember { mutableStateOf(MineIslandRoute.Settings) }
     var deferredTitle by remember { mutableStateOf("后续开放") }
     var bottomBarVisible by remember { mutableStateOf(true) }
@@ -188,10 +190,38 @@ internal fun NativeAndroidMain() {
         }
     }
 
+    fun openContentRoute(route: String) {
+        contentRoute = route
+        contentRouteStack = listOf(route)
+        overlay = ShellOverlay.ContentRoute
+        bottomBarVisible = false
+    }
+
+    fun pushContentRoute(route: String) {
+        contentRoute = route
+        contentRouteStack = contentRouteStack + route
+        overlay = ShellOverlay.ContentRoute
+        bottomBarVisible = false
+    }
+
+    fun popContentRoute() {
+        if (contentRouteStack.size <= 1) {
+            contentRoute = null
+            contentRouteStack = emptyList()
+            overlay = ShellOverlay.None
+            bottomBarVisible = authOverlay == AuthOverlay.None
+        } else {
+            val next = contentRouteStack.dropLast(1)
+            contentRouteStack = next
+            contentRoute = next.last()
+        }
+    }
+
     fun openDeferred(title: String) {
         val homeMapped = HomeRoutes.fromLabel(title)
         val communityMapped = CommunityRoutes.fromLabel(title)
         val mineMapped = MineRoutes.fromLabel(title)
+        val contentMapped = ContentRoutes.fromLabel(title)
         when {
             title == "全部服务" || title == "更多" -> {
                 overlay = ShellOverlay.AllServices
@@ -209,10 +239,16 @@ internal fun NativeAndroidMain() {
             mineMapped != null -> {
                 if (mineMapped == HomeRoutes.UsedCar || mineMapped == HomeRoutes.CheckInMall) {
                     openHomeRoute(mineMapped)
+                } else if (
+                    mineMapped == MineRoutes.Classroom ||
+                    mineMapped == MineRoutes.ShortVideo
+                ) {
+                    openContentRoute(mineMapped)
                 } else {
                     openMineRoute(mineMapped)
                 }
             }
+            contentMapped != null -> openContentRoute(contentMapped)
             communityMapped != null -> openCommunityRoute(communityMapped)
             homeMapped != null -> openHomeRoute(homeMapped)
             else -> {
@@ -229,6 +265,8 @@ internal fun NativeAndroidMain() {
         communityRoute = null
         mineRoute = null
         mineRouteStack = emptyList()
+        contentRoute = null
+        contentRouteStack = emptyList()
         overlay = ShellOverlay.None
         bottomBarVisible = authOverlay == AuthOverlay.None
     }
@@ -287,6 +325,13 @@ internal fun NativeAndroidMain() {
                 route = mineRoute ?: MineRoutes.Mall,
                 onBack = { popMineRoute() },
                 onNavigate = { pushMineRoute(it) },
+            )
+        }
+        ShellOverlay.ContentRoute -> {
+            ContentRouteHost(
+                route = contentRoute ?: ContentRoutes.MediaEntry,
+                onBack = { popContentRoute() },
+                onNavigate = { pushContentRoute(it) },
             )
         }
         ShellOverlay.Membership -> {
@@ -440,6 +485,7 @@ private enum class ShellOverlay {
     HomeRoute,
     CommunityRoute,
     MineRoute,
+    ContentRoute,
 }
 
 @Composable

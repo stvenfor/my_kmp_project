@@ -113,22 +113,23 @@ private fun LiveRoomScreen(
     onBack: () -> Unit,
 ) {
     var joined by remember { mutableStateOf(false) }
+    var signals by remember { mutableStateOf(listOf("state: idle")) }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = room.title, onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = "直播 ${room.id}", onBack = onBack, containerColor = DemoColors.PageBg)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(220.dp)
+                .height(180.dp)
                 .padding(horizontal = 16.dp)
                 .background(DemoColors.Toolbar, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = if (joined) "已进入房间（无推流画面）" else "房间预览占位",
+                text = if (joined) "WS: connected · paused 保持连接" else "WS: disconnected",
                 color = DemoColors.TextPrimary,
                 fontSize = 15.sp,
             )
@@ -140,18 +141,38 @@ private fun LiveRoomScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(text = room.host, color = DemoColors.TextSecondary, fontSize = 14.sp)
+            Text("信令（上限 30）", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+            signals.takeLast(30).forEach { line ->
+                Text(line, fontSize = 12.sp, color = DemoColors.Muted)
+            }
             Button(
-                onClick = { joined = !joined },
+                onClick = {
+                    joined = true
+                    signals = (signals + "signal: live.join payload={room=${room.id}}").takeLast(30)
+                },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = DemoColors.Primary,
                     contentColor = DemoColors.OnPrimary,
                 ),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(if (joined) "离开房间" else "进入直播间")
+                Text("发送 Mock 信令 live.join")
+            }
+            Button(
+                onClick = {
+                    joined = false
+                    signals = signals + "state: left"
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DemoColors.Toolbar,
+                    contentColor = DemoColors.TextPrimary,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("退订 liveSignal")
             }
             Text(
-                text = "实时弹幕/推流 SDK 未接入；本页仅列表→房间入口导航。",
+                text = "Realtime SDK 未接入；本页 mock 信令列表。",
                 color = DemoColors.Muted,
                 fontSize = 12.sp,
             )

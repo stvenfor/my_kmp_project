@@ -38,10 +38,12 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.classroom.ClassroomScreen
+import com.example.my_kmp_project.feature.classroom.ClassroomRouteHost
+import com.example.my_kmp_project.feature.classroom.ClassroomRoutes
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.home.HomeRoutes
-import com.example.my_kmp_project.feature.media.VideoHubScreen
+import com.example.my_kmp_project.feature.media.VideoRouteHost
+import com.example.my_kmp_project.feature.media.VideoRoutes
 
 internal object MineRoutes {
     const val Mall = "/mall"
@@ -55,8 +57,8 @@ internal object MineRoutes {
     const val Addresses = "/mine/addresses"
     const val AddressEdit = "/mine/addresses/edit"
     const val Calculator = "/mine/purchase_calculator"
-    const val Classroom = "/classroom/my_class"
-    const val ShortVideo = "/video/short"
+    const val Classroom = ClassroomRoutes.MyClass
+    const val ShortVideo = VideoRoutes.Short
     const val CheckIn = "/home/check_in_mall"
 
     fun fromLabel(label: String): String? = when (label.trim()) {
@@ -82,32 +84,31 @@ internal fun MineRouteHost(
     onBack: () -> Unit,
     onNavigate: (String) -> Unit = {},
 ) {
-    when (route) {
-        MineRoutes.Mall -> MallListScreen(
+    when {
+        route.startsWith("/classroom") -> ClassroomRouteHost(route, onBack, onNavigate)
+        route.startsWith("/video") -> VideoRouteHost(route, onBack, onNavigate)
+        route == MineRoutes.Mall -> MallListScreen(
             onBack = onBack,
             onOpenDetail = { onNavigate(MineRoutes.MallDetail) },
             onOpenOrders = { onNavigate(MineRoutes.MallOrders) },
         )
-        MineRoutes.MallDetail -> SimpleDetail("商品详情", "SKU · 示例商品 · ¥199", onBack)
-        MineRoutes.MallOrders -> OrderListScreen(
+        route == MineRoutes.MallDetail -> SimpleDetail("商品详情", "SKU · 示例商品 · ¥199", onBack)
+        route == MineRoutes.MallOrders -> OrderListScreen(
             onBack = onBack,
             onOpen = { onNavigate(MineRoutes.MallOrderDetail) },
         )
-        MineRoutes.MallOrderDetail -> SimpleDetail("订单详情", "订单 #MO-1001 · 待发货", onBack)
-        MineRoutes.Wallet -> WalletScreen(onBack = onBack, onPay = { onNavigate(MineRoutes.Pay) })
-        MineRoutes.Pay -> SimpleDetail("收银台", "支付网关 stub（见 platform-gap）", onBack)
-        MineRoutes.Membership -> MembershipScreen(onBack = onBack)
-        MineRoutes.Profile -> ProfileEditScreen(onBack = onBack)
-        MineRoutes.Addresses -> AddressListScreen(
+        route == MineRoutes.MallOrderDetail -> SimpleDetail("订单详情", "订单 #MO-1001 · 待发货", onBack)
+        route == MineRoutes.Wallet -> WalletScreen(onBack = onBack, onPay = { onNavigate(MineRoutes.Pay) })
+        route == MineRoutes.Pay -> SimpleDetail("收银台", "支付网关 stub（见 platform-gap）", onBack)
+        route == MineRoutes.Membership -> MembershipScreen(onBack = onBack)
+        route == MineRoutes.Profile -> ProfileEditScreen(onBack = onBack)
+        route == MineRoutes.Addresses -> AddressListScreen(
             onBack = onBack,
             onEdit = { onNavigate(MineRoutes.AddressEdit) },
         )
-        MineRoutes.AddressEdit -> AddressEditScreen(onBack = onBack)
-        MineRoutes.Calculator -> PurchaseCalculatorScreen(onBack = onBack)
-        MineRoutes.Classroom -> ClassroomScreen(onBack = onBack)
-        MineRoutes.ShortVideo -> VideoHubScreen(onBack = onBack)
-        MineRoutes.CheckIn -> {
-            // reuse home host path via label — shell maps check-in
+        route == MineRoutes.AddressEdit -> AddressEditScreen(onBack = onBack)
+        route == MineRoutes.Calculator -> PurchaseCalculatorScreen(onBack = onBack)
+        route == MineRoutes.CheckIn -> {
             SimpleDetail("签到", "请从 Home 签到商城进入完整页", onBack)
         }
         else -> SimpleDetail("我的", "route=$route", onBack)

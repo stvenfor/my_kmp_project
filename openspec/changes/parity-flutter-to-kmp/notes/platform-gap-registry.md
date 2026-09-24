@@ -24,7 +24,10 @@ Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all
 | push entry | missing | missing | missing | no JPush-equivalent — enumerated incomplete (task 5.4) | wys_push | — | add PushBridge expect/actual + vendor SDK |
 | friend list | partial | partial | partial | Android list→detail mock evidenced; no relation/IM vendor SDK | features/friend | feature/friend | 9.4 iOS/OHOS + Flutter pixel; vendor SDK later |
 | live | partial | partial | partial | Android list→room mock evidenced; no realtime/push stream | features/live | feature/live | realtime SDK / 9.4 |
-| classroom | partial | partial | partial | Android list→detail→schedule evidenced; mock data only | features/classroom | feature/classroom | 9.4 three-platform + Flutter pixel |
+| classroom | partial | partial | partial | Android my_class→homework_stats→teacher/student/dubbing/review/gift/video mock; no realtime classroom | features/classroom | feature/classroom ClassroomRouteHost | 9.4 three-platform + Flutter pixel |
+| short video | partial | stub | missing | Android short list→play→publish→help + dubbing graph mock; Surface/video decode TBD | features/video | feature/media VideoRouteHost | iOS/OHOS player; real short-videos API |
+| AI stream | stub | missing | missing | Android AiStreamScreen mock chunk stream; no SSE/backend | features/ai | feature/ai AiStreamScreen | AiStreamRepository SSE |
+| music | partial | stub | missing | Android list→now_playing + MediaPlayer; no mini bar global yet | features/music | feature/media MusicListScreen | mini player + iOS/OHOS |
 | image_picker | missing | missing | missing | no adapter | image_picker plugin | — | with publish/mine |
 | DoKit / bfui / BLE / invoice demos | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal | features/bfui, bluetooth, settings debug | — | optional later |
 | face verify | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal unless product adds | wys_face_verify | — | optional later |
