@@ -41,13 +41,17 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.ui.PlatformNetworkImage
+import com.example.my_kmp_project.feature.chat.ImConversation
+import com.example.my_kmp_project.feature.chat.ImEngine
+import com.example.my_kmp_project.feature.chat.MockImEngine
 import com.example.my_kmp_project.feature.mine.MineHomeContent
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.community_avatar
 import my_kmp_project.composeapp.generated.resources.community_post_a
 import org.jetbrains.compose.resources.painterResource
-import com.example.my_kmp_project.core.ui.PlatformNetworkImage
-import com.example.my_kmp_project.core.design.MineTopBar
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
@@ -66,19 +70,29 @@ private val LikeRed = Color(0xFFEE0000)
 
 @Composable
 internal fun JetpackChatRoot() {
-    // Flutter MockImChatStore peers — titles/snippets/unread/online parity.
-    val peers = listOf(
-        ChatPeer("Mock好友1", "晚上一起吃饭吗？", "22:50", "2", true),
-        ChatPeer("Mock好友2", "你好", "22:45", null, false),
-        ChatPeer("Mock好友3", "你好", "22:40", null, true),
-    )
+    val engine = remember { MockImEngine() }
     var searchOpen by remember { mutableStateOf(false) }
-    var openPeer by remember { mutableStateOf<ChatPeer?>(null) }
-    val open = openPeer
+    var query by remember { mutableStateOf("") }
+    var openId by remember { mutableStateOf<String?>(null) }
+    var listEpoch by remember { mutableStateOf(0) }
+    val conversations = remember(listEpoch) { engine.conversations() }
+    val filtered = remember(conversations, query) {
+        val q = query.trim()
+        if (q.isEmpty()) conversations
+        else conversations.filter {
+            it.title.contains(q, ignoreCase = true) ||
+                it.lastMessage.contains(q, ignoreCase = true)
+        }
+    }
+    val open = openId?.let { id -> conversations.firstOrNull { it.id == id } }
     if (open != null) {
         JetpackChatDetail(
-            peer = open,
-            onBack = { openPeer = null },
+            conversation = open,
+            engine = engine,
+            onBack = {
+                openId = null
+                listEpoch += 1
+            },
         )
         return
     }
@@ -88,7 +102,6 @@ internal fun JetpackChatRoot() {
             .background(DemoColors.PageBg)
             .statusBarsPadding(),
     ) {
-        // Flutter ChatPage: EdgeInsets.fromLTRB(16, top+8, 8, 8)
         Row(
             Modifier
                 .fillMaxWidth()
@@ -107,7 +120,10 @@ internal fun JetpackChatRoot() {
             Box(
                 Modifier
                     .size(44.dp)
-                    .clickable { searchOpen = !searchOpen },
+                    .clickable {
+                        searchOpen = !searchOpen
+                        if (!searchOpen) query = ""
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -117,14 +133,18 @@ internal fun JetpackChatRoot() {
                 )
             }
             Box(
-                Modifier.size(44.dp),
+                Modifier
+                    .size(44.dp)
+                    .clickable {
+                        // Flutter「发起」：mock 新建会话入口
+                        showPlatformToast("发起会话（mock）")
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 Text("✎", color = DemoColors.Accent, fontSize = 20.sp)
             }
         }
         if (searchOpen) {
-            // Flutter: hint「搜索会话名称或消息」, radiusLg 12
             Row(
                 Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
@@ -138,10 +158,21 @@ internal fun JetpackChatRoot() {
             ) {
                 Text("⌕", color = DemoColors.Muted, fontSize = 18.sp)
                 Spacer(Modifier.width(8.dp))
-                Text("搜索会话名称或消息", color = DemoColors.Muted, fontSize = 14.sp)
+                BasicTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    textStyle = TextStyle(fontSize = 14.sp, color = DemoColors.TextPrimary),
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                    decorationBox = { inner ->
+                        if (query.isEmpty()) {
+                            Text("搜索会话名称或消息", color = DemoColors.Muted, fontSize = 14.sp)
+                        }
+                        inner()
+                    },
+                )
             }
         }
-        // Flutter ListView padding: fromLTRB(16, 8, 16, 24); card radiusMd 8
         LazyColumn(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         ) {
@@ -153,15 +184,31 @@ internal fun JetpackChatRoot() {
                         .background(DemoColors.Background)
                         .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
                 ) {
-                    peers.forEachIndexed { index, peer ->
-                        ChatConversationRow(peer, onClick = { openPeer = peer })
-                        if (index != peers.lastIndex) {
-                            // Flutter ChatTheme.groupedDivider indent 72 (avatar 52 + gap 12 + pad 8)
-                            HorizontalDivider(
-                                modifier = Modifier.padding(start = 72.dp),
-                                thickness = 0.5.dp,
-                                color = DemoColors.Divider,
+                    if (filtered.isEmpty()) {
+                        Text(
+                            "无匹配会话",
+                            color = DemoColors.TextSecondary,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    } else {
+                        filtered.forEachIndexed { index, conv ->
+                            ChatConversationRow(
+                                peer = ChatPeer(
+                                    name = conv.title,
+                                    snippet = conv.lastMessage,
+                                    time = conv.updatedAtLabel,
+                                    badge = conv.unreadCount.takeIf { it > 0 }?.toString(),
+                                    online = index % 2 == 0,
+                                ),
+                                onClick = { openId = conv.id },
                             )
+                            if (index != filtered.lastIndex) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(start = 72.dp),
+                                    thickness = 0.5.dp,
+                                    color = DemoColors.Divider,
+                                )
+                            }
                         }
                     }
                 }
@@ -171,14 +218,25 @@ internal fun JetpackChatRoot() {
 }
 
 @Composable
-private fun JetpackChatDetail(peer: ChatPeer, onBack: () -> Unit) {
-    val messages = remember(peer.name) {
-        mutableStateListOf(
-            ChatBubble(peer.snippet, fromMe = false),
-            ChatBubble("收到，稍后再回你", fromMe = true),
-        )
-    }
+private fun JetpackChatDetail(
+    conversation: ImConversation,
+    engine: ImEngine,
+    onBack: () -> Unit,
+) {
+    var epoch by remember { mutableStateOf(0) }
+    val messages = remember(conversation.id, epoch) { engine.messages(conversation.id) }
     var draft by remember { mutableStateOf("") }
+    var previewUrl by remember { mutableStateOf<String?>(null) }
+    var sending by remember { mutableStateOf(false) }
+
+    if (previewUrl != null) {
+        ChatImagePreview(
+            url = previewUrl!!,
+            onBack = { previewUrl = null },
+        )
+        return
+    }
+
     Column(
         Modifier
             .fillMaxSize()
@@ -187,30 +245,53 @@ private fun JetpackChatDetail(peer: ChatPeer, onBack: () -> Unit) {
             .navigationBarsPadding()
             .imePadding(),
     ) {
-        MineTopBar(title = peer.name, onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = conversation.title, onBack = onBack, containerColor = DemoColors.PageBg)
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
-            reverseLayout = false,
         ) {
-            items(messages.size) { i ->
-                val bubble = messages[i]
+            items(messages, key = { it.id }) { bubble ->
+                val isImage = bubble.body.startsWith("[image]")
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = if (bubble.fromMe) Arrangement.End else Arrangement.Start,
+                    horizontalArrangement = if (bubble.isSelf) Arrangement.End else Arrangement.Start,
                 ) {
-                    Text(
-                        bubble.text,
-                        color = if (bubble.fromMe) Color.White else DemoColors.TextPrimary,
-                        fontSize = 15.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (bubble.fromMe) DemoColors.Accent else DemoColors.Background)
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                    )
+                    Column(horizontalAlignment = if (bubble.isSelf) Alignment.End else Alignment.Start) {
+                        if (isImage) {
+                            val url = bubble.body.removePrefix("[image]").trim()
+                            Box(
+                                Modifier
+                                    .size(140.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(DemoColors.Background)
+                                    .clickable { previewUrl = url.ifBlank { "https://picsum.photos/seed/chat/600" } },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("图片", color = DemoColors.Accent)
+                            }
+                        } else {
+                            Text(
+                                bubble.body,
+                                color = if (bubble.isSelf) Color.White else DemoColors.TextPrimary,
+                                fontSize = 15.sp,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        if (bubble.isSelf) DemoColors.Accent else DemoColors.Background,
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                            )
+                        }
+                        Text(
+                            bubble.timeLabel,
+                            fontSize = 11.sp,
+                            color = DemoColors.Muted,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
                 }
             }
         }
@@ -221,6 +302,19 @@ private fun JetpackChatDetail(peer: ChatPeer, onBack: () -> Unit) {
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Text(
+                "图",
+                color = DemoColors.Accent,
+                modifier = Modifier
+                    .clickable {
+                        engine.sendText(
+                            conversation.id,
+                            "[image]https://picsum.photos/seed/${conversation.id}/600",
+                        )
+                        epoch += 1
+                    }
+                    .padding(8.dp),
+            )
             BasicTextField(
                 value = draft,
                 onValueChange = { draft = it },
@@ -240,16 +334,22 @@ private fun JetpackChatDetail(peer: ChatPeer, onBack: () -> Unit) {
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                "发送",
+                if (sending) "…" else "发送",
                 color = DemoColors.Accent,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .clickable {
                         val text = draft.trim()
-                        if (text.isNotEmpty()) {
-                            messages.add(ChatBubble(text, fromMe = true))
+                        if (text.isEmpty() || sending) return@clickable
+                        sending = true
+                        val sent = engine.sendText(conversation.id, text)
+                        if (sent != null) {
                             draft = ""
+                            epoch += 1
+                        } else {
+                            showPlatformToast("发送失败，请重试")
                         }
+                        sending = false
                     }
                     .padding(8.dp),
             )
@@ -257,7 +357,35 @@ private fun JetpackChatDetail(peer: ChatPeer, onBack: () -> Unit) {
     }
 }
 
-private data class ChatBubble(val text: String, val fromMe: Boolean)
+@Composable
+private fun ChatImagePreview(url: String, onBack: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .statusBarsPadding()
+            .clickable(onClick = onBack),
+        contentAlignment = Alignment.Center,
+    ) {
+        PlatformNetworkImage(
+            url = url,
+            contentDescription = "预览",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            contentScale = ContentScale.Fit,
+            placeholder = Res.drawable.community_post_a,
+        )
+        Text(
+            "关闭",
+            color = Color.White,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+                .clickable(onClick = onBack),
+        )
+    }
+}
 
 @Composable
 private fun ChatConversationRow(peer: ChatPeer, onClick: () -> Unit) {

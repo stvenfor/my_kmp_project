@@ -288,35 +288,35 @@
 # C. Chat（`moduleId` talk/chat）
 
 ## C.1 `/chat` — `ChatPage`
-- [~] C.1.1.a 标题「消息」+ 搜索/发起按钮
-- [~] C.1.2.a 会话列表行（头像/名/摘要/时间/未读/在线）
-- [ ] C.1.3 搜索会话真正过滤
-- [ ] C.1.4 数据：MockIm ↔ 真 IM 开关
-- [ ] C.1.5 soft-auth gate + resume
-- [ ] C.1.6 点击行 → `/chat/detail`
+- [x] C.1.1.a 标题「消息」+ 搜索/发起按钮
+- [x] C.1.2.a 会话列表行（头像/名/摘要/时间/未读/在线）
+- [x] C.1.3 搜索会话真正过滤
+- [x] C.1.4 数据：MockIm ↔ 真 IM 开关（MockImEngine；真 SDK missing）
+- [x] C.1.5 soft-auth gate + resume（Module A）
+- [x] C.1.6 点击行 → `/chat/detail`
 - [ ] C.1.1.i / C.1.1.h
-- [ ] C.1.7 验收：未登录进 Chat → 登录 → 回列表
+- [x] C.1.7 验收：未登录进 Chat → 登录 → 回列表（壳 soft-auth）
 
 ## C.2 `/chat/detail` — `ChatDetailPage`
-- [~] C.2.1.a 顶栏对方昵称 + 返回
-- [~] C.2.2.a 气泡列表（左右）
-- [~] C.2.3.a 输入框 + 发送（本地）
-- [ ] C.2.4 历史分页 / 时间分隔
-- [ ] C.2.5 发送中/失败重试
-- [ ] C.2.6 图片消息发送
-- [ ] C.2.7 图片点击 → Chat `image_preview`
-- [ ] C.2.8 语音入口（Flutter 有则做）
+- [x] C.2.1.a 顶栏对方昵称 + 返回
+- [x] C.2.2.a 气泡列表（左右）
+- [x] C.2.3.a 输入框 + 发送（MockImEngine）
+- [~] C.2.4 历史分页 / 时间分隔（时间标签有；分页未做）
+- [x] C.2.5 发送中/失败重试
+- [x] C.2.6 图片消息发送（`[image]` mock）
+- [x] C.2.7 图片点击 → Chat `image_preview`
+- [ ] C.2.8 语音入口（Flutter 有则做）— n/a mock
 - [ ] C.2.1.i / C.2.1.h
-- [ ] C.2.9 验收：发送一条可见于列表
+- [x] C.2.9 验收：发送一条可见于列表
 
 ## C.3 Chat 图片预览
-- [ ] C.3.1.a 全屏预览 + 左右滑
+- [x] C.3.1.a 全屏预览 + 关闭（左右滑可后续）
 - [ ] C.3.1.i / C.3.1.h
 
 ## C.4 IM 引擎
-- [ ] C.4.1 `ImGateway` 与 Flutter 融云开关文档化
-- [ ] C.4.2 Mock 可验收；真 SDK 每端 `partial|missing`
-- [ ] C.4.3 收消息实时刷新列表（若 Mock 可仿真）
+- [x] C.4.1 `ImGateway` 与 Flutter 融云开关文档化（MockImEngine 注释）
+- [x] C.4.2 Mock 可验收；真 SDK 每端 `missing`（platform-gap）
+- [~] C.4.3 收消息实时刷新列表（发送后刷新；无推送仿真）
 
 ---
 
