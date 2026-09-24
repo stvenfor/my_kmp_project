@@ -14,11 +14,23 @@ enum DesignTokens {
     static let link = Color(red: 0x00/255, green: 0x70/255, blue: 0xF3/255)
     static let spacingMd: CGFloat = 16
     static let spacingLg: CGFloat = 24
+    /// 0xF2FFFFFF — same as `DesignTokens.Color.TabBarBackground`.
+    static let tabBar = Color.white.opacity(242.0 / 255.0)
+}
+
+extension Text {
+    init(_ content: String, color: Color) {
+        self = Text(content).foregroundColor(color)
+    }
+
+    init(_ content: String, font: Font, color: Color) {
+        self = Text(content).font(font).foregroundColor(color)
+    }
 }
 
 private enum AppPhase { case splash, privacy, main }
 
-private enum MainTab: Int, CaseIterable, Identifiable {
+enum MainTab: Int, CaseIterable, Identifiable {
     case home, chat, community, mine
     var id: Int { rawValue }
     var title: String {
@@ -29,6 +41,17 @@ private enum MainTab: Int, CaseIterable, Identifiable {
         case .mine: return "我的"
         }
     }
+
+    static func fromLaunchArguments() -> MainTab {
+        let args = ProcessInfo.processInfo.arguments
+        guard let index = args.firstIndex(of: "-tab"), index + 1 < args.count else { return .home }
+        switch args[index + 1] {
+        case "chat": return .chat
+        case "community": return .community
+        case "mine": return .mine
+        default: return .home
+        }
+    }
 }
 
 /// ADR 0002: SwiftUI owns splash / privacy / tab roots / Mine root / auth.
@@ -36,8 +59,8 @@ private enum MainTab: Int, CaseIterable, Identifiable {
 struct ContentView: View {
     @State private var phase: AppPhase = .splash
     @State private var privacyAccepted = UserDefaults.standard.bool(forKey: "privacy_accepted")
-    @State private var tab: MainTab = .home
-    @State private var isLoggedIn = false
+    @State private var tab: MainTab = MainTab.fromLaunchArguments()
+    @State private var isLoggedIn = ProcessInfo.processInfo.arguments.contains("-loggedIn")
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
@@ -49,7 +72,8 @@ struct ContentView: View {
             case .splash:
                 SplashView().onAppear {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                        phase = privacyAccepted ? .main : .privacy
+                        let accepted = privacyAccepted || ProcessInfo.processInfo.arguments.contains("-acceptPrivacy")
+                        phase = accepted ? .main : .privacy
                     }
                 }
             case .privacy:
@@ -66,9 +90,42 @@ struct ContentView: View {
     }
 
     private var mainShell: some View {
-        TabView(selection: Binding(
-            get: { tab },
-            set: { next in
+        VStack(spacing: 0) {
+            Group {
+                switch tab {
+                case .home:
+                    HomeTabView(onDeferred: { stubTitle = $0 })
+                case .chat:
+                    if isLoggedIn {
+                        ChatTabView()
+                    } else {
+                        AuthGateView { showLogin = true }
+                    }
+                case .community:
+                    if isLoggedIn {
+                        CommunityTabView()
+                    } else {
+                        AuthGateView { showLogin = true }
+                    }
+                case .mine:
+                    MineRootView(
+                        isLoggedIn: isLoggedIn,
+                        onLogin: { showLogin = true },
+                        onLogout: { isLoggedIn = false },
+                        onOpenSettings: {
+                            mineIslandRoute = "settings"
+                            showMineIsland = true
+                        },
+                        onOpenPersonalized: {
+                            mineIslandRoute = "personalized"
+                            showMineIsland = true
+                        },
+                        onDeferred: { stubTitle = $0 }
+                    )
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            NativeBottomBar(selected: tab) { next in
                 if (next == .chat || next == .community) && !isLoggedIn {
                     tab = next
                     showLogin = true
@@ -76,46 +133,8 @@ struct ContentView: View {
                     tab = next
                 }
             }
-        )) {
-            HomeTabView(onDeferred: { stubTitle = $0 })
-                .tabItem { Label(MainTab.home.title, systemImage: "house.fill") }
-                .tag(MainTab.home)
-            Group {
-                if isLoggedIn {
-                    ChatTabView()
-                } else {
-                    AuthGateView { showLogin = true }
-                }
-            }
-            .tabItem { Label(MainTab.chat.title, systemImage: "bubble.left.and.bubble.right.fill") }
-            .tag(MainTab.chat)
-            Group {
-                if isLoggedIn {
-                    CommunityTabView()
-                } else {
-                    AuthGateView { showLogin = true }
-                }
-            }
-            .tabItem { Label(MainTab.community.title, systemImage: "person.3.fill") }
-            .tag(MainTab.community)
-            MineRootView(
-                isLoggedIn: isLoggedIn,
-                onLogin: { showLogin = true },
-                onLogout: { isLoggedIn = false },
-                onOpenSettings: {
-                    mineIslandRoute = "settings"
-                    showMineIsland = true
-                },
-                onOpenPersonalized: {
-                    mineIslandRoute = "personalized"
-                    showMineIsland = true
-                },
-                onDeferred: { stubTitle = $0 }
-            )
-            .tabItem { Label(MainTab.mine.title, systemImage: "person.crop.circle") }
-            .tag(MainTab.mine)
         }
-        .tint(DesignTokens.link)
+        .background(DesignTokens.canvasSoft2)
         .sheet(isPresented: $showLogin) {
             NativeLoginView(
                 onSuccess: {

@@ -9,6 +9,8 @@ import { registerWebInteropBuilders } from '../ComposeWebInterops';
 
 import { DesignTokens, AppPhase, MainTab } from './NativeShellShared';
 import { NativeHomeContent } from './NativeHomeContent';
+import { HuaweiQuickLoginPane } from '../auth/HuaweiQuickLoginPane';
+import { AuthSession, sharedSessionStore } from '../auth/SessionStore';
 
 const DOMAIN = 0x0000;
 
@@ -29,11 +31,13 @@ struct Index {
   @State errorMessage: string = '';
   @State stubTitle: string = '';
   @State showStub: boolean = false;
+  @State loginDisplayName: string = '访客';
   private islandController: ArkUIViewController | undefined = undefined;
   private pref: preferences.Preferences | undefined = undefined;
 
   private readonly chatPeers: string[] = ['Mock好友1', 'Mock好友2', 'Mock好友3'];
-  private readonly chatSnippets: string[] = ['你好，最近怎么样？', '明天一起开会吧', '收到，谢谢'];
+  private readonly chatSnippets: string[] = ['晚上一起吃饭吗？', '你好', '你好'];
+  private readonly chatTimes: string[] = ['22:50', '22:45', '22:40'];
   private readonly communityAuthors: string[] = ['张三', '李四', '王五'];
   private readonly communityBodies: string[] = [
     '今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发',
@@ -49,9 +53,21 @@ struct Index {
       this.pref = p;
       this.privacyAccepted = p.getSync('privacy_accepted', false) as boolean;
     });
+    sharedSessionStore.init(ctx).then(() => {
+      const session = sharedSessionStore.load();
+      if (session?.token) {
+        this.applySession(session);
+      }
+    });
     setTimeout(() => {
       this.phase = this.privacyAccepted ? AppPhase.Main : AppPhase.Privacy;
     }, 1200);
+  }
+
+  private applySession(session: AuthSession): void {
+    this.isLoggedIn = true;
+    this.loginDisplayName = session.userName || session.phone || '华为用户';
+    this.showLogin = false;
   }
 
   /** kind 0 = Mine island, kind 1 = deferred feature page. */
@@ -83,7 +99,7 @@ struct Index {
     this.openComposeHost(0, personalized ? 1 : 0);
   }
 
-  private openDeferred(title: string) {
+  private openDeferred(title: string): void {
     this.stubTitle = title;
     this.showStub = true;
   }
@@ -155,26 +171,27 @@ struct Index {
   ChatPane() {
     Column() {
       Row() {
-        Text('消息').fontSize(28).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
-        Text('⌕').fontSize(20).fontColor(DesignTokens.ink).margin({ right: 12 })
-        Text('✎').fontSize(20).fontColor(DesignTokens.ink)
-      }.padding(16).width('100%')
+        Text('消息').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
+        Text('⌕').fontSize(22).fontColor(DesignTokens.link).margin({ right: 16 })
+        Text('✎').fontSize(20).fontColor(DesignTokens.link)
+      }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
 
-      List() {
+      Column() {
         ForEach(this.chatPeers, (name: string, index: number) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Text(name.substring(name.length - 1))
-                .width(48)
-                .height(48)
-                .textAlign(TextAlign.Center)
-                .fontColor(DesignTokens.link)
-                .backgroundColor('#260070F3')
-                .borderRadius(24)
-              Column() {
-                Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(this.chatSnippets[index]).fontSize(13).fontColor(DesignTokens.body).maxLines(1)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+          Row({ space: 12 }) {
+            Text(name.substring(name.length - 1))
+              .width(48)
+              .height(48)
+              .textAlign(TextAlign.Center)
+              .fontColor(DesignTokens.link)
+              .backgroundColor('#260070F3')
+              .borderRadius(24)
+            Column() {
+              Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(this.chatSnippets[index]).fontSize(13).fontColor(DesignTokens.body).maxLines(1)
+            }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+            Column() {
+              Text(this.chatTimes[index]).fontSize(11).fontColor(DesignTokens.body)
               if (index === 0) {
                 Text('2')
                   .fontSize(11)
@@ -182,11 +199,19 @@ struct Index {
                   .padding({ left: 6, right: 6, top: 2, bottom: 2 })
                   .backgroundColor('#EE0000')
                   .borderRadius(10)
+                  .margin({ top: 6 })
               }
-            }.padding(16).width('100%')
+            }
+          }.padding(16).width('100%')
+          if (index < this.chatPeers.length - 1) {
+            Divider().strokeWidth(0.5).color(DesignTokens.hairline)
           }
         })
-      }.layoutWeight(1)
+      }
+      .width('100%')
+      .margin({ left: 16, right: 16 })
+      .backgroundColor(DesignTokens.canvas)
+      .borderRadius(12)
     }
     .width('100%')
     .height('100%')
@@ -196,31 +221,103 @@ struct Index {
   @Builder
   CommunityPane() {
     Column() {
-      Text('社区').fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).padding(16).width('100%')
+      Row() {
+        Text('社区').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
+        Text('+')
+          .fontSize(22)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Color.White)
+          .width(36)
+          .height(36)
+          .textAlign(TextAlign.Center)
+          .backgroundColor(DesignTokens.link)
+          .borderRadius(18)
+      }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
+
+      Row({ space: 8 }) {
+        Text('⌕').fontSize(16).fontColor(DesignTokens.body)
+        Text('搜索动态、话题、用户').fontSize(14).fontColor(DesignTokens.body)
+      }
+      .width('100%')
+      .height(40)
+      .padding({ left: 12, right: 12 })
+      .margin({ left: 16, right: 16 })
+      .backgroundColor(DesignTokens.canvas)
+      .borderRadius(10)
+
       Row() {
         ForEach(['最新', '热门', '关注'], (item: string) => {
-          Text(item)
-            .fontSize(14)
-            .fontWeight(this.communityFilter === item ? FontWeight.Medium : FontWeight.Regular)
-            .fontColor(this.communityFilter === item ? DesignTokens.link : DesignTokens.mute)
-            .layoutWeight(1)
-            .textAlign(TextAlign.Center)
-            .onClick(() => {
-              this.communityFilter = item;
-            })
-        })
-      }.padding({ bottom: 8 }).width('100%').backgroundColor(DesignTokens.canvas)
-
-      List() {
-        ForEach(this.communityAuthors, (author: string, index: number) => {
-          ListItem() {
-            Column({ space: 8 }) {
-              Text(author).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-              Text(this.communityBodies[index]).fontSize(14).fontColor(DesignTokens.body)
-            }.padding(16).width('100%').alignItems(HorizontalAlign.Start)
+          Column({ space: 6 }) {
+            Text(item)
+              .fontSize(16)
+              .fontWeight(this.communityFilter === item ? FontWeight.Medium : FontWeight.Regular)
+              .fontColor(this.communityFilter === item ? DesignTokens.ink : DesignTokens.body)
+            Row()
+              .width(18)
+              .height(3)
+              .borderRadius(2)
+              .backgroundColor(this.communityFilter === item ? DesignTokens.link : Color.Transparent)
           }
+          .layoutWeight(1)
+          .onClick(() => { this.communityFilter = item; })
         })
-      }.layoutWeight(1)
+      }.padding({ top: 12, bottom: 12 }).width('100%')
+
+      List({ space: 12 }) {
+        ListItem() {
+          Column({ space: 8 }) {
+            Row() {
+              Text('张').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
+                .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
+              Column() {
+                Text('张三').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text('7分钟前 · 来自 iPhone').fontSize(14).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
+              Text('⋯').fontColor(DesignTokens.body)
+            }.width('100%')
+            Text('今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev')
+              .fontSize(16).fontColor(DesignTokens.ink)
+            Image($r('app.media.community_post_video'))
+              .width('62%')
+              .aspectRatio(858 / 570)
+              .borderRadius(6)
+              .objectFit(ImageFit.Cover)
+            Row({ space: 24 }) {
+              Text('♥ 158').fontSize(14).fontColor('#EE0000')
+              Text('💬 6').fontSize(14).fontColor(DesignTokens.body)
+              Text('↗ 分享').fontSize(14).fontColor(DesignTokens.body)
+            }.width('100%')
+            Column({ space: 4 }) {
+              Text('李四：说得对！').fontSize(14).fontWeight(FontWeight.Medium).fontColor('#576B95')
+              Text('赵六 回复 张三：同感 +1').fontSize(14).fontWeight(FontWeight.Medium).fontColor('#576B95')
+            }.width('100%').padding(10).backgroundColor('#80F5F5F5').borderRadius(4)
+          }
+          .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
+          .backgroundColor(DesignTokens.canvas).borderRadius(8)
+          .border({ width: 0.5, color: DesignTokens.hairline })
+        }
+        ListItem() {
+          Column({ space: 8 }) {
+            Row() {
+              Text('李').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
+                .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
+              Column() {
+                Text('李四').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text('42分钟前 · 来自 Android').fontSize(14).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
+              Text('⋯').fontColor(DesignTokens.body)
+            }.width('100%')
+            Text('周末 hiking，天气太好了！#户外').fontSize(16).fontColor(DesignTokens.ink)
+            Row({ space: 4 }) {
+              Image($r('app.media.community_post_a')).layoutWeight(1).aspectRatio(678 / 518).borderRadius(6).objectFit(ImageFit.Cover)
+              Image($r('app.media.community_post_b')).layoutWeight(1).aspectRatio(678 / 518).borderRadius(6).objectFit(ImageFit.Cover)
+            }.width('100%')
+          }
+          .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
+          .backgroundColor(DesignTokens.canvas).borderRadius(8)
+          .border({ width: 0.5, color: DesignTokens.hairline })
+        }
+      }.layoutWeight(1).padding({ left: 16, right: 16 })
     }
     .width('100%')
     .height('100%')
@@ -232,19 +329,20 @@ struct Index {
     Scroll() {
       Column({ space: 16 }) {
         Row() {
-          Blank().layoutWeight(1)
-          Text('ⓘ').fontSize(18).fontColor(DesignTokens.ink).margin({ right: 12 })
+          Text('我的').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
+          Text('ⓘ').fontSize(18).fontColor(DesignTokens.link).margin({ right: 12 })
             .onClick(() => this.openMineIsland(true))
-          Text('⚙').fontSize(18).fontColor(DesignTokens.ink)
+          Text('⚙').fontSize(18).fontColor(DesignTokens.link)
             .onClick(() => this.openMineIsland(false))
         }.width('100%')
 
         Column({ space: 8 }) {
-          Text(this.isLoggedIn ? '用户0000' : '未登录')
+          Text(this.isLoggedIn ? this.loginDisplayName : '访客')
             .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
           if (this.isLoggedIn) {
-            Text('销售经理').fontSize(12).fontColor(DesignTokens.link)
-            Text('[4S]北京大兴兴荣丰田汽车销售服务有限公司').fontSize(12).fontColor(DesignTokens.body)
+            Text(this.isLoggedIn ? '销售经理' : '未登录').fontSize(12).fontColor(DesignTokens.link)
+            Text(this.isLoggedIn ? '[4S]北京大兴兴荣丰田汽车销售服务有限公司' : '登录后查看门店信息')
+              .fontSize(12).fontColor(DesignTokens.body)
           } else {
             Button('登录').backgroundColor(DesignTokens.link).onClick(() => {
               this.showLogin = true;
@@ -312,7 +410,7 @@ struct Index {
   @Builder
   TabContent() {
     if (this.tab === MainTab.Home) {
-      NativeHomeContent({ onDeferred: (t: string) => this.openDeferred(t) })
+      NativeHomeContent({ onDeferred: (t: string): void => { this.openDeferred(t); } })
     } else if (this.tab === MainTab.Chat) {
       if (this.isLoggedIn) {
         this.ChatPane()
@@ -330,12 +428,24 @@ struct Index {
     }
   }
 
+  private tabIcon(id: MainTab): Resource {
+    const active = this.tab === id;
+    if (id === MainTab.Home || id === MainTab.Chat) {
+      return active ? $r('app.media.main_tab_home_selected') : $r('app.media.main_tab_home_unselected');
+    }
+    return active ? $r('app.media.main_tab_me_selected') : $r('app.media.main_tab_me_unselected');
+  }
+
   @Builder
   TabBtn(label: string, id: MainTab) {
-    Column() {
+    Column({ space: 2 }) {
+      Image(this.tabIcon(id))
+        .width(22)
+        .height(22)
       Text(label)
-        .fontSize(12)
-        .fontColor(this.tab === id ? DesignTokens.link : DesignTokens.mute)
+        .fontSize(10)
+        .fontWeight(this.tab === id ? FontWeight.Medium : FontWeight.Regular)
+        .fontColor(this.tab === id ? DesignTokens.link : DesignTokens.body)
     }
     .layoutWeight(1)
     .height('100%')
@@ -371,7 +481,7 @@ struct Index {
             this.TabBtn('我的', MainTab.Mine)
           }
           .width('100%')
-          .height(56)
+          .height(49)
           .backgroundColor('#F2FFFFFF')
           .border({ width: { top: 1 }, color: DesignTokens.hairline })
         }
@@ -420,24 +530,15 @@ struct Index {
       }
 
       if (this.showLogin) {
-        Column({ space: 16 }) {
-          Text('登录').fontSize(22).fontColor(DesignTokens.ink)
-          Text('演示登录').fontColor(DesignTokens.body)
-          Button('登录成功')
-            .backgroundColor(DesignTokens.link)
-            .onClick(() => {
-              this.isLoggedIn = true;
-              this.showLogin = false;
-            })
-          Button('取消').onClick(() => {
+        HuaweiQuickLoginPane({
+          onSuccess: (session: AuthSession) => {
+            this.applySession(session);
+          },
+          onCancel: () => {
             this.showLogin = false;
             this.tab = MainTab.Home;
-          })
-        }
-        .width('100%')
-        .height('100%')
-        .justifyContent(FlexAlign.Center)
-        .backgroundColor(DesignTokens.canvasSoft2)
+          },
+        })
       }
 
       if (this.errorMessage.length > 0) {

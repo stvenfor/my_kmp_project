@@ -15,6 +15,10 @@
     {
       "name": "vibrate_permission_reason",
       "value": "用于触控反馈功能"
+    },
+    {
+      "name": "network_info_permission_reason",
+      "value": "用于检测网络以便打开协议页"
     }
   ]
 }

@@ -16,14 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,11 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.app.AppContainer
@@ -56,6 +51,7 @@ import com.example.my_kmp_project.core.network.TokenExpiredHandler
 import com.example.my_kmp_project.core.router.MainTab
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.AuthSessionState
+import com.example.my_kmp_project.feature.mine.MineHomeContent
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.feature.mine.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
@@ -148,14 +144,11 @@ internal fun NativeAndroidMain() {
                         }
                     },
                 ) { padding ->
+                    // Bottom bar includes nav inset (Flutter SafeArea). Scaffold padding covers it.
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(padding)
-                            .shellContentInsets(
-                                bottomBarVisible = bottomBarVisible,
-                                bottomBarPadding = MainBottomBarHeight,
-                            ),
+                            .padding(padding),
                     ) {
                         when (tab) {
                             MainTab.Home -> JetpackHomeRoot(onDeferred = { openDeferred(it) })
@@ -200,7 +193,7 @@ private fun JetpackBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(MainBottomBarHeight)
-            .background(DemoColors.Toolbar.copy(alpha = 0.95f))
+            .background(DemoColors.TabBarBackground)
             .border(width = 0.5.dp, color = DemoColors.Divider),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -211,19 +204,50 @@ private fun JetpackBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {
             MainTab.Mine to "我的",
         ).forEach { (tab, label) ->
             val active = selected == tab
-            Text(
-                text = label,
-                color = if (active) DemoColors.Accent else DemoColors.TextSecondary,
-                fontSize = 12.sp,
-                fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
-                textAlign = TextAlign.Center,
+            val tint = if (active) DemoColors.Accent else DemoColors.TextSecondary
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .weight(1f)
                     .clickable { onSelect(tab) }
-                    .padding(vertical = 12.dp),
-            )
+                    .padding(vertical = 4.dp),
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .width(44.dp)
+                        .height(28.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            if (active) DemoColors.Accent.copy(alpha = 0.12f) else Color.Transparent,
+                        ),
+                ) {
+                    Icon(
+                        imageVector = tab.tabIcon(),
+                        contentDescription = label,
+                        modifier = Modifier.size(22.dp),
+                        tint = tint,
+                    )
+                }
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = label,
+                    color = tint,
+                    fontSize = 10.sp,
+                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 11.sp,
+                )
+            }
         }
     }
+}
+
+private fun MainTab.tabIcon(): ImageVector = when (this) {
+    MainTab.Home -> TabIcons.Home
+    MainTab.Chat -> TabIcons.Chat
+    MainTab.Community -> TabIcons.Community
+    MainTab.Mine -> TabIcons.Mine
 }
 
 @Composable

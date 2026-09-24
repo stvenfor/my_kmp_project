@@ -10,5 +10,5 @@
 - [x] Android Jetpack 壳（`NativeAndroidMain`）+ iOS SwiftUI + Harmony ArkTS 四 Tab 根页
 - [x] Compose 仅 `MineIsland`；延期入口三端原生占位
 - [x] 验收清单：`.scratch/phase-1-native-shell-mine-island/parity-checklist.md`
-- [ ] 一期表面对照 Flutter 人工勾选（误差 ≤ 2%）— 待设备走查
-- [ ] Legacy commonMain 产品页物理删除 — 像素验收通过后执行（Q12=B）
+- [x] 一期表面 Android 对照（emulator-5554，内容区 MSE）：Home **1.93%**、Chat **0.93%**、Community **1.38%**、Mine **1.96%** — 全部通过（2026-09-24）
+- [ ] Legacy commonMain 产品页物理删除 — Android 像素闸已过，可执行（Q12=B）；iOS/Harmony 仍为 scaled follow-up

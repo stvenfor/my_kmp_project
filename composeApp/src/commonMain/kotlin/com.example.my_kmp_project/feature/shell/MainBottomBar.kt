@@ -23,6 +23,10 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.ImmersiveInsets.MainBottomBarHeight
 import com.example.my_kmp_project.core.router.MainTab
 import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.main_tab_chat_selected
+import my_kmp_project.composeapp.generated.resources.main_tab_chat_unselected
+import my_kmp_project.composeapp.generated.resources.main_tab_community_selected
+import my_kmp_project.composeapp.generated.resources.main_tab_community_unselected
 import my_kmp_project.composeapp.generated.resources.main_tab_home_selected
 import my_kmp_project.composeapp.generated.resources.main_tab_home_unselected
 import my_kmp_project.composeapp.generated.resources.main_tab_me_selected
@@ -32,10 +36,7 @@ import org.jetbrains.compose.resources.painterResource
 
 /**
  * Main bottom bar: Home / Chat / Community / Mine.
- *
- * Flutter uses CupertinoIcons (vector). Compose Multiplatform material-icons-*
- * is not OHOS-safe in this fork, so we keep tinted PNG placeholders until
- * dedicated tab assets are exported from Flutter design.
+ * Icons cropped from Flutter SoT; selected pill matches IosTabBar (44×28 @ 12% link).
  */
 @Composable
 internal fun MainBottomBar(
@@ -98,14 +99,14 @@ internal fun MainBottomBar(
 
 private fun MainTab.selectedIcon(): DrawableResource = when (this) {
     MainTab.Home -> Res.drawable.main_tab_home_selected
-    MainTab.Chat -> Res.drawable.main_tab_home_selected
-    MainTab.Community -> Res.drawable.main_tab_me_selected
+    MainTab.Chat -> Res.drawable.main_tab_chat_selected
+    MainTab.Community -> Res.drawable.main_tab_community_selected
     MainTab.Mine -> Res.drawable.main_tab_me_selected
 }
 
 private fun MainTab.unselectedIcon(): DrawableResource = when (this) {
     MainTab.Home -> Res.drawable.main_tab_home_unselected
-    MainTab.Chat -> Res.drawable.main_tab_home_unselected
-    MainTab.Community -> Res.drawable.main_tab_me_unselected
+    MainTab.Chat -> Res.drawable.main_tab_chat_unselected
+    MainTab.Community -> Res.drawable.main_tab_community_unselected
     MainTab.Mine -> Res.drawable.main_tab_me_unselected
 }

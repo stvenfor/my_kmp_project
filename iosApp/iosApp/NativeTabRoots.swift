@@ -1,168 +1,273 @@
 import SwiftUI
 
-// MARK: - Home (SwiftUI SoT-aligned structure)
+// MARK: - Tab bar (49pt, same contract as JetpackBottomBar)
+
+struct NativeBottomBar: View {
+    var selected: MainTab
+    var onSelect: (MainTab) -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(MainTab.allCases) { tab in
+                let active = selected == tab
+                let tint = active ? DesignTokens.link : DesignTokens.body
+                Button {
+                    onSelect(tab)
+                } label: {
+                    VStack(spacing: 2) {
+                        Image(tabIcon(tab, active: active))
+                            .resizable()
+                            .renderingMode(.template)
+                            .foregroundStyle(tint)
+                            .frame(width: 22, height: 22)
+                        Text(tab.title, font: .system(size: 10, weight: active ? .semibold : .regular), color: tint)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(height: 49)
+        .background(DesignTokens.tabBar)
+        .overlay(alignment: .top) {
+            Rectangle().fill(DesignTokens.hairline).frame(height: 0.5)
+        }
+    }
+
+    private func tabIcon(_ tab: MainTab, active: Bool) -> String {
+        switch tab {
+        case .home, .chat:
+            return active ? "main_tab_home_selected" : "main_tab_home_unselected"
+        case .community, .mine:
+            return active ? "main_tab_me_selected" : "main_tab_me_unselected"
+        }
+    }
+}
+
+// MARK: - Home
+
 struct HomeTabView: View {
     var onDeferred: (String) -> Void
+    @State private var topTab = 0
+    @State private var metricTab = 0
+
     private let features = [
         "销售顾问", "生活服务", "二手车", "新车关注", "AI小石头",
         "订单中心", "数据分析", "直播带货", "营销活动", "更多",
     ]
-    private let quickActions: [(String, String, String)] = [
-        ("新伙伴待确认", "3 位新成员等待审核", "去处理"),
-        ("待跟进客户", "今日 5 位意向客户", "去查看"),
-        ("订单待审核", "2 笔新车订单", "去处理"),
-        ("售后预约", "4 位客户今日到店", "去查看"),
+    private let quickActions = [
+        ("新伙伴待确认", "3 位新成员等待审核"),
+        ("待跟进客户", "今日 5 位意向客户"),
     ]
 
+    private var greeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let prefix = hour < 12 ? "早上好" : (hour < 18 ? "下午好" : "晚上好")
+        return "\(prefix)，沃德龙鼎"
+    }
+
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text("早上好，沃德龙鼎", font: .title3.weight(.semibold), color: DesignTokens.ink)
-                        Spacer()
-                        Text("3条新消息")
-                            .font(.caption)
-                            .foregroundStyle(DesignTokens.link)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(DesignTokens.link.opacity(0.12), in: Capsule())
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top) {
+                    Text(greeting, font: .system(size: 28, weight: .semibold), color: DesignTokens.ink)
+                        .tracking(-0.8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(spacing: 4) {
+                        Text("🔔").font(.system(size: 12))
+                        Text("3条新消息", font: .system(size: 12, weight: .medium), color: DesignTokens.link)
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(DesignTokens.link.opacity(0.1), in: Capsule())
+                    .onTapGesture { onDeferred("消息") }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 48)
+
+                HStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        Text("⌕", font: .system(size: 18), color: DesignTokens.body)
+                        Text("搜索客户、订单、资讯", font: .system(size: 15), color: DesignTokens.body)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14)
+                    .frame(height: 44)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                    .onTapGesture { onDeferred("搜索") }
+
+                    Text("▣", font: .system(size: 18), color: DesignTokens.link)
+                        .frame(width: 44, height: 44)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                        .onTapGesture { onDeferred("扫一扫") }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 32)
+
+                HStack(spacing: 24) {
+                    ForEach(Array(["首页", "视频", "Club"].enumerated()), id: \.offset) { index, label in
+                        VStack(spacing: 6) {
+                            Text(label, font: .system(size: topTab == index ? 16 : 15, weight: topTab == index ? .semibold : .regular), color: topTab == index ? DesignTokens.ink : DesignTokens.body)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(topTab == index ? DesignTokens.link : .clear)
+                                .frame(width: 20, height: 3)
+                        }
+                        .onTapGesture { topTab = index }
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+
+                if topTab == 0 {
+                    Image("home_banner")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 193)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 24)
+                        .padding(.top, 31)
+                        .onTapGesture { onDeferred("朋友圈营销") }
+
+                    featureGrid
+                        .padding(.horizontal, 26)
+                        .padding(.top, 86)
 
                     HStack(spacing: 12) {
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundStyle(DesignTokens.mute)
-                            Text("搜索客户、订单、资讯", color: DesignTokens.mute)
-                            Spacer()
-                        }
-                        .padding(12)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline))
-                        .onTapGesture { onDeferred("report") }
-
-                        Image(systemName: "square.grid.2x2")
-                            .foregroundStyle(DesignTokens.link)
-                            .frame(width: 44, height: 44)
-                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline))
-                            .onTapGesture { onDeferred("scan") }
-                    }
-                    .padding(.horizontal)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("朋友圈营销", font: .headline, color: .white)
-                        Text("一键分享，高效触达客户", color: .white.opacity(0.9))
-                        Text("立即体验")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(DesignTokens.link)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(.white, in: Capsule())
-                    }
-                    .padding(20)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        LinearGradient(colors: [DesignTokens.link, DesignTokens.link.opacity(0.55)],
-                                       startPoint: .leading, endPoint: .trailing),
-                        in: RoundedRectangle(cornerRadius: 12)
-                    )
-                    .padding(.horizontal)
-
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
-                        ForEach(features, id: \.self) { label in
-                            VStack(spacing: 6) {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(DesignTokens.link.opacity(0.12))
-                                    .frame(width: 48, height: 48)
-                                    .overlay(Text(String(label.prefix(1))).fontWeight(.semibold).foregroundStyle(DesignTokens.link))
-                                Text(label, font: .caption2, color: DesignTokens.ink)
-                                    .lineLimit(1)
-                            }
-                            .onTapGesture {
-                                switch label {
-                                case "更多": onDeferred("services")
-                                case "直播带货": onDeferred("live")
-                                default: break
+                        ForEach(quickActions, id: \.0) { action in
+                            HStack(spacing: 10) {
+                                Text(String(action.0.prefix(1)), font: .system(size: 16, weight: .bold), color: DesignTokens.link)
+                                    .frame(width: 40, height: 40)
+                                    .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 10))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(action.0, font: .system(size: 13, weight: .semibold), color: DesignTokens.ink)
+                                        .lineLimit(1)
+                                    Text(action.1, font: .system(size: 11), color: DesignTokens.body)
+                                        .lineLimit(1)
                                 }
+                                Spacer(minLength: 0)
                             }
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                        ForEach(quickActions, id: \.0) { item in
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(item.0, font: .subheadline.weight(.semibold), color: DesignTokens.ink)
-                                Text(item.1, font: .caption, color: DesignTokens.body)
-                                Text(item.2, font: .caption.weight(.semibold), color: DesignTokens.link)
-                            }
-                            .padding(12)
+                            .padding(14)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline))
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 48)
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("[4S]北京沃德龙鼎吉利", font: .subheadline.weight(.semibold), color: DesignTokens.ink)
-                        HStack {
-                            ForEach(["今日", "昨日", "本月"], id: \.self) { t in
-                                Text(t)
-                                    .font(.caption.weight(t == "今日" ? .semibold : .regular))
-                                    .foregroundStyle(t == "今日" ? DesignTokens.link : DesignTokens.mute)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(t == "今日" ? DesignTokens.link.opacity(0.12) : .clear, in: Capsule())
-                            }
-                        }
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 8) {
-                            metric("99", "意向客户")
-                            metric("2", "新车订单")
-                            metric("999.8", "成交额(万)")
-                            metric("15", "试驾预约")
-                        }
-                    }
-                    .padding(16)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline))
-                    .padding(.horizontal)
-
-                    Button {
-                        onDeferred("strategy")
-                    } label: {
-                        HStack {
-                            Text("投").font(.caption.weight(.bold)).foregroundStyle(.white)
-                                .frame(width: 28, height: 28)
-                                .background(DesignTokens.link, in: Circle())
-                            VStack(alignment: .leading) {
-                                Text("投资策略", color: DesignTokens.ink)
-                                Text("资产九宫格 · 恐贪定投 · 趋势策略", font: .caption, color: DesignTokens.body)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right").foregroundStyle(DesignTokens.mute)
-                        }
-                        .padding(16)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline))
-                    }
-                    .padding(.horizontal)
-                    .buttonStyle(.plain)
+                    storeCard
+                    strategyRow
+                } else {
+                    Text(topTab == 1 ? "视频 Tab · 一期后置" : "Club Tab · 一期后置", color: DesignTokens.body)
+                        .frame(maxWidth: .infinity)
+                        .padding(48)
                 }
-                .padding(.vertical, 12)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-            .navigationTitle("首页")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(.bottom, 24)
         }
+        .background(DesignTokens.canvasSoft2)
+    }
+
+    private var featureGrid: some View {
+        VStack(spacing: 56) {
+            ForEach(0..<2, id: \.self) { row in
+                HStack(spacing: 0) {
+                    ForEach(features[(row * 5)..<((row + 1) * 5)], id: \.self) { label in
+                        VStack(spacing: 4) {
+                            Image(featureAsset(label))
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 70, height: 70)
+                            Text(label, font: .system(size: 11), color: DesignTokens.ink)
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .onTapGesture {
+                            if label == "更多" { onDeferred("全部服务") }
+                            else if label == "直播带货" { onDeferred("直播") }
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 16)
+        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+    }
+
+    private var storeCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("[4S]北京沃德龙鼎吉利", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+            HStack(spacing: 8) {
+                ForEach(Array(["今日", "昨日", "本月"].enumerated()), id: \.offset) { index, label in
+                    Text(label, font: .system(size: 12), color: metricTab == index ? DesignTokens.link : DesignTokens.body)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(metricTab == index ? DesignTokens.link.opacity(0.12) : .clear, in: Capsule())
+                        .onTapGesture { metricTab = index }
+                }
+            }
+            HStack {
+                metric("99", "意向客户")
+                metric("2", "新车订单")
+                metric("999.8", "成交额(万)")
+                metric("15", "试驾预约")
+            }
+            .padding(.top, 4)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+    }
+
+    private var strategyRow: some View {
+        HStack(spacing: 12) {
+            Text("投", font: .system(size: 12, weight: .bold), color: .white)
+                .frame(width: 28, height: 28)
+                .background(DesignTokens.link, in: Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text("投资策略", color: DesignTokens.ink)
+                Text("资产九宫格 · 恐贪定投 · 趋势策略", font: .system(size: 12), color: DesignTokens.body)
+            }
+            Spacer()
+            Text("›", color: DesignTokens.body)
+        }
+        .padding(16)
+        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+        .padding(16)
+        .onTapGesture { onDeferred("投资策略") }
     }
 
     private func metric(_ value: String, _ label: String) -> some View {
-        VStack(spacing: 4) {
-            Text(value, font: .headline.weight(.semibold), color: DesignTokens.ink)
-            Text(label, font: .caption2, color: DesignTokens.mute)
+        VStack(spacing: 2) {
+            Text(value, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+            Text(label, font: .system(size: 11), color: DesignTokens.body)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func featureAsset(_ label: String) -> String {
+        switch label {
+        case "销售顾问": return "home_feature_sales"
+        case "生活服务": return "home_feature_life"
+        case "二手车": return "home_feature_usedcar"
+        case "新车关注": return "home_feature_newcar"
+        case "AI小石头": return "home_feature_ai_stone"
+        case "订单中心": return "home_feature_order"
+        case "数据分析": return "home_feature_data"
+        case "直播带货": return "home_feature_live"
+        case "营销活动": return "home_feature_market"
+        default: return "home_feature_more"
         }
     }
 }
@@ -170,47 +275,64 @@ struct HomeTabView: View {
 // MARK: - Chat
 
 struct ChatTabView: View {
-    private let peers = [
-        ("Mock好友1", "你好，最近怎么样？", "2"),
-        ("Mock好友2", "明天一起开会吧", nil as String?),
-        ("Mock好友3", "收到，谢谢", nil as String?),
+    private let peers: [(String, String, String, String?, Bool)] = [
+        ("Mock好友1", "晚上一起吃饭吗？", "22:50", "2", true),
+        ("Mock好友2", "你好", "22:45", nil, false),
+        ("Mock好友3", "你好", "22:40", nil, true),
     ]
 
     var body: some View {
-        NavigationStack {
-            List {
-                ForEach(peers, id: \.0) { peer in
+        VStack(spacing: 0) {
+            HStack {
+                Text("消息", font: .system(size: 32, weight: .bold), color: DesignTokens.ink)
+                Spacer()
+                Text("⌕", font: .system(size: 22), color: DesignTokens.link)
+                Text("✎", font: .system(size: 20), color: DesignTokens.link)
+                    .padding(.leading, 16)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+
+            VStack(spacing: 0) {
+                ForEach(Array(peers.enumerated()), id: \.offset) { index, peer in
                     HStack(spacing: 12) {
-                        Circle()
-                            .fill(DesignTokens.link.opacity(0.15))
-                            .frame(width: 48, height: 48)
-                            .overlay(Text(String(peer.0.suffix(1))).foregroundStyle(DesignTokens.link))
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(peer.0, font: .body.weight(.semibold), color: DesignTokens.ink)
-                            Text(peer.1, font: .caption, color: DesignTokens.body).lineLimit(1)
+                        ZStack(alignment: .bottomTrailing) {
+                            Text(String(peer.0.suffix(1)), color: DesignTokens.link)
+                                .frame(width: 48, height: 48)
+                                .background(DesignTokens.link.opacity(0.15), in: Circle())
+                            if peer.4 {
+                                Circle()
+                                    .fill(DesignTokens.link)
+                                    .frame(width: 10, height: 10)
+                                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                            }
+                        }
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(peer.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                            Text(peer.1, font: .system(size: 13), color: DesignTokens.body).lineLimit(1)
                         }
                         Spacer()
-                        if let badge = peer.2 {
-                            Text(badge)
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.red, in: Capsule())
+                        VStack(alignment: .trailing, spacing: 6) {
+                            Text(peer.2, font: .system(size: 11), color: DesignTokens.body)
+                            if let badge = peer.3 {
+                                Text(badge, font: .system(size: 11), color: .white)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color(red: 0xEE/255, green: 0, blue: 0), in: Capsule())
+                            }
                         }
                     }
-                    .padding(.vertical, 4)
+                    .padding(16)
+                    if index != peers.count - 1 {
+                        Divider().overlay(DesignTokens.hairline)
+                    }
                 }
             }
-            .listStyle(.plain)
-            .navigationTitle("消息")
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Image(systemName: "magnifyingglass")
-                    Image(systemName: "square.and.pencil")
-                }
-            }
+            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 16)
+            Spacer()
         }
+        .background(DesignTokens.canvasSoft2)
     }
 }
 
@@ -218,147 +340,130 @@ struct ChatTabView: View {
 
 struct CommunityTabView: View {
     @State private var filter = "最新"
-    private let posts: [(String, String, String)] = [
-        ("张三", "7分钟前 · 来自 iPhone", "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发"),
-        ("李四", "42分钟前 · 来自 Android", "周末 hiking，天气太好了！#户外"),
-        ("王五", "61分钟前 · 来自 iPhone", "刚读完一本好书，推荐 @李四 也看看。"),
-    ]
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                HStack {
-                    ForEach(["最新", "热门", "关注"], id: \.self) { item in
-                        Button(item) { filter = item }
-                            .font(.subheadline.weight(filter == item ? .semibold : .regular))
-                            .foregroundStyle(filter == item ? DesignTokens.link : DesignTokens.mute)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                .padding(.vertical, 10)
-                .background(DesignTokens.canvas)
-
-                List {
-                    ForEach(posts, id: \.0) { post in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Circle().fill(DesignTokens.link.opacity(0.15)).frame(width: 36, height: 36)
-                                VStack(alignment: .leading) {
-                                    Text(post.0, font: .subheadline.weight(.semibold), color: DesignTokens.ink)
-                                    Text(post.1, font: .caption2, color: DesignTokens.mute)
-                                }
-                            }
-                            Text(post.2, color: DesignTokens.body)
-                        }
-                        .padding(.vertical, 6)
-                    }
-                }
-                .listStyle(.plain)
+        VStack(spacing: 0) {
+            HStack {
+                Text("社区", font: .system(size: 32, weight: .bold), color: DesignTokens.ink)
+                Spacer()
+                Text("+", font: .system(size: 22, weight: .bold), color: .white)
+                    .frame(width: 36, height: 36)
+                    .background(DesignTokens.link, in: Circle())
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-            .navigationTitle("社区")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "square.and.pencil")
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+
+            HStack(spacing: 8) {
+                Text("⌕", font: .system(size: 16), color: DesignTokens.body)
+                Text("搜索动态、话题、用户", font: .system(size: 14), color: DesignTokens.body)
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .frame(height: 40)
+            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+            .padding(.horizontal, 16)
+
+            HStack {
+                ForEach(["最新", "热门", "关注"], id: \.self) { item in
+                    VStack(spacing: 6) {
+                        Text(item, font: .system(size: 16, weight: filter == item ? .semibold : .regular), color: filter == item ? DesignTokens.ink : DesignTokens.body)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(filter == item ? DesignTokens.link : .clear)
+                            .frame(width: 18, height: 3)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .onTapGesture { filter = item }
                 }
             }
-        }
-    }
-}
+            .padding(.vertical, 12)
 
-// MARK: - Mine Root (native)
-
-struct MineRootView: View {
-    var isLoggedIn: Bool
-    var onLogin: () -> Void
-    var onLogout: () -> Void
-    var onOpenSettings: () -> Void
-    var onOpenPersonalized: () -> Void
-    var onDeferred: (String) -> Void
-
-    var body: some View {
-        NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Spacer()
-                        Button(action: onOpenPersonalized) { Image(systemName: "info.circle") }
-                        Button(action: onOpenSettings) { Image(systemName: "gearshape") }
-                        Button(action: isLoggedIn ? onLogout : onLogin) {
-                            Image(systemName: isLoggedIn ? "rectangle.portrait.and.arrow.right" : "person.badge.key")
-                        }
-                    }
-                    .foregroundStyle(DesignTokens.ink)
-                    .padding(.horizontal)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(isLoggedIn ? "用户0000" : "未登录", font: .title3.weight(.semibold), color: DesignTokens.ink)
-                        if isLoggedIn {
-                            Text("销售经理", font: .caption, color: DesignTokens.link)
-                            Text("[4S]北京大兴兴荣丰田汽车销售服务有限公司", font: .caption, color: DesignTokens.body)
-                        } else {
-                            Button("登录", action: onLogin)
-                                .buttonStyle(.borderedProminent)
-                                .tint(DesignTokens.link)
-                        }
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal)
-
-                    HStack {
-                        ForEach([("1028", "加入天数"), ("28", "员工数"), ("2059", "店铺天数"), ("9366", "累计客户")], id: \.1) { item in
-                            VStack(spacing: 4) {
-                                Text(isLoggedIn ? item.0 : "0", font: .headline, color: DesignTokens.ink)
-                                Text(item.1, font: .caption2, color: DesignTokens.mute)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .padding(.vertical, 12)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal)
-
-                    Text("常用服务", font: .subheadline.weight(.semibold), color: DesignTokens.ink)
-                        .padding(.horizontal)
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 12) {
-                        ForEach(["商城", "我的钱包", "我的课程", "我的订单"], id: \.self) { label in
-                            VStack(spacing: 6) {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(DesignTokens.link.opacity(0.12))
-                                    .frame(width: 44, height: 44)
-                                Text(label, font: .caption2, color: DesignTokens.ink)
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    VStack(spacing: 0) {
-                        ForEach(["商务合作", "提醒事项", "邀请好友", "粉丝群", "意见反馈", "设置"], id: \.self) { label in
-                            Button {
-                                if label == "设置" { onOpenSettings() }
-                                else if label == "粉丝群" { onDeferred("media") }
-                            } label: {
-                                HStack {
-                                    Text(label, color: DesignTokens.ink)
-                                    Spacer()
-                                    Image(systemName: "chevron.right").foregroundStyle(DesignTokens.mute)
-                                }
-                                .padding(16)
-                            }
-                            .buttonStyle(.plain)
-                            Divider().overlay(DesignTokens.hairline)
-                        }
-                    }
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal)
+                VStack(spacing: 12) {
+                    communityCard(
+                        name: "张三",
+                        meta: "7分钟前 · 来自 iPhone",
+                        body: "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev",
+                        images: ["community_post_video"],
+                        singleImage: true,
+                        likes: "158",
+                        comments: "6"
+                    )
+                    communityCard(
+                        name: "李四",
+                        meta: "42分钟前 · 来自 Android",
+                        body: "周末 hiking，天气太好了！#户外",
+                        images: ["community_post_a", "community_post_b"],
+                        singleImage: false,
+                        likes: nil,
+                        comments: nil
+                    )
                 }
-                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-            .navigationTitle("我的")
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .background(DesignTokens.canvasSoft2)
+    }
+
+    private func communityCard(
+        name: String,
+        meta: String,
+        body: String,
+        images: [String],
+        singleImage: Bool,
+        likes: String?,
+        comments: String?
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top) {
+                Circle().fill(DesignTokens.hairline).frame(width: 44, height: 44)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                    Text(meta, font: .system(size: 14), color: DesignTokens.body)
+                }
+                Spacer()
+                Text("⋯", font: .system(size: 20), color: DesignTokens.body)
+                    .frame(width: 44, height: 44)
+            }
+            Text(body, font: .system(size: 16), color: DesignTokens.ink)
+                .lineSpacing(4)
+            if singleImage, let first = images.first {
+                // Flutter `_SingleImage`: maxWidth ≈ 62% screen
+                Image(first).resizable().scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(858 / 570, contentMode: .fit)
+                    .frame(maxWidth: UIScreen.main.bounds.width * 0.62, alignment: .leading)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            } else {
+                HStack(spacing: 4) {
+                    ForEach(images, id: \.self) { name in
+                        Image(name).resizable().scaledToFill()
+                            .aspectRatio(678 / 518, contentMode: .fill)
+                            .frame(maxWidth: .infinity)
+                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                }
+            }
+            if let likes, let comments {
+                HStack(spacing: 24) {
+                    Text("♥ \(likes)", font: .system(size: 14), color: Color(red: 0xEE/255, green: 0, blue: 0))
+                    Text("💬 \(comments)", font: .system(size: 14), color: DesignTokens.body)
+                    Text("↗ 分享", font: .system(size: 14), color: DesignTokens.body)
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("李四：说得对！", font: .system(size: 14, weight: .semibold), color: Color(red: 0x57/255, green: 0x6B/255, blue: 0x95/255))
+                    Text("赵六 回复 张三：同感 +1", font: .system(size: 14, weight: .semibold), color: Color(red: 0x57/255, green: 0x6B/255, blue: 0x95/255))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(DesignTokens.canvasSoft2.opacity(0.5), in: RoundedRectangle(cornerRadius: 4))
+            }
+        }
+        .padding(EdgeInsets(top: 14, leading: 16, bottom: 14, trailing: 12))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
     }
 }
