@@ -83,7 +83,11 @@ internal fun MineHomeContent(
         FunctionSection(
             onTap = { item ->
                 when (item.id) {
-                    "sms", "calculator", "used_car", "short_video" -> snackbar(item.title)
+                    "sms" -> snackbar("短信模板")
+                    "calculator" -> snackbar("购车计算器")
+                    "used_car" -> snackbar("二手车")
+                    "short_video" -> snackbar("小视频")
+                    "after_sales" -> snackbar("售后")
                     else -> snackbar(item.title)
                 }
             },
@@ -91,7 +95,13 @@ internal fun MineHomeContent(
         )
         MenuSection(
             onSettings = onOpenSettings,
-            onOther = { snackbar("${it.label} 开发中") },
+            onOther = { item ->
+                when (item.id) {
+                    "address" -> snackbar("地址管理")
+                    "profile" -> snackbar("个人资料")
+                    else -> snackbar(item.label)
+                }
+            },
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(

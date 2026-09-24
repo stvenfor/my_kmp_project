@@ -53,6 +53,8 @@ import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.home.HomeWebHandlers
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.feature.mine.MineIslandRoute
+import com.example.my_kmp_project.feature.mine.MineRouteHost
+import com.example.my_kmp_project.feature.mine.MineRoutes
 import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
@@ -91,6 +93,8 @@ internal fun NativeAndroidMain() {
     var communityPreviewUrls by remember { mutableStateOf<List<String>>(emptyList()) }
     var communityPreviewIndex by remember { mutableStateOf(0) }
     var communityVideoUrl by remember { mutableStateOf<String?>(null) }
+    var mineRoute by remember { mutableStateOf<String?>(null) }
+    var mineRouteStack by remember { mutableStateOf<List<String>>(emptyList()) }
     var islandRoute by remember { mutableStateOf(MineIslandRoute.Settings) }
     var deferredTitle by remember { mutableStateOf("后续开放") }
     var bottomBarVisible by remember { mutableStateOf(true) }
@@ -157,16 +161,40 @@ internal fun NativeAndroidMain() {
         bottomBarVisible = false
     }
 
+    fun openMineRoute(route: String) {
+        mineRoute = route
+        mineRouteStack = listOf(route)
+        overlay = ShellOverlay.MineRoute
+        bottomBarVisible = false
+    }
+
+    fun pushMineRoute(route: String) {
+        mineRoute = route
+        mineRouteStack = mineRouteStack + route
+        overlay = ShellOverlay.MineRoute
+        bottomBarVisible = false
+    }
+
+    fun popMineRoute() {
+        if (mineRouteStack.size <= 1) {
+            mineRoute = null
+            mineRouteStack = emptyList()
+            overlay = ShellOverlay.None
+            bottomBarVisible = authOverlay == AuthOverlay.None
+        } else {
+            val next = mineRouteStack.dropLast(1)
+            mineRouteStack = next
+            mineRoute = next.last()
+        }
+    }
+
     fun openDeferred(title: String) {
         val homeMapped = HomeRoutes.fromLabel(title)
         val communityMapped = CommunityRoutes.fromLabel(title)
+        val mineMapped = MineRoutes.fromLabel(title)
         when {
             title == "全部服务" || title == "更多" -> {
                 overlay = ShellOverlay.AllServices
-                bottomBarVisible = false
-            }
-            title == "会员" || title == "商城" -> {
-                overlay = ShellOverlay.Membership
                 bottomBarVisible = false
             }
             title == "扫一扫" -> {
@@ -177,6 +205,13 @@ internal fun NativeAndroidMain() {
                 webUrl = if (title.startsWith("http")) title else "https://example.com"
                 overlay = ShellOverlay.InAppWeb
                 bottomBarVisible = false
+            }
+            mineMapped != null -> {
+                if (mineMapped == HomeRoutes.UsedCar || mineMapped == HomeRoutes.CheckInMall) {
+                    openHomeRoute(mineMapped)
+                } else {
+                    openMineRoute(mineMapped)
+                }
             }
             communityMapped != null -> openCommunityRoute(communityMapped)
             homeMapped != null -> openHomeRoute(homeMapped)
@@ -192,6 +227,8 @@ internal fun NativeAndroidMain() {
         homeRoute = null
         homeRouteStack = emptyList()
         communityRoute = null
+        mineRoute = null
+        mineRouteStack = emptyList()
         overlay = ShellOverlay.None
         bottomBarVisible = authOverlay == AuthOverlay.None
     }
@@ -243,6 +280,13 @@ internal fun NativeAndroidMain() {
                 previewUrls = communityPreviewUrls,
                 previewIndex = communityPreviewIndex,
                 videoUrl = communityVideoUrl,
+            )
+        }
+        ShellOverlay.MineRoute -> {
+            MineRouteHost(
+                route = mineRoute ?: MineRoutes.Mall,
+                onBack = { popMineRoute() },
+                onNavigate = { pushMineRoute(it) },
             )
         }
         ShellOverlay.Membership -> {
@@ -371,14 +415,7 @@ internal fun NativeAndroidMain() {
                                                 overlay = ShellOverlay.MineIsland
                                                 bottomBarVisible = false
                                             },
-                                            onDeferred = { msg ->
-                                                when {
-                                                    msg == "商城" || msg.startsWith("商城") ->
-                                                        openDeferred("商城")
-                                                    msg.contains("会员") -> openDeferred("会员")
-                                                    else -> openDeferred(msg)
-                                                }
-                                            },
+                                            onDeferred = { msg -> openDeferred(msg) },
                                         )
                                     }
                                 }
@@ -402,6 +439,7 @@ private enum class ShellOverlay {
     Scan,
     HomeRoute,
     CommunityRoute,
+    MineRoute,
 }
 
 @Composable

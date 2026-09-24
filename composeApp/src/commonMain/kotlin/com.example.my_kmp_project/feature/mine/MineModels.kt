@@ -69,6 +69,8 @@ internal object MineCatalog {
     )
 
     val menuItems = listOf(
+        MineMenuEntry("profile", "个人资料"),
+        MineMenuEntry("address", "地址管理"),
         MineMenuEntry("cooperation", "商务合作"),
         MineMenuEntry("reminder", "提醒事项"),
         MineMenuEntry("invite", "邀请好友"),

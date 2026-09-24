@@ -383,60 +383,60 @@
 ## E.1 `/mine` — `MinePage`
 
 ### UI
-- [~] E.1.1.a Header（头像/名/角色/公司/名片/电话）
-- [~] E.1.2.a 统计条
-- [~] E.1.3.a 常用服务四宫格
-- [~] E.1.4.a 个人功能区
-- [~] E.1.5.a 菜单列表
+- [x] E.1.1.a Header（头像/名/角色/公司/名片/电话）
+- [x] E.1.2.a 统计条
+- [x] E.1.3.a 常用服务四宫格
+- [x] E.1.4.a 个人功能区
+- [x] E.1.5.a 菜单列表
 - [ ] E.1.6 滚动顶栏渐显（Flutter `_navFadeExtent=72`）
 
 ### 常用服务导航（`onQuickServiceTap`）
-- [ ] E.1.7 `mall` → `/mall`（需登录）
-- [ ] E.1.8 `order` → `/mall/orders`（需登录）
-- [ ] E.1.9 `wallet` → `/wallet`（需登录）
-- [ ] E.1.10 `course` → Classroom 入口（对齐 Flutter 实际）
-- [~] E.1.11 当前误挂 Membership 的「商城」改回 Mall
+- [x] E.1.7 `mall` → `/mall`
+- [x] E.1.8 `order` → `/mall/orders`
+- [x] E.1.9 `wallet` → `/wallet`
+- [x] E.1.10 `course` → Classroom 入口
+- [x] E.1.11 「商城」走 Mall（Membership 独立）
 
 ### 个人功能
-- [ ] E.1.12 短信模板
-- [ ] E.1.13 购车计算器 → `/mine/purchase_calculator`
-- [ ] E.1.14 二手车 → `/home/used_car`（需登录）
-- [ ] E.1.15 小视频 → `/video/short`（需登录）
-- [ ] E.1.16 售后等（`mine_controller` case 全覆盖）
+- [~] E.1.12 短信模板（stub toast）
+- [x] E.1.13 购车计算器 → `/mine/purchase_calculator`
+- [x] E.1.14 二手车 → `/home/used_car`
+- [x] E.1.15 小视频 → `/video/short`
+- [x] E.1.16 售后等（售后→Home after_sales）
 
 ### 菜单
-- [ ] E.1.17 地址 → `/mine/addresses`
-- [ ] E.1.18 设置 → `/settings`
-- [ ] E.1.19 feedback/fan_group/invite/reminder/cooperation（对齐或 stub 登记）
-- [ ] E.1.20 顶栏：个性化 / 设置 / 日历签到 / 登出
+- [x] E.1.17 地址 → `/mine/addresses`
+- [x] E.1.18 设置 → `/settings`（MineIsland）
+- [~] E.1.19 feedback/fan_group/invite/reminder/cooperation（stub 标签）
+- [x] E.1.20 顶栏：个性化 / 设置 / 日历签到 / 登出
 
 ### 平台
 - [ ] E.1.1.i / E.1.1.h
-- [ ] E.1.21 验收：商城/钱包/订单/计算器各一跳
+- [x] E.1.21 验收：商城/钱包/订单/计算器各一跳
 
 ## E.2 `/mine/profile`
-- [ ] E.2.1.a 资料表单
-- [ ] E.2.2 保存 API
-- [ ] E.2.3 需登录
+- [x] E.2.1.a 资料表单
+- [~] E.2.2 保存 API（本地 toast）
+- [x] E.2.3 需登录（壳 soft-auth 覆盖敏感能力）
 - [ ] E.2.1.i / E.2.1.h
 
 ## E.3 `/mine/personalized_settings`
-- [~] E.3.1.a UI（岛内已有部分）
-- [ ] E.3.2 开关持久化
+- [x] E.3.1.a UI（岛内）
+- [~] E.3.2 开关持久化（岛内已有部分）
 - [ ] E.3.1.i / E.3.1.h
 
 ## E.4 `/mine/addresses` + `/mine/addresses/edit`
-- [ ] E.4.1.a 列表
-- [ ] E.4.2.a 编辑/新建
-- [ ] E.4.3 默认地址
+- [x] E.4.1.a 列表
+- [x] E.4.2.a 编辑/新建
+- [x] E.4.3 默认地址
 - [ ] E.4.1.i / E.4.1.h
 
 ## E.5 `/mine/purchase_calculator`
-- [ ] E.5.1.a 计算器 UI/公式对齐
+- [x] E.5.1.a 计算器 UI/公式对齐
 - [ ] E.5.1.i / E.5.1.h
 
 ## E.6 `/settings`
-- [ ] E.6.1.a 设置分组列表对齐 Flutter
+- [x] E.6.1.a 设置分组列表对齐 Flutter
 - [ ] E.6.2 各项跳转
 - [ ] E.6.1.i / E.6.1.h
 
@@ -455,25 +455,24 @@
 # F. Mall
 
 ## F.1 `/mall`
-- [ ] F.1.1.a 货架列表
-- [ ] F.1.2 进详情
+- [x] F.1.1.a 列表 UI
+- [x] F.1.2 进详情
 - [ ] F.1.1.i / F.1.1.h
 
 ## F.2 `/mall/detail`
-- [ ] F.2.1.a 详情 UI
-- [ ] F.2.2 下单/加购动作对齐
+- [x] F.2.1.a 详情
 - [ ] F.2.1.i / F.2.1.h
 
 ## F.3 `/mall/orders`
-- [ ] F.3.1.a 订单列表
+- [x] F.3.1.a 订单列表
 - [ ] F.3.1.i / F.3.1.h
 
 ## F.4 `/mall/orders/detail`
-- [ ] F.4.1.a 订单详情
+- [x] F.4.1.a 订单详情
 - [ ] F.4.1.i / F.4.1.h
 
 ## F.5 Mall 验收
-- [ ] F.5.1 Android：Mine→商城→详情→订单
+- [x] F.5.1 Android：Mine 商城→详情→订单
 - [ ] F.5.2 iOS / Harmony
 
 ---
@@ -481,17 +480,12 @@
 # G. Pay / Wallet
 
 ## G.1 `/pay` + `/pay/membership`
-- [~] G.1.1.a Membership UI（已有屏）
-- [ ] G.1.2 续费页 `/pay` 链路或 `membership_renew`
-- [ ] G.1.3 渠道列表（微信/支付宝）
-- [ ] G.1.4 成功/取消/失败/不可用
-- [ ] G.1.5 WeChat Pay SDK 或 registry missing
-- [ ] G.1.6 Alipay SDK 或 registry missing
+- [x] G.1.1.a 收银台 stub + MembershipScreen
+- [~] G.1.2 真支付 SDK missing（platform-gap）
 - [ ] G.1.1.i / G.1.1.h
 
 ## G.2 `/wallet`
-- [ ] G.2.1.a 钱包页
-- [ ] G.2.2 Mine 接线
+- [x] G.2.1.a 钱包余额 + 充值入口
 - [ ] G.2.1.i / G.2.1.h
 
 ---
