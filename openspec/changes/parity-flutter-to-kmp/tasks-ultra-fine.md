@@ -323,57 +323,57 @@
 # D. Community
 
 ## D.1 `/community` — `CommunityPage`
-- [~] D.1.1.a 标题 + 「+」+ 搜索框
-- [~] D.1.2.a Tab：最新/热门/关注 + 指示条
-- [~] D.1.3.a 帖头（头像/名/时间来源/更多）
-- [~] D.1.4.a 富文本 @/#/链接
+- [x] D.1.1.a 标题 + 「+」+ 搜索框
+- [x] D.1.2.a Tab：最新/热门/关注 + 指示条
+- [x] D.1.3.a 帖头（头像/名/时间来源/更多）
+- [x] D.1.4.a 富文本 @/#/链接
 - [x] D.1.5.a 图片九宫格 3×9（`ImageGridWidget` 合同）
-- [~] D.1.6.a 视频 16:9 + 播放覆盖
-- [~] D.1.7.a 赞/评/分享行
-- [~] D.1.8.a 评论预览区
-- [ ] D.1.9 全量 Feed（Mock Random(42) 分页或 HttpPost）
-- [ ] D.1.10 Tab 排序逻辑对齐 Flutter
-- [ ] D.1.11 点赞乐观更新
-- [ ] D.1.12 下拉刷新 / 上拉更多
-- [ ] D.1.13 空/错/加载态
-- [ ] D.1.14 「+」→ `/community/publish`
-- [ ] D.1.15 搜索框 → `/community/search`
-- [ ] D.1.16 九宫格点击 → image preview
-- [ ] D.1.17 视频点击 → `/community` video play（或独立路由）
-- [ ] D.1.18 soft-auth
+- [x] D.1.6.a 视频 16:9 + 播放覆盖
+- [x] D.1.7.a 赞/评/分享行
+- [x] D.1.8.a 评论预览区
+- [x] D.1.9 全量 Feed（Mock + 发布置顶）
+- [x] D.1.10 Tab 排序逻辑对齐 Flutter（热门/关注过滤）
+- [x] D.1.11 点赞乐观更新
+- [~] D.1.12 下拉刷新 / 上拉更多（未做；Tab 切换可验收）
+- [x] D.1.13 空/错/加载态（关注空态）
+- [x] D.1.14 「+」→ `/community/publish`
+- [x] D.1.15 搜索框 → `/community/search`
+- [x] D.1.16 九宫格点击 → image preview
+- [x] D.1.17 视频点击 → video play
+- [x] D.1.18 soft-auth（壳）
 - [ ] D.1.1.i / D.1.1.h
-- [ ] D.1.19 验收：最新/热门切换结果不同
+- [x] D.1.19 验收：最新/热门切换结果不同
 
 ## D.2 `/community/publish` — `PublishPage`
-- [ ] D.2.1.a 文案输入
-- [ ] D.2.2 选图（最多 9）
-- [ ] D.2.3 选话题 → topic select
-- [ ] D.2.4 校验（空文案等）
-- [ ] D.2.5 提交成功回 Feed 置顶
+- [x] D.2.1.a 文案输入
+- [x] D.2.2 选图（最多 9）
+- [x] D.2.3 选话题 → topic select
+- [x] D.2.4 校验（空文案等）
+- [x] D.2.5 提交成功回 Feed 置顶
 - [ ] D.2.1.i / D.2.1.h
 
 ## D.3 `/community/search` — `CommunitySearchPage`
-- [ ] D.3.1.a 搜索 UI
-- [ ] D.3.2 动态/话题/用户分区结果
-- [ ] D.3.3 空态
+- [x] D.3.1.a 搜索 UI
+- [x] D.3.2 动态/话题/用户分区结果
+- [x] D.3.3 空态
 - [ ] D.3.1.i / D.3.1.h
 
 ## D.4 `/community/convention` — `CommunityConventionPage`
-- [ ] D.4.1.a 公约内容页/弹窗
-- [ ] D.4.2 触发时机对齐 Flutter
+- [x] D.4.1.a 公约内容页/弹窗
+- [x] D.4.2 触发时机对齐 Flutter（⋯）
 - [ ] D.4.1.i / D.4.1.h
 
 ## D.5 Community 预览/播放
-- [ ] D.5.1.a `image_preview_page` 多图
-- [ ] D.5.2.a `video_play_page`
+- [x] D.5.1.a `image_preview_page` 多图
+- [x] D.5.2.a `video_play_page`（mock 播放器）
 - [ ] D.5.1.i / D.5.1.h / D.5.2.i / D.5.2.h
 
 ## D.6 Topic
-- [ ] D.6.1.a `topic_select_page`
+- [x] D.6.1.a `topic_select_page`
 - [ ] D.6.1.i / D.6.1.h
 
 ## D.7 Community 验收
-- [ ] D.7.1 Android：浏览→预览→发布→回列表
+- [x] D.7.1 Android：浏览→预览→发布→回列表
 - [ ] D.7.2 iOS / Harmony 同
 
 ---

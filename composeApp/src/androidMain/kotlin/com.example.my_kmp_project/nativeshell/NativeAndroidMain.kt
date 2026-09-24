@@ -44,6 +44,9 @@ import com.example.my_kmp_project.feature.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
+import com.example.my_kmp_project.feature.commerce.MembershipScreen
+import com.example.my_kmp_project.feature.community.CommunityRouteHost
+import com.example.my_kmp_project.feature.community.CommunityRoutes
 import com.example.my_kmp_project.feature.home.AllServicesScreen
 import com.example.my_kmp_project.feature.home.HomeRouteHost
 import com.example.my_kmp_project.feature.home.HomeRoutes
@@ -84,6 +87,10 @@ internal fun NativeAndroidMain() {
     var webUrl by remember { mutableStateOf("https://example.com") }
     var homeRoute by remember { mutableStateOf<String?>(null) }
     var homeRouteStack by remember { mutableStateOf<List<String>>(emptyList()) }
+    var communityRoute by remember { mutableStateOf<String?>(null) }
+    var communityPreviewUrls by remember { mutableStateOf<List<String>>(emptyList()) }
+    var communityPreviewIndex by remember { mutableStateOf(0) }
+    var communityVideoUrl by remember { mutableStateOf<String?>(null) }
     var islandRoute by remember { mutableStateOf(MineIslandRoute.Settings) }
     var deferredTitle by remember { mutableStateOf("后续开放") }
     var bottomBarVisible by remember { mutableStateOf(true) }
@@ -136,8 +143,23 @@ internal fun NativeAndroidMain() {
         }
     }
 
+    fun openCommunityRoute(
+        route: String,
+        previewUrls: List<String> = emptyList(),
+        previewIndex: Int = 0,
+        videoUrl: String? = null,
+    ) {
+        communityRoute = route
+        communityPreviewUrls = previewUrls
+        communityPreviewIndex = previewIndex
+        communityVideoUrl = videoUrl
+        overlay = ShellOverlay.CommunityRoute
+        bottomBarVisible = false
+    }
+
     fun openDeferred(title: String) {
-        val mapped = HomeRoutes.fromLabel(title)
+        val homeMapped = HomeRoutes.fromLabel(title)
+        val communityMapped = CommunityRoutes.fromLabel(title)
         when {
             title == "全部服务" || title == "更多" -> {
                 overlay = ShellOverlay.AllServices
@@ -156,7 +178,8 @@ internal fun NativeAndroidMain() {
                 overlay = ShellOverlay.InAppWeb
                 bottomBarVisible = false
             }
-            mapped != null -> openHomeRoute(mapped)
+            communityMapped != null -> openCommunityRoute(communityMapped)
+            homeMapped != null -> openHomeRoute(homeMapped)
             else -> {
                 deferredTitle = title
                 overlay = ShellOverlay.DeferredStub
@@ -168,6 +191,7 @@ internal fun NativeAndroidMain() {
     fun closeOverlay() {
         homeRoute = null
         homeRouteStack = emptyList()
+        communityRoute = null
         overlay = ShellOverlay.None
         bottomBarVisible = authOverlay == AuthOverlay.None
     }
@@ -209,6 +233,16 @@ internal fun NativeAndroidMain() {
                 route = route,
                 onBack = { popHomeRoute() },
                 onNavigate = { pushHomeRoute(it) },
+            )
+        }
+        ShellOverlay.CommunityRoute -> {
+            CommunityRouteHost(
+                route = communityRoute ?: CommunityRoutes.Search,
+                onBack = { closeOverlay() },
+                onNavigate = { openCommunityRoute(it) },
+                previewUrls = communityPreviewUrls,
+                previewIndex = communityPreviewIndex,
+                videoUrl = communityVideoUrl,
             )
         }
         ShellOverlay.Membership -> {
@@ -300,7 +334,22 @@ internal fun NativeAndroidMain() {
                                             onDeferred = { openDeferred(it) },
                                         )
                                         MainTab.Chat -> JetpackChatRoot()
-                                        MainTab.Community -> JetpackCommunityRoot()
+                                        MainTab.Community -> JetpackCommunityRoot(
+                                            onOpen = { label -> openDeferred(label) },
+                                            onPreviewImages = { urls, index ->
+                                                openCommunityRoute(
+                                                    CommunityRoutes.ImagePreview,
+                                                    previewUrls = urls,
+                                                    previewIndex = index,
+                                                )
+                                            },
+                                            onPlayVideo = { url ->
+                                                openCommunityRoute(
+                                                    CommunityRoutes.VideoPlay,
+                                                    videoUrl = url,
+                                                )
+                                            },
+                                        )
                                         MainTab.Mine -> JetpackMineRoot(
                                             loggedIn = authState.isLoggedIn,
                                             onLogin = {
@@ -352,6 +401,7 @@ private enum class ShellOverlay {
     InAppWeb,
     Scan,
     HomeRoute,
+    CommunityRoute,
 }
 
 @Composable

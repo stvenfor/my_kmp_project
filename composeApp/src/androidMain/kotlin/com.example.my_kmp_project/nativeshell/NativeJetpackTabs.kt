@@ -47,6 +47,7 @@ import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.feature.chat.ImConversation
 import com.example.my_kmp_project.feature.chat.ImEngine
 import com.example.my_kmp_project.feature.chat.MockImEngine
+import com.example.my_kmp_project.feature.community.CommunityPublishBus
 import com.example.my_kmp_project.feature.mine.MineHomeContent
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.community_avatar
@@ -470,15 +471,84 @@ private data class ChatPeer(
 )
 
 @Composable
-internal fun JetpackCommunityRoot() {
+internal fun JetpackCommunityRoot(
+    onOpen: (String) -> Unit = {},
+    onPreviewImages: (List<String>, Int) -> Unit = { _, _ -> },
+    onPlayVideo: (String) -> Unit = {},
+) {
     var filter by remember { mutableStateOf("最新") }
+    var like0 by remember { mutableStateOf(true to 158) }
+    var like1 by remember { mutableStateOf(false to 77) }
+    val published = remember { CommunityPublishBus.lastPublishedBody }
+
+    fun postsForFilter(): List<CommunityFeedPost> {
+        val base = listOf(
+            CommunityFeedPost(
+                id = "post_0",
+                name = "张三",
+                meta = "7分钟前 · 来自 iPhone",
+                body = "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev",
+                videoCoverUrl = "https://picsum.photos/seed/video_0/640/360",
+                imageUrls = emptyList(),
+                likes = like0.second,
+                liked = like0.first,
+                comments = "6",
+                hotScore = 200,
+                thread = listOf(
+                    CommunityThreadLine.Comment("李四", "说得对！"),
+                    CommunityThreadLine.Reply("赵六", "张三", "同感 +1"),
+                ),
+            ),
+            CommunityFeedPost(
+                id = "post_1",
+                name = "李四",
+                meta = "42分钟前 · 来自 Android",
+                body = "周末 hiking，天气太好了！#户外",
+                videoCoverUrl = null,
+                imageUrls = listOf(
+                    "https://picsum.photos/seed/post_1_0/400/400",
+                    "https://picsum.photos/seed/post_1_1/400/400",
+                ),
+                likes = like1.second,
+                liked = like1.first,
+                comments = "2",
+                hotScore = 90,
+                thread = listOf(
+                    CommunityThreadLine.Comment("王五", "说得对！"),
+                    CommunityThreadLine.Reply("小明", "李四", "同感 +1"),
+                ),
+            ),
+        )
+        val withPublished = if (published != null) {
+            listOf(
+                CommunityFeedPost(
+                    id = "post_new",
+                    name = "我",
+                    meta = "刚刚 · 来自 Android",
+                    body = published,
+                    videoCoverUrl = null,
+                    imageUrls = emptyList(),
+                    likes = 0,
+                    liked = false,
+                    comments = "0",
+                    hotScore = 999,
+                    thread = emptyList(),
+                ),
+            ) + base
+        } else base
+        return when (filter) {
+            "热门" -> withPublished.sortedByDescending { it.hotScore }
+            "关注" -> withPublished.filter { it.name == "张三" || it.id == "post_new" }
+            else -> withPublished
+        }
+    }
+
     Column(
         Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg)
             .statusBarsPadding(),
     ) {
-        // Flutter _CommunityHeader: pad LTRB(16, top+8, 16, 0) then title / 16 / search44 / 12 / tabs
         Column(
             Modifier
                 .fillMaxWidth()
@@ -506,7 +576,7 @@ internal fun JetpackCommunityRoot() {
                             .size(36.dp)
                             .clip(CircleShape)
                             .background(DemoColors.Accent)
-                            .clickable { },
+                            .clickable { onOpen("发布动态") },
                         contentAlignment = Alignment.Center,
                     ) {
                         Text("+", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -521,6 +591,7 @@ internal fun JetpackCommunityRoot() {
                     .clip(RoundedCornerShape(8.dp))
                     .background(DemoColors.Background)
                     .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .clickable { onOpen("社区搜索") }
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -559,53 +630,57 @@ internal fun JetpackCommunityRoot() {
                 }
             }
         }
-        LazyColumn(
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
-            // Flutter ListView.separated item spacing 12
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            // Flutter MockPostRepository seed Random(42) — post_0 / post_1
-            item {
-                CommunityPostCard(
-                    name = "张三",
-                    meta = "7分钟前 · 来自 iPhone",
-                    body = "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev",
-                    videoCoverUrl = "https://picsum.photos/seed/video_0/640/360",
-                    imageUrls = emptyList(),
-                    postId = "post_0",
-                    likes = "158",
-                    comments = "6",
-                    liked = true,
-                    thread = listOf(
-                        CommunityThreadLine.Comment("李四", "说得对！"),
-                        CommunityThreadLine.Reply("赵六", "张三", "同感 +1"),
-                    ),
-                )
+        val feed = postsForFilter()
+        if (feed.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("暂无动态", color = DemoColors.TextSecondary)
             }
-            item {
-                CommunityPostCard(
-                    name = "李四",
-                    meta = "42分钟前 · 来自 Android",
-                    body = "周末 hiking，天气太好了！#户外",
-                    videoCoverUrl = null,
-                    // Flutter post_1: imgCount=2 then ImageGridWidget pads to 9
-                    imageUrls = listOf(
-                        "https://picsum.photos/seed/post_1_0/400/400",
-                        "https://picsum.photos/seed/post_1_1/400/400",
-                    ),
-                    postId = "post_1",
-                    likes = "77",
-                    comments = "2",
-                    liked = false,
-                    thread = listOf(
-                        CommunityThreadLine.Comment("王五", "说得对！"),
-                        CommunityThreadLine.Reply("小明", "李四", "同感 +1"),
-                    ),
-                )
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(feed, key = { it.id }) { post ->
+                    CommunityPostCard(
+                        name = post.name,
+                        meta = post.meta,
+                        body = post.body,
+                        videoCoverUrl = post.videoCoverUrl,
+                        imageUrls = post.imageUrls,
+                        postId = post.id,
+                        likes = post.likes.toString(),
+                        comments = post.comments,
+                        liked = post.liked,
+                        thread = post.thread,
+                        onToggleLike = {
+                            when (post.id) {
+                                "post_0" -> like0 = if (like0.first) false to (like0.second - 1) else true to (like0.second + 1)
+                                "post_1" -> like1 = if (like1.first) false to (like1.second - 1) else true to (like1.second + 1)
+                            }
+                        },
+                        onPreviewImages = onPreviewImages,
+                        onPlayVideo = onPlayVideo,
+                        onOpenConvention = { onOpen("社区公约") },
+                    )
+                }
             }
         }
     }
 }
+
+private data class CommunityFeedPost(
+    val id: String,
+    val name: String,
+    val meta: String,
+    val body: String,
+    val videoCoverUrl: String?,
+    val imageUrls: List<String>,
+    val likes: Int,
+    val liked: Boolean,
+    val comments: String,
+    val hotScore: Int,
+    val thread: List<CommunityThreadLine>,
+)
 
 private sealed class CommunityThreadLine {
     data class Comment(val name: String, val body: String) : CommunityThreadLine()
@@ -624,8 +699,13 @@ private fun CommunityPostCard(
     comments: String,
     liked: Boolean,
     thread: List<CommunityThreadLine>,
+    onToggleLike: () -> Unit = {},
+    onPreviewImages: (List<String>, Int) -> Unit = { _, _ -> },
+    onPlayVideo: (String) -> Unit = {},
+    onOpenConvention: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val gridUrls = remember(postId, imageUrls) { nineGridUrls(postId, imageUrls) }
     Column(
         modifier
             .fillMaxWidth()
@@ -647,7 +727,12 @@ private fun CommunityPostCard(
                 Spacer(Modifier.height(2.dp))
                 Text(meta, fontSize = 14.sp, color = DemoColors.TextSecondary)
             }
-            Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .size(44.dp)
+                    .clickable(onClick = onOpenConvention),
+                contentAlignment = Alignment.Center,
+            ) {
                 Text("⋯", color = DemoColors.TextSecondary, fontSize = 20.sp)
             }
         }
@@ -657,15 +742,14 @@ private fun CommunityPostCard(
             fontSize = 16.sp,
             lineHeight = (16 * 1.45).sp,
         )
-        // Flutter PostCard: body ↔ media ↔ actions = 12
         Spacer(Modifier.height(12.dp))
         if (videoCoverUrl != null) {
-            // Flutter VideoCardWidget: AspectRatio(16/9) + BoxFit.cover + play overlay
             Box(
                 Modifier
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f)
-                    .clip(RoundedCornerShape(6.dp)),
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable { onPlayVideo(videoCoverUrl) },
                 contentAlignment = Alignment.Center,
             ) {
                 PlatformNetworkImage(
@@ -686,7 +770,10 @@ private fun CommunityPostCard(
                 }
             }
         } else {
-            CommunityImageGrid(postId = postId, images = imageUrls)
+            CommunityImageGrid(
+                urls = gridUrls,
+                onTap = { index -> onPreviewImages(gridUrls, index) },
+            )
         }
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -694,6 +781,7 @@ private fun CommunityPostCard(
                 label = likes,
                 tint = if (liked) LikeRed else DemoColors.TextSecondary,
                 icon = if (liked) "♥" else "♡",
+                onClick = onToggleLike,
             )
             CommunityAction(label = comments, tint = DemoColors.TextSecondary, icon = "💬")
             CommunityAction(label = "分享", tint = DemoColors.TextSecondary, icon = "↗")
@@ -728,10 +816,10 @@ private fun CommunityPostCard(
 
 /** Flutter [ImageGridWidget]: max 9, 3 columns, pad with picsum seeds. */
 @Composable
-private fun CommunityImageGrid(postId: String, images: List<String>) {
-    val urls = remember(postId, images) { nineGridUrls(postId, images) }
+private fun CommunityImageGrid(urls: List<String>, onTap: (Int) -> Unit) {
     if (urls.isEmpty()) return
     val gap = 4.dp
+    var flatIndex = 0
     Column(verticalArrangement = Arrangement.spacedBy(gap)) {
         urls.chunked(3).forEach { row ->
             Row(
@@ -739,6 +827,8 @@ private fun CommunityImageGrid(postId: String, images: List<String>) {
                 horizontalArrangement = Arrangement.spacedBy(gap),
             ) {
                 row.forEach { url ->
+                    val i = flatIndex
+                    flatIndex += 1
                     PlatformNetworkImage(
                         url = url,
                         contentDescription = null,
@@ -747,7 +837,8 @@ private fun CommunityImageGrid(postId: String, images: List<String>) {
                         modifier = Modifier
                             .weight(1f)
                             .aspectRatio(1f)
-                            .clip(RoundedCornerShape(4.dp)),
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { onTap(i) },
                     )
                 }
                 repeat(3 - row.size) {
@@ -769,10 +860,17 @@ private fun nineGridUrls(postId: String, images: List<String>): List<String> {
 }
 
 @Composable
-private fun CommunityAction(label: String, tint: Color, icon: String) {
+private fun CommunityAction(
+    label: String,
+    tint: Color,
+    icon: String,
+    onClick: (() -> Unit)? = null,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(horizontal = 4.dp),
+        modifier = Modifier
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 4.dp),
     ) {
         Text(icon, fontSize = 20.sp, color = tint)
         Spacer(Modifier.width(4.dp))
