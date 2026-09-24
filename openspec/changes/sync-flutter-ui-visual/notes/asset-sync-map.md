@@ -3,8 +3,9 @@
 Source root: `/Users/mac/Desktop/github/my_ai_project`
 Destination: `composeApp/src/commonMain/composeResources/drawable/`
 Copied files: **114**
+Regenerate: `./scripts/sync-flutter-assets.sh`
 
-Excluded: bfui, DoKit, iOS/Android launcher sets inside feature packages.
+Excluded: bfui, DoKit, feature-package launcher sets.
 
 | module | flutter_path | compose_id | screens | file |
 |---|---|---|---|---|
@@ -125,24 +126,16 @@ Excluded: bfui, DoKit, iOS/Android launcher sets inside feature packages.
 
 ## Tab chrome
 
-Flutter main tabs use **CupertinoIcons** (vector), not PNG packs:
-- Home: `house` / `house_fill`
-- Chat: `chat_bubble` / `chat_bubble_fill`
-- Community: `person_2` / `person_2_fill`
-- Mine: `person` / `person_fill`
+Flutter tabs use CupertinoIcons (vector), not PNG. Mirror with Material icons in KMP.
 
-KMP should mirror with Material/Compose vector icons (or existing tab PNGs until replaced). No Flutter PNG sync for tabs.
+## Chat / Community
 
-
-## Chat / Community / Friend / Live / Classroom
-
-No dedicated `assets/` image packs in Flutter feature modules (network avatars + theme tokens).
-Visual parity is layout/theme-driven; optional default avatar can reuse `music_defaults_lady` / generated placeholders.
+No local image packs; network avatars + theme tokens.
 
 ## Gaps / skips
 
-- (none recorded)
+- SKIP `features/settings/assets/regions/china_pca.json` (.json)
 
 ## Fonts
 
-- No custom TTF bundled for product screens in this sync wave; use system fonts with AppTheme metrics.
+- System fonts + AppTheme metrics this wave.

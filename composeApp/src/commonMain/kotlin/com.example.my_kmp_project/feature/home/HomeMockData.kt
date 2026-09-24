@@ -70,15 +70,14 @@ internal object HomeMockData {
     const val searchPlaceholder = "搜索客户、订单、资讯"
 
     val features = listOf(
-        HomeFeatureItem("销售顾问"),
+        HomeFeatureItem("H5 调试"),
         HomeFeatureItem("生活服务"),
         HomeFeatureItem("二手车"),
-        HomeFeatureItem("新车关注"),
+        HomeFeatureItem("新车成交"),
+        HomeFeatureItem("新车跟进"),
         HomeFeatureItem("AI小石头"),
-        HomeFeatureItem("订单中心"),
-        HomeFeatureItem("数据分析"),
+        HomeFeatureItem("Club"),
         HomeFeatureItem("直播带货"),
-        HomeFeatureItem("营销活动"),
         HomeFeatureItem("更多"),
     )
 
@@ -94,6 +93,20 @@ internal object HomeMockData {
         HomeMetric("2", "新车订单"),
         HomeMetric("999.8", "成交额(万)"),
         HomeMetric("15", "试驾预约"),
+    )
+
+    val metricsYesterday = listOf(
+        HomeMetric("86", "意向客户"),
+        HomeMetric("1", "新车订单"),
+        HomeMetric("520.0", "成交额(万)"),
+        HomeMetric("12", "试驾预约"),
+    )
+
+    val metricsMonth = listOf(
+        HomeMetric("1280", "意向客户"),
+        HomeMetric("45", "新车订单"),
+        HomeMetric("8600.5", "成交额(万)"),
+        HomeMetric("320", "试驾预约"),
     )
 
     val metricDetails = listOf(

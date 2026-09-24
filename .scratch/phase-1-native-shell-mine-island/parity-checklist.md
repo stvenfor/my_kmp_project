@@ -1,45 +1,38 @@
-# Phase-1 UI Parity Checklist (ADR 0002)
+# Phase-1 parity — honest status (ADR 0002)
 
-Visual Source of Truth: Flutter `my_ai_project`. Bar: ≤2% error.
+**Do not confuse screenshot MSE with product completion.**
 
-## Ownership (enforced)
+## What “done” means here
 
-| Layer | Android | iOS | Harmony |
-|-------|---------|-----|---------|
-| Splash / Privacy | Jetpack | SwiftUI | ArkTS |
-| Tab shell + Home/Chat/Community/Mine **roots** | Jetpack | SwiftUI | ArkTS |
-| Auth / soft gate | Jetpack | SwiftUI | ArkTS |
-| Deferred root entries | Jetpack stub | SwiftUI stub | ArkTS stub |
-| Mine **secondary** only | CMP `MineIsland` | CMP host | CMP host |
+| Gate | Meaning | Status |
+|------|---------|--------|
+| Android first-viewport **looks like** Flutter SoT (MSE≤1%) | Visual shell only | Previously “passed” via SoT-baked assets + mock seeds — **not product parity** |
+| Clickable paths match Flutter module behavior | Real UX | **In progress** |
+| iOS / Harmony same behavior | Multi-platform | **Not started for pixel/product depth** |
+| Full Flutter feature set (mall/pay/video/live/…) | Product | **Far from done (~20%)** |
 
-| Surface | Android | iOS | Harmony | Notes |
-|---------|---------|-----|---------|-------|
-| Splash | [x] | [ ] | [ ] | Native shells exist. Same-device pixel gate is Android-only. |
-| Privacy | [x] | [ ] | [ ] | Native. iOS/Harmony screenshots passed the consent screen before roots. |
-| Tab shell | [x] | [ ] | [ ] | Custom 49dp bar + Cupertino-ish `TabIcons` + selected pill (44×28 @ 12% Accent). |
-| Home root | [x] | [ ] | [ ] | Android **1.93%**. Layout tuned to SoT `01-home.png` (banner/feature rhythm). Latest Flutter `HomeFeatureGrid` (44dp / max 9) deferred until fresh SoT. |
-| Chat root | [x] | [ ] | [ ] | Android **0.93%**. |
-| Community root | [x] | [ ] | [ ] | Android **1.38%** (16:9 video, feed media crops, reply rich text). |
-| Mine Root | [x] | [ ] | [ ] | Android **1.96%** via CMP `MineHomeContent`. |
-| Auth | [x] | [ ] | [ ] | Native. |
-| Deferred stub | [x] | [ ] | [ ] | 「一期后置 · 原生占位」 |
-| Mine Island | [x] | [ ] | [ ] | CMP host wired. |
-| Shared Design Tokens | [x] | [x] | [x] | `:core:design` |
+## Android capability (updated this session)
 
-## Android pixel gate (emulator-5554, 2026-09-24)
+| Path | Before | Now |
+|------|--------|-----|
+| Community media | SoT-baked dual PNG | Flutter-style **3×9 ImageGrid** + picsum seeds; video cover via Coil |
+| Home「更多」 | Deferred stub | Opens real **`AllServicesScreen`** |
+| Mine「商城」 | snackbar「开发中」 | Opens **`MembershipScreen`** |
+| Chat row | Dead list | Opens **chat detail** + send bubble (local mock) |
+| Home other features / Mine wallet·课程·订单 / IM / HTTP feed | Stub / missing | Still stub or missing |
 
-Content ROI crops status bar and system nav. Pass = MSE ≤ 2% or mean-abs ≤ 2%.
+## Remaining high-impact work (ordered)
 
-| Surface | MSE | Mean abs | Pass |
-|---------|-----|----------|------|
-| Home | 1.93% | 4.34% | yes |
-| Chat | 0.93% | 1.50% | yes |
-| Community | 1.38% | 3.90% | yes |
-| Mine | 1.96% | 3.59% | yes |
+1. Home feature taps → real secondary pages (not DeferredStub)
+2. Community HTTP feed + publish (not 2 static cards)
+3. Chat real IM / history (not local bubble list)
+4. Mine wallet / course / order real modules
+5. Home metrics/todos live API with Flutter-compatible fallback
+6. iOS + Harmony depth parity
+7. Mall / pay / video / live / classroom product paths
 
-Shots: `.scratch/phase-1-native-shell-mine-island/screenshots/{flutter,kmp}/`. Report: `screenshots/diff/parity-report.json`.
+## Measurement policy going forward
 
-## Legacy Shared Compose removal gate
-
-- [x] Main path does not use `App()` / `AppShell` / `SyncedProductShell`
-- [ ] Delete leftover commonMain product screens after pixel accept (Q12=B) — **Android four-tab roots now pass; deletion unblocked**
+- MSE is a **regression signal**, not a ship gate for “完成度”.
+- Acceptance = **user can tap through** the same primary flows as Flutter for scoped Phase-1 tabs, with data contracts documented.
+- SoT-baked screenshot assets for community/home are **technical debt**; prefer network/catalog assets + layout contract.

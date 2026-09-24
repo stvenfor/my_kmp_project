@@ -69,9 +69,24 @@ internal fun MineHomeContent(
         Spacer(modifier = Modifier.height(16.dp))
         StatsBar(stats = profile.stats)
         Spacer(modifier = Modifier.height(8.dp))
-        QuickServicesSection(onTap = { snackbar("${it.label} 开发中") })
+        QuickServicesSection(
+            onTap = { service ->
+                when (service.id) {
+                    "mall" -> snackbar("商城")
+                    "wallet" -> snackbar("我的钱包")
+                    "course" -> snackbar("我的课程")
+                    "order" -> snackbar("我的订单")
+                    else -> snackbar(service.label)
+                }
+            },
+        )
         FunctionSection(
-            onTap = { snackbar("${it.title} 开发中") },
+            onTap = { item ->
+                when (item.id) {
+                    "sms", "calculator", "used_car", "short_video" -> snackbar(item.title)
+                    else -> snackbar(item.title)
+                }
+            },
             onReorderHint = { snackbar("长按拖动顺序（即将支持）") },
         )
         MenuSection(

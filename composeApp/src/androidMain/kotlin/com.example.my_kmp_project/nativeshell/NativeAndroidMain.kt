@@ -45,13 +45,13 @@ import com.example.my_kmp_project.core.account.LoggedInUser
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.DesignTokens
 import com.example.my_kmp_project.core.design.ImmersiveInsets.MainBottomBarHeight
-import com.example.my_kmp_project.core.design.ImmersiveInsets.shellContentInsets
 import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.TokenExpiredHandler
 import com.example.my_kmp_project.core.router.MainTab
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.AuthSessionState
-import com.example.my_kmp_project.feature.mine.MineHomeContent
+import com.example.my_kmp_project.feature.commerce.MembershipScreen
+import com.example.my_kmp_project.feature.home.AllServicesScreen
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.feature.mine.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
@@ -96,9 +96,21 @@ internal fun NativeAndroidMain() {
     }
 
     fun openDeferred(title: String) {
-        deferredTitle = title
-        overlay = ShellOverlay.DeferredStub
-        bottomBarVisible = false
+        when (title) {
+            "全部服务", "更多" -> {
+                overlay = ShellOverlay.AllServices
+                bottomBarVisible = false
+            }
+            "会员", "商城" -> {
+                overlay = ShellOverlay.Membership
+                bottomBarVisible = false
+            }
+            else -> {
+                deferredTitle = title
+                overlay = ShellOverlay.DeferredStub
+                bottomBarVisible = false
+            }
+        }
     }
 
     when (overlay) {
@@ -106,6 +118,22 @@ internal fun NativeAndroidMain() {
             MineIsland(
                 initialRoute = islandRoute,
                 onRequestClose = {
+                    overlay = ShellOverlay.None
+                    bottomBarVisible = true
+                },
+            )
+        }
+        ShellOverlay.AllServices -> {
+            AllServicesScreen(
+                onBack = {
+                    overlay = ShellOverlay.None
+                    bottomBarVisible = true
+                },
+            )
+        }
+        ShellOverlay.Membership -> {
+            MembershipScreen(
+                onBack = {
                     overlay = ShellOverlay.None
                     bottomBarVisible = true
                 },
@@ -174,7 +202,18 @@ internal fun NativeAndroidMain() {
                                     overlay = ShellOverlay.MineIsland
                                     bottomBarVisible = false
                                 },
-                                onDeferred = { openDeferred(it) },
+                                onDeferred = { msg ->
+                                    // MineHomeContent routes real labels via snackbar callback
+                                    when {
+                                        msg == "商城" || msg.startsWith("商城") -> openDeferred("商城")
+                                        msg.contains("会员") -> openDeferred("会员")
+                                        msg.contains("钱包") || msg.contains("课程") ||
+                                            msg.contains("订单") || msg.contains("短信") ||
+                                            msg.contains("计算器") || msg.contains("二手车") ||
+                                            msg.contains("小视频") -> openDeferred(msg)
+                                        else -> openDeferred(msg)
+                                    }
+                                },
                             )
                         }
                     }
@@ -185,7 +224,7 @@ internal fun NativeAndroidMain() {
 }
 
 private enum class AuthOverlay { None, Login }
-private enum class ShellOverlay { None, MineIsland, DeferredStub }
+private enum class ShellOverlay { None, MineIsland, DeferredStub, AllServices, Membership }
 
 @Composable
 private fun JetpackBottomBar(selected: MainTab, onSelect: (MainTab) -> Unit) {

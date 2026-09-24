@@ -73,14 +73,13 @@ internal object HomeServiceAssets {
      * (`picsum.photos/seed/{sales,life,...}/200/200` bundled as local PNG).
      */
     fun featureForLabel(label: String): DrawableResource = when (label) {
-        "销售顾问", "H5 调试" -> Res.drawable.home_feature_sales
+        "H5 调试", "销售顾问" -> Res.drawable.home_feature_sales
         "生活服务" -> Res.drawable.home_feature_life
         "二手车" -> Res.drawable.home_feature_usedcar
-        "新车关注", "新车成交" -> Res.drawable.home_feature_newcar
-        "新车跟进" -> Res.drawable.home_feature_data
+        "新车成交", "新车关注" -> Res.drawable.home_feature_newcar
+        "新车跟进", "数据分析" -> Res.drawable.home_feature_data
         "AI小石头", "客户管理" -> Res.drawable.home_feature_ai_stone
-        "订单中心", "Club" -> Res.drawable.home_feature_order
-        "数据分析" -> Res.drawable.home_feature_data
+        "Club", "订单中心" -> Res.drawable.home_feature_order
         "直播带货" -> Res.drawable.home_feature_live
         "营销活动" -> Res.drawable.home_feature_market
         "更多" -> Res.drawable.home_feature_more

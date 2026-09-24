@@ -90,11 +90,13 @@ Always use the project wrappers (`./gradlew`), not a system Gradle.
 
 | Goal | Command / action |
 |------|------------------|
-| Android debug | `./gradlew :composeApp:assembleDebug` or Run in IDE |
+| Android debug (emulator/device) | `./scripts/run-android.sh` or `./scripts/run.sh android` |
+| iOS Simulator | `./scripts/run-ios.sh` or `./scripts/run.sh ios` |
+| Harmony emulator/device | `./scripts/run-harmony.sh` (wraps `runscript/runOhosApp-Mac.sh`) or `./scripts/run.sh harmony` |
+| Android assemble only | `./gradlew :composeApp:assembleDebug` / IDE Run |
 | Shared tests | `./gradlew :composeApp:testDebugUnitTest` / commonTest tasks |
-| iOS | Open `iosApp/iosApp.xcodeproj` in Xcode after a Gradle sync that produces the `ComposeApp` framework |
-| OHOS libs → Harmony | `./gradlew :composeApp:publishDebugBinariesToHarmonyApp` |
-| Harmony app | Build/run `harmonyApp/` in DevEco Studio after publishing binaries |
+| OHOS libs → Harmony (manual) | `./gradlew :composeApp:publishDebugBinariesToHarmonyApp` |
+| Harmony in DevEco | Build/run `harmonyApp/` after publish (or use run script above) |
 
 GitHub Actions (`.github/workflows/ci.yml`): one pipeline — Android `assembleDebug` + `testDebugUnitTest` (`-PandroidOnly=true`); uploads debug APK on `main` push; GitHub Release on `v*` tags. iOS/OHOS not on hosted runners.
 
