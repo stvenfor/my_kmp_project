@@ -119,14 +119,14 @@ internal fun MineRouteHost(
             onOpenDetail = { onNavigate(MineRoutes.MallDetail) },
             onOpenOrders = { onNavigate(MineRoutes.MallOrders) },
         )
-        route == MineRoutes.MallDetail -> SimpleDetail("商品详情", "SKU · 示例商品 · ¥199", onBack)
+        route == MineRoutes.MallDetail -> MallDetailScreen(onBack = onBack)
         route == MineRoutes.MallOrders -> OrderListScreen(
             onBack = onBack,
             onOpen = { onNavigate(MineRoutes.MallOrderDetail) },
         )
-        route == MineRoutes.MallOrderDetail -> SimpleDetail("订单详情", "订单 #MO-1001 · 待发货", onBack)
+        route == MineRoutes.MallOrderDetail -> MallOrderDetailScreen(onBack = onBack)
         route == MineRoutes.Wallet -> WalletScreen(onBack = onBack, onPay = { onNavigate(MineRoutes.Pay) })
-        route == MineRoutes.Pay -> SimpleDetail("收银台", "支付网关 stub（见 platform-gap）", onBack)
+        route == MineRoutes.Pay -> PayCheckoutScreen(onBack = onBack)
         route == MineRoutes.Membership -> MembershipScreen(onBack = onBack)
         route == MineRoutes.Profile -> ProfileEditScreen(onBack = onBack)
         route == MineRoutes.Addresses -> AddressListScreen(
@@ -135,9 +135,7 @@ internal fun MineRouteHost(
         )
         route == MineRoutes.AddressEdit -> AddressEditScreen(onBack = onBack)
         route == MineRoutes.Calculator -> PurchaseCalculatorScreen(onBack = onBack)
-        route == MineRoutes.CheckIn -> {
-            SimpleDetail("签到", "请从 Home 签到商城进入完整页", onBack)
-        }
+        route == MineRoutes.CheckIn -> CheckInShortcutScreen(onBack = onBack)
         route == MineRoutes.SmsTemplates -> SmsTemplateScreen(onBack = onBack)
         route == MineRoutes.ShopQr -> ShopQrScreen(onBack = onBack)
         route == MineRoutes.BuyQa -> BuyQaScreen(onBack = onBack)
@@ -158,6 +156,142 @@ private fun SimpleDetail(title: String, body: String, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(title = title, onBack = onBack)
         Text(body, modifier = Modifier.padding(16.dp), color = DemoColors.TextPrimary)
+    }
+}
+
+@Composable
+private fun MallDetailScreen(onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+            .verticalScroll(rememberScrollState()),
+    ) {
+        MineTopBar(title = "商品详情", onBack = onBack, containerColor = Color.White)
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .background(Color(0xFFE8EEF5)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("示例商品图", color = DemoColors.Muted)
+        }
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("视频会员卡 · 月卡", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text("¥199", color = Color(0xFFE53935), fontWeight = FontWeight.SemiBold, fontSize = 22.sp)
+            Text("SKU · DEMO-SKU-199 · 积分可抵 20%", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            Spacer(Modifier.height(8.dp))
+            Text("含全站短视频畅看权益 · 到账即时生效", color = DemoColors.TextPrimary, fontSize = 14.sp)
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = { showPlatformToast("已加入购物车（mock）") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0070F3)),
+            ) { Text("立即兑换") }
+        }
+    }
+}
+
+@Composable
+private fun MallOrderDetailScreen(onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "订单详情", onBack = onBack, containerColor = Color.White)
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+            ) {
+                Text("订单 #MO-1001", fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(6.dp))
+                Text("状态 · 待发货", color = Color(0xFFE53935), fontSize = 14.sp)
+                Spacer(Modifier.height(8.dp))
+                Text("视频会员卡 · 月卡 ×1", color = DemoColors.TextPrimary)
+                Text("实付 ¥199", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+            ) {
+                Text("收货信息", fontWeight = FontWeight.Medium)
+                Spacer(Modifier.height(6.dp))
+                Text("qa_user · 138****5172", fontSize = 14.sp)
+                Text("北京市朝阳区演示路 1 号", fontSize = 13.sp, color = DemoColors.TextSecondary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PayCheckoutScreen(onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "收银台", onBack = onBack, containerColor = Color.White)
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("应付金额", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            Text("¥199.00", fontWeight = FontWeight.Bold, fontSize = 28.sp)
+            listOf("微信支付", "支付宝", "余额支付").forEach { channel ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .clickable { showPlatformToast("$channel · 渠道未接入（见 platform-gap）") }
+                        .padding(14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(channel)
+                    Text("›", color = DemoColors.Muted)
+                }
+            }
+            Text(
+                "支付网关未接入 · 不可模拟成功",
+                color = DemoColors.TextSecondary,
+                fontSize = 12.sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CheckInShortcutScreen(onBack: () -> Unit) {
+    var points by remember { mutableStateOf(1280) }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        MineTopBar(title = "签到商城", onBack = onBack, containerColor = DemoColors.PageBg)
+        Column(Modifier.padding(16.dp)) {
+            Text("当前积分 $points", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = {
+                    points += 10
+                    showPlatformToast("签到成功 +10")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
+            ) { Text("今日签到") }
+            Spacer(Modifier.height(16.dp))
+            listOf("流量券", "洗车券", "精品周边").forEach { name ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp)
+                        .clickable { showPlatformToast("兑换 $name（mock）") },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(name, color = DemoColors.TextPrimary)
+                    Text("兑换", color = DemoColors.Accent)
+                }
+                HorizontalDivider(color = DemoColors.Divider)
+            }
+        }
     }
 }
 
