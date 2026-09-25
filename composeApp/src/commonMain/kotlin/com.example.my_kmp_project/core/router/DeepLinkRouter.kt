@@ -101,6 +101,12 @@ internal object DeepLinkRouter {
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
                     path.startsWith("/mine/") ->
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
+                    path.startsWith("/video") ||
+                        path.startsWith("/music") ||
+                        path.startsWith("/classroom") ||
+                        path.startsWith("/live") ||
+                        path.startsWith("/ai/") ->
+                        ParsedDeepLink(rawUri = uri, tab = null, route = path)
                     else -> null
                 }
             }

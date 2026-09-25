@@ -319,6 +319,13 @@ internal fun NativeAndroidMain() {
                     pending.route == AppRoutePath.friend -> {
                         openContentRoute(ContentRoutes.Friend)
                     }
+                    pending.route.startsWith("/video") ||
+                        pending.route.startsWith("/music") ||
+                        pending.route.startsWith("/classroom") ||
+                        pending.route.startsWith("/live") ||
+                        pending.route.startsWith("/ai/") -> {
+                        openContentRoute(pending.route)
+                    }
                     pending.route == AppRoutes.Chat.DETAIL ||
                         pending.route == AppRoutePath.chatDetail ||
                         pending.route.startsWith("/chat/") -> {

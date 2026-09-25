@@ -35,15 +35,24 @@ import com.example.my_kmp_project.core.ui.ReportMainTabRoot
  * Live list → room entry (mock rooms; push/realtime remain registry gaps).
  */
 @Composable
-internal fun LiveScreen(onBack: () -> Unit) {
-    var selectedId by remember { mutableStateOf<String?>(null) }
+internal fun LiveScreen(
+    onBack: () -> Unit,
+    openRoom: Boolean = false,
+) {
+    var selectedId by remember {
+        mutableStateOf(
+            if (openRoom) LiveMockData.rooms.firstOrNull()?.id else null,
+        )
+    }
     val selected = selectedId?.let { id -> LiveMockData.rooms.firstOrNull { it.id == id } }
 
     if (selected != null) {
         ReportMainTabRoot(isRoot = false)
         LiveRoomScreen(
             room = selected,
-            onBack = { selectedId = null },
+            onBack = {
+                if (openRoom) onBack() else selectedId = null
+            },
         )
     } else {
         ReportMainTabRoot(isRoot = false)

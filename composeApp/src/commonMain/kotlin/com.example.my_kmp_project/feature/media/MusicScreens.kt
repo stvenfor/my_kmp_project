@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,27 +38,22 @@ private data class MockTrack(
     val artist: String,
 )
 
-@Composable
-internal fun MusicListScreen(onBack: () -> Unit) {
-    var nowPlaying by remember { mutableStateOf<MockTrack?>(null) }
-    val tracks = remember {
-        listOf(
-            MockTrack("t1", "晨读轻音乐", "Studio A"),
-            MockTrack("t2", "专注 · 白噪音", "Focus Lab"),
-            MockTrack("t3", "校园广播主题曲", "校园之声"),
-            MockTrack("t4", "放松钢琴曲", "Piano Day"),
-        )
-    }
+/** Flutter audio list SoT titles (module_music). */
+private val FlutterTracks = listOf(
+    MockTrack("t1", "Ya Ali - DJMaza.Com", "DJMaza"),
+    MockTrack("t2", "Ek Do Teen - DJMaza.Info", "DJMaza"),
+    MockTrack("t3", "16 yeh dil diwana hai", "Classic"),
+    MockTrack("t4", "Shape of You", "Ed Sheeran"),
+    MockTrack("t5", "Blinding Lights", "The Weeknd"),
+    MockTrack("t6", "Levitating", "Dua Lipa"),
+)
 
-    val current = nowPlaying
-    if (current != null) {
-        ReportMainTabRoot(isRoot = false)
-        NowPlayingScreen(
-            track = current,
-            onBack = { nowPlaying = null },
-        )
-        return
-    }
+@Composable
+internal fun MusicListScreen(
+    onBack: () -> Unit,
+    onOpenNowPlaying: (() -> Unit)? = null,
+) {
+    val tracks = remember { FlutterTracks }
 
     ReportMainTabRoot(isRoot = false)
     Column(
@@ -65,28 +61,23 @@ internal fun MusicListScreen(onBack: () -> Unit) {
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "音乐", onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = "音频列表", onBack = onBack, containerColor = Color.White)
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item {
-                Text(
-                    text = "点选曲目进入正在播放（Android 真实 MediaPlayer；其他端见 gap registry）",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
             items(tracks, key = { it.id }) { track ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
                             MusicSession.start(track.title, track.artist)
-                            nowPlaying = track
+                            if (onOpenNowPlaying != null) onOpenNowPlaying()
+                            else {
+                                /* stay on list; mini player / session active */
+                            }
                         },
                     colors = CardDefaults.cardColors(containerColor = DemoColors.Background),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -111,6 +102,22 @@ internal fun MusicListScreen(onBack: () -> Unit) {
     }
 }
 
+/** Deep-link `/music/now_playing` — Flutter Now Playing. */
+@Composable
+internal fun MusicNowPlayingRoute(onBack: () -> Unit) {
+    val fallback = FlutterTracks.first()
+    if (MusicSession.trackTitle == null) {
+        MusicSession.start(fallback.title, fallback.artist)
+    }
+    val title = MusicSession.trackTitle ?: fallback.title
+    val artist = MusicSession.artist.ifBlank { fallback.artist }
+    ReportMainTabRoot(isRoot = false)
+    NowPlayingScreen(
+        track = MockTrack("np", title, artist),
+        onBack = onBack,
+    )
+}
+
 @Composable
 private fun NowPlayingScreen(
     track: MockTrack,
@@ -123,7 +130,7 @@ private fun NowPlayingScreen(
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "正在播放", onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = "Now Playing", onBack = onBack, containerColor = Color.White)
         Column(
             modifier = Modifier
                 .fillMaxSize()

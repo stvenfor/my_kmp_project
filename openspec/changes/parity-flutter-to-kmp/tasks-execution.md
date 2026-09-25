@@ -602,214 +602,214 @@
 # H. Media（Video / Music / Dubbing）
 
 ## `/video` — `video`
-- [ ] R.video.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.video.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.video.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.video.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.video.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.video.ev.a 证据 `notes/evidence/.../video.{flutter,kmp}.png`
+- [x] R.video.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.video.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.video.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.video.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.video.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.video.ev.a 证据 `notes/evidence/.../video.{flutter,kmp}.png`
 - [ ] R.video.ui.i / R.video.ui.h（或 registry `missing`）
 
 ## `/video/short` — `shortVideo`
-- [ ] R.shortVideo.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.shortVideo.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.shortVideo.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.shortVideo.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.shortVideo.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.shortVideo.ev.a 证据 `notes/evidence/.../video_short.{flutter,kmp}.png`
+- [x] R.shortVideo.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.shortVideo.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.shortVideo.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.shortVideo.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.shortVideo.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.shortVideo.ev.a 证据 `notes/evidence/.../video_short.{flutter,kmp}.png`
 - [ ] R.shortVideo.ui.i / R.shortVideo.ui.h（或 registry `missing`）
 
 ## `/video/short/play` — `shortVideoPlay`
-- [ ] R.shortVideoPlay.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.shortVideoPlay.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.shortVideoPlay.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.shortVideoPlay.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.shortVideoPlay.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.shortVideoPlay.ev.a 证据 `notes/evidence/.../video_short_play.{flutter,kmp}.png`
+- [x] R.shortVideoPlay.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.shortVideoPlay.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.shortVideoPlay.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.shortVideoPlay.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.shortVideoPlay.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.shortVideoPlay.ev.a 证据 `notes/evidence/.../video_short_play.{flutter,kmp}.png`
 - [ ] R.shortVideoPlay.ui.i / R.shortVideoPlay.ui.h（或 registry `missing`）
 
 ## `/video/short/publish` — `shortVideoPublish`
-- [ ] R.shortVideoPublish.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.shortVideoPublish.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.shortVideoPublish.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.shortVideoPublish.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.shortVideoPublish.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.shortVideoPublish.ev.a 证据 `notes/evidence/.../video_short_publish.{flutter,kmp}.png`
+- [x] R.shortVideoPublish.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.shortVideoPublish.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.shortVideoPublish.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.shortVideoPublish.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.shortVideoPublish.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.shortVideoPublish.ev.a 证据 `notes/evidence/.../video_short_publish.{flutter,kmp}.png`
 - [ ] R.shortVideoPublish.ui.i / R.shortVideoPublish.ui.h（或 registry `missing`）
 
 ## `/video/short/help` — `shortVideoHelp`
-- [ ] R.shortVideoHelp.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.shortVideoHelp.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.shortVideoHelp.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.shortVideoHelp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.shortVideoHelp.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.shortVideoHelp.ev.a 证据 `notes/evidence/.../video_short_help.{flutter,kmp}.png`
+- [x] R.shortVideoHelp.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.shortVideoHelp.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.shortVideoHelp.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.shortVideoHelp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.shortVideoHelp.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.shortVideoHelp.ev.a 证据 `notes/evidence/.../video_short_help.{flutter,kmp}.png`
 - [ ] R.shortVideoHelp.ui.i / R.shortVideoHelp.ui.h（或 registry `missing`）
 
 ## `/music/list` — `musicList`
-- [ ] R.musicList.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.musicList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.musicList.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.musicList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.musicList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.musicList.ev.a 证据 `notes/evidence/.../music_list.{flutter,kmp}.png`
+- [x] R.musicList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.musicList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.musicList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.musicList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.musicList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.musicList.ev.a 证据 `notes/evidence/.../music_list.{flutter,kmp}.png`
 - [ ] R.musicList.ui.i / R.musicList.ui.h（或 registry `missing`）
 
 ## `/music/now_playing` — `musicNowPlaying`
-- [ ] R.musicNowPlaying.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.musicNowPlaying.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.musicNowPlaying.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.musicNowPlaying.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.musicNowPlaying.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.musicNowPlaying.ev.a 证据 `notes/evidence/.../music_now_playing.{flutter,kmp}.png`
+- [x] R.musicNowPlaying.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.musicNowPlaying.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.musicNowPlaying.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.musicNowPlaying.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.musicNowPlaying.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.musicNowPlaying.ev.a 证据 `notes/evidence/.../music_now_playing.{flutter,kmp}.png`
 - [ ] R.musicNowPlaying.ui.i / R.musicNowPlaying.ui.h（或 registry `missing`）
 
 ## `/video/dubbing/videos` — `dubbingVideoList`
-- [ ] R.dubbingVideoList.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.dubbingVideoList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.dubbingVideoList.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.dubbingVideoList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.dubbingVideoList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.dubbingVideoList.ev.a 证据 `notes/evidence/.../video_dubbing_videos.{flutter,kmp}.png`
+- [x] R.dubbingVideoList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.dubbingVideoList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.dubbingVideoList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.dubbingVideoList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.dubbingVideoList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.dubbingVideoList.ev.a 证据 `notes/evidence/.../video_dubbing_videos.{flutter,kmp}.png`
 - [ ] R.dubbingVideoList.ui.i / R.dubbingVideoList.ui.h（或 registry `missing`）
 
 ## `/video/dubbing/videos/detail` — `dubbingVideoDetail`
-- [ ] R.dubbingVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.dubbingVideoDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.dubbingVideoDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.dubbingVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.dubbingVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.dubbingVideoDetail.ev.a 证据 `notes/evidence/.../video_dubbing_videos_detail.{flutter,kmp}.png`
+- [x] R.dubbingVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.dubbingVideoDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.dubbingVideoDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.dubbingVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.dubbingVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.dubbingVideoDetail.ev.a 证据 `notes/evidence/.../video_dubbing_videos_detail.{flutter,kmp}.png`
 - [ ] R.dubbingVideoDetail.ui.i / R.dubbingVideoDetail.ui.h（或 registry `missing`）
 
 ## `/video/dubbing/works` — `dubbingWorkList`
-- [ ] R.dubbingWorkList.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.dubbingWorkList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.dubbingWorkList.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.dubbingWorkList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.dubbingWorkList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.dubbingWorkList.ev.a 证据 `notes/evidence/.../video_dubbing_works.{flutter,kmp}.png`
+- [x] R.dubbingWorkList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.dubbingWorkList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.dubbingWorkList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.dubbingWorkList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.dubbingWorkList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.dubbingWorkList.ev.a 证据 `notes/evidence/.../video_dubbing_works.{flutter,kmp}.png`
 - [ ] R.dubbingWorkList.ui.i / R.dubbingWorkList.ui.h（或 registry `missing`）
 
 ## `/video/dubbing/works/detail` — `dubbingWorkDetail`
-- [ ] R.dubbingWorkDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.dubbingWorkDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.dubbingWorkDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.dubbingWorkDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.dubbingWorkDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.dubbingWorkDetail.ev.a 证据 `notes/evidence/.../video_dubbing_works_detail.{flutter,kmp}.png`
+- [x] R.dubbingWorkDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.dubbingWorkDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.dubbingWorkDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.dubbingWorkDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.dubbingWorkDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.dubbingWorkDetail.ev.a 证据 `notes/evidence/.../video_dubbing_works_detail.{flutter,kmp}.png`
 - [ ] R.dubbingWorkDetail.ui.i / R.dubbingWorkDetail.ui.h（或 registry `missing`）
 
 # I. Classroom
 
 ## `/classroom/my_class` — `classroomMyClass`
-- [ ] R.classroomMyClass.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomMyClass.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomMyClass.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomMyClass.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomMyClass.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomMyClass.ev.a 证据 `notes/evidence/.../classroom_my_class.{flutter,kmp}.png`
+- [x] R.classroomMyClass.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomMyClass.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomMyClass.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomMyClass.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomMyClass.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomMyClass.ev.a 证据 `notes/evidence/.../classroom_my_class.{flutter,kmp}.png`
 - [ ] R.classroomMyClass.ui.i / R.classroomMyClass.ui.h（或 registry `missing`）
 
 ## `/classroom/homework_stats` — `classroomHomeworkStats`
-- [ ] R.classroomHomeworkStats.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomHomeworkStats.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomHomeworkStats.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomHomeworkStats.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomHomeworkStats.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomHomeworkStats.ev.a 证据 `notes/evidence/.../classroom_homework_stats.{flutter,kmp}.png`
+- [x] R.classroomHomeworkStats.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomHomeworkStats.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomHomeworkStats.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomHomeworkStats.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomHomeworkStats.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomHomeworkStats.ev.a 证据 `notes/evidence/.../classroom_homework_stats.{flutter,kmp}.png`
 - [ ] R.classroomHomeworkStats.ui.i / R.classroomHomeworkStats.ui.h（或 registry `missing`）
 
 ## `/classroom/homework/detail_teacher` — `classroomHomeworkDetailTeacher`
-- [ ] R.classroomHomeworkDetailTeacher.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomHomeworkDetailTeacher.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomHomeworkDetailTeacher.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomHomeworkDetailTeacher.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomHomeworkDetailTeacher.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomHomeworkDetailTeacher.ev.a 证据 `notes/evidence/.../classroom_homework_detail_teacher.{flutter,kmp}.png`
+- [x] R.classroomHomeworkDetailTeacher.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomHomeworkDetailTeacher.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomHomeworkDetailTeacher.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomHomeworkDetailTeacher.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomHomeworkDetailTeacher.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomHomeworkDetailTeacher.ev.a 证据 `notes/evidence/.../classroom_homework_detail_teacher.{flutter,kmp}.png`
 - [ ] R.classroomHomeworkDetailTeacher.ui.i / R.classroomHomeworkDetailTeacher.ui.h（或 registry `missing`）
 
 ## `/classroom/homework/detail_student` — `classroomHomeworkDetailStudent`
-- [ ] R.classroomHomeworkDetailStudent.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomHomeworkDetailStudent.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomHomeworkDetailStudent.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomHomeworkDetailStudent.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomHomeworkDetailStudent.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomHomeworkDetailStudent.ev.a 证据 `notes/evidence/.../classroom_homework_detail_student.{flutter,kmp}.png`
+- [x] R.classroomHomeworkDetailStudent.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomHomeworkDetailStudent.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomHomeworkDetailStudent.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomHomeworkDetailStudent.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomHomeworkDetailStudent.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomHomeworkDetailStudent.ev.a 证据 `notes/evidence/.../classroom_homework_detail_student.{flutter,kmp}.png`
 - [ ] R.classroomHomeworkDetailStudent.ui.i / R.classroomHomeworkDetailStudent.ui.h（或 registry `missing`）
 
 ## `/classroom/homework/dubbing` — `classroomDubbingHomework`
-- [ ] R.classroomDubbingHomework.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomDubbingHomework.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomDubbingHomework.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomDubbingHomework.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomDubbingHomework.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomDubbingHomework.ev.a 证据 `notes/evidence/.../classroom_homework_dubbing.{flutter,kmp}.png`
+- [x] R.classroomDubbingHomework.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomDubbingHomework.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomDubbingHomework.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomDubbingHomework.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomDubbingHomework.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomDubbingHomework.ev.a 证据 `notes/evidence/.../classroom_homework_dubbing.{flutter,kmp}.png`
 - [ ] R.classroomDubbingHomework.ui.i / R.classroomDubbingHomework.ui.h（或 registry `missing`）
 
 ## `/classroom/homework/review` — `classroomHomeworkReview`
-- [ ] R.classroomHomeworkReview.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomHomeworkReview.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomHomeworkReview.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomHomeworkReview.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomHomeworkReview.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomHomeworkReview.ev.a 证据 `notes/evidence/.../classroom_homework_review.{flutter,kmp}.png`
+- [x] R.classroomHomeworkReview.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomHomeworkReview.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomHomeworkReview.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomHomeworkReview.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomHomeworkReview.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomHomeworkReview.ev.a 证据 `notes/evidence/.../classroom_homework_review.{flutter,kmp}.png`
 - [ ] R.classroomHomeworkReview.ui.i / R.classroomHomeworkReview.ui.h（或 registry `missing`）
 
 ## `/classroom/gift/claim` — `classroomClaimGift`
-- [ ] R.classroomClaimGift.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomClaimGift.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomClaimGift.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomClaimGift.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomClaimGift.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomClaimGift.ev.a 证据 `notes/evidence/.../classroom_gift_claim.{flutter,kmp}.png`
+- [x] R.classroomClaimGift.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomClaimGift.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomClaimGift.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomClaimGift.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomClaimGift.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomClaimGift.ev.a 证据 `notes/evidence/.../classroom_gift_claim.{flutter,kmp}.png`
 - [ ] R.classroomClaimGift.ui.i / R.classroomClaimGift.ui.h（或 registry `missing`）
 
 ## `/classroom/video/detail` — `classroomVideoDetail`
-- [ ] R.classroomVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.classroomVideoDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.classroomVideoDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.classroomVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.classroomVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.classroomVideoDetail.ev.a 证据 `notes/evidence/.../classroom_video_detail.{flutter,kmp}.png`
+- [x] R.classroomVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomVideoDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomVideoDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomVideoDetail.ev.a 证据 `notes/evidence/.../classroom_video_detail.{flutter,kmp}.png`
 - [ ] R.classroomVideoDetail.ui.i / R.classroomVideoDetail.ui.h（或 registry `missing`）
 
 # J. Live / Friend / AI
 
 ## `/ai/stream` — `aiStream`
-- [ ] R.aiStream.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.aiStream.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.aiStream.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.aiStream.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.aiStream.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.aiStream.ev.a 证据 `notes/evidence/.../ai_stream.{flutter,kmp}.png`
+- [x] R.aiStream.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.aiStream.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.aiStream.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.aiStream.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.aiStream.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.aiStream.ev.a 证据 `notes/evidence/.../ai_stream.{flutter,kmp}.png`
 - [ ] R.aiStream.ui.i / R.aiStream.ui.h（或 registry `missing`）
 
 ## `/friend` — `friend`
-- [ ] R.friend.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.friend.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.friend.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.friend.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.friend.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.friend.ev.a 证据 `notes/evidence/.../friend.{flutter,kmp}.png`
+- [x] R.friend.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.friend.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.friend.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.friend.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.friend.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.friend.ev.a 证据 `notes/evidence/.../friend.{flutter,kmp}.png`
 - [ ] R.friend.ui.i / R.friend.ui.h（或 registry `missing`）
 
 ## `/live` — `live`
-- [ ] R.live.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.live.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.live.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.live.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.live.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.live.ev.a 证据 `notes/evidence/.../live.{flutter,kmp}.png`
+- [x] R.live.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.live.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.live.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.live.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.live.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.live.ev.a 证据 `notes/evidence/.../live.{flutter,kmp}.png`
 - [ ] R.live.ui.i / R.live.ui.h（或 registry `missing`）
 
 ## `/live/room` — `liveRoom`
-- [ ] R.liveRoom.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.liveRoom.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.liveRoom.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.liveRoom.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.liveRoom.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.liveRoom.ev.a 证据 `notes/evidence/.../live_room.{flutter,kmp}.png`
+- [x] R.liveRoom.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.liveRoom.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.liveRoom.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.liveRoom.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.liveRoom.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.liveRoom.ev.a 证据 `notes/evidence/.../live_room.{flutter,kmp}.png`
 - [ ] R.liveRoom.ui.i / R.liveRoom.ui.h（或 registry `missing`）
 
 # K. Misc
