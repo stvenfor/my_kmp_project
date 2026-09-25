@@ -938,56 +938,221 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
 
 @Composable
 private fun ProfileEditScreen(onBack: () -> Unit) {
+    // Flutter MineProfilePage: avatar + 基本信息 + 退出登录; 右上保存
     var name by remember { mutableStateOf("qa_user") }
+    var dirty by remember { mutableStateOf(false) }
+    val phone = "138****5172"
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "个人资料", onBack = onBack)
-        Column(Modifier.padding(16.dp)) {
-            Text("昵称")
-            BasicTextField(
-                value = name,
-                onValueChange = { name = it },
-                textStyle = TextStyle(fontSize = 16.sp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Background)
-                    .padding(12.dp),
-            )
-            Button(
-                onClick = {
-                    showPlatformToast("已保存")
-                    onBack()
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-            ) { Text("保存") }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+            .verticalScroll(rememberScrollState()),
+    ) {
+        MineTopBar(
+            title = "个人资料",
+            onBack = onBack,
+            containerColor = Color.White,
+            actions = {
+                TextButton(
+                    onClick = {
+                        if (!dirty) return@TextButton
+                        showPlatformToast("已保存")
+                        dirty = false
+                        onBack()
+                    },
+                    enabled = dirty,
+                ) {
+                    Text(
+                        "保存",
+                        color = if (dirty) DemoColors.Accent else DemoColors.Muted,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                    )
+                }
+            },
+        )
+        Spacer(Modifier.height(24.dp))
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(contentAlignment = Alignment.BottomEnd) {
+                Box(
+                    Modifier
+                        .width(104.dp)
+                        .height(104.dp)
+                        .clip(RoundedCornerShape(52.dp))
+                        .background(Color(0xFFE0E0E0))
+                        .clickable { showPlatformToast("更换头像（开发中）") },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("Q", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = DemoColors.Muted)
+                }
+                Box(
+                    Modifier
+                        .width(32.dp)
+                        .height(32.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(DemoColors.Accent)
+                        .border(2.5.dp, Color.White, RoundedCornerShape(16.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("📷", fontSize = 12.sp)
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            Text("轻触更换头像", color = DemoColors.Muted, fontSize = 13.sp)
         }
+        Spacer(Modifier.height(32.dp))
+        Text(
+            "基本信息",
+            color = DemoColors.Muted,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 20.dp),
+        )
+        Spacer(Modifier.height(8.dp))
+        Column(
+            Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White),
+        ) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("昵称", fontSize = 15.sp, modifier = Modifier.width(72.dp))
+                BasicTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        dirty = true
+                    },
+                    textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                    decorationBox = { inner ->
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                            if (name.isEmpty()) {
+                                Text("请输入昵称", color = DemoColors.Muted, fontSize = 15.sp)
+                            }
+                            inner()
+                        }
+                    },
+                )
+            }
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = DemoColors.Divider,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("手机号", fontSize = 15.sp, modifier = Modifier.width(72.dp))
+                Text(
+                    phone,
+                    fontSize = 15.sp,
+                    color = DemoColors.TextSecondary,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        Spacer(Modifier.height(32.dp))
+        Box(
+            Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .clickable { showPlatformToast("退出登录（开发中）") }
+                .padding(vertical = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("退出登录", color = Color(0xFFE53935), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        }
+        Spacer(Modifier.height(40.dp))
     }
 }
 
 @Composable
 private fun AddressListScreen(onBack: () -> Unit, onEdit: () -> Unit) {
-    val list = listOf("家 · 北京市朝阳区…", "公司 · 上海市浦东新区…")
+    // Flutter AddressListPage
+    data class Addr(val name: String, val phone: String, val line: String, val isDefault: Boolean)
+    val list = listOf(
+        Addr("qa_user", "138****5172", "北京市朝阳区演示路 1 号", true),
+        Addr("测试乙", "139****0000", "上海市浦东新区世纪大道 100 号", false),
+    )
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
         MineTopBar(
-            title = "地址管理",
+            title = "收货地址",
             onBack = onBack,
+            containerColor = Color.White,
             actions = {
-                TextButton(onClick = onEdit) { Text("新建", color = DemoColors.Accent) }
+                TextButton(onClick = onEdit) {
+                    Text("新增", color = DemoColors.Accent, fontWeight = FontWeight.SemiBold)
+                }
             },
         )
-        LazyColumn {
-            items(list) { a ->
-                Text(
-                    a,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = onEdit)
-                        .padding(16.dp),
-                )
-                HorizontalDivider()
+        if (list.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("暂无地址", color = DemoColors.Muted)
+                    Spacer(Modifier.height(12.dp))
+                    TextButton(onClick = onEdit) { Text("添加收货地址", color = DemoColors.Accent) }
+                }
+            }
+        } else {
+            LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(list) { a ->
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .clickable(onClick = onEdit)
+                            .padding(14.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("${a.name}  ${a.phone}", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            if (a.isDefault) {
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    "默认",
+                                    color = Color.White,
+                                    fontSize = 11.sp,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(DemoColors.Accent)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(6.dp))
+                        Text(a.line, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                        Spacer(Modifier.height(10.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Text(
+                                "设为默认",
+                                color = DemoColors.Accent,
+                                fontSize = 13.sp,
+                                modifier = Modifier.clickable { showPlatformToast("已设为默认") },
+                            )
+                            Text(
+                                "删除",
+                                color = Color(0xFFE53935),
+                                fontSize = 13.sp,
+                                modifier = Modifier.clickable { showPlatformToast("已删除") },
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -995,41 +1160,127 @@ private fun AddressListScreen(onBack: () -> Unit, onEdit: () -> Unit) {
 
 @Composable
 private fun AddressEditScreen(onBack: () -> Unit) {
-    var line by remember { mutableStateOf("") }
+    // Flutter AddressEditPage
+    var name by remember { mutableStateOf("qa_user") }
+    var phone by remember { mutableStateOf("13800135172") }
+    var region by remember { mutableStateOf("") }
+    var detail by remember { mutableStateOf("") }
+    var tag by remember { mutableStateOf("") }
     var isDefault by remember { mutableStateOf(true) }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "编辑地址", onBack = onBack)
-        Column(Modifier.padding(16.dp)) {
-            BasicTextField(
-                value = line,
-                onValueChange = { line = it },
-                modifier = Modifier
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "新增地址", onBack = onBack, containerColor = Color.White)
+        Column(
+            Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(
+                Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Background)
-                    .padding(12.dp),
-                decorationBox = { inner ->
-                    if (line.isEmpty()) Text("详细地址", color = DemoColors.Muted)
-                    inner()
-                },
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("设为默认", modifier = Modifier.weight(1f))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 14.dp),
+            ) {
+                AddressField("收货人", name) { name = it }
+                HorizontalDivider(color = DemoColors.Divider)
+                AddressField("手机号", phone) { phone = it.filter { c -> c.isDigit() }.take(11) }
+                HorizontalDivider(color = DemoColors.Divider)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { showPlatformToast("省市区选择（开发中）") }
+                        .padding(vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("省市区", fontSize = 15.sp, modifier = Modifier.width(88.dp))
+                    Text(
+                        region.ifBlank { "请选择省 / 市 / 区" },
+                        color = if (region.isBlank()) DemoColors.Muted else DemoColors.TextPrimary,
+                        fontSize = 15.sp,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text("›", color = DemoColors.Muted, fontSize = 18.sp)
+                }
+                HorizontalDivider(color = DemoColors.Divider)
+                AddressField("详细地址", detail, singleLine = false) { detail = it }
+                HorizontalDivider(color = DemoColors.Divider)
+                AddressField("标签（可选）", tag) { tag = it }
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("设为默认地址", fontSize = 15.sp, modifier = Modifier.weight(1f))
                 Switch(checked = isDefault, onCheckedChange = { isDefault = it })
             }
-            Button(
-                onClick = {
-                    if (line.isBlank()) showPlatformToast("请填写地址")
-                    else {
+        }
+        Button(
+            onClick = {
+                when {
+                    name.isBlank() -> showPlatformToast("请填写收货人")
+                    phone.length < 11 -> showPlatformToast("请填写手机号")
+                    detail.isBlank() -> showPlatformToast("请填写详细地址")
+                    else -> {
                         showPlatformToast("已保存")
                         onBack()
                     }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-            ) { Text("保存") }
-        }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Accent),
+            shape = RoundedCornerShape(10.dp),
+        ) { Text("保存") }
+    }
+}
+
+@Composable
+private fun AddressField(
+    label: String,
+    value: String,
+    singleLine: Boolean = true,
+    onChange: (String) -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 14.dp),
+        verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
+    ) {
+        Text(label, fontSize = 15.sp, modifier = Modifier.width(88.dp))
+        BasicTextField(
+            value = value,
+            onValueChange = onChange,
+            singleLine = singleLine,
+            textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+            modifier = Modifier
+                .weight(1f)
+                .then(if (singleLine) Modifier else Modifier.height(64.dp)),
+            decorationBox = { inner ->
+                if (value.isEmpty()) {
+                    Text(
+                        when (label) {
+                            "收货人" -> "请输入收货人"
+                            "手机号" -> "请输入手机号"
+                            "详细地址" -> "街道、门牌号等"
+                            "标签（可选）" -> "家 / 公司"
+                            else -> ""
+                        },
+                        color = DemoColors.Muted,
+                        fontSize = 15.sp,
+                    )
+                }
+                inner()
+            },
+        )
     }
 }
 

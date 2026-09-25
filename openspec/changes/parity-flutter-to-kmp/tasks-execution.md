@@ -458,39 +458,39 @@
 - [n/a] R.mineHttpTest.oos out-of-scope（debug/demo/bfui）；registry 标注
 
 ## `/mine/personalized_settings` — `personalizedSettings`
-- [ ] R.personalizedSettings.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.personalizedSettings.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.personalizedSettings.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.personalizedSettings.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.personalizedSettings.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.personalizedSettings.ev.a 证据 `notes/evidence/.../mine_personalized_settings.{flutter,kmp}.png`
+- [x] R.personalizedSettings.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.personalizedSettings.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.personalizedSettings.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.personalizedSettings.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.personalizedSettings.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.personalizedSettings.ev.a 证据 `notes/evidence/.../mine_personalized_settings.{flutter,kmp}.png`
 - [ ] R.personalizedSettings.ui.i / R.personalizedSettings.ui.h（或 registry `missing`）
 
 ## `/mine/profile` — `mineProfile`
-- [ ] R.mineProfile.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mineProfile.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mineProfile.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mineProfile.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mineProfile.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mineProfile.ev.a 证据 `notes/evidence/.../mine_profile.{flutter,kmp}.png`
+- [x] R.mineProfile.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mineProfile.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mineProfile.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mineProfile.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mineProfile.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mineProfile.ev.a 证据 `notes/evidence/.../mine_profile.{flutter,kmp}.png`
 - [ ] R.mineProfile.ui.i / R.mineProfile.ui.h（或 registry `missing`）
 
 ## `/mine/addresses` — `mineAddresses`
-- [ ] R.mineAddresses.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mineAddresses.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mineAddresses.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mineAddresses.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mineAddresses.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mineAddresses.ev.a 证据 `notes/evidence/.../mine_addresses.{flutter,kmp}.png`
+- [x] R.mineAddresses.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mineAddresses.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mineAddresses.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mineAddresses.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mineAddresses.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mineAddresses.ev.a 证据 `notes/evidence/.../mine_addresses.{flutter,kmp}.png`
 - [ ] R.mineAddresses.ui.i / R.mineAddresses.ui.h（或 registry `missing`）
 
 ## `/mine/addresses/edit` — `mineAddressEdit`
-- [ ] R.mineAddressEdit.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mineAddressEdit.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mineAddressEdit.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mineAddressEdit.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mineAddressEdit.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mineAddressEdit.ev.a 证据 `notes/evidence/.../mine_addresses_edit.{flutter,kmp}.png`
+- [x] R.mineAddressEdit.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mineAddressEdit.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mineAddressEdit.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mineAddressEdit.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mineAddressEdit.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mineAddressEdit.ev.a 证据 `notes/evidence/.../mine_addresses_edit.{flutter,kmp}.png`
 - [ ] R.mineAddressEdit.ui.i / R.mineAddressEdit.ui.h（或 registry `missing`）
 
 ## `/settings` — `settings`
