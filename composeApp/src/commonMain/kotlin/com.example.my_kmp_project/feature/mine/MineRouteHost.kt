@@ -144,9 +144,9 @@ internal fun MineRouteHost(
         route == MineRoutes.Poster -> PosterScreen(onBack = onBack)
         route == MineRoutes.Settings -> SettingsScreen(onBack = onBack)
         route == MineRoutes.Feedback -> FeedbackScreen(onBack = onBack)
-        route == MineRoutes.Cooperation -> SimpleDetail("商务合作", "商务合作申请入口 · 提交后由运营跟进", onBack)
-        route == MineRoutes.Reminder -> SimpleDetail("提醒事项", "今日提醒 3 条 · 明日 1 条", onBack)
-        route == MineRoutes.Invite -> SimpleDetail("邀请好友", "邀请码 DEMO2026 · 分享得积分", onBack)
+        route == MineRoutes.Cooperation -> CooperationScreen(onBack = onBack)
+        route == MineRoutes.Reminder -> ReminderScreen(onBack = onBack)
+        route == MineRoutes.Invite -> InviteScreen(onBack = onBack)
         route == MineRoutes.FanGroup -> FanGroupScreen(onBack = onBack)
         else -> SimpleDetail("我的", "route=$route", onBack)
     }
@@ -1056,6 +1056,172 @@ private fun FanGroupScreen(onBack: () -> Unit) {
             modifier = Modifier.clickable { showPlatformToast("已保存（mock）") },
         )
         Spacer(Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun InviteScreen(onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        MineTopBar(title = "邀请好友", onBack = onBack, containerColor = Color.White)
+        Spacer(Modifier.height(20.dp))
+        Column(
+            Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color(0xFF0070F3))
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("邀请码", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+            Spacer(Modifier.height(6.dp))
+            Text("DEMO2026", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 28.sp)
+            Spacer(Modifier.height(8.dp))
+            Text("好友注册并登录 · 双方各得 50 积分", color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp)
+        }
+        Spacer(Modifier.height(16.dp))
+        listOf("微信好友", "朋友圈", "复制邀请链接").forEach { action ->
+            Text(
+                action,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 5.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .clickable { showPlatformToast("$action（mock）") }
+                    .padding(16.dp),
+                fontWeight = FontWeight.Medium,
+            )
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun CooperationScreen(onBack: () -> Unit) {
+    var company by remember { mutableStateOf("") }
+    var contact by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "商务合作", onBack = onBack, containerColor = Color.White)
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("提交合作意向，运营将在 1–2 个工作日内联系您。", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            listOf(
+                Triple("公司 / 品牌", company) { v: String -> company = v },
+                Triple("联系人手机", contact) { v: String -> contact = v },
+            ).forEach { (label, value, onChange) ->
+                Column {
+                    Text(label, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                    Spacer(Modifier.height(4.dp))
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onChange,
+                        singleLine = true,
+                        textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .padding(14.dp),
+                    )
+                }
+            }
+            Column {
+                Text("合作说明", fontSize = 13.sp, color = DemoColors.TextSecondary)
+                Spacer(Modifier.height(4.dp))
+                BasicTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .padding(14.dp),
+                    decorationBox = { inner ->
+                        if (note.isEmpty()) Text("品牌露出 / 渠道合作 / 活动联办…", color = DemoColors.Muted)
+                        inner()
+                    },
+                )
+            }
+            Button(
+                onClick = {
+                    when {
+                        company.isBlank() || contact.isBlank() -> showPlatformToast("请填写公司与联系人")
+                        else -> {
+                            showPlatformToast("已提交")
+                            onBack()
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0070F3)),
+            ) { Text("提交申请") }
+        }
+    }
+}
+
+@Composable
+private fun ReminderScreen(onBack: () -> Unit) {
+    val today = listOf(
+        "14:00 张先生试驾回访" to "高意向 · 销售顾问",
+        "16:30 保养交车提醒" to "工单 AS-441",
+        "20:00 直播线索复盘" to "运营协作",
+    )
+    val tomorrow = listOf("10:00 门店晨会" to "全员")
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "提醒事项", onBack = onBack, containerColor = Color.White)
+        LazyColumn(contentPadding = PaddingValues(16.dp)) {
+            item {
+                Text("今日 · ${today.size} 条", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
+            }
+            items(today) { (title, sub) ->
+                Column(
+                    Modifier
+                        .padding(bottom = 8.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .padding(14.dp),
+                ) {
+                    Text(title, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(4.dp))
+                    Text(sub, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                }
+            }
+            item {
+                Text("明日 · ${tomorrow.size} 条", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
+            }
+            items(tomorrow) { (title, sub) ->
+                Column(
+                    Modifier
+                        .padding(bottom = 8.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .padding(14.dp),
+                ) {
+                    Text(title, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(4.dp))
+                    Text(sub, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                }
+            }
+        }
     }
 }
 
