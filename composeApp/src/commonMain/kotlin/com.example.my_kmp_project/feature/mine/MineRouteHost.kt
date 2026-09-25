@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,6 +66,16 @@ internal object MineRoutes {
     const val Classroom = ClassroomRoutes.MyClass
     const val ShortVideo = VideoRoutes.Short
     const val CheckIn = "/home/check_in_mall"
+    const val SmsTemplates = "/mine/sms_templates"
+    const val ShopQr = "/mine/shop_qr"
+    const val BuyQa = "/mine/buy_qa"
+    const val Poster = "/mine/poster"
+    const val Settings = "/mine/settings"
+    const val Feedback = "/mine/feedback"
+    const val Cooperation = "/mine/cooperation"
+    const val Reminder = "/mine/reminder"
+    const val Invite = "/mine/invite"
+    const val FanGroup = "/mine/fan_group"
 
     fun fromLabel(label: String): String? = when (label.trim()) {
         "商城", "mall" -> Mall
@@ -72,15 +83,24 @@ internal object MineRoutes {
         "我的钱包", "钱包" -> Wallet
         "会员" -> Membership
         "我的课程", "课程" -> Classroom
-        "短信模板" -> null // stub toast
+        "短信模板" -> SmsTemplates
         "购车计算器", "计算器" -> Calculator
         "二手车" -> HomeRoutes.UsedCar
         "收支", "台账" -> HomeRoutes.Ledger
         "售后", "售后专区" -> HomeRoutes.AfterSales
         "小视频" -> ShortVideo
-        "地址管理", "地址" -> Addresses
+        "店铺收款码", "收款码" -> ShopQr
+        "选买问答" -> BuyQa
+        "商家海报", "海报" -> Poster
+        "地址管理", "地址", "收货地址" -> Addresses
         "个人资料", "资料" -> Profile
         "签到日历" -> CheckIn
+        "设置" -> Settings
+        "意见反馈" -> Feedback
+        "商务合作" -> Cooperation
+        "提醒事项" -> Reminder
+        "邀请好友" -> Invite
+        "粉丝群" -> FanGroup
         else -> null
     }
 }
@@ -118,6 +138,16 @@ internal fun MineRouteHost(
         route == MineRoutes.CheckIn -> {
             SimpleDetail("签到", "请从 Home 签到商城进入完整页", onBack)
         }
+        route == MineRoutes.SmsTemplates -> SmsTemplateScreen(onBack = onBack)
+        route == MineRoutes.ShopQr -> ShopQrScreen(onBack = onBack)
+        route == MineRoutes.BuyQa -> BuyQaScreen(onBack = onBack)
+        route == MineRoutes.Poster -> PosterScreen(onBack = onBack)
+        route == MineRoutes.Settings -> SettingsScreen(onBack = onBack)
+        route == MineRoutes.Feedback -> FeedbackScreen(onBack = onBack)
+        route == MineRoutes.Cooperation -> SimpleDetail("商务合作", "商务合作申请入口 · 提交后由运营跟进", onBack)
+        route == MineRoutes.Reminder -> SimpleDetail("提醒事项", "今日提醒 3 条 · 明日 1 条", onBack)
+        route == MineRoutes.Invite -> SimpleDetail("邀请好友", "邀请码 DEMO2026 · 分享得积分", onBack)
+        route == MineRoutes.FanGroup -> SimpleDetail("粉丝群", "演示门店粉丝群 · 扫码加入", onBack)
         else -> SimpleDetail("我的", "route=$route", onBack)
     }
 }
@@ -873,5 +903,254 @@ private fun CalculatorField(label: String, value: String, onChange: (String) -> 
                 .background(Color(0xFFF5F6F8))
                 .padding(horizontal = 12.dp, vertical = 12.dp),
         )
+    }
+}
+
+@Composable
+private fun SmsTemplateScreen(onBack: () -> Unit) {
+    val templates = listOf(
+        "到店提醒" to "尊敬的客户，预约保养已排至今日 14:00，请准时到店。",
+        "试驾确认" to "您好，试驾预约已确认，顾问将提前电话联系您。",
+        "活动邀约" to "本周末门店试驾会，到店即送礼品，欢迎莅临。",
+        "回访关怀" to "购车已满一周，如有用车问题请随时联系您的顾问。",
+    )
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "短信模板", onBack = onBack, containerColor = Color.White)
+        LazyColumn(contentPadding = PaddingValues(16.dp)) {
+            items(templates) { (title, body) ->
+                Column(
+                    Modifier
+                        .padding(bottom = 10.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .padding(14.dp),
+                ) {
+                    Text(title, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text(body, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        "一键发送",
+                        color = Color(0xFF0070F3),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .clickable { showPlatformToast("已复制并打开短信（mock）") },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShopQrScreen(onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        MineTopBar(title = "店铺收款码", onBack = onBack, containerColor = Color.White)
+        Spacer(Modifier.height(24.dp))
+        Column(
+            Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("演示门店", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(Modifier.height(4.dp))
+            Text("扫码向本店付款", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            Spacer(Modifier.height(20.dp))
+            Box(
+                Modifier
+                    .width(200.dp)
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF111111)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .width(160.dp)
+                        .height(160.dp)
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("QR", fontWeight = FontWeight.Bold, fontSize = 28.sp, color = Color(0xFF111111))
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("支持微信 / 支付宝", color = DemoColors.TextSecondary, fontSize = 12.sp)
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "保存到相册",
+            color = Color(0xFF0070F3),
+            modifier = Modifier.clickable { showPlatformToast("已保存（mock）") },
+        )
+        Spacer(Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun BuyQaScreen(onBack: () -> Unit) {
+    val rows = listOf(
+        "全款和贷款怎么选？" to "已解答 · 顾问回复",
+        "置换能抵多少？" to "待回复 · 客户追问",
+        "保养周期多久一次？" to "已解答 · 知识库",
+    )
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "选买问答", onBack = onBack, containerColor = Color.White)
+        LazyColumn(contentPadding = PaddingValues(16.dp)) {
+            items(rows) { (q, status) ->
+                Column(
+                    Modifier
+                        .padding(bottom = 10.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .padding(14.dp),
+                ) {
+                    Text(q, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text(status, color = DemoColors.TextSecondary, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PosterScreen(onBack: () -> Unit) {
+    val posters = listOf("置换专场", "专卖精选", "估价引流", "到店礼")
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "商家海报", onBack = onBack, containerColor = Color.White)
+        LazyColumn(contentPadding = PaddingValues(16.dp)) {
+            items(posters.chunked(2)) { row ->
+                Row(
+                    Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    row.forEach { title ->
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .padding(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFFFF3E0)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(title.take(2), fontWeight = FontWeight.Bold, color = Color(0xFFFF9500))
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                    if (row.size == 1) Spacer(Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsScreen(onBack: () -> Unit) {
+    var notify by remember { mutableStateOf(true) }
+    var personalize by remember { mutableStateOf(true) }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "设置", onBack = onBack, containerColor = Color.White)
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("消息通知", Modifier.weight(1f))
+                Switch(checked = notify, onCheckedChange = { notify = it })
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("个性化推荐", Modifier.weight(1f))
+                Switch(checked = personalize, onCheckedChange = { personalize = it })
+            }
+            listOf("账号安全", "隐私协议", "关于我们").forEach { label ->
+                Text(
+                    label,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .clickable { showPlatformToast(label) }
+                        .padding(14.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeedbackScreen(onBack: () -> Unit) {
+    var text by remember { mutableStateOf("") }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "意见反馈", onBack = onBack, containerColor = Color.White)
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            BasicTextField(
+                value = text,
+                onValueChange = { text = it },
+                textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+                decorationBox = { inner ->
+                    if (text.isEmpty()) Text("请描述问题或建议…", color = DemoColors.Muted)
+                    inner()
+                },
+            )
+            Button(
+                onClick = {
+                    if (text.isBlank()) showPlatformToast("请填写反馈内容")
+                    else {
+                        showPlatformToast("已提交")
+                        onBack()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0070F3)),
+            ) { Text("提交") }
+        }
     }
 }

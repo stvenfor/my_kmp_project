@@ -1052,11 +1052,7 @@ internal fun JetpackMineRoot(
         onOpenPersonalized = onOpenPersonalized,
         snackbar = { label ->
             val routeable = MineRoutes.fromLabel(label) != null ||
-                HomeRoutes.fromLabel(label) != null ||
-                label == "商城" || label == "我的钱包" || label == "我的订单" ||
-                label == "购车计算器" || label == "小视频" || label == "二手车" ||
-                label == "收支" || label == "售后专区" || label == "个人资料" ||
-                label == "签到日历" || label == "地址管理"
+                HomeRoutes.fromLabel(label) != null
             if (routeable) onDeferred(label)
             else showPlatformToast(label)
         },

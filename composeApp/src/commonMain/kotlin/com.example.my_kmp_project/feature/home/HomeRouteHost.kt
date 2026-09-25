@@ -1,6 +1,7 @@
 package com.example.my_kmp_project.feature.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -138,14 +139,18 @@ internal fun HomeRouteHost(
             onItem = { onNavigate(HomeRoutes.LedgerDetail) },
         )
         HomeRoutes.LedgerDetail -> CrudDetailScreen("收支详情", HomeSecondaryMock.ledger.first(), onBack)
-        HomeRoutes.DataAnalytics -> CrudListScreen(
-            title = "数据分析",
-            items = HomeSecondaryMock.analytics,
+        HomeRoutes.DataAnalytics -> AnalyticsListScreen(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.DataAnalyticsDetail) },
         )
         HomeRoutes.DataAnalyticsDetail ->
-            CrudDetailScreen("分析详情", HomeSecondaryMock.analytics.first(), onBack)
+            CrudDetailScreen(
+                "分析详情",
+                HomeSecondaryMock.analyticsRecords.first().let {
+                    "${it.title}\nPV ${it.pv} · 点击 ${it.clicks} · 转化 ${it.converts}\n${it.subtitle}"
+                },
+                onBack,
+            )
         HomeRoutes.TodoPartner -> CrudListScreen("新伙伴待确认", HomeSecondaryMock.partners, onBack)
         HomeRoutes.TodoFollowUp -> CrudListScreen("待跟进客户", HomeSecondaryMock.followUps, onBack)
         HomeRoutes.TodoAfterSales -> CrudListScreen("售后预约", HomeSecondaryMock.appointments, onBack)
@@ -208,6 +213,16 @@ internal data class NewCarFollowRow(
     val overdue: Boolean = false,
 )
 
+internal data class AnalyticsRecordRow(
+    val title: String,
+    val subtitle: String,
+    val pv: Int,
+    val clicks: Int,
+    val converts: Int,
+    val featured: Boolean = false,
+    val anomaly: Boolean = false,
+)
+
 internal object HomeSecondaryMock {
     val usedCarOrders = listOf(
         UsedCarOrderRow(
@@ -257,6 +272,35 @@ internal object HomeSecondaryMock {
     val analytics = listOf(
         HomeListRow("本周线索转化", "转化率 12.4% · 环比 +1.2pp"),
         HomeListRow("试驾到店", "到店 86 · 成交 11"),
+    )
+    val analyticsRecords = listOf(
+        AnalyticsRecordRow(
+            title = "本周线索转化",
+            subtitle = "门店线索漏斗 · 高意向优先",
+            pv = 12840,
+            clicks = 962,
+            converts = 119,
+            featured = true,
+            anomaly = false,
+        ),
+        AnalyticsRecordRow(
+            title = "试驾到店",
+            subtitle = "预约试驾 → 到店完成",
+            pv = 4520,
+            clicks = 610,
+            converts = 86,
+            featured = false,
+            anomaly = false,
+        ),
+        AnalyticsRecordRow(
+            title = "直播线索异常",
+            subtitle = "点击骤降 · 需排查投放",
+            pv = 2100,
+            clicks = 42,
+            converts = 3,
+            featured = false,
+            anomaly = true,
+        ),
     )
     val partners = listOf(
         HomeListRow("王小明", "销售顾问 · 待确认加入"),
@@ -438,6 +482,79 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
                 ) {
                     Text("#${item.rank} ${item.title}", fontWeight = FontWeight.SemiBold)
                     Text(item.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsListScreen(
+    onBack: () -> Unit,
+    onItem: (AnalyticsRecordRow) -> Unit,
+) {
+    // Flutter AnalyticsListPage: summary bar + metric cards
+    val primary = Color(0xFF0070F3)
+    val bg = Color(0xFFF5F5F5)
+    val items = HomeSecondaryMock.analyticsRecords
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(bg)) {
+        MineTopBar(title = "数据分析", onBack = onBack, containerColor = Color.White)
+        Row(
+            Modifier
+                .padding(start = 12.dp, end = 12.dp, top = 12.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .border(1.dp, Color(0xFFEAEAEA), RoundedCornerShape(12.dp))
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("已加载 ${items.size} / 共 ${items.size} · 第 1 页", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            Spacer(Modifier.weight(1f))
+            Text(
+                "gRPC",
+                color = primary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(primary.copy(alpha = 0.08f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            )
+        }
+        LazyColumn(contentPadding = PaddingValues(12.dp)) {
+            items(items) { row ->
+                val cue = when {
+                    row.anomaly -> Color(0xFFE53935)
+                    row.featured -> Color(0xFFFF9500)
+                    else -> Color.Transparent
+                }
+                val rate = if (row.clicks > 0) row.converts * 100f / row.clicks else 0f
+                Row(
+                    Modifier
+                        .padding(bottom = 8.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White)
+                        .clickable { onItem(row) },
+                ) {
+                    Box(Modifier.width(4.dp).height(96.dp).background(cue))
+                    Column(Modifier.padding(14.dp).weight(1f)) {
+                        Text(row.title, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        Spacer(Modifier.height(4.dp))
+                        Text(row.subtitle, color = DemoColors.TextSecondary, fontSize = 12.sp)
+                        Spacer(Modifier.height(10.dp))
+                        Row {
+                            Text("PV ${row.pv}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Spacer(Modifier.width(12.dp))
+                            Text("点击 ${row.clicks}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Spacer(Modifier.width(12.dp))
+                            Text("转化 ${row.converts}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Spacer(Modifier.weight(1f))
+                            Text("${(rate * 10).toInt() / 10.0}%", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = primary)
+                        }
+                    }
                 }
             }
         }

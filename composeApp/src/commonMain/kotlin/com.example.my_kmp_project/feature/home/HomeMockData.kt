@@ -192,6 +192,7 @@ internal object HomeMockData {
         AllServiceSection(
             title = "其他服务",
             items = listOf(
+                AllServiceItem("analytics", "数据分析", "smart_sale.png"),
                 AllServiceItem("membership", "会员续费", "marketing.png"),
                 AllServiceItem("help", "帮助中心", "after_sales_area.png"),
                 AllServiceItem("feedback", "意见反馈", "calculator.png"),
