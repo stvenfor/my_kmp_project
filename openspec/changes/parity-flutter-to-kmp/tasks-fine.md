@@ -1,6 +1,8 @@
 # Flutter → KMP 细粒度任务拆分（按模块）
 
 > **更细一版（按 `RoutePath` / UI 区块 / `.a.i.h` 三端）→ [`tasks-ultra-fine.md`](./tasks-ultra-fine.md)**（约 570 一级项，三端展开约 1320；H/I/J 已按 widget/API 展开）。
+>
+> **2026-09-25 起执行权威 → [`tasks-execution.md`](./tasks-execution.md)**（103 路由全覆盖 + Z 收口回检；误标完成已诚实重置）。
 
 > SoT：`my_ai_project` · 目标：`my_kmp_project` · ADR 0002  
 > **完成定义**：可点击路径 + 数据契约对齐；MSE 仅作回归信号，不算模块完成。  

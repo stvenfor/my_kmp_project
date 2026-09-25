@@ -37,6 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
@@ -361,73 +363,231 @@ internal object HomeSecondaryMock {
 
 @Composable
 private fun LifeServiceScreen(onBack: () -> Unit) {
-    val items = listOf(
-        "洗车美容" to "到店立减 · 预约免排队",
-        "代驾服务" to "夜间 / 酒后代驾",
-        "道路救援" to "一键呼叫 · 30 分钟达",
-        "年检代办" to "免上线 · 资料代跑",
-        "加油优惠" to "合作油站满减",
-        "车险续保" to "比价出单 · 顾问跟进",
+    // Flutter: HomeFeatureContentPage(title: 生活服务, child: HomeVideoTabContent)
+    val shortcuts = listOf(
+        "会员专享" to Color(0xFF0070F3),
+        "配音专栏" to Color(0xFFFF9500),
+        "其他课程" to Color(0xFF5856D6),
+        "功能教程" to Color(0xFF34C759),
     )
-    FeatureListScreen(
-        title = "生活服务",
-        heroTint = Color(0xFF00A870),
-        heroTitle = "车生活一站办",
-        heroSub = "洗车 · 代驾 · 救援 · 年检",
-        items = items,
-        onBack = onBack,
+    val daily = listOf(
+        Triple("带你玩转 ETF", "直播中", true),
+        Triple("新能源赛道解读", "回放", false),
+        Triple("门店短视频运营", "直播中", true),
     )
+    val courses = listOf(
+        Triple("【配置】当星舰撞上算力", "尤国梁", true),
+        Triple("黄金恐贪定投实战", "策略组", false),
+    )
+    ReportMainTabRoot(isRoot = false)
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(DemoColors.PageBg)
+            .verticalScroll(rememberScrollState()),
+    ) {
+        MineTopBar(title = "生活服务", onBack = onBack, containerColor = DemoColors.PageBg)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            shortcuts.forEach { (label, tint) ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { showPlatformToast(label) },
+                ) {
+                    Box(
+                        Modifier
+                            .width(52.dp)
+                            .height(52.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(tint.copy(alpha = 0.12f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(label.take(1), color = tint, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(label, fontSize = 12.sp, color = DemoColors.TextPrimary, maxLines = 1)
+                }
+            }
+        }
+        LifeSectionHeader(title = "每日推荐")
+        Column(Modifier.padding(horizontal = 16.dp)) {
+            daily.forEach { (title, tag, isLive) ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                        .clickable { showPlatformToast(title) }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        tag,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isLive) Color(0xFFFF3B30) else DemoColors.TextSecondary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(
+                                if (isLive) Color(0x14FF3B30) else Color(0xFFF2F2F7),
+                            )
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        title,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Box(
+                        Modifier
+                            .width(36.dp)
+                            .height(36.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color(0xFFE8EEF5)),
+                    )
+                }
+            }
+        }
+        LifeSectionHeader(title = "热门课程")
+        Row(
+            Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            courses.forEach { (title, author, isMember) ->
+                Column(
+                    Modifier
+                        .width(168.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                        .clickable { showPlatformToast(title) },
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
+                            .background(Color(0xFFE8EEF5)),
+                    ) {
+                        Text(
+                            "直播中",
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color.Black.copy(alpha = 0.45f))
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                        )
+                    }
+                    Column(Modifier.padding(10.dp)) {
+                        Text(
+                            title,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            lineHeight = 17.sp,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(author, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        if (isMember) {
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                "V 会员专属",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFFFF9500),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0x14FF9500))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        Text(
+            "进入配音视频专区",
+            color = DemoColors.Accent,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(DemoColors.Accent.copy(alpha = 0.08f))
+                .border(1.dp, DemoColors.Accent.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                .clickable { showPlatformToast("配音") }
+                .padding(vertical = 14.dp),
+        )
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun LifeSectionHeader(title: String) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+        Text("更多 >", fontSize = 13.sp, color = DemoColors.TextSecondary)
+    }
 }
 
 @Composable
 private fun LiveCommerceScreen(onBack: () -> Unit) {
-    val items = listOf(
-        "今晚 20:00 直播" to "星愿限时权益 · 预约提醒",
-        "回放：试驾实录" to "播放 1.2 万 · 线索 86",
-        "爆款配件专场" to "脚垫 / 行车记录仪",
-        "直播线索池" to "待跟进 23 · 已转化 5",
-        "主播排班" to "本周 4 场已排",
-        "带货数据看板" to "GMV 12.8 万 · 转化 3.1%",
-    )
-    FeatureListScreen(
-        title = "直播带货",
-        heroTint = Color(0xFFE53935),
-        heroTitle = "直播间进行中",
-        heroSub = "演示门店 · 在线 328 人",
-        items = items,
-        onBack = onBack,
-    )
+    // Flutter wires 直播带货 → HomeClubTabContent (same as Club)
+    ClubContentBody(title = "直播带货", onBack = onBack)
 }
 
 @Composable
 private fun ClubScreen(onBack: () -> Unit) {
-    val items = listOf(
-        "车友聚会 · 本周六" to "已报名 42 · 名额 60",
-        "自驾游线路" to "京郊两日 · 招募中",
-        "积分兑换专区" to "周边 / 洗车券",
-        "会员日活动" to "每月 15 日到店礼",
-        "俱乐部公告" to "新规：活动签到得双倍积分",
-        "我的社群" to "演示门店 Club · 已加入",
-    )
-    FeatureListScreen(
-        title = "Club",
-        heroTint = Color(0xFF5B6CFF),
-        heroTitle = "车友 Club",
-        heroSub = "活动 · 自驾 · 积分权益",
-        items = items,
-        onBack = onBack,
-    )
+    ClubContentBody(title = "Club", onBack = onBack)
 }
 
 @Composable
-private fun FeatureListScreen(
-    title: String,
-    heroTint: Color,
-    heroTitle: String,
-    heroSub: String,
-    items: List<Pair<String, String>>,
-    onBack: () -> Unit,
-) {
+private fun ClubContentBody(title: String, onBack: () -> Unit) {
+    // Flutter: HomeClubTabContent
+    var filter by remember { mutableStateOf(0) }
+    val filters = listOf("最新", "嘉宾分享", "资料")
+    data class ClubPost(
+        val author: String,
+        val date: String,
+        val content: String,
+        val pdfName: String? = null,
+    )
+    val posts = listOf(
+        ClubPost(
+            "莫听官方",
+            "06-24",
+            "【官方纪要】本期聚焦 AI 算力与产业趋势，内容仅供合格投资者参考。",
+            "【莫听Club第78期】聊聊AI最靓的仔.pdf",
+        ),
+        ClubPost(
+            "策略研究员",
+            "06-20",
+            "当星舰遇到算力：嘉宾分享回顾与延伸阅读。",
+        ),
+    )
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
@@ -436,36 +596,137 @@ private fun FeatureListScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         MineTopBar(title = title, onBack = onBack, containerColor = DemoColors.PageBg)
-        Box(
+        Row(
             Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(heroTint)
-                .padding(18.dp),
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
-                Text(heroTitle, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Spacer(Modifier.height(4.dp))
-                Text(heroSub, color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp)
+            Box(
+                Modifier
+                    .width(52.dp)
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF1C1C3A)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("Club", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text("莫听Club", fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+                Spacer(Modifier.height(4.dp))
+                Text("动态 127 | 成员 1040", fontSize = 12.sp, color = DemoColors.TextSecondary)
+            }
+            Text(
+                "+ 加入",
+                color = Color.White,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(DemoColors.Accent)
+                    .clickable { showPlatformToast("加入 Club") }
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                fontSize = 14.sp,
+            )
         }
         Spacer(Modifier.height(12.dp))
-        items.forEach { (name, sub) ->
+        Row(
+            Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+        ) {
+            filters.forEachIndexed { i, label ->
+                val selected = filter == i
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { filter = i },
+                ) {
+                    Text(
+                        label,
+                        fontSize = 15.sp,
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                        color = if (selected) DemoColors.TextPrimary else DemoColors.TextSecondary,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Box(
+                        Modifier
+                            .width(if (selected) 20.dp else 0.dp)
+                            .height(2.dp)
+                            .background(DemoColors.Accent),
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        posts.forEach { post ->
             Column(
                 Modifier
-                    .padding(horizontal = 16.dp, vertical = 5.dp)
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color.White)
-                    .clickable { showPlatformToast(name) }
-                    .padding(14.dp),
+                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                    .padding(16.dp),
             ) {
-                Text(name, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-                Spacer(Modifier.height(4.dp))
-                Text(sub, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        Modifier
+                            .width(40.dp)
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFFE8EEF5)),
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Column {
+                        Text(post.author, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        Text(post.date, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Text(post.content, fontSize = 15.sp, color = DemoColors.TextPrimary)
+                post.pdfName?.let { pdf ->
+                    Spacer(Modifier.height(12.dp))
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFFF2F2F7))
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("📄", fontSize = 16.sp)
+                        Spacer(Modifier.width(8.dp))
+                        Text(pdf, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    listOf("分享", "评论", "点赞").forEach { action ->
+                        Text(action, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                    }
+                }
             }
         }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "进入社区查看更多",
+            color = DemoColors.Accent,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                .clickable { showPlatformToast("社区") }
+                .padding(vertical = 14.dp),
+        )
         Spacer(Modifier.height(24.dp))
     }
 }

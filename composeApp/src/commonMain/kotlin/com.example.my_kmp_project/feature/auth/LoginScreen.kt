@@ -50,7 +50,8 @@ internal fun LoginScreen(
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
+    // Flutter SoT test account (docs/USAGE_GUIDE.md · USE_MOCK_AUTH / Go OTP bypass)
+    var phone by remember { mutableStateOf("13400000000") }
     var otp by remember { mutableStateOf("") }
     var agreedPrivacy by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }

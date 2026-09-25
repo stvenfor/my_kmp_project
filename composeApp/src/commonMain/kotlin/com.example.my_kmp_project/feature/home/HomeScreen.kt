@@ -65,7 +65,17 @@ internal fun HomeScreen() {
         "report" -> LearningReportScreen(onBack = { destination = null })
         "strategy" -> StrategyScreen(onBack = { destination = null })
         "services" -> AllServicesScreen(onBack = { destination = null })
-        else -> AllServicesScreen(onBack = { destination = null })
+        else -> {
+            if (HomeRoutes.fromLabel(dest) != null || dest.startsWith("/home/")) {
+                HomeRouteHost(
+                    route = HomeRoutes.fromLabel(dest) ?: dest,
+                    onBack = { destination = null },
+                    onNavigate = { destination = it },
+                )
+            } else {
+                AllServicesScreen(onBack = { destination = null })
+            }
+        }
     }
 }
 
@@ -110,8 +120,10 @@ private fun HomeRootContent(onNavigate: (String) -> Unit) {
                     onFeature = { label ->
                         when (label) {
                             "更多" -> onNavigate("services")
-                            "直播带货" -> onNavigate("live")
-                            else -> Unit
+                            "直播带货" -> onNavigate(HomeRoutes.LiveCommerce)
+                            "生活服务" -> onNavigate(HomeRoutes.LifeService)
+                            "Club" -> onNavigate(HomeRoutes.Club)
+                            else -> onNavigate(label)
                         }
                     },
                 )

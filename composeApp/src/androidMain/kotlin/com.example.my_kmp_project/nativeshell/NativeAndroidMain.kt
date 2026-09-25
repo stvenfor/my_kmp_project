@@ -253,9 +253,9 @@ internal fun NativeAndroidMain() {
                     openMineRoute(mineMapped)
                 }
             }
-            contentMapped != null -> openContentRoute(contentMapped)
-            communityMapped != null -> openCommunityRoute(communityMapped)
             homeMapped != null -> openHomeRoute(homeMapped)
+            communityMapped != null -> openCommunityRoute(communityMapped)
+            contentMapped != null -> openContentRoute(contentMapped)
             else -> {
                 deferredTitle = title
                 overlay = ShellOverlay.DeferredStub

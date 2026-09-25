@@ -8,16 +8,29 @@ import com.example.my_kmp_project.feature.media.VideoRoutes
 import com.example.my_kmp_project.feature.mine.MineRoutes
 
 /**
- * Shared Flutter-aligned route path constants (K.3).
- * Prefer these over string literals at call sites.
+ * Convenience aliases into [AppRoutePath] / feature route objects.
+ * Canonical full table: [AppRoutePath] (103 Flutter strings).
  */
 object RoutePath {
+    val Splash = AppRoutePath.splash
+    val Main = AppRoutePath.main
+    val Login = AppRoutePath.login
+    val LoginPassword = AppRoutePath.loginPassword
+    val LoginOtp = AppRoutePath.loginOtp
+    val Register = AppRoutePath.register
+    val Settings = AppRoutePath.settings
+    val Web = AppRoutePath.web
+
     object Home {
         val Search = HomeRoutes.Search
         val Strategy = HomeRoutes.Strategy
         val LearningReport = HomeRoutes.LearningReport
         val CheckInMall = HomeRoutes.CheckInMall
         val DubbingFeed = HomeRoutes.DubbingFeed
+        val AllServices = AppRoutePath.homeAllServices
+        val LifeService = AppRoutePath.homeLifeService
+        val LiveCommerce = AppRoutePath.homeLiveCommerce
+        val Club = AppRoutePath.homeClub
     }
 
     object Video {
@@ -43,6 +56,8 @@ object RoutePath {
         val Wallet = MineRoutes.Wallet
         val Membership = MineRoutes.Membership
         val Profile = MineRoutes.Profile
+        val Settings = MineRoutes.Settings
+        val Personalized = MineRoutes.PersonalizedSettings
     }
 
     object Content {

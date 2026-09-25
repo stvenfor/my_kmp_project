@@ -70,7 +70,9 @@ internal object MineRoutes {
     const val ShopQr = "/mine/shop_qr"
     const val BuyQa = "/mine/buy_qa"
     const val Poster = "/mine/poster"
-    const val Settings = "/mine/settings"
+    const val Settings = "/settings"
+    const val SettingsLegacy = "/mine/settings"
+    const val PersonalizedSettings = "/mine/personalized_settings"
     const val Feedback = "/mine/feedback"
     const val Cooperation = "/mine/cooperation"
     const val Reminder = "/mine/reminder"
@@ -96,6 +98,8 @@ internal object MineRoutes {
         "个人资料", "资料" -> Profile
         "签到日历" -> CheckIn
         "设置" -> Settings
+        "设置页" -> Settings
+        "/mine/settings" -> Settings
         "意见反馈" -> Feedback
         "商务合作" -> Cooperation
         "提醒事项" -> Reminder
@@ -140,7 +144,16 @@ internal fun MineRouteHost(
         route == MineRoutes.ShopQr -> ShopQrScreen(onBack = onBack)
         route == MineRoutes.BuyQa -> BuyQaScreen(onBack = onBack)
         route == MineRoutes.Poster -> PosterScreen(onBack = onBack)
-        route == MineRoutes.Settings -> SettingsScreen(onBack = onBack)
+        route == MineRoutes.Settings || route == MineRoutes.SettingsLegacy -> MineSettingsScreen(
+            onBack = onBack,
+            onOpenPersonalized = { onNavigate(MineRoutes.PersonalizedSettings) },
+            onOpenMembership = { onNavigate(MineRoutes.Membership) },
+            onOpenAbout = { showPlatformToast("关于 My AI · KMP") },
+        )
+        route == MineRoutes.PersonalizedSettings -> MinePersonalizedSettingsScreen(
+            onBack = onBack,
+            snackbar = { showPlatformToast(it) },
+        )
         route == MineRoutes.Feedback -> FeedbackScreen(onBack = onBack)
         route == MineRoutes.Cooperation -> CooperationScreen(onBack = onBack)
         route == MineRoutes.Reminder -> ReminderScreen(onBack = onBack)
@@ -1425,51 +1438,6 @@ private fun PosterScreen(onBack: () -> Unit) {
                     }
                     if (row.size == 1) Spacer(Modifier.weight(1f))
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsScreen(onBack: () -> Unit) {
-    var notify by remember { mutableStateOf(true) }
-    var personalize by remember { mutableStateOf(true) }
-    ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "设置", onBack = onBack, containerColor = Color.White)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("消息通知", Modifier.weight(1f))
-                Switch(checked = notify, onCheckedChange = { notify = it })
-            }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("个性化推荐", Modifier.weight(1f))
-                Switch(checked = personalize, onCheckedChange = { personalize = it })
-            }
-            listOf("账号安全", "隐私协议", "关于我们").forEach { label ->
-                Text(
-                    label,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
-                        .clickable { showPlatformToast(label) }
-                        .padding(14.dp),
-                )
             }
         }
     }

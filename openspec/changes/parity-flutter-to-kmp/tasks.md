@@ -2,6 +2,9 @@
 > [`notes/boundary-gate.md`](notes/boundary-gate.md) 与  
 > [`../architect-production-foundation/notes/parity-unfreeze.md`](../architect-production-foundation/notes/parity-unfreeze.md)。  
 > feature↛feature；支付/推送走 `component/*`；tokens 走 `DesignSystem`；禁止 Home hub 堆 feature import。合入前跑 `scripts/check-layer-deps.sh`。
+>
+> **执行权威（细粒度全量 + 收口回检）→ [`tasks-execution.md`](./tasks-execution.md)**  
+> 勾选与结案以 `tasks-execution.md` 为准；本文件保留 OpenSpec 阶段概览。审计：`python3 scripts/parity_task_audit.py`。
 
 ## 1. Parity scaffolding & gap registry
 

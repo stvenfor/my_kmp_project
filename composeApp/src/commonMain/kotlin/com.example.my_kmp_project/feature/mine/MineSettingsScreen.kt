@@ -98,9 +98,16 @@ internal fun MineSettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "通用",
+                color = DemoColors.Muted,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            )
             MineGroupedCard {
                 MineSwitchRow(
                     title = "深色模式",
+                    subtitle = "切换浅色 / 深色主题",
                     checked = darkMode,
                     onCheckedChange = { darkMode = it },
                 )
@@ -113,20 +120,22 @@ internal fun MineSettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            MineGroupedCard {
-                MineNavRow(title = "会员", onClick = onOpenMembership)
-                MineInsetDivider()
-                MineNavRow(title = "个性化设置", onClick = onOpenPersonalized)
-                MineInsetDivider()
-                MineNavRow(title = "关于", onClick = onOpenAbout)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            // Flutter SettingsPage product surface stops at 通用.
+            // 个性化设置有独立路由 /mine/personalized_settings；调试项 out-of-scope。
             Text(
-                text = "调试入口（BLE / invoice / DoKit 等）不在本页交付范围内。",
+                text = "调试入口（BLE / invoice / DoKit / 融云等）见 platform-gap，不在本页交付。",
                 color = DemoColors.Muted,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(horizontal = 4.dp),
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "个性化设置",
+                color = DemoColors.Accent,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .clickable(onClick = onOpenPersonalized)
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
             )
         }
     }

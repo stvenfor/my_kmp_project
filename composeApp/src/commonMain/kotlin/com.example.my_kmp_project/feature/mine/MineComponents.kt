@@ -125,6 +125,7 @@ internal fun MineSwitchRow(
     title: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    subtitle: String? = null,
     showHelp: Boolean = false,
     onHelp: (() -> Unit)? = null,
 ) {
@@ -134,26 +135,33 @@ internal fun MineSwitchRow(
             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = title,
-                color = Color(0xFF333333),
-                fontSize = 16.sp,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            if (showHelp && onHelp != null) {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "?",
+                    text = title,
+                    color = Color(0xFF333333),
+                    fontSize = 16.sp,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                if (showHelp && onHelp != null) {
+                    Text(
+                        text = "?",
+                        color = DemoColors.Muted,
+                        fontSize = 13.sp,
+                        modifier = Modifier
+                            .padding(start = 6.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onHelp)
+                            .padding(4.dp),
+                    )
+                }
+            }
+            if (!subtitle.isNullOrBlank()) {
+                Text(
+                    text = subtitle,
                     color = DemoColors.Muted,
-                    fontSize = 13.sp,
-                    modifier = Modifier
-                        .padding(start = 6.dp)
-                        .clip(CircleShape)
-                        .clickable(onClick = onHelp)
-                        .padding(4.dp),
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
         }

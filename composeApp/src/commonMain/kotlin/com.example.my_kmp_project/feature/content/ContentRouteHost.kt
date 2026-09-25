@@ -24,7 +24,7 @@ internal object ContentRoutes {
         ClassroomRoutes.fromLabel(label)?.let { return it }
         AiRoutes.fromLabel(label)?.let { return it }
         return when (label.trim()) {
-            "直播", "直播间", "直播带货" -> Live
+            "直播", "直播间" -> Live
             "好友", "通讯录", "朋友" -> Friend
             "音乐", "歌单" -> Music
             "音视频" -> MediaEntry
