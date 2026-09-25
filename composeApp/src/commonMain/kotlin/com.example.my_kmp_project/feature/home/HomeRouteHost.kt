@@ -129,13 +129,15 @@ internal fun HomeRouteHost(
             onBack = onBack,
         )
         HomeRoutes.UsedCarCreate -> UsedCarCreateScreen(onBack = onBack)
-        HomeRoutes.Ledger -> CrudListScreen(
-            title = "收支",
+        HomeRoutes.Ledger -> LedgerListScreen(
             items = HomeSecondaryMock.ledger,
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.LedgerDetail) },
         )
-        HomeRoutes.LedgerDetail -> CrudDetailScreen("收支详情", HomeSecondaryMock.ledger.first(), onBack)
+        HomeRoutes.LedgerDetail -> LedgerDetailScreen(
+            item = HomeSecondaryMock.ledger.firstOrNull(),
+            onBack = onBack,
+        )
         HomeRoutes.DataAnalytics -> AnalyticsListScreen(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.DataAnalyticsDetail) },
@@ -255,8 +257,30 @@ internal object HomeSecondaryMock {
         HomeListRow(it.vehicleModel, "${it.amount / 10000.0}万 · ${it.mileageKm / 10000.0}万公里")
     }
     val ledger = listOf(
-        HomeListRow("门店日结 09-24", "收入 128,600 · 支出 32,400"),
-        HomeListRow("门店日结 09-23", "收入 96,200 · 支出 28,100"),
+        LedgerTransaction(
+            id = 1,
+            type = "收入",
+            category = "新车定金",
+            amount = 5_000.0,
+            date = "2026-09-24",
+            note = "星越L 意向金",
+        ),
+        LedgerTransaction(
+            id = 2,
+            type = "支出",
+            category = "售后配件",
+            amount = 1_280.5,
+            date = "2026-09-23",
+            note = "工单 AS-441",
+        ),
+        LedgerTransaction(
+            id = 3,
+            type = "收入",
+            category = "二手车过户费",
+            amount = 12_600.0,
+            date = "2026-09-22",
+            note = null,
+        ),
     )
     val analytics = listOf(
         HomeListRow("本周线索转化", "转化率 12.4% · 环比 +1.2pp"),

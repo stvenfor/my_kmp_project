@@ -14,8 +14,10 @@ import androidx.compose.runtime.setValue
  * - `/mine` → [MainTab.Mine]
  * - `/auth/login` | `/login` → route [AppRoutes.Auth.LOGIN]
  * - `/login/password` | `/login/otp` → auth overlay (Flutter RoutePath)
+ * - `/register` → register overlay
+ * - `/web` → in-app WebView (optional `?url=`)
  *
- * Example URIs: `myai://home`, `myai:///chat`, `myai://auth/login`, `myai:///login`.
+ * Example URIs: `myai://home`, `myai:///chat`, `myai://auth/login`, `myai:///web`.
  *
  * Android Manifest: optionally add `intent-filter` for the product scheme / App Links so the
  * platform delivers the URI into [accept]; this stub needs no Manifest edits to compile or demo.
@@ -74,6 +76,8 @@ internal object DeepLinkRouter {
                 ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.loginOtp)
             AppRoutePath.register, "register" ->
                 ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.register)
+            AppRoutePath.web, "web" ->
+                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.web)
             else -> {
                 // Secondary product routes (Flutter RoutePath / AppRoutePath)
                 when {
@@ -127,3 +131,33 @@ internal data class ParsedDeepLink(
     val tab: MainTab?,
     val route: String,
 )
+
+/**
+ * Resolve WebView target from `/web?url=…` deep link; falls back to [fallback]
+ * (typically the offline fixture) when query is missing or unsupported.
+ */
+internal fun webUrlFromDeepLink(
+    rawUri: String,
+    fallback: String,
+): String {
+    val q = rawUri.indexOf('?')
+    if (q < 0) return fallback
+    val query = rawUri.substring(q + 1).substringBefore('#')
+    for (part in query.split('&')) {
+        val eq = part.indexOf('=')
+        if (eq <= 0) continue
+        val key = part.substring(0, eq)
+        if (key != "url") continue
+        val value = part.substring(eq + 1)
+            .replace("%3A", ":", ignoreCase = true)
+            .replace("%2F", "/", ignoreCase = true)
+            .replace("+", " ")
+        if (value.startsWith("http://") ||
+            value.startsWith("https://") ||
+            value.startsWith("data:")
+        ) {
+            return value
+        }
+    }
+    return fallback
+}

@@ -57,6 +57,8 @@ import com.example.my_kmp_project.feature.auth.LoginOtpScreen
 import com.example.my_kmp_project.feature.auth.LoginPasswordScreen
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
+import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
+import com.example.my_kmp_project.core.router.webUrlFromDeepLink
 import com.example.my_kmp_project.feature.chat.ChatScreen
 import com.example.my_kmp_project.feature.classroom.ClassroomScreen
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
@@ -280,6 +282,14 @@ private fun MainShell() {
             }
             pending.route == AppRoutePath.register -> {
                 authOverlay = AuthOverlay.Register
+                tabChrome.updateBottomBarVisible(false)
+            }
+            pending.route == AppRoutePath.web -> {
+                // Legacy AppShell: open via navigator-shaped route when available.
+                shellRoute = AppRoute.InAppWeb(
+                    webUrlFromDeepLink(pending.rawUri, OfflineWebFixtureUrl),
+                )
+                authOverlay = AuthOverlay.None
                 tabChrome.updateBottomBarVisible(false)
             }
             pending.tab != null -> {

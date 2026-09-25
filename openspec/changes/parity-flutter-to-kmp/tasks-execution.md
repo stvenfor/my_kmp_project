@@ -123,12 +123,12 @@
 - [ ] R.register.ui.i / R.register.ui.h（或 registry `missing`）
 
 ## `/web` — `web`
-- [ ] R.web.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.web.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.web.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.web.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.web.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.web.ev.a 证据 `notes/evidence/.../web.{flutter,kmp}.png`
+- [x] R.web.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.web.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.web.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.web.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.web.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.web.ev.a 证据 `notes/evidence/.../web.{flutter,kmp}.png`
 - [ ] R.web.ui.i / R.web.ui.h（或 registry `missing`）
 
 # B. Home
@@ -233,21 +233,21 @@
 - [ ] R.homeUsedCarCreate.ui.i / R.homeUsedCarCreate.ui.h（或 registry `missing`）
 
 ## `/home/ledger` — `homeLedgerList`
-- [ ] R.homeLedgerList.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeLedgerList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeLedgerList.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeLedgerList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeLedgerList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeLedgerList.ev.a 证据 `notes/evidence/.../home_ledger.{flutter,kmp}.png`
+- [x] R.homeLedgerList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeLedgerList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeLedgerList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeLedgerList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeLedgerList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeLedgerList.ev.a 证据 `notes/evidence/.../home_ledger.{flutter,kmp}.png`
 - [ ] R.homeLedgerList.ui.i / R.homeLedgerList.ui.h（或 registry `missing`）
 
 ## `/home/ledger/detail` — `homeLedgerDetail`
-- [ ] R.homeLedgerDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeLedgerDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeLedgerDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeLedgerDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeLedgerDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeLedgerDetail.ev.a 证据 `notes/evidence/.../home_ledger_detail.{flutter,kmp}.png`
+- [x] R.homeLedgerDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeLedgerDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeLedgerDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeLedgerDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeLedgerDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeLedgerDetail.ev.a 证据 `notes/evidence/.../home_ledger_detail.{flutter,kmp}.png`
 - [ ] R.homeLedgerDetail.ui.i / R.homeLedgerDetail.ui.h（或 registry `missing`）
 
 ## `/home/data_analytics` — `homeDataAnalyticsList`

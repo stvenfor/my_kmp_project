@@ -50,6 +50,8 @@ import com.example.my_kmp_project.feature.auth.LoginOtpScreen
 import com.example.my_kmp_project.feature.auth.LoginPasswordScreen
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
+import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
+import com.example.my_kmp_project.core.router.webUrlFromDeepLink
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.community.CommunityRouteHost
 import com.example.my_kmp_project.feature.community.CommunityRoutes
@@ -92,7 +94,7 @@ internal fun NativeAndroidMain() {
     var keptTabs by remember { mutableStateOf(setOf(MainTab.Home)) }
     var authOverlay by remember { mutableStateOf(AuthOverlay.None) }
     var overlay by remember { mutableStateOf(ShellOverlay.None) }
-    var webUrl by remember { mutableStateOf("https://example.com") }
+    var webUrl by remember { mutableStateOf(OfflineWebFixtureUrl) }
     var homeRoute by remember { mutableStateOf<String?>(null) }
     var homeRouteStack by remember { mutableStateOf<List<String>>(emptyList()) }
     var communityRoute by remember { mutableStateOf<String?>(null) }
@@ -238,7 +240,7 @@ internal fun NativeAndroidMain() {
                 bottomBarVisible = false
             }
             title.startsWith("http://") || title.startsWith("https://") || title == "H5 调试" || title == "内嵌网页" -> {
-                webUrl = if (title.startsWith("http")) title else "https://example.com"
+                webUrl = if (title.startsWith("http")) title else OfflineWebFixtureUrl
                 overlay = ShellOverlay.InAppWeb
                 bottomBarVisible = false
             }
@@ -303,6 +305,11 @@ internal fun NativeAndroidMain() {
                     }
                     pending.route == AppRoutePath.register -> {
                         authOverlay = AuthOverlay.Register
+                        bottomBarVisible = false
+                    }
+                    pending.route == AppRoutePath.web -> {
+                        webUrl = webUrlFromDeepLink(pending.rawUri, OfflineWebFixtureUrl)
+                        overlay = ShellOverlay.InAppWeb
                         bottomBarVisible = false
                     }
                     pending.route.startsWith("/home/") -> {
