@@ -1,6 +1,7 @@
 package com.example.my_kmp_project.feature.mine
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -70,6 +73,8 @@ internal object MineRoutes {
         "短信模板" -> null // stub toast
         "购车计算器", "计算器" -> Calculator
         "二手车" -> HomeRoutes.UsedCar
+        "收支", "台账" -> HomeRoutes.Ledger
+        "售后", "售后专区" -> HomeRoutes.AfterSales
         "小视频" -> ShortVideo
         "地址管理", "地址" -> Addresses
         "个人资料", "资料" -> Profile
@@ -294,45 +299,197 @@ private fun AddressEditScreen(onBack: () -> Unit) {
     }
 }
 
+private data class FinanceProductUi(
+    val id: Int,
+    val name: String,
+    val subtitle: String,
+)
+
 @Composable
 private fun PurchaseCalculatorScreen(onBack: () -> Unit) {
-    var price by remember { mutableStateOf("150000") }
-    var down by remember { mutableStateOf("30") }
+    // Flutter PurchaseCalculatorPage layout (cash/loan + products + 计算报价).
+    var mode by remember { mutableStateOf("cash") } // cash | loan
+    var barePrice by remember { mutableStateOf("100000") }
+    var taxable by remember { mutableStateOf("") }
+    var includeCommercial by remember { mutableStateOf(false) }
+    var selectedProduct by remember { mutableStateOf(1) }
+    var quoteLines by remember { mutableStateOf<List<Pair<String, String>>?>(null) }
+    val products = remember {
+        listOf(
+            FinanceProductUi(1, "示例银行车贷", "年利率 4.5% · 最低首付 20.0%"),
+            FinanceProductUi(2, "厂商金融贴息", "年利率 4.5% · 最低首付 20.0% · 贴息减 0.5%"),
+            FinanceProductUi(3, "低息精品贷", "年利率 3.98% · 最低首付 15.0% · 减本金 ¥2000"),
+        )
+    }
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
             .fillMaxSize()
-            .background(DemoColors.PageBg)
+            .background(Color(0xFFF5F6F8))
             .verticalScroll(rememberScrollState()),
     ) {
-        MineTopBar(title = "购车计算器", onBack = onBack)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("车价（元）")
-            BasicTextField(
-                value = price,
-                onValueChange = { price = it.filter { c -> c.isDigit() } },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Background)
-                    .padding(12.dp),
-            )
-            Text("首付比例（%）")
-            BasicTextField(
-                value = down,
-                onValueChange = { down = it.filter { c -> c.isDigit() }.take(2) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Background)
-                    .padding(12.dp),
-            )
-            val p = price.toIntOrNull() ?: 0
-            val d = (down.toIntOrNull() ?: 0).coerceIn(0, 100)
-            val downPay = p * d / 100
-            val loan = p - downPay
-            Text("首付约 ¥$downPay", fontWeight = FontWeight.SemiBold)
-            Text("贷款约 ¥$loan", fontWeight = FontWeight.SemiBold)
+        MineTopBar(title = "购车计算器", onBack = onBack, containerColor = Color.White)
+        Column(
+            Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CalculatorSection {
+                Text("付款方式", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ModeChip("全款", selected = mode == "cash") { mode = "cash" }
+                    ModeChip("贷款", selected = mode == "loan") { mode = "loan" }
+                }
+                Spacer(Modifier.height(12.dp))
+                CalculatorField("裸车价（元）", barePrice) { barePrice = it.filter { c -> c.isDigit() || c == '.' } }
+                Spacer(Modifier.height(8.dp))
+                CalculatorField("计税价格（可选，默认裸车价/1.13）", taxable) {
+                    taxable = it.filter { c -> c.isDigit() || c == '.' }
+                }
+                Spacer(Modifier.height(4.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("计入商业险粗算", modifier = Modifier.weight(1f), fontSize = 15.sp)
+                    Switch(
+                        checked = includeCommercial,
+                        onCheckedChange = { includeCommercial = it },
+                    )
+                }
+            }
+            CalculatorSection {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "金融产品",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { showPlatformToast("已刷新金融产品（mock）") }) {
+                        Text("刷新", color = DemoColors.Accent)
+                    }
+                }
+                products.forEach { p ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedProduct = p.id }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Text(
+                            if (selectedProduct == p.id) "◉" else "○",
+                            color = if (selectedProduct == p.id) DemoColors.Accent else DemoColors.Muted,
+                            fontSize = 18.sp,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                p.name,
+                                color = if (selectedProduct == p.id) DemoColors.Accent else DemoColors.TextPrimary,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp,
+                            )
+                            Text(p.subtitle, color = DemoColors.TextSecondary, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+            Button(
+                onClick = {
+                    val bare = barePrice.toDoubleOrNull() ?: 0.0
+                    val tax = taxable.toDoubleOrNull() ?: (bare / 1.13)
+                    val product = products.first { it.id == selectedProduct }
+                    quoteLines = listOf(
+                        "付款方式" to if (mode == "cash") "全款" else "贷款",
+                        "金融产品" to product.name,
+                        "裸车价" to "¥${bare.toInt()}",
+                        "计税价格" to "¥${tax.toInt()}",
+                        "商业险" to if (includeCommercial) "已计入粗算" else "未计入",
+                        "合计参考" to "¥${(bare * 1.08).toInt()}",
+                    )
+                },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF171717),
+                    contentColor = Color.White,
+                ),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text("计算报价", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            }
+            quoteLines?.let { lines ->
+                CalculatorSection {
+                    Text("报价结果", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Spacer(Modifier.height(8.dp))
+                    lines.forEach { (k, v) ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                            Text(k, color = DemoColors.TextSecondary, modifier = Modifier.weight(1f))
+                            Text(v, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun CalculatorSection(content: @Composable () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .padding(14.dp),
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun ModeChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (selected) DemoColors.Accent else Color.White)
+            .border(
+                1.dp,
+                if (selected) DemoColors.Accent else DemoColors.Divider,
+                RoundedCornerShape(20.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (selected) {
+            Text("✓ ", color = Color.White, fontSize = 12.sp)
+        }
+        Text(
+            label,
+            color = if (selected) Color.White else DemoColors.TextPrimary,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+        )
+    }
+}
+
+@Composable
+private fun CalculatorField(label: String, value: String, onChange: (String) -> Unit) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(label, fontSize = 12.sp, color = DemoColors.TextSecondary)
+        Spacer(Modifier.height(4.dp))
+        BasicTextField(
+            value = value,
+            onValueChange = onChange,
+            textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFFF5F6F8))
+                .padding(horizontal = 12.dp, vertical = 12.dp),
+        )
     }
 }

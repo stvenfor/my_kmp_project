@@ -241,43 +241,60 @@ private fun ShortVideoPage(
     onPublish: () -> Unit,
     onPlay: () -> Unit,
 ) {
-    val headerBrush = Brush.verticalGradient(
-        listOf(Color(0xFFDCEEF9), Color(0xFFF5F5F5)),
-    )
+    // Flutter ShortVideoPage: white AppNavBar + gradient under profile +
+    // section「我发布的小视频」+ masonry grid with publish tile as first cell.
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        Box(Modifier.fillMaxWidth().background(headerBrush)) {
-            MineTopBar(
-                title = "小视频",
-                onBack = onBack,
-                containerColor = Color.Transparent,
-                actions = {
-                    TextButton(onClick = onHelp) { Text("帮助", color = DemoColors.Primary) }
-                },
-            )
-        }
+        MineTopBar(
+            title = "小视频",
+            onBack = onBack,
+            containerColor = Color.White,
+        )
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item(span = { GridItemSpan(2) }) {
-                Column {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(Color(0xFFDCEEF9), Color(0xFFF5F5F5)),
+                            ),
+                        )
+                        .padding(bottom = 4.dp),
+                ) {
                     Spacer(Modifier.height(4.dp))
                     ShortVideoProfileCard()
-                    Spacer(Modifier.height(12.dp))
-                    ShortVideoPublishTile(onClick = onPublish)
-                    Spacer(Modifier.height(14.dp))
-                    Text(
-                        "我的作品",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        color = DemoColors.TextPrimary,
-                        modifier = Modifier.padding(horizontal = 4.dp),
-                    )
-                    Spacer(Modifier.height(4.dp))
                 }
+            }
+            item(span = { GridItemSpan(2) }) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "我发布的小视频",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color(0xFF171717),
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        "如何拍摄小视频",
+                        fontSize = 13.sp,
+                        color = DemoColors.Primary,
+                        modifier = Modifier.clickable(onClick = onHelp),
+                    )
+                }
+            }
+            item {
+                ShortVideoPublishTile(onClick = onPublish)
             }
             items(VideoMock.shorts, key = { it.id }) { item ->
                 ShortVideoCoverTile(item = item, onPlay = onPlay)
@@ -300,7 +317,7 @@ private fun ShortVideoProfileCard() {
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp)
+            .padding(horizontal = 0.dp, vertical = 12.dp)
             .shadow(8.dp, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
@@ -308,9 +325,10 @@ private fun ShortVideoProfileCard() {
     ) {
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
-                Text("演示用户", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = DemoColors.TextPrimary)
+                // Flutter displayProfile defaults / live SoT
+                Text("qa_user", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = DemoColors.TextPrimary)
                 Spacer(Modifier.height(4.dp))
-                Text("销售顾问 · 示范门店", fontSize = 13.sp, color = DemoColors.Muted)
+                Text("销售顾问 · [4S]北京沃德龙鼎吉利", fontSize = 13.sp, color = DemoColors.Muted)
             }
             Image(
                 painter = painterResource(Res.drawable.community_avatar),
@@ -330,15 +348,15 @@ private fun ShortVideoProfileCard() {
 
 @Composable
 private fun ShortVideoPublishTile(onClick: () -> Unit) {
+    // Flutter ShortVideoPublishTile — half-grid cell, dashed blue border
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp)
-            .height(132.dp)
+            .aspectRatio(1f / 1.35f)
             .border(BorderStroke(1.5.dp, Color(0xFF91D5FF)), RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -356,6 +374,7 @@ private fun ShortVideoPublishTile(onClick: () -> Unit) {
             fontSize = 11.sp,
             color = DemoColors.Muted,
             textAlign = TextAlign.Center,
+            lineHeight = 15.sp,
         )
     }
 }

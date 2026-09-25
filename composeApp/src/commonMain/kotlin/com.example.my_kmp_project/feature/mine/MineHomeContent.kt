@@ -80,13 +80,17 @@ internal fun MineHomeContent(
         )
         FunctionSection(
             onTap = { item ->
+                // Labels must match MineRoutes.fromLabel / HomeRoutes.fromLabel
                 when (item.id) {
                     "sms" -> snackbar("短信模板")
                     "calculator" -> snackbar("购车计算器")
                     "used_car" -> snackbar("二手车")
-                    "ledger" -> snackbar("台账")
+                    "ledger" -> snackbar("收支")
                     "short_video" -> snackbar("小视频")
-                    "after_sales" -> snackbar("售后")
+                    "after_sales" -> snackbar("售后专区")
+                    "qr_pay" -> snackbar("店铺收款码")
+                    "qa" -> snackbar("选买问答")
+                    "poster" -> snackbar("商家海报")
                     else -> snackbar(item.title)
                 }
             },

@@ -237,7 +237,12 @@ internal fun NativeAndroidMain() {
                 bottomBarVisible = false
             }
             mineMapped != null -> {
-                if (mineMapped == HomeRoutes.UsedCar || mineMapped == HomeRoutes.CheckInMall) {
+                if (
+                    mineMapped == HomeRoutes.UsedCar ||
+                    mineMapped == HomeRoutes.CheckInMall ||
+                    mineMapped == HomeRoutes.Ledger ||
+                    mineMapped == HomeRoutes.AfterSales
+                ) {
                     openHomeRoute(mineMapped)
                 } else if (
                     mineMapped == MineRoutes.Classroom ||
