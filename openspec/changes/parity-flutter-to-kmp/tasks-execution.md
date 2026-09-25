@@ -408,39 +408,39 @@
 # D. Community
 
 ## `/community` — `community`
-- [ ] R.community.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.community.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.community.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.community.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.community.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.community.ev.a 证据 `notes/evidence/.../community.{flutter,kmp}.png`
+- [x] R.community.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.community.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.community.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.community.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.community.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.community.ev.a 证据 `notes/evidence/.../community.{flutter,kmp}.png`
 - [ ] R.community.ui.i / R.community.ui.h（或 registry `missing`）
 
 ## `/community/publish` — `communityPublish`
-- [ ] R.communityPublish.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.communityPublish.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.communityPublish.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.communityPublish.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.communityPublish.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.communityPublish.ev.a 证据 `notes/evidence/.../community_publish.{flutter,kmp}.png`
+- [x] R.communityPublish.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.communityPublish.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.communityPublish.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.communityPublish.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.communityPublish.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.communityPublish.ev.a 证据 `notes/evidence/.../community_publish.{flutter,kmp}.png`
 - [ ] R.communityPublish.ui.i / R.communityPublish.ui.h（或 registry `missing`）
 
 ## `/community/convention` — `communityConvention`
-- [ ] R.communityConvention.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.communityConvention.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.communityConvention.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.communityConvention.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.communityConvention.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.communityConvention.ev.a 证据 `notes/evidence/.../community_convention.{flutter,kmp}.png`
+- [x] R.communityConvention.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.communityConvention.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.communityConvention.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.communityConvention.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.communityConvention.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.communityConvention.ev.a 证据 `notes/evidence/.../community_convention.{flutter,kmp}.png`
 - [ ] R.communityConvention.ui.i / R.communityConvention.ui.h（或 registry `missing`）
 
 ## `/community/search` — `communitySearch`
-- [ ] R.communitySearch.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.communitySearch.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.communitySearch.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.communitySearch.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.communitySearch.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.communitySearch.ev.a 证据 `notes/evidence/.../community_search.{flutter,kmp}.png`
+- [x] R.communitySearch.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.communitySearch.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.communitySearch.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.communitySearch.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.communitySearch.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.communitySearch.ev.a 证据 `notes/evidence/.../community_search.{flutter,kmp}.png`
 - [ ] R.communitySearch.ui.i / R.communitySearch.ui.h（或 registry `missing`）
 
 # E. Mine / Settings

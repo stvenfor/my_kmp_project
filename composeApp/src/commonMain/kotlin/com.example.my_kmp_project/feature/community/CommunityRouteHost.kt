@@ -228,22 +228,48 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
 @Composable
 private fun CommunityConventionScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "社区公约", onBack = onBack)
+    Column(Modifier.fillMaxSize().background(Color.White)) {
+        MineTopBar(title = "社区公约", onBack = onBack, containerColor = Color.White)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 40.dp),
         ) {
             Text(
-                "请文明发言，禁止发布违法违规、广告骚扰、人身攻击等内容。违规将被限制发布。",
-                lineHeight = 22.sp,
+                "盘友圈社区公约",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A1A1A),
+                lineHeight = 28.sp,
             )
-            Spacer(Modifier.height(16.dp))
-            Button(
-                onClick = onBack,
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-            ) { Text("我知道了") }
+            Spacer(Modifier.height(8.dp))
+            Text("更新日期：2026-09-22", fontSize = 13.sp, color = Color(0xFF888888))
+            Spacer(Modifier.height(20.dp))
+            Text(
+                "亲爱的用户，您好：\n\n欢迎来到支付宝理财社区-盘友圈。我们希望打造一个友善、有趣、有料的理财社区，请在发布内容、评论互动前仔细阅读并遵守本公约。",
+                fontSize = 15.sp,
+                color = Color(0xFF333333),
+                lineHeight = 24.sp,
+            )
+            Spacer(Modifier.height(20.dp))
+            listOf(
+                "一、尊重他人" to "请勿发布侵犯他人合法权益的内容，包括但不限于侮辱、诽谤、骚扰、人肉搜索、泄露他人隐私等恶意行为；请以善意、理性的方式参与讨论。",
+                "二、尊重事实" to "请勿编造或传播虚假信息、不良价值观；请勿发布未经证实的投资建议或恐吓性言论；请勿发布营销广告、软文推广，以及诱导关注、导流站外交易等行为。",
+                "三、尊重平台" to "请勿发布违反法律法规、监管要求或金融法规的内容，包括但不限于欺诈、违规荐股、违规金融营销、赌博、色情、暴力等；请勿干扰社区正常秩序或滥用产品功能。",
+                "四、内容与互动" to "发布的图文、视频、评论应与理财社区氛围相符；禁止刷屏、恶意引战、滥用「问大家」等能力。平台有权对违规内容采取删除、限流、禁言等措施。",
+                "五、免责说明" to "社区内容仅供交流参考，不构成任何投资建议。用户应独立判断并自行承担风险。因用户违规造成的损失，由用户自行承担责任。",
+            ).forEach { (h, p) ->
+                Text(h, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF1A1A1A))
+                Spacer(Modifier.height(8.dp))
+                Text(p, fontSize = 15.sp, color = Color(0xFF333333), lineHeight = 24.sp)
+                Spacer(Modifier.height(16.dp))
+            }
+            Text(
+                "一个友善温暖的理财社区，需要大家一起来守护。感谢您的理解与支持～",
+                fontSize = 15.sp,
+                color = Color(0xFF333333),
+                lineHeight = 24.sp,
+            )
         }
     }
 }

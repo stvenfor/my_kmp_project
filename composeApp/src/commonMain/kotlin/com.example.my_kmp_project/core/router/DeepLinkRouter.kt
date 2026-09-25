@@ -91,6 +91,8 @@ internal object DeepLinkRouter {
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Home, route = path)
                     path.startsWith("/chat/") ->
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Chat, route = path)
+                    path.startsWith("/community/") ->
+                        ParsedDeepLink(rawUri = uri, tab = MainTab.Community, route = path)
                     path.startsWith("/settings") ->
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
                     path.startsWith("/mine/") ->

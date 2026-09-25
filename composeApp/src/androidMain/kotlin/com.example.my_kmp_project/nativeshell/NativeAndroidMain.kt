@@ -354,6 +354,18 @@ internal fun NativeAndroidMain() {
                             openHomeRoute(pending.route)
                         }
                     }
+                    pending.route.startsWith("/community/") -> {
+                        val target = MainTab.Community
+                        if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
+                            AuthGate.rememberPending(target)
+                            authOverlay = AuthOverlay.Login
+                            bottomBarVisible = false
+                        } else {
+                            tab = target
+                            keptTabs = keptTabs + target
+                            openCommunityRoute(pending.route)
+                        }
+                    }
                     pending.route == AppRoutePath.settings || pending.route.startsWith("/settings") -> {
                         tab = MainTab.Mine
                         keptTabs = keptTabs + MainTab.Mine
