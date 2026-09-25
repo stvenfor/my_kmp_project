@@ -114,12 +114,12 @@
 - [ ] R.loginOtp.ui.i / R.loginOtp.ui.h（或 registry `missing`）
 
 ## `/register` — `register`
-- [ ] R.register.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.register.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.register.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.register.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.register.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.register.ev.a 证据 `notes/evidence/.../register.{flutter,kmp}.png`
+- [x] R.register.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.register.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.register.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.register.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.register.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.register.ev.a 证据 `notes/evidence/.../register.{flutter,kmp}.png`
 - [ ] R.register.ui.i / R.register.ui.h（或 registry `missing`）
 
 ## `/web` — `web`

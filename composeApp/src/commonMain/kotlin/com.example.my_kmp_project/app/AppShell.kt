@@ -278,6 +278,10 @@ private fun MainShell() {
                 authOverlay = AuthOverlay.LoginOtp
                 tabChrome.updateBottomBarVisible(false)
             }
+            pending.route == AppRoutePath.register -> {
+                authOverlay = AuthOverlay.Register
+                tabChrome.updateBottomBarVisible(false)
+            }
             pending.tab != null -> {
                 // Soft-auth still applies via selectTab when user can interact;
                 // apply tab if public, otherwise stash for login.

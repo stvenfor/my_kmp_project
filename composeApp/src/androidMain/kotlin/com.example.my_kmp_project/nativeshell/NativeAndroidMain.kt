@@ -301,6 +301,10 @@ internal fun NativeAndroidMain() {
                         authOverlay = AuthOverlay.LoginOtp
                         bottomBarVisible = false
                     }
+                    pending.route == AppRoutePath.register -> {
+                        authOverlay = AuthOverlay.Register
+                        bottomBarVisible = false
+                    }
                     pending.route.startsWith("/home/") -> {
                         tab = MainTab.Home
                         keptTabs = keptTabs + MainTab.Home

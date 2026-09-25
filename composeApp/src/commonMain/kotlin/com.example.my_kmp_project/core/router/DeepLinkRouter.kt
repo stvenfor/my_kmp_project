@@ -72,6 +72,8 @@ internal object DeepLinkRouter {
                 ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.loginPassword)
             AppRoutePath.loginOtp, "login/otp" ->
                 ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.loginOtp)
+            AppRoutePath.register, "register" ->
+                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.register)
             else -> {
                 // Secondary product routes (Flutter RoutePath / AppRoutePath)
                 when {
