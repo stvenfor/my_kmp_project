@@ -74,7 +74,7 @@ internal fun MediaEntryScreen(onBack: () -> Unit) {
                 ) {
                     MediaChooserCard(
                         title = "视频中心",
-                        subtitle = "短视频列表与播放（占位）",
+                        subtitle = "短视频列表与播放",
                         cover = Res.drawable.home_dubbing_home_cover_01,
                         onClick = { route = MediaEntryRoute.VideoHub },
                     )

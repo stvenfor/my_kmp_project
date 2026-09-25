@@ -419,7 +419,7 @@ internal fun PublishScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = if (attachCover) "已添加封面占位" else "添加图片 / 视频（占位）",
+                    text = if (attachCover) "已添加封面" else "添加图片 / 视频",
                     color = DemoColors.TextPrimary,
                     fontSize = 15.sp,
                     modifier = Modifier.weight(1f),

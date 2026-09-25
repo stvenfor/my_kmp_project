@@ -522,7 +522,7 @@ private fun ShortVideoPublishPage(onBack: () -> Unit, onSubmit: () -> Unit) {
                 Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(12.dp)).background(DemoColors.Toolbar),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("本地预览占位 · 点选视频/拍摄见 gap", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                Text("本地预览 · 选视频/拍摄见 platform-gap", color = DemoColors.TextSecondary, fontSize = 13.sp)
             }
             Text("标题", fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
             BasicTextField(
