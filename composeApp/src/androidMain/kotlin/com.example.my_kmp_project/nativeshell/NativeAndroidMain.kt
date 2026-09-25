@@ -305,7 +305,13 @@ internal fun NativeAndroidMain() {
             )
         }
         ShellOverlay.AllServices -> {
-            AllServicesScreen(onBack = { closeOverlay() })
+            AllServicesScreen(
+                onBack = { closeOverlay() },
+                onOpen = { label ->
+                    closeOverlay()
+                    openDeferred(label)
+                },
+            )
         }
         ShellOverlay.HomeRoute -> {
             val route = homeRoute ?: HomeRoutes.Search

@@ -36,7 +36,10 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 @Composable
-internal fun AllServicesScreen(onBack: () -> Unit) {
+internal fun AllServicesScreen(
+    onBack: () -> Unit,
+    onOpen: (String) -> Unit = {},
+) {
     ReportMainTabRoot(isRoot = false)
     var isEditing by remember { mutableStateOf(false) }
     var favoriteIds by remember {
@@ -79,6 +82,7 @@ internal fun AllServicesScreen(onBack: () -> Unit) {
                             favoriteIds = favoriteIds - item.id
                         }
                     },
+                    onItemTap = { if (!isEditing) onOpen(it.label) },
                 )
             }
             items(HomeMockData.catalogSections, key = { it.title }) { section ->
@@ -92,6 +96,7 @@ internal fun AllServicesScreen(onBack: () -> Unit) {
                             favoriteIds = favoriteIds + item.id
                         }
                     },
+                    onItemTap = { if (!isEditing) onOpen(it.label) },
                 )
             }
         }
@@ -106,6 +111,7 @@ private fun AllServicesSectionBlock(
     favoriteIds: Set<String> = emptySet(),
     onEditTap: (() -> Unit)? = null,
     onItemBadgeTap: (AllServiceItem) -> Unit = {},
+    onItemTap: (AllServiceItem) -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -162,6 +168,7 @@ private fun AllServicesSectionBlock(
                         showMinus = isFavoriteSection && isEditing,
                         showPlus = !isFavoriteSection && isEditing && item.id !in favoriteIds,
                         onBadgeTap = { onItemBadgeTap(item) },
+                        onTap = { onItemTap(item) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -181,10 +188,13 @@ private fun ServiceGridCell(
     showMinus: Boolean,
     showPlus: Boolean,
     onBadgeTap: () -> Unit,
+    onTap: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.padding(horizontal = 2.dp),
+        modifier = modifier
+            .clickable(enabled = !isEditing, onClick = onTap)
+            .padding(horizontal = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
