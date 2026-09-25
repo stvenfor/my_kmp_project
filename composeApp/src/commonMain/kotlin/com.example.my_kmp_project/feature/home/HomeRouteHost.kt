@@ -113,9 +113,9 @@ internal fun HomeRouteHost(
             onOpenHotRank = { onNavigate(HomeRoutes.HotRankDetail) },
         )
         HomeRoutes.HotRankDetail -> HotRankDetailScreen(onBack = onBack)
-        HomeRoutes.LifeService -> FeatureContentScreen("生活服务", onBack)
-        HomeRoutes.LiveCommerce -> FeatureContentScreen("直播带货", onBack)
-        HomeRoutes.Club -> FeatureContentScreen("Club", onBack)
+        HomeRoutes.LifeService -> LifeServiceScreen(onBack = onBack)
+        HomeRoutes.LiveCommerce -> LiveCommerceScreen(onBack = onBack)
+        HomeRoutes.Club -> ClubScreen(onBack = onBack)
         HomeRoutes.UsedCar -> UsedCarListScreen(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.UsedCarDetail) },
@@ -360,38 +360,113 @@ internal object HomeSecondaryMock {
 }
 
 @Composable
-private fun FeatureContentScreen(title: String, onBack: () -> Unit) {
+private fun LifeServiceScreen(onBack: () -> Unit) {
+    val items = listOf(
+        "洗车美容" to "到店立减 · 预约免排队",
+        "代驾服务" to "夜间 / 酒后代驾",
+        "道路救援" to "一键呼叫 · 30 分钟达",
+        "年检代办" to "免上线 · 资料代跑",
+        "加油优惠" to "合作油站满减",
+        "车险续保" to "比价出单 · 顾问跟进",
+    )
+    FeatureListScreen(
+        title = "生活服务",
+        heroTint = Color(0xFF00A870),
+        heroTitle = "车生活一站办",
+        heroSub = "洗车 · 代驾 · 救援 · 年检",
+        items = items,
+        onBack = onBack,
+    )
+}
+
+@Composable
+private fun LiveCommerceScreen(onBack: () -> Unit) {
+    val items = listOf(
+        "今晚 20:00 直播" to "星愿限时权益 · 预约提醒",
+        "回放：试驾实录" to "播放 1.2 万 · 线索 86",
+        "爆款配件专场" to "脚垫 / 行车记录仪",
+        "直播线索池" to "待跟进 23 · 已转化 5",
+        "主播排班" to "本周 4 场已排",
+        "带货数据看板" to "GMV 12.8 万 · 转化 3.1%",
+    )
+    FeatureListScreen(
+        title = "直播带货",
+        heroTint = Color(0xFFE53935),
+        heroTitle = "直播间进行中",
+        heroSub = "演示门店 · 在线 328 人",
+        items = items,
+        onBack = onBack,
+    )
+}
+
+@Composable
+private fun ClubScreen(onBack: () -> Unit) {
+    val items = listOf(
+        "车友聚会 · 本周六" to "已报名 42 · 名额 60",
+        "自驾游线路" to "京郊两日 · 招募中",
+        "积分兑换专区" to "周边 / 洗车券",
+        "会员日活动" to "每月 15 日到店礼",
+        "俱乐部公告" to "新规：活动签到得双倍积分",
+        "我的社群" to "演示门店 Club · 已加入",
+    )
+    FeatureListScreen(
+        title = "Club",
+        heroTint = Color(0xFF5B6CFF),
+        heroTitle = "车友 Club",
+        heroSub = "活动 · 自驾 · 积分权益",
+        items = items,
+        onBack = onBack,
+    )
+}
+
+@Composable
+private fun FeatureListScreen(
+    title: String,
+    heroTint: Color,
+    heroTitle: String,
+    heroSub: String,
+    items: List<Pair<String, String>>,
+    onBack: () -> Unit,
+) {
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
             .fillMaxSize()
-            .background(DemoColors.PageBg),
+            .background(DemoColors.PageBg)
+            .verticalScroll(rememberScrollState()),
     ) {
         MineTopBar(title = title, onBack = onBack, containerColor = DemoColors.PageBg)
-        Column(
+        Box(
             Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(heroTint)
+                .padding(18.dp),
         ) {
-            repeat(6) { i ->
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(88.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DemoColors.Background)
-                        .padding(16.dp),
-                ) {
-                    Text(
-                        "$title 内容卡 ${i + 1}",
-                        color = DemoColors.TextPrimary,
-                        fontWeight = FontWeight.Medium,
-                    )
-                }
+            Column {
+                Text(heroTitle, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Spacer(Modifier.height(4.dp))
+                Text(heroSub, color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp)
             }
         }
+        Spacer(Modifier.height(12.dp))
+        items.forEach { (name, sub) ->
+            Column(
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 5.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White)
+                    .clickable { showPlatformToast(name) }
+                    .padding(14.dp),
+            ) {
+                Text(name, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+                Spacer(Modifier.height(4.dp))
+                Text(sub, fontSize = 13.sp, color = DemoColors.TextSecondary)
+            }
+        }
+        Spacer(Modifier.height(24.dp))
     }
 }
 

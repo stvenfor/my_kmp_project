@@ -147,7 +147,7 @@ internal fun MineRouteHost(
         route == MineRoutes.Cooperation -> SimpleDetail("商务合作", "商务合作申请入口 · 提交后由运营跟进", onBack)
         route == MineRoutes.Reminder -> SimpleDetail("提醒事项", "今日提醒 3 条 · 明日 1 条", onBack)
         route == MineRoutes.Invite -> SimpleDetail("邀请好友", "邀请码 DEMO2026 · 分享得积分", onBack)
-        route == MineRoutes.FanGroup -> SimpleDetail("粉丝群", "演示门店粉丝群 · 扫码加入", onBack)
+        route == MineRoutes.FanGroup -> FanGroupScreen(onBack = onBack)
         else -> SimpleDetail("我的", "route=$route", onBack)
     }
 }
@@ -995,6 +995,63 @@ private fun ShopQrScreen(onBack: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Text(
             "保存到相册",
+            color = Color(0xFF0070F3),
+            modifier = Modifier.clickable { showPlatformToast("已保存（mock）") },
+        )
+        Spacer(Modifier.height(32.dp))
+    }
+}
+
+@Composable
+private fun FanGroupScreen(onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        MineTopBar(title = "粉丝群", onBack = onBack, containerColor = Color.White)
+        Spacer(Modifier.height(24.dp))
+        Column(
+            Modifier
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("演示门店粉丝群", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(Modifier.height(4.dp))
+            Text("扫码加入微信粉丝群", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            Spacer(Modifier.height(20.dp))
+            Box(
+                Modifier
+                    .width(200.dp)
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF07C160).copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    Modifier
+                        .width(160.dp)
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("QR", fontWeight = FontWeight.Bold, fontSize = 28.sp, color = Color(0xFF07C160))
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("长按识别二维码 · 演示码", color = DemoColors.TextSecondary, fontSize = 12.sp)
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "保存二维码",
             color = Color(0xFF0070F3),
             modifier = Modifier.clickable { showPlatformToast("已保存（mock）") },
         )
