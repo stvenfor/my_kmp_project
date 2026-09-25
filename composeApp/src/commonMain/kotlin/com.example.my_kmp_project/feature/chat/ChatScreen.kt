@@ -118,11 +118,26 @@ private fun ChatListContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = "暂无会话",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 15.sp,
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "还没有消息",
+                        color = DemoColors.TextPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 17.sp,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "加个好友，发一条问候吧",
+                        color = DemoColors.TextSecondary,
+                        fontSize = 15.sp,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "IM 已连接",
+                        color = DemoColors.Muted,
+                        fontSize = 12.sp,
+                    )
+                }
             }
         } else {
             LazyColumn(

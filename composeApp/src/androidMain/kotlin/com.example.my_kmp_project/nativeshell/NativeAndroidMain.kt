@@ -52,6 +52,8 @@ import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
 import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
 import com.example.my_kmp_project.core.router.webUrlFromDeepLink
+import com.example.my_kmp_project.feature.chat.ChatDetailDeepLinkArgs
+import com.example.my_kmp_project.feature.chat.chatDetailArgsFromDeepLink
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.community.CommunityRouteHost
 import com.example.my_kmp_project.feature.community.CommunityRoutes
@@ -108,6 +110,8 @@ internal fun NativeAndroidMain() {
     var islandRoute by remember { mutableStateOf(MineIslandRoute.Settings) }
     var deferredTitle by remember { mutableStateOf("后续开放") }
     var bottomBarVisible by remember { mutableStateOf(true) }
+    var chatPendingDetail by remember { mutableStateOf<ChatDetailDeepLinkArgs?>(null) }
+    var chatMissingDetail by remember { mutableStateOf(false) }
     val authState by softAuth.uiState.collectAsState()
 
     fun selectTab(next: MainTab) {
@@ -312,6 +316,34 @@ internal fun NativeAndroidMain() {
                         overlay = ShellOverlay.InAppWeb
                         bottomBarVisible = false
                     }
+                    pending.route == AppRoutePath.friend -> {
+                        openContentRoute(ContentRoutes.Friend)
+                    }
+                    pending.route == AppRoutes.Chat.DETAIL ||
+                        pending.route == AppRoutePath.chatDetail ||
+                        pending.route.startsWith("/chat/") -> {
+                        val target = MainTab.Chat
+                        val args = chatDetailArgsFromDeepLink(pending.rawUri)
+                        fun applyChatDetail() {
+                            if (args == null) {
+                                chatPendingDetail = null
+                                chatMissingDetail = true
+                            } else {
+                                chatMissingDetail = false
+                                chatPendingDetail = args
+                            }
+                        }
+                        if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
+                            AuthGate.rememberPending(target)
+                            authOverlay = AuthOverlay.Login
+                            bottomBarVisible = false
+                            applyChatDetail()
+                        } else {
+                            tab = target
+                            keptTabs = keptTabs + target
+                            applyChatDetail()
+                        }
+                    }
                     pending.route.startsWith("/home/") -> {
                         tab = MainTab.Home
                         keptTabs = keptTabs + MainTab.Home
@@ -495,6 +527,13 @@ internal fun NativeAndroidMain() {
                                         )
                                         MainTab.Chat -> JetpackChatRoot(
                                             onOpenContacts = { openDeferred("通讯录") },
+                                            pendingDetail = chatPendingDetail,
+                                            showMissingDetailParams = chatMissingDetail,
+                                            onPendingDetailConsumed = { chatPendingDetail = null },
+                                            onMissingDetailConsumed = { chatMissingDetail = false },
+                                            onDetailVisibilityChanged = { open ->
+                                                bottomBarVisible = !open && authOverlay == AuthOverlay.None
+                                            },
                                         )
                                         MainTab.Community -> JetpackCommunityRoot(
                                             onOpen = { label -> openDeferred(label) },

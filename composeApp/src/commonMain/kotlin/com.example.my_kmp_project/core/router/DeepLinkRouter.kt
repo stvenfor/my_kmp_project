@@ -10,7 +10,9 @@ import androidx.compose.runtime.setValue
  * Supported paths (scheme/host optional; path is matched after stripping query/fragment):
  * - `/home` → [MainTab.Home]
  * - `/chat` → [MainTab.Chat]
+ * - `/chat/detail` → Chat tab + detail (query peerName/id, Flutter push mock)
  * - `/community` → [MainTab.Community]
+ * - `/friend` → Friend content route
  * - `/mine` → [MainTab.Mine]
  * - `/auth/login` | `/login` → route [AppRoutes.Auth.LOGIN]
  * - `/login/password` | `/login/otp` → auth overlay (Flutter RoutePath)
@@ -56,12 +58,16 @@ internal object DeepLinkRouter {
                 ParsedDeepLink(rawUri = uri, tab = MainTab.Home, route = AppRoutes.Home.HOME)
             AppRoutes.Chat.CHAT, "chat" ->
                 ParsedDeepLink(rawUri = uri, tab = MainTab.Chat, route = AppRoutes.Chat.CHAT)
+            AppRoutes.Chat.DETAIL, AppRoutePath.chatDetail, "chat/detail" ->
+                ParsedDeepLink(rawUri = uri, tab = MainTab.Chat, route = AppRoutes.Chat.DETAIL)
             AppRoutes.Community.COMMUNITY, "community" ->
                 ParsedDeepLink(
                     rawUri = uri,
                     tab = MainTab.Community,
                     route = AppRoutes.Community.COMMUNITY,
                 )
+            AppRoutePath.friend, "friend" ->
+                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.friend)
             AppRoutes.Mine.MINE, "mine" ->
                 ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = AppRoutes.Mine.MINE)
             // Flutter RoutePath uses `/login`; `myai://auth/login` extracts as `/login`
@@ -83,6 +89,8 @@ internal object DeepLinkRouter {
                 when {
                     path.startsWith("/home/") ->
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Home, route = path)
+                    path.startsWith("/chat/") ->
+                        ParsedDeepLink(rawUri = uri, tab = MainTab.Chat, route = path)
                     path.startsWith("/settings") ->
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
                     path.startsWith("/mine/") ->

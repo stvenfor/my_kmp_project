@@ -21,6 +21,7 @@ internal object AppRoutes {
 
     object Chat {
         const val CHAT = "/chat"
+        const val DETAIL = "/chat/detail"
     }
 
     object Community {

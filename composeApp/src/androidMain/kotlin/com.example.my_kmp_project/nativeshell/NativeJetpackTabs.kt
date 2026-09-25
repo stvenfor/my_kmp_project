@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
+import com.example.my_kmp_project.feature.chat.ChatDetailDeepLinkArgs
 import com.example.my_kmp_project.feature.chat.ImConversation
 import com.example.my_kmp_project.feature.chat.ImEngine
 import com.example.my_kmp_project.feature.chat.MockImEngine
@@ -75,12 +77,68 @@ private val LikeRed = Color(0xFFEE0000)
 @Composable
 internal fun JetpackChatRoot(
     onOpenContacts: () -> Unit = {},
+    pendingDetail: ChatDetailDeepLinkArgs? = null,
+    showMissingDetailParams: Boolean = false,
+    onPendingDetailConsumed: () -> Unit = {},
+    onMissingDetailConsumed: () -> Unit = {},
+    onDetailVisibilityChanged: (Boolean) -> Unit = {},
 ) {
-    val engine = remember { MockImEngine() }
+    val engine = remember { MockImEngine(seedDemo = true) }
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf<String?>(null) }
     var listEpoch by remember { mutableStateOf(0) }
+    var missingDetail by remember { mutableStateOf(false) }
+
+    LaunchedEffect(pendingDetail, showMissingDetailParams) {
+        if (showMissingDetailParams) {
+            missingDetail = true
+            openId = null
+            onMissingDetailConsumed()
+            return@LaunchedEffect
+        }
+        val args = pendingDetail ?: return@LaunchedEffect
+        engine.ensureConversation(
+            id = args.id,
+            title = args.peerName,
+            lastMessage = args.lastMessage,
+            unreadCount = args.unreadCount,
+        )
+        listEpoch += 1
+        missingDetail = false
+        openId = args.id
+        onPendingDetailConsumed()
+    }
+
+    LaunchedEffect(openId, missingDetail) {
+        onDetailVisibilityChanged(openId != null || missingDetail)
+    }
+
+    if (missingDetail) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(DemoColors.PageBg)
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("缺少会话参数", color = DemoColors.TextPrimary, fontSize = 16.sp)
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "返回",
+                    color = DemoColors.Accent,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .clickable { missingDetail = false }
+                        .padding(12.dp),
+                )
+            }
+        }
+        return
+    }
+
     val conversations = remember(listEpoch) { engine.conversations() }
     val filtered = remember(conversations, query) {
         val q = query.trim()
@@ -134,20 +192,18 @@ internal fun JetpackChatRoot(
             ) {
                 Text(
                     if (searchOpen) "✕" else "⌕",
-                    color = DemoColors.TextPrimary,
+                    color = DemoColors.Accent,
                     fontSize = 20.sp,
                 )
             }
             Box(
                 Modifier
                     .size(44.dp)
-                    .clickable {
-                        // Flutter「发起」：mock 新建会话入口
-                        showPlatformToast("发起会话（mock）")
-                    },
+                    .clickable(onClick = onOpenContacts),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("✎", color = DemoColors.TextPrimary, fontSize = 20.sp)
+                // Flutter square_pencil → RoutePath.friend（通讯录）
+                Text("✎", color = DemoColors.Accent, fontSize = 20.sp)
             }
         }
         if (searchOpen) {

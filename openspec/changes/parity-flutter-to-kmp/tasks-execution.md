@@ -388,21 +388,21 @@
 # C. Chat
 
 ## `/chat` — `chat`
-- [ ] R.chat.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.chat.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.chat.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.chat.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.chat.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.chat.ev.a 证据 `notes/evidence/.../chat.{flutter,kmp}.png`
+- [x] R.chat.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.chat.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.chat.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.chat.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.chat.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.chat.ev.a 证据 `notes/evidence/.../chat.{flutter,kmp}.png`
 - [ ] R.chat.ui.i / R.chat.ui.h（或 registry `missing`）
 
 ## `/chat/detail` — `chatDetail`
-- [ ] R.chatDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.chatDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.chatDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.chatDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.chatDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.chatDetail.ev.a 证据 `notes/evidence/.../chat_detail.{flutter,kmp}.png`
+- [x] R.chatDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.chatDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.chatDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.chatDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.chatDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.chatDetail.ev.a 证据 `notes/evidence/.../chat_detail.{flutter,kmp}.png`
 - [ ] R.chatDetail.ui.i / R.chatDetail.ui.h（或 registry `missing`）
 
 # D. Community
