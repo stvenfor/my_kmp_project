@@ -95,6 +95,8 @@ internal object DeepLinkRouter {
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Community, route = path)
                     path.startsWith("/mall") ->
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
+                    path.startsWith("/wallet") || path.startsWith("/pay") ->
+                        ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
                     path.startsWith("/settings") ->
                         ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
                     path.startsWith("/mine/") ->

@@ -366,7 +366,9 @@ internal fun NativeAndroidMain() {
                             openCommunityRoute(pending.route)
                         }
                     }
-                    pending.route.startsWith("/mall") -> {
+                    pending.route.startsWith("/mall") ||
+                        pending.route.startsWith("/wallet") ||
+                        pending.route.startsWith("/pay") -> {
                         tab = MainTab.Mine
                         keptTabs = keptTabs + MainTab.Mine
                         openMineRoute(pending.route)

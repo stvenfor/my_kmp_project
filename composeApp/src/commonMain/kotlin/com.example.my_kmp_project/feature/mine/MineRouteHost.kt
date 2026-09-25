@@ -411,31 +411,12 @@ private fun MallOrderDetailScreen(onBack: () -> Unit) {
 
 @Composable
 private fun PayCheckoutScreen(onBack: () -> Unit) {
+    // Flutter /pay SoT is a module placeholder ("Pay 模块"), not a full checkout yet.
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "收银台", onBack = onBack, containerColor = Color.White)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("应付金额", color = DemoColors.TextSecondary, fontSize = 13.sp)
-            Text("¥199.00", fontWeight = FontWeight.Bold, fontSize = 28.sp)
-            listOf("微信支付", "支付宝", "余额支付").forEach { channel ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
-                        .clickable { showPlatformToast("$channel · 渠道未接入（见 platform-gap）") }
-                        .padding(14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(channel)
-                    Text("›", color = DemoColors.Muted)
-                }
-            }
-            Text(
-                "支付网关未接入 · 不可模拟成功",
-                color = DemoColors.TextSecondary,
-                fontSize = 12.sp,
-            )
+        MineTopBar(title = "支付", onBack = onBack, containerColor = Color.White)
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Pay 模块", color = DemoColors.TextSecondary, fontSize = 16.sp)
         }
     }
 }
@@ -835,9 +816,16 @@ private fun OrderListScreen(onBack: () -> Unit, onOpen: () -> Unit) {
 
 @Composable
 private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
-    // Flutter WalletPage: balance card + recharge + bank cards
+    // Flutter WalletPage SoT: balance + 充值 + 银行卡绑定 + 流水
     var amount by remember { mutableStateOf("") }
     var channel by remember { mutableStateOf(1) } // 1支付宝 2微信 3银行卡
+    var bankName by remember { mutableStateOf("") }
+    var cardLast4 by remember { mutableStateOf("") }
+    val flows = listOf(
+        Triple("membership_pay", "ref m2", "-30.00"),
+        Triple("充值", "ref alipay", "+100.00"),
+        Triple("充值", "ref alipay", "+1.00"),
+    )
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
@@ -856,7 +844,7 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
             ) {
                 Text("余额（元）", color = DemoColors.TextSecondary, fontSize = 14.sp)
                 Spacer(Modifier.height(8.dp))
-                Text("1,280.00", fontSize = 32.sp, fontWeight = FontWeight.SemiBold)
+                Text("71.00", fontSize = 32.sp, fontWeight = FontWeight.SemiBold)
             }
             Text("充值", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             BasicTextField(
@@ -871,66 +859,126 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                     .border(1.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
                     .padding(12.dp),
                 decorationBox = { inner ->
-                    if (amount.isEmpty()) Text("金额 0.01–50000", color = DemoColors.Muted, fontSize = 15.sp)
+                    if (amount.isEmpty()) Text("金额 0.01-50000", color = DemoColors.Muted, fontSize = 15.sp)
                     inner()
                 },
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(1 to "支付宝", 2 to "微信", 3 to "银行卡").forEach { (id, label) ->
                     val sel = channel == id
-                    Text(
-                        label,
-                        color = if (sel) Color.White else DemoColors.TextPrimary,
-                        fontSize = 13.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
+                    Row(
+                        Modifier
+                            .clip(RoundedCornerShape(8.dp))
                             .background(if (sel) DemoColors.Accent else Color.White)
-                            .border(1.dp, if (sel) DemoColors.Accent else DemoColors.Divider, RoundedCornerShape(16.dp))
+                            .border(
+                                1.dp,
+                                if (sel) DemoColors.Accent else DemoColors.Divider,
+                                RoundedCornerShape(8.dp),
+                            )
                             .clickable { channel = id }
                             .padding(horizontal = 12.dp, vertical = 8.dp),
-                    )
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (sel) Text("✓ ", color = Color.White, fontSize = 12.sp)
+                        Text(label, color = if (sel) Color.White else DemoColors.TextPrimary, fontSize = 13.sp)
+                    }
                 }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("10", "50", "100").forEach { a ->
                     Text(
                         a,
                         fontSize = 13.sp,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(Color.White)
-                            .border(1.dp, DemoColors.Divider, RoundedCornerShape(16.dp))
+                            .border(1.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
                             .clickable { amount = a }
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                 }
             }
             Button(
                 onClick = {
                     if (amount.isBlank()) showPlatformToast("请输入金额")
-                    else {
-                        showPlatformToast("充值 ¥$amount（mock）")
-                        onPay()
-                    }
+                    else showPlatformToast("确认充值 ¥$amount（mock）")
                 },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Accent),
-                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+                shape = RoundedCornerShape(10.dp),
             ) {
-                Text("确认充值", fontWeight = FontWeight.SemiBold)
+                Text("确认充值", fontWeight = FontWeight.SemiBold, color = Color.White)
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
             Text("银行卡", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            listOf("招商银行 ···· 8899", "工商银行 ···· 3321").forEach { card ->
-                Text(
-                    card,
-                    modifier = Modifier
+            BasicTextField(
+                value = bankName,
+                onValueChange = { bankName = it },
+                textStyle = TextStyle(fontSize = 15.sp),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White)
+                    .border(1.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                decorationBox = { inner ->
+                    if (bankName.isEmpty()) Text("银行名称", color = DemoColors.Muted, fontSize = 15.sp)
+                    inner()
+                },
+            )
+            BasicTextField(
+                value = cardLast4,
+                onValueChange = { cardLast4 = it.filter { c -> c.isDigit() }.take(4) },
+                textStyle = TextStyle(fontSize = 15.sp),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White)
+                    .border(1.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                decorationBox = { inner ->
+                    Box {
+                        if (cardLast4.isEmpty()) Text("卡号后四位", color = DemoColors.Muted, fontSize = 15.sp)
+                        inner()
+                        Text(
+                            "${cardLast4.length}/4",
+                            color = DemoColors.Muted,
+                            fontSize = 11.sp,
+                            modifier = Modifier.align(Alignment.BottomEnd),
+                        )
+                    }
+                },
+            )
+            Button(
+                onClick = { showPlatformToast("绑定银行卡（mock）") },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+                shape = RoundedCornerShape(10.dp),
+            ) { Text("绑定银行卡", color = Color.White) }
+            Text("流水", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            flows.forEach { (title, ref, amt) ->
+                val credit = amt.startsWith("+")
+                Row(
+                    Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(10.dp))
                         .background(Color.White)
                         .padding(14.dp),
-                )
-            }
-            TextButton(onClick = { showPlatformToast("添加银行卡（开发中）") }) {
-                Text("+ 添加银行卡", color = DemoColors.Accent)
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(title, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Text(ref, color = DemoColors.Muted, fontSize = 12.sp)
+                    }
+                    Text(
+                        amt,
+                        color = if (credit) Color(0xFF2E7D32) else Color(0xFFE53935),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                    )
+                }
             }
         }
     }

@@ -524,12 +524,12 @@
 - [n/a] R.dealInvoiceUpload.oos out-of-scope（debug/demo/bfui）；registry 标注
 
 ## `/mine/purchase_calculator` — `purchaseCalculator`
-- [ ] R.purchaseCalculator.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.purchaseCalculator.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.purchaseCalculator.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.purchaseCalculator.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.purchaseCalculator.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.purchaseCalculator.ev.a 证据 `notes/evidence/.../mine_purchase_calculator.{flutter,kmp}.png`
+- [x] R.purchaseCalculator.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.purchaseCalculator.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.purchaseCalculator.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.purchaseCalculator.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.purchaseCalculator.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.purchaseCalculator.ev.a 证据 `notes/evidence/.../mine_purchase_calculator.{flutter,kmp}.png`
 - [ ] R.purchaseCalculator.ui.i / R.purchaseCalculator.ui.h（或 registry `missing`）
 
 # F. Mall
@@ -573,30 +573,30 @@
 # G. Pay / Wallet
 
 ## `/pay` — `pay`
-- [ ] R.pay.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.pay.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.pay.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.pay.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.pay.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.pay.ev.a 证据 `notes/evidence/.../pay.{flutter,kmp}.png`
+- [x] R.pay.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.pay.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.pay.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.pay.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.pay.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.pay.ev.a 证据 `notes/evidence/.../pay.{flutter,kmp}.png`
 - [ ] R.pay.ui.i / R.pay.ui.h（或 registry `missing`）
 
 ## `/pay/membership` — `payMembership`
-- [ ] R.payMembership.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.payMembership.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.payMembership.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.payMembership.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.payMembership.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.payMembership.ev.a 证据 `notes/evidence/.../pay_membership.{flutter,kmp}.png`
+- [x] R.payMembership.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.payMembership.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.payMembership.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.payMembership.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.payMembership.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.payMembership.ev.a 证据 `notes/evidence/.../pay_membership.{flutter,kmp}.png`
 - [ ] R.payMembership.ui.i / R.payMembership.ui.h（或 registry `missing`）
 
 ## `/wallet` — `wallet`
-- [ ] R.wallet.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.wallet.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.wallet.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.wallet.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.wallet.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.wallet.ev.a 证据 `notes/evidence/.../wallet.{flutter,kmp}.png`
+- [x] R.wallet.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.wallet.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.wallet.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.wallet.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.wallet.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.wallet.ev.a 证据 `notes/evidence/.../wallet.{flutter,kmp}.png`
 - [ ] R.wallet.ui.i / R.wallet.ui.h（或 registry `missing`）
 
 # H. Media（Video / Music / Dubbing）
