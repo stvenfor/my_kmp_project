@@ -464,9 +464,7 @@ internal fun NativeAndroidMain() {
                                                 softAuth.clearLocalSession()
                                             },
                                             onOpenSettings = {
-                                                islandRoute = MineIslandRoute.Settings
-                                                overlay = ShellOverlay.MineIsland
-                                                bottomBarVisible = false
+                                                openMineRoute(MineRoutes.Settings)
                                             },
                                             onOpenPersonalized = {
                                                 islandRoute = MineIslandRoute.Personalized
