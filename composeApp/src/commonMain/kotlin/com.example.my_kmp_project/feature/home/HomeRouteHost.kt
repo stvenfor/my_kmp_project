@@ -142,14 +142,10 @@ internal fun HomeRouteHost(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.DataAnalyticsDetail) },
         )
-        HomeRoutes.DataAnalyticsDetail ->
-            CrudDetailScreen(
-                "分析详情",
-                HomeSecondaryMock.analyticsRecords.first().let {
-                    "${it.title}\nPV ${it.pv} · 点击 ${it.clicks} · 转化 ${it.converts}\n${it.subtitle}"
-                },
-                onBack,
-            )
+        HomeRoutes.DataAnalyticsDetail -> AnalyticsDetailScreen(
+            record = HomeSecondaryMock.analyticsRecords.first(),
+            onBack = onBack,
+        )
         HomeRoutes.TodoPartner -> PartnerPendingScreen(onBack = onBack)
         HomeRoutes.TodoFollowUp -> FollowUpCustomersScreen(onBack = onBack)
         HomeRoutes.TodoAfterSales -> AfterSalesAppointmentsScreen(onBack = onBack)
@@ -160,8 +156,8 @@ internal fun HomeRouteHost(
             onCreate = { onNavigate(HomeRoutes.AfterSalesCreate) },
         )
         HomeRoutes.AfterSalesCreate -> AfterSalesCreateScreen(onBack = onBack)
-        HomeRoutes.AfterSalesDetail -> AfterSalesDetailScreen(
-            row = HomeSecondaryMock.afterSales.first(),
+        HomeRoutes.AfterSalesDetail -> AfterSalesServiceDetailScreen(
+            row = HomeSecondaryMock.afterSalesDetails.first(),
             onBack = onBack,
         )
         HomeRoutes.NewCarFollow -> NewCarFollowListScreen(
@@ -170,7 +166,7 @@ internal fun HomeRouteHost(
             onCreate = { onNavigate(HomeRoutes.NewCarFollowCreate) },
         )
         HomeRoutes.NewCarFollowCreate -> NewCarFollowCreateScreen(onBack = onBack)
-        HomeRoutes.NewCarFollowDetail -> NewCarFollowDetailScreen(
+        HomeRoutes.NewCarFollowDetail -> NewCarFollowArchiveDetailScreen(
             row = HomeSecondaryMock.newCarFollows.first(),
             onBack = onBack,
         )
@@ -335,6 +331,30 @@ internal object HomeSecondaryMock {
     val afterSales = listOf(
         HomeListRow("工单 AS-441", "保养套餐 · 进行中"),
         HomeListRow("工单 AS-438", "索赔 · 待配件"),
+    )
+    val afterSalesDetails = listOf(
+        AfterSalesDetailRow(
+            title = "工单 AS-441",
+            kindLabel = "保养",
+            customerName = "陈先生",
+            customerPhone = "139****2201",
+            plateNo = "京A·88K21",
+            mileageKm = 28600,
+            serviceDate = "2026-09-25",
+            content = "更换机油机滤，检查刹车片；客户要求加急。",
+            appointmentId = 8821,
+        ),
+        AfterSalesDetailRow(
+            title = "工单 AS-438",
+            kindLabel = "维修",
+            customerName = "周女士",
+            customerPhone = "137****6610",
+            plateNo = "京N·5U902",
+            mileageKm = 42100,
+            serviceDate = "2026-09-24",
+            content = "前杠钣喷索赔，待配件到店。",
+            appointmentId = null,
+        ),
     )
     val newCars = listOf(
         HomeListRow("客户 孙某", "银河 L7 · 试驾完成"),
