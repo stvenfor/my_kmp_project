@@ -143,66 +143,66 @@
 - [ ] R.home.ui.i / R.home.ui.h（或 registry `missing`）
 
 ## `/home/learning_report` — `homeLearningReport`
-- [ ] R.homeLearningReport.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeLearningReport.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeLearningReport.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeLearningReport.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeLearningReport.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeLearningReport.ev.a 证据 `notes/evidence/.../home_learning_report.{flutter,kmp}.png`
+- [x] R.homeLearningReport.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeLearningReport.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeLearningReport.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeLearningReport.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeLearningReport.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeLearningReport.ev.a 证据 `notes/evidence/.../home_learning_report.{flutter,kmp}.png`
 - [ ] R.homeLearningReport.ui.i / R.homeLearningReport.ui.h（或 registry `missing`）
 
 ## `/home/check_in_mall` — `homeCheckInMall`
-- [ ] R.homeCheckInMall.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeCheckInMall.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeCheckInMall.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeCheckInMall.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeCheckInMall.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeCheckInMall.ev.a 证据 `notes/evidence/.../home_check_in_mall.{flutter,kmp}.png`
+- [x] R.homeCheckInMall.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeCheckInMall.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeCheckInMall.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeCheckInMall.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeCheckInMall.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeCheckInMall.ev.a 证据 `notes/evidence/.../home_check_in_mall.{flutter,kmp}.png`
 - [ ] R.homeCheckInMall.ui.i / R.homeCheckInMall.ui.h（或 registry `missing`）
 
 ## `/home/all_services` — `homeAllServices`
-- [ ] R.homeAllServices.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeAllServices.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeAllServices.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeAllServices.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeAllServices.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeAllServices.ev.a 证据 `notes/evidence/.../home_all_services.{flutter,kmp}.png`
+- [x] R.homeAllServices.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeAllServices.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeAllServices.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeAllServices.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeAllServices.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeAllServices.ev.a 证据 `notes/evidence/.../home_all_services.{flutter,kmp}.png`
 - [ ] R.homeAllServices.ui.i / R.homeAllServices.ui.h（或 registry `missing`）
 
 ## `/home/search` — `homeSearch`
-- [ ] R.homeSearch.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeSearch.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeSearch.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeSearch.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeSearch.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeSearch.ev.a 证据 `notes/evidence/.../home_search.{flutter,kmp}.png`
+- [x] R.homeSearch.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeSearch.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeSearch.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeSearch.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeSearch.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeSearch.ev.a 证据 `notes/evidence/.../home_search.{flutter,kmp}.png`
 - [ ] R.homeSearch.ui.i / R.homeSearch.ui.h（或 registry `missing`）
 
 ## `/home/dubbing_feed` — `homeDubbingFeed`
-- [ ] R.homeDubbingFeed.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeDubbingFeed.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeDubbingFeed.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeDubbingFeed.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeDubbingFeed.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeDubbingFeed.ev.a 证据 `notes/evidence/.../home_dubbing_feed.{flutter,kmp}.png`
+- [x] R.homeDubbingFeed.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeDubbingFeed.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeDubbingFeed.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeDubbingFeed.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeDubbingFeed.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeDubbingFeed.ev.a 证据 `notes/evidence/.../home_dubbing_feed.{flutter,kmp}.png`
 - [ ] R.homeDubbingFeed.ui.i / R.homeDubbingFeed.ui.h（或 registry `missing`）
 
 ## `/home/strategy` — `homeStrategy`
-- [ ] R.homeStrategy.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeStrategy.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeStrategy.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeStrategy.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeStrategy.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeStrategy.ev.a 证据 `notes/evidence/.../home_strategy.{flutter,kmp}.png`
+- [x] R.homeStrategy.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeStrategy.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeStrategy.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeStrategy.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeStrategy.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeStrategy.ev.a 证据 `notes/evidence/.../home_strategy.{flutter,kmp}.png`
 - [ ] R.homeStrategy.ui.i / R.homeStrategy.ui.h（或 registry `missing`）
 
 ## `/home/hot_rank_detail` — `homeHotRankDetail`
-- [ ] R.homeHotRankDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeHotRankDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeHotRankDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeHotRankDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeHotRankDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeHotRankDetail.ev.a 证据 `notes/evidence/.../home_hot_rank_detail.{flutter,kmp}.png`
+- [x] R.homeHotRankDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeHotRankDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeHotRankDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeHotRankDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeHotRankDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeHotRankDetail.ev.a 证据 `notes/evidence/.../home_hot_rank_detail.{flutter,kmp}.png`
 - [ ] R.homeHotRankDetail.ui.i / R.homeHotRankDetail.ui.h（或 registry `missing`）
 
 ## `/home/used_car` — `homeUsedCarList`
@@ -251,12 +251,12 @@
 - [ ] R.homeLedgerDetail.ui.i / R.homeLedgerDetail.ui.h（或 registry `missing`）
 
 ## `/home/data_analytics` — `homeDataAnalyticsList`
-- [ ] R.homeDataAnalyticsList.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeDataAnalyticsList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeDataAnalyticsList.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeDataAnalyticsList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeDataAnalyticsList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeDataAnalyticsList.ev.a 证据 `notes/evidence/.../home_data_analytics.{flutter,kmp}.png`
+- [x] R.homeDataAnalyticsList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeDataAnalyticsList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeDataAnalyticsList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeDataAnalyticsList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeDataAnalyticsList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeDataAnalyticsList.ev.a 证据 `notes/evidence/.../home_data_analytics.{flutter,kmp}.png`
 - [ ] R.homeDataAnalyticsList.ui.i / R.homeDataAnalyticsList.ui.h（或 registry `missing`）
 
 ## `/home/data_analytics/detail` — `homeDataAnalyticsDetail`
@@ -332,21 +332,21 @@
 - [ ] R.homeTodoOrderReview.ui.i / R.homeTodoOrderReview.ui.h（或 registry `missing`）
 
 ## `/home/after_sales` — `homeAfterSalesList`
-- [ ] R.homeAfterSalesList.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeAfterSalesList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeAfterSalesList.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeAfterSalesList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeAfterSalesList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeAfterSalesList.ev.a 证据 `notes/evidence/.../home_after_sales.{flutter,kmp}.png`
+- [x] R.homeAfterSalesList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeAfterSalesList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeAfterSalesList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeAfterSalesList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeAfterSalesList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeAfterSalesList.ev.a 证据 `notes/evidence/.../home_after_sales.{flutter,kmp}.png`
 - [ ] R.homeAfterSalesList.ui.i / R.homeAfterSalesList.ui.h（或 registry `missing`）
 
 ## `/home/after_sales/create` — `homeAfterSalesCreate`
-- [ ] R.homeAfterSalesCreate.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeAfterSalesCreate.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeAfterSalesCreate.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeAfterSalesCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeAfterSalesCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeAfterSalesCreate.ev.a 证据 `notes/evidence/.../home_after_sales_create.{flutter,kmp}.png`
+- [x] R.homeAfterSalesCreate.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeAfterSalesCreate.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeAfterSalesCreate.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeAfterSalesCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeAfterSalesCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeAfterSalesCreate.ev.a 证据 `notes/evidence/.../home_after_sales_create.{flutter,kmp}.png`
 - [ ] R.homeAfterSalesCreate.ui.i / R.homeAfterSalesCreate.ui.h（或 registry `missing`）
 
 ## `/home/after_sales/detail` — `homeAfterSalesDetail`
@@ -359,21 +359,21 @@
 - [ ] R.homeAfterSalesDetail.ui.i / R.homeAfterSalesDetail.ui.h（或 registry `missing`）
 
 ## `/home/new_car_follow` — `homeNewCarFollow`
-- [ ] R.homeNewCarFollow.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeNewCarFollow.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeNewCarFollow.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeNewCarFollow.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeNewCarFollow.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeNewCarFollow.ev.a 证据 `notes/evidence/.../home_new_car_follow.{flutter,kmp}.png`
+- [x] R.homeNewCarFollow.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeNewCarFollow.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeNewCarFollow.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeNewCarFollow.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeNewCarFollow.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeNewCarFollow.ev.a 证据 `notes/evidence/.../home_new_car_follow.{flutter,kmp}.png`
 - [ ] R.homeNewCarFollow.ui.i / R.homeNewCarFollow.ui.h（或 registry `missing`）
 
 ## `/home/new_car_follow/create` — `homeNewCarFollowCreate`
-- [ ] R.homeNewCarFollowCreate.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeNewCarFollowCreate.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeNewCarFollowCreate.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeNewCarFollowCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeNewCarFollowCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeNewCarFollowCreate.ev.a 证据 `notes/evidence/.../home_new_car_follow_create.{flutter,kmp}.png`
+- [x] R.homeNewCarFollowCreate.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeNewCarFollowCreate.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeNewCarFollowCreate.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeNewCarFollowCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeNewCarFollowCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeNewCarFollowCreate.ev.a 证据 `notes/evidence/.../home_new_car_follow_create.{flutter,kmp}.png`
 - [ ] R.homeNewCarFollowCreate.ui.i / R.homeNewCarFollowCreate.ui.h（或 registry `missing`）
 
 ## `/home/new_car_follow/detail` — `homeNewCarFollowDetail`

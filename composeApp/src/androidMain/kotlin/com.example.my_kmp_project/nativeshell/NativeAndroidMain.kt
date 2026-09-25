@@ -294,7 +294,12 @@ internal fun NativeAndroidMain() {
                     pending.route.startsWith("/home/") -> {
                         tab = MainTab.Home
                         keptTabs = keptTabs + MainTab.Home
-                        openHomeRoute(pending.route)
+                        if (pending.route == "/home/all_services") {
+                            overlay = ShellOverlay.AllServices
+                            bottomBarVisible = false
+                        } else {
+                            openHomeRoute(pending.route)
+                        }
                     }
                     pending.route == AppRoutePath.settings || pending.route.startsWith("/settings") -> {
                         tab = MainTab.Mine

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -156,29 +157,21 @@ internal fun HomeRouteHost(
             onItem = { onNavigate(HomeRoutes.AfterSalesDetail) },
             onCreate = { onNavigate(HomeRoutes.AfterSalesCreate) },
         )
-        HomeRoutes.AfterSalesCreate -> CrudCreateScreen("创建售后", onBack) {
-            showPlatformToast("已创建（mock）")
-            onBack()
-        }
-        HomeRoutes.AfterSalesDetail ->
-            CrudDetailScreen("售后详情", HomeSecondaryMock.afterSales.first(), onBack)
+        HomeRoutes.AfterSalesCreate -> AfterSalesCreateScreen(onBack = onBack)
+        HomeRoutes.AfterSalesDetail -> AfterSalesDetailScreen(
+            row = HomeSecondaryMock.afterSales.first(),
+            onBack = onBack,
+        )
         HomeRoutes.NewCarFollow -> NewCarFollowListScreen(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.NewCarFollowDetail) },
             onCreate = { onNavigate(HomeRoutes.NewCarFollowCreate) },
         )
-        HomeRoutes.NewCarFollowCreate -> CrudCreateScreen("新建跟进", onBack) {
-            showPlatformToast("已保存（mock）")
-            onBack()
-        }
-        HomeRoutes.NewCarFollowDetail ->
-            CrudDetailScreen(
-                "跟进详情",
-                HomeSecondaryMock.newCarFollows.first().let {
-                    "${it.customerName}\n${it.phone}\n意向: ${it.vehicle}\n阶段 ${it.stage}"
-                },
-                onBack,
-            )
+        HomeRoutes.NewCarFollowCreate -> NewCarFollowCreateScreen(onBack = onBack)
+        HomeRoutes.NewCarFollowDetail -> NewCarFollowDetailScreen(
+            row = HomeSecondaryMock.newCarFollows.first(),
+            onBack = onBack,
+        )
         else -> CrudDetailScreen("未识别路由", "route=$route", onBack)
     }
 }
@@ -727,34 +720,199 @@ private fun ClubContentBody(title: String, onBack: () -> Unit) {
 
 @Composable
 private fun CheckInMallScreen(onBack: () -> Unit) {
+    // Flutter 签到商城：蓝顶栏积分区 + 连签卡 + 成长任务 + 积分换礼
+    val headerBlue = Color(0xFF2F6BFF)
+    var points by remember { mutableStateOf(0) }
+    var streak by remember { mutableStateOf(1) }
+    var checkedToday by remember { mutableStateOf(false) }
+    var remind by remember { mutableStateOf(false) }
+    val dayLabels = listOf("19", "20", "21", "22", "23", "24", "今天")
     ReportMainTabRoot(isRoot = false)
-    var points by remember { mutableStateOf(1280) }
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "签到商城", onBack = onBack, containerColor = DemoColors.PageBg)
-        Column(Modifier.padding(16.dp)) {
-            Text("当前积分 $points", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(12.dp))
-            Button(
-                onClick = {
-                    points += 10
-                    showPlatformToast("签到成功 +10")
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-            ) { Text("今日签到") }
-            Spacer(Modifier.height(16.dp))
-            listOf("流量券", "洗车券", "精品周边").forEach { name ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp)
-                        .clickable { showPlatformToast("兑换 $name（mock）") },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(name, color = DemoColors.TextPrimary)
-                    Text("兑换", color = DemoColors.Accent)
-                }
-                HorizontalDivider(color = DemoColors.Divider)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .background(headerBlue)
+                .statusBarsPadding(),
+        ) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "‹",
+                    color = Color.White,
+                    fontSize = 28.sp,
+                    modifier = Modifier
+                        .clickable(onClick = onBack)
+                        .padding(8.dp),
+                )
+                Text(
+                    "签到商城",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.width(44.dp))
             }
+            Text(
+                "温馨提示：本页面只保留近3个月内的积分记录",
+                color = Color.White.copy(alpha = 0.9f),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color.White.copy(alpha = 0.15f))
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+            )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("我的积分", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+                    Text("$points", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("连续签到", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+                    Text("$streak 天", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("连签可得更多积分", fontWeight = FontWeight.SemiBold)
+                        Text("已连续签到 $streak 天", fontSize = 13.sp, color = DemoColors.TextSecondary)
+                    }
+                    Text(
+                        if (checkedToday) "已签到" else "立即签到",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(if (checkedToday) DemoColors.Muted else headerBlue)
+                            .clickable(enabled = !checkedToday) {
+                                checkedToday = true
+                                points += 5
+                                showPlatformToast("签到成功 +5")
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    dayLabels.forEachIndexed { i, label ->
+                        val today = i == dayLabels.lastIndex
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (today) Color(0xFFFFB020) else Color(0xFFF2F3F7))
+                                .padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                label,
+                                fontSize = 11.sp,
+                                color = if (today) Color.White else DemoColors.TextSecondary,
+                            )
+                            Text(
+                                "+5",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (today) Color.White else DemoColors.TextPrimary,
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("断签或者签完需重新开始", fontSize = 12.sp, color = DemoColors.Muted)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("签到提醒", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            Modifier
+                                .width(40.dp)
+                                .height(22.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(if (remind) headerBlue else Color(0xFFD0D3D8))
+                                .clickable { remind = !remind },
+                        )
+                    }
+                }
+            }
+            Text("成长任务", fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White),
+            ) {
+                listOf(
+                    Triple("每日登录", "+5积分", "领取"),
+                    Triple("发一条动态", "+10积分", "去完成"),
+                    Triple("商城下单", "+20积分", "去完成"),
+                ).forEachIndexed { idx, (title, pts, action) ->
+                    if (idx > 0) HorizontalDivider(color = DemoColors.Divider)
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(title, fontWeight = FontWeight.Medium)
+                            Text(pts, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        }
+                        Text(
+                            action,
+                            color = headerBlue,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(headerBlue.copy(alpha = 0.1f))
+                                .clickable { showPlatformToast(action) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                }
+            }
+            Text("积分换礼", fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("礼", fontSize = 40.sp, color = DemoColors.Muted)
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
@@ -1460,6 +1618,152 @@ private fun UsedCarListScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AfterSalesCreateScreen(onBack: () -> Unit) {
+    // Flutter AfterSalesCreatePage
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf("") }
+    var plate by remember { mutableStateOf("") }
+    var mileage by remember { mutableStateOf("") }
+    var content by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("2026-09-25") }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
+        MineTopBar(title = "创建售后", onBack = onBack, containerColor = Color.White)
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            UsedCarField("客户姓名", name) { name = it; if (title.isBlank()) title = "$it 售后服务" }
+            UsedCarField("手机号", phone) { phone = it }
+            UsedCarField("工单标题", title) { title = it }
+            UsedCarField("车牌", plate) { plate = it }
+            UsedCarField("里程(km)", mileage) { mileage = it }
+            UsedCarField("预约日", date) { date = it }
+            UsedCarField("问题描述", content) { content = it }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "提交",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DemoColors.Accent)
+                    .clickable {
+                        showPlatformToast("已创建售后工单")
+                        onBack()
+                    }
+                    .padding(vertical = 14.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun AfterSalesDetailScreen(row: HomeListRow, onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
+        MineTopBar(title = "售后详情", onBack = onBack, containerColor = Color.White)
+        Column(Modifier.padding(16.dp)) {
+            UsedCarSection(
+                "工单",
+                listOf(
+                    "编号" to row.title,
+                    "内容" to row.subtitle,
+                    "状态" to "进行中",
+                    "预约日" to "2026-09-25",
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun NewCarFollowCreateScreen(onBack: () -> Unit) {
+    // Flutter NewCarFollowCreatePage
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var vehicle by remember { mutableStateOf("") }
+    var level by remember { mutableStateOf("高") }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F6F8))) {
+        MineTopBar(title = "新建跟进", onBack = onBack, containerColor = Color.White)
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            UsedCarField("客户姓名", name) { name = it }
+            UsedCarField("手机号", phone) { phone = it }
+            UsedCarField("意向车型", vehicle) { vehicle = it }
+            Text("意向等级", fontWeight = FontWeight.SemiBold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("高", "中", "低").forEach { label ->
+                    val selected = level == label
+                    Text(
+                        label,
+                        color = if (selected) Color.White else DemoColors.TextPrimary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (selected) DemoColors.Accent else Color.White)
+                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(16.dp))
+                            .clickable { level = label }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "提交",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DemoColors.Accent)
+                    .clickable {
+                        if (name.isBlank() || phone.isBlank()) {
+                            showPlatformToast("请填写客户姓名和手机号")
+                        } else {
+                            showPlatformToast("已保存跟进")
+                            onBack()
+                        }
+                    }
+                    .padding(vertical = 14.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun NewCarFollowDetailScreen(row: NewCarFollowRow, onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F6F8))) {
+        MineTopBar(title = "跟进详情", onBack = onBack, containerColor = Color.White)
+        Column(Modifier.padding(16.dp)) {
+            UsedCarSection(
+                "客户",
+                listOf(
+                    "姓名" to row.customerName,
+                    "手机" to row.phone,
+                    "意向车型" to row.vehicle,
+                    "阶段" to row.stage,
+                    "意向" to row.intentBand,
+                    "下次跟进" to row.nextFollow,
+                    "顾问" to row.owner,
+                ),
+            )
         }
     }
 }
