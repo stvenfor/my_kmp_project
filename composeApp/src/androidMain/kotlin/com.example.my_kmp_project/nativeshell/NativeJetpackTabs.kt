@@ -1036,6 +1036,7 @@ private fun communityRichBody(text: String) = buildAnnotatedString {
 @Composable
 internal fun JetpackMineRoot(
     loggedIn: Boolean,
+    displayName: String? = null,
     onLogin: () -> Unit,
     onLogout: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -1045,7 +1046,7 @@ internal fun JetpackMineRoot(
     // CMP MineHomeContent already mirrors Flutter MinePage (header / quick / functions / menu).
     MineHomeContent(
         loggedIn = loggedIn,
-        displayName = if (loggedIn) "qa_user" else null,
+        displayName = displayName,
         onLoginClick = onLogin,
         onLogoutClick = onLogout,
         onOpenSettings = onOpenSettings,

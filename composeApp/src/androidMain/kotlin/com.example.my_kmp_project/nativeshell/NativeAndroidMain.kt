@@ -287,7 +287,9 @@ internal fun NativeAndroidMain() {
             .collect { pending ->
                 DeepLinkRouter.consumePending()
                 when {
-                    pending.route == AppRoutes.Auth.LOGIN -> {
+                    pending.route == AppRoutes.Auth.LOGIN ||
+                        pending.route == AppRoutePath.loginPassword ||
+                        pending.route == AppRoutePath.loginOtp -> {
                         authOverlay = AuthOverlay.Login
                         bottomBarVisible = false
                     }
@@ -461,6 +463,7 @@ internal fun NativeAndroidMain() {
                                     when (t) {
                                         MainTab.Home -> JetpackHomeRoot(
                                             onDeferred = { openDeferred(it) },
+                                            displayName = authState.displayName,
                                         )
                                         MainTab.Chat -> JetpackChatRoot(
                                             onOpenContacts = { openDeferred("通讯录") },
@@ -483,6 +486,7 @@ internal fun NativeAndroidMain() {
                                         )
                                         MainTab.Mine -> JetpackMineRoot(
                                             loggedIn = authState.isLoggedIn,
+                                            displayName = authState.displayName,
                                             onLogin = {
                                                 AuthGate.rememberPending(MainTab.Mine)
                                                 authOverlay = AuthOverlay.Login

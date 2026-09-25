@@ -12,9 +12,10 @@ import androidx.compose.runtime.setValue
  * - `/chat` → [MainTab.Chat]
  * - `/community` → [MainTab.Community]
  * - `/mine` → [MainTab.Mine]
- * - `/auth/login` → route [AppRoutes.Auth.LOGIN]
+ * - `/auth/login` | `/login` → route [AppRoutes.Auth.LOGIN]
+ * - `/login/password` | `/login/otp` → auth overlay (Flutter RoutePath)
  *
- * Example URIs: `myai://home`, `myai:///chat`, `https://app.example/mine`, `/auth/login`.
+ * Example URIs: `myai://home`, `myai:///chat`, `myai://auth/login`, `myai:///login`.
  *
  * Android Manifest: optionally add `intent-filter` for the product scheme / App Links so the
  * platform delivers the URI into [accept]; this stub needs no Manifest edits to compile or demo.
@@ -61,8 +62,16 @@ internal object DeepLinkRouter {
                 )
             AppRoutes.Mine.MINE, "mine" ->
                 ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = AppRoutes.Mine.MINE)
-            AppRoutes.Auth.LOGIN, "auth/login" ->
+            // Flutter RoutePath uses `/login`; `myai://auth/login` extracts as `/login`
+            // (host=auth). Also accept `/auth/login` and bare `auth/login`.
+            AppRoutes.Auth.LOGIN, "auth/login",
+            AppRoutePath.login, "login",
+            ->
                 ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutes.Auth.LOGIN)
+            AppRoutePath.loginPassword, "login/password" ->
+                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.loginPassword)
+            AppRoutePath.loginOtp, "login/otp" ->
+                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.loginOtp)
             else -> {
                 // Secondary product routes (Flutter RoutePath / AppRoutePath)
                 when {

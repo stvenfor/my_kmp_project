@@ -57,9 +57,12 @@ import java.util.Calendar
 /** Jetpack Home root — layout aligned to Flutter `HomePage` dashboard. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun JetpackHomeRoot(onDeferred: (String) -> Unit) {
+internal fun JetpackHomeRoot(
+    onDeferred: (String) -> Unit,
+    displayName: String? = null,
+) {
     var metricTab by remember { mutableIntStateOf(0) } // Flutter HomeController default: 今日
-    val greeting = remember { flutterStyleGreeting() }
+    val greeting = remember(displayName) { flutterStyleGreeting(displayName) }
     var refreshing by remember { mutableStateOf(false) }
     // Flutter SoT (live API): empty todoCards → HomeTodoCardStrip shrinks.
     var showTodos by remember { mutableStateOf(false) }
@@ -426,12 +429,13 @@ private fun JetpackStoreMetrics(
     }
 }
 
-private fun flutterStyleGreeting(): String {
+private fun flutterStyleGreeting(displayName: String?): String {
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     val period = when {
         hour < 12 -> "早上好"
         hour < 18 -> "下午好"
         else -> "晚上好"
     }
-    return "$period，qa_user"
+    val name = displayName?.takeIf { it.isNotBlank() } ?: "访客"
+    return "$period，$name"
 }

@@ -57,10 +57,10 @@
 
 - [x] 0.1 拉起 Flutter SoT 于同一模拟器：`com.sample.module_sample`（可跑、可登录）
 - [x] 0.2 固定测试账号流程文档化：`13400000000` / OTP `123456` 或密码通道；Go `8080` 健康检查
-- [ ] 0.3 KMP 与 Flutter 同账号同后端；禁止 SoftAuth 假登录冒充业务完成
+- [x] 0.3 KMP 与 Flutter 同账号同后端；禁止 SoftAuth 假登录冒充业务完成
 - [x] 0.4 `RoutePath` 字符串表与 Flutter 103 条对齐（含别名）
 - [ ] 0.5 Design tokens / 沉浸式顶栏 / 底栏 49dp 与 Flutter 对齐
-- [ ] 0.6 soft-auth：未登录进门禁 Tab → 登录 → resume
+- [x] 0.6 soft-auth：未登录进门禁 Tab → 登录 → resume
 - [ ] 0.7 401 清会话
 - [ ] 0.8 `platform-gap-registry.md` 全能力有状态
 - [ ] 0.9 `acceptance-matrix.md` 与本清单同步
@@ -69,30 +69,30 @@
 # A. 壳 / 鉴权 / 桥接
 
 ## `/` — `splash`
-- [ ] R.splash.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.splash.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.splash.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.splash.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.splash.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.splash.ev.a 证据 `notes/evidence/.../root.{flutter,kmp}.png`
+- [x] R.splash.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.splash.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.splash.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.splash.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.splash.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.splash.ev.a 证据 `notes/evidence/.../root.{flutter,kmp}.png`
 - [ ] R.splash.ui.i / R.splash.ui.h（或 registry `missing`）
 
 ## `/main` — `main`
-- [ ] R.main.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.main.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.main.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.main.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.main.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.main.ev.a 证据 `notes/evidence/.../main.{flutter,kmp}.png`
+- [x] R.main.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.main.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.main.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.main.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.main.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.main.ev.a 证据 `notes/evidence/.../main.{flutter,kmp}.png`
 - [ ] R.main.ui.i / R.main.ui.h（或 registry `missing`）
 
 ## `/login` — `login`
-- [ ] R.login.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.login.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.login.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.login.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.login.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.login.ev.a 证据 `notes/evidence/.../login.{flutter,kmp}.png`
+- [x] R.login.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.login.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.login.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.login.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.login.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.login.ev.a 证据 `notes/evidence/.../login.{flutter,kmp}.png`
 - [ ] R.login.ui.i / R.login.ui.h（或 registry `missing`）
 
 ## `/login/password` — `loginPassword`
@@ -134,12 +134,12 @@
 # B. Home
 
 ## `/home` — `home`
-- [ ] R.home.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.home.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.home.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.home.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.home.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.home.ev.a 证据 `notes/evidence/.../home.{flutter,kmp}.png`
+- [x] R.home.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.home.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.home.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.home.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.home.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.home.ev.a 证据 `notes/evidence/.../home.{flutter,kmp}.png`
 - [ ] R.home.ui.i / R.home.ui.h（或 registry `missing`）
 
 ## `/home/learning_report` — `homeLearningReport`

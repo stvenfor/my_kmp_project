@@ -261,7 +261,9 @@ private fun MainShell() {
     LaunchedEffect(Unit) {
         val pending = DeepLinkRouter.consumePending() ?: return@LaunchedEffect
         when {
-            pending.route == AppRoutes.Auth.LOGIN -> {
+            pending.route == AppRoutes.Auth.LOGIN ||
+                pending.route == AppRoutePath.loginPassword ||
+                pending.route == AppRoutePath.loginOtp -> {
                 authOverlay = AuthOverlay.Login
                 tabChrome.updateBottomBarVisible(false)
             }
