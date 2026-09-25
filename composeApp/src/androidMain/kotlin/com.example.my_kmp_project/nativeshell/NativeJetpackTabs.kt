@@ -49,7 +49,9 @@ import com.example.my_kmp_project.feature.chat.ImConversation
 import com.example.my_kmp_project.feature.chat.ImEngine
 import com.example.my_kmp_project.feature.chat.MockImEngine
 import com.example.my_kmp_project.feature.community.CommunityPublishBus
+import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineHomeContent
+import com.example.my_kmp_project.feature.mine.MineRoutes
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.community_avatar
 import my_kmp_project.composeapp.generated.resources.community_post_a
@@ -1048,6 +1050,15 @@ internal fun JetpackMineRoot(
         onLogoutClick = onLogout,
         onOpenSettings = onOpenSettings,
         onOpenPersonalized = onOpenPersonalized,
-        snackbar = { onDeferred(it) },
+        snackbar = { label ->
+            val routeable = MineRoutes.fromLabel(label) != null ||
+                HomeRoutes.fromLabel(label) != null ||
+                label == "商城" || label == "我的钱包" || label == "我的订单" ||
+                label == "购车计算器" || label == "小视频" || label == "二手车" ||
+                label == "收支" || label == "售后专区" || label == "个人资料" ||
+                label == "签到日历" || label == "地址管理"
+            if (routeable) onDeferred(label)
+            else showPlatformToast(label)
+        },
     )
 }

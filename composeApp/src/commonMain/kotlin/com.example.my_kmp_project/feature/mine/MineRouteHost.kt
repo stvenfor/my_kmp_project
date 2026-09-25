@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
@@ -135,34 +137,236 @@ private fun MallListScreen(
     onOpenDetail: () -> Unit,
     onOpenOrders: () -> Unit,
 ) {
-    val items = listOf("精品脚垫", "车载香水", "保养套餐", "会员礼盒")
-    ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(
-            title = "商城",
-            onBack = onBack,
-            actions = {
-                TextButton(onClick = onOpenOrders) { Text("订单", color = DemoColors.Accent) }
-            },
+    // Flutter MallPage: search + categories + filter + 2-col cards + float bar
+    val categories = listOf("推荐", "0元起兑", "国庆季", "钻铂专享", "数码家电", "生活好物")
+    val filters = listOf("积分", "热兑", "上新", "筛选")
+    var category by remember { mutableStateOf(0) }
+    var filter by remember { mutableStateOf(1) }
+    val products = remember {
+        listOf(
+            MallProductUi("精品脚垫", "¥99", "500积分", "热兑"),
+            MallProductUi("车载香水", "¥59", "300积分", null),
+            MallProductUi("保养套餐", "¥299", "1200积分", "上新"),
+            MallProductUi("会员礼盒", "¥199", "800积分", "钻铂"),
+            MallProductUi("视频会员卡", "¥25", "100积分", "热兑"),
+            MallProductUi("行车记录仪", "¥399", "2000积分", null),
         )
-        LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(items) { name ->
+    }
+    ReportMainTabRoot(isRoot = false)
+    Box(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(start = 4.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "‹",
+                    fontSize = 28.sp,
+                    color = DemoColors.TextPrimary,
+                    modifier = Modifier
+                        .clickable(onClick = onBack)
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                )
                 Row(
                     Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DemoColors.Background)
-                        .clickable(onClick = onOpenDetail)
-                        .padding(14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .weight(1f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF5F5F5))
+                        .border(1.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                        .clickable { showPlatformToast("搜索「视频会员卡」（开发中）") }
+                        .padding(start = 10.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(name, fontWeight = FontWeight.Medium)
-                    Text("¥99 起", color = DemoColors.Accent)
+                    Text("⌕", color = DemoColors.Muted, fontSize = 14.sp)
+                    Spacer(Modifier.width(6.dp))
+                    Text("视频会员卡", color = DemoColors.Muted, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(DemoColors.Accent)
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    ) {
+                        Text("搜索", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
                 }
+            }
+            HorizontalDivider(thickness = 1.dp, color = DemoColors.Divider)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(18.dp),
+            ) {
+                categories.forEachIndexed { i, label ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable {
+                            category = i
+                            showPlatformToast("$label（筛选开发中）")
+                        },
+                    ) {
+                        Text(
+                            label,
+                            fontSize = if (i == category) 15.sp else 14.sp,
+                            fontWeight = if (i == category) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (i == category) DemoColors.TextPrimary else DemoColors.Muted,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Box(
+                            Modifier
+                                .width(if (i == category) 16.dp else 0.dp)
+                                .height(2.dp)
+                                .background(if (i == category) DemoColors.Accent else Color.Transparent),
+                        )
+                    }
+                }
+            }
+            HorizontalDivider(thickness = 1.dp, color = DemoColors.Divider)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                filters.forEachIndexed { i, label ->
+                    val active = i == filter
+                    val showArrow = label == "积分" || label == "筛选"
+                    Row(
+                        Modifier
+                            .weight(1f)
+                            .height(30.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (active) DemoColors.Accent.copy(alpha = 0.1f) else Color.White)
+                            .border(
+                                1.dp,
+                                if (active) DemoColors.Accent else DemoColors.Divider,
+                                RoundedCornerShape(8.dp),
+                            )
+                            .clickable {
+                                filter = i
+                                showPlatformToast("$label（筛选开发中）")
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        if (active) Text("✓", color = DemoColors.Accent, fontSize = 11.sp)
+                        Text(
+                            label,
+                            fontSize = 12.sp,
+                            fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (active) DemoColors.Accent else DemoColors.TextSecondary,
+                        )
+                        if (showArrow) {
+                            Text("▾", color = if (active) DemoColors.Accent else DemoColors.Muted, fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+            LazyColumn(
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(10.dp, 4.dp, 10.dp, 88.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(products.chunked(2)) { row ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        row.forEach { p ->
+                            Column(
+                                Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.White)
+                                    .clickable(onClick = onOpenDetail)
+                                    .padding(bottom = 10.dp),
+                            ) {
+                                Box(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(140.dp)
+                                        .background(Color(0xFFE8F1FB)),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text("商品", color = DemoColors.Accent, fontWeight = FontWeight.SemiBold)
+                                    p.tag?.let { tag ->
+                                        Text(
+                                            tag,
+                                            color = Color.White,
+                                            fontSize = 10.sp,
+                                            modifier = Modifier
+                                                .align(Alignment.TopStart)
+                                                .padding(6.dp)
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(Color(0xFFEE0000))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        )
+                                    }
+                                }
+                                Text(
+                                    p.name,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 14.sp,
+                                    maxLines = 2,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                )
+                                Text(
+                                    p.price,
+                                    color = Color(0xFFEE0000),
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(horizontal = 8.dp),
+                                )
+                                Text(
+                                    p.points,
+                                    color = DemoColors.Muted,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                )
+                            }
+                        }
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+        Row(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .padding(start = 48.dp, end = 48.dp, bottom = 24.dp)
+                .fillMaxWidth()
+                .height(52.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Color.White)
+                .border(1.dp, DemoColors.Divider, RoundedCornerShape(28.dp)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                Modifier.weight(1f).clickable { showPlatformToast("会员权益") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("◎", color = DemoColors.Accent, fontSize = 16.sp)
+                Text("会员权益", fontSize = 11.sp, fontWeight = FontWeight.Medium)
+            }
+            Box(Modifier.width(1.dp).height(24.dp).background(DemoColors.Divider))
+            Column(
+                Modifier.weight(1f).clickable { showPlatformToast("颜选好物") },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("店", color = DemoColors.Accent, fontSize = 16.sp)
+                Text("颜选好物", fontSize = 11.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
 }
+
+private data class MallProductUi(
+    val name: String,
+    val price: String,
+    val points: String,
+    val tag: String?,
+)
 
 @Composable
 private fun OrderListScreen(onBack: () -> Unit, onOpen: () -> Unit) {
