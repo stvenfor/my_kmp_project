@@ -446,12 +446,12 @@
 # E. Mine / Settings
 
 ## `/mine` — `mine`
-- [ ] R.mine.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mine.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mine.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mine.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mine.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mine.ev.a 证据 `notes/evidence/.../mine.{flutter,kmp}.png`
+- [x] R.mine.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mine.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mine.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mine.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mine.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mine.ev.a 证据 `notes/evidence/.../mine.{flutter,kmp}.png`
 - [ ] R.mine.ui.i / R.mine.ui.h（或 registry `missing`）
 
 ## `/mine/http_test` — `mineHttpTest`
@@ -535,39 +535,39 @@
 # F. Mall
 
 ## `/mall` — `mall`
-- [ ] R.mall.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mall.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mall.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mall.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mall.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mall.ev.a 证据 `notes/evidence/.../mall.{flutter,kmp}.png`
+- [x] R.mall.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mall.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mall.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mall.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mall.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mall.ev.a 证据 `notes/evidence/.../mall.{flutter,kmp}.png`
 - [ ] R.mall.ui.i / R.mall.ui.h（或 registry `missing`）
 
 ## `/mall/detail` — `mallDetail`
-- [ ] R.mallDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mallDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mallDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mallDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mallDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mallDetail.ev.a 证据 `notes/evidence/.../mall_detail.{flutter,kmp}.png`
+- [x] R.mallDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mallDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mallDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mallDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mallDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mallDetail.ev.a 证据 `notes/evidence/.../mall_detail.{flutter,kmp}.png`
 - [ ] R.mallDetail.ui.i / R.mallDetail.ui.h（或 registry `missing`）
 
 ## `/mall/orders` — `mallOrders`
-- [ ] R.mallOrders.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mallOrders.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mallOrders.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mallOrders.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mallOrders.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mallOrders.ev.a 证据 `notes/evidence/.../mall_orders.{flutter,kmp}.png`
+- [x] R.mallOrders.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mallOrders.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mallOrders.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mallOrders.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mallOrders.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mallOrders.ev.a 证据 `notes/evidence/.../mall_orders.{flutter,kmp}.png`
 - [ ] R.mallOrders.ui.i / R.mallOrders.ui.h（或 registry `missing`）
 
 ## `/mall/orders/detail` — `mallOrderDetail`
-- [ ] R.mallOrderDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.mallOrderDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.mallOrderDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.mallOrderDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.mallOrderDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.mallOrderDetail.ev.a 证据 `notes/evidence/.../mall_orders_detail.{flutter,kmp}.png`
+- [x] R.mallOrderDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.mallOrderDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.mallOrderDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.mallOrderDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.mallOrderDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.mallOrderDetail.ev.a 证据 `notes/evidence/.../mall_orders_detail.{flutter,kmp}.png`
 - [ ] R.mallOrderDetail.ui.i / R.mallOrderDetail.ui.h（或 registry `missing`）
 
 # G. Pay / Wallet

@@ -174,71 +174,237 @@ private fun SimpleDetail(title: String, body: String, onBack: () -> Unit) {
 
 @Composable
 private fun MallDetailScreen(onBack: () -> Unit) {
+    // Flutter MallDetailPage SoT: cover + title/price/virtual hint + 规格 + qty + 加入购物车/立即购买
+    var qty by remember { mutableStateOf(1) }
+    var skuSel by remember { mutableStateOf(0) }
+    val skus = listOf("经典白", "店庆红")
     ReportMainTabRoot(isRoot = false)
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-            .verticalScroll(rememberScrollState()),
-    ) {
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
         MineTopBar(title = "商品详情", onBack = onBack, containerColor = Color.White)
-        Box(
+        Column(
+            Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(280.dp)
+                    .background(Color(0xFFF0F0F0)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("店庆纪念马克杯", color = DemoColors.Muted, fontSize = 14.sp)
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text("店庆纪念马克杯", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text("39.90元", color = Color(0xFFEE0000), fontWeight = FontWeight.SemiBold, fontSize = 22.sp)
+                Text("实体商品 · 需填写收货信息", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            }
+            Spacer(Modifier.height(8.dp))
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .clickable { showPlatformToast("选择收货地址") }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("📍", fontSize = 14.sp)
+                    Spacer(Modifier.width(8.dp))
+                    Text("选择收货地址", color = DemoColors.Muted, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                    Text("›", color = DemoColors.Muted, fontSize = 18.sp)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp),
+            ) {
+                Text("规格", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    skus.forEachIndexed { i, label ->
+                        val sel = skuSel == i
+                        Text(
+                            label,
+                            fontSize = 13.sp,
+                            color = if (sel) DemoColors.Accent else DemoColors.TextSecondary,
+                            fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (sel) DemoColors.Accent.copy(alpha = 0.12f) else Color(0xFFF5F5F5))
+                                .border(
+                                    1.dp,
+                                    if (sel) DemoColors.Accent else DemoColors.Divider,
+                                    RoundedCornerShape(8.dp),
+                                )
+                                .clickable { skuSel = i }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("数量", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Spacer(Modifier.weight(1f))
+                    Text("库存 128", color = DemoColors.Muted, fontSize = 12.sp)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "−",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .border(1.dp, DemoColors.Divider, RoundedCornerShape(4.dp))
+                            .clickable { if (qty > 1) qty-- }
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
+                    Text("$qty", modifier = Modifier.padding(horizontal = 12.dp), fontWeight = FontWeight.Medium)
+                    Text(
+                        "+",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .border(1.dp, DemoColors.Divider, RoundedCornerShape(4.dp))
+                            .clickable { qty++ }
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+        }
+        Row(
             Modifier
                 .fillMaxWidth()
-                .height(220.dp)
-                .background(Color(0xFFE8EEF5)),
-            contentAlignment = Alignment.Center,
+                .background(Color.White)
+                .border(1.dp, DemoColors.Divider)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("示例商品图", color = DemoColors.Muted)
-        }
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("视频会员卡 · 月卡", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text("¥199", color = Color(0xFFE53935), fontWeight = FontWeight.SemiBold, fontSize = 22.sp)
-            Text("SKU · DEMO-SKU-199 · 积分可抵 20%", color = DemoColors.TextSecondary, fontSize = 13.sp)
-            Spacer(Modifier.height(8.dp))
-            Text("含全站短视频畅看权益 · 到账即时生效", color = DemoColors.TextPrimary, fontSize = 14.sp)
-            Spacer(Modifier.height(12.dp))
+            TextButton(
+                onClick = { showPlatformToast("已加入购物车") },
+                modifier = Modifier
+                    .weight(1f)
+                    .border(1.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
+            ) { Text("加入购物车", color = DemoColors.TextPrimary) }
             Button(
-                onClick = { showPlatformToast("已加入购物车（mock）") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0070F3)),
-            ) { Text("立即兑换") }
+                onClick = { showPlatformToast("立即购买") },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Accent),
+                shape = RoundedCornerShape(8.dp),
+            ) { Text("立即购买") }
         }
     }
 }
 
 @Composable
 private fun MallOrderDetailScreen(onBack: () -> Unit) {
+    // Flutter MallOrderDetailPage SoT
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
         MineTopBar(title = "订单详情", onBack = onBack, containerColor = Color.White)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(
+            Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(Color.White)
                     .padding(14.dp),
             ) {
-                Text("订单 #MO-1001", fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(6.dp))
-                Text("状态 · 待发货", color = Color(0xFFE53935), fontSize = 14.sp)
+                Text("待支付", fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Color(0xFFFF9500))
                 Spacer(Modifier.height(8.dp))
-                Text("视频会员卡 · 月卡 ×1", color = DemoColors.TextPrimary)
-                Text("实付 ¥199", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("订单号 MO-1001", color = DemoColors.TextSecondary, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                    Text(
+                        "复制",
+                        color = DemoColors.Accent,
+                        fontSize = 13.sp,
+                        modifier = Modifier.clickable { showPlatformToast("已复制订单号") },
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text("下单时间 2026-09-26 12:08:00", color = DemoColors.TextSecondary, fontSize = 13.sp)
             }
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+            ) {
+                Row {
+                    Box(
+                        Modifier
+                            .width(64.dp)
+                            .height(64.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFFEEEEEE)),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("杯", color = DemoColors.Muted) }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("店庆纪念马克杯", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Spacer(Modifier.height(6.dp))
+                        Text("x2", color = DemoColors.TextSecondary, fontSize = 12.sp)
+                    }
+                    Text("¥79.80", color = Color(0xFFEE0000), fontWeight = FontWeight.SemiBold)
+                }
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
                     .background(Color.White)
                     .padding(14.dp),
             ) {
                 Text("收货信息", fontWeight = FontWeight.Medium)
-                Spacer(Modifier.height(6.dp))
-                Text("qa_user · 138****5172", fontSize = 14.sp)
+                Spacer(Modifier.height(8.dp))
+                Text("qa_user  138****5172", fontSize = 13.sp, color = DemoColors.TextSecondary)
+                Spacer(Modifier.height(4.dp))
                 Text("北京市朝阳区演示路 1 号", fontSize = 13.sp, color = DemoColors.TextSecondary)
             }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("实付金额", fontWeight = FontWeight.Medium)
+                Text("¥79.80", color = Color(0xFFEE0000), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            }
+        }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            TextButton(
+                onClick = { showPlatformToast("已取消订单") },
+                modifier = Modifier
+                    .weight(1f)
+                    .border(1.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
+            ) { Text("取消订单", color = DemoColors.TextPrimary) }
+            Button(
+                onClick = { showPlatformToast("去支付") },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Accent),
+                shape = RoundedCornerShape(8.dp),
+            ) { Text("去支付") }
         }
     }
 }
@@ -320,13 +486,14 @@ private fun MallListScreen(
     var category by remember { mutableStateOf(0) }
     var filter by remember { mutableStateOf(1) }
     val products = remember {
+        // Flutter live SoT（emulator 2026-09-26 积分商城推荐/热兑）
         listOf(
-            MallProductUi("精品脚垫", "¥99", "500积分", "热兑"),
-            MallProductUi("车载香水", "¥59", "300积分", null),
-            MallProductUi("保养套餐", "¥299", "1200积分", "上新"),
-            MallProductUi("会员礼盒", "¥199", "800积分", "钻铂"),
-            MallProductUi("视频会员卡", "¥25", "100积分", "热兑"),
-            MallProductUi("行车记录仪", "¥399", "2000积分", null),
+            MallProductUi("店庆纪念马克杯", "39.90元", "已兑2391", virtual = false),
+            MallProductUi("电子礼品卡 50 元", "50.00元", "已兑2877", virtual = true),
+            MallProductUi("会员壁纸包", "6.00元", "已兑6566", virtual = true),
+            MallProductUi("线上精品课兑换", "99.00元", "已兑9492", virtual = true),
+            MallProductUi("品牌帆布袋", "29.00元", "已兑5613", virtual = false),
+            MallProductUi("冬季保暖围巾", "128.00元", "已兑8555", virtual = false),
         )
     }
     ReportMainTabRoot(isRoot = false)
@@ -463,17 +630,18 @@ private fun MallListScreen(
                                     Modifier
                                         .fillMaxWidth()
                                         .height(140.dp)
-                                        .background(Color(0xFFE8F1FB)),
+                                        .background(Color(0xFFF0F0F0)),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    Text("商品", color = DemoColors.Accent, fontWeight = FontWeight.SemiBold)
-                                    p.tag?.let { tag ->
+                                    // Flutter SoT covers load from network; placeholder until wired
+                                    Text("", color = DemoColors.Muted)
+                                    if (p.virtual) {
                                         Text(
-                                            tag,
+                                            "虚拟发放",
                                             color = Color.White,
                                             fontSize = 10.sp,
                                             modifier = Modifier
-                                                .align(Alignment.TopStart)
+                                                .align(Alignment.BottomStart)
                                                 .padding(6.dp)
                                                 .clip(RoundedCornerShape(4.dp))
                                                 .background(Color(0xFFEE0000))
@@ -488,19 +656,25 @@ private fun MallListScreen(
                                     maxLines = 2,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                                 )
-                                Text(
-                                    p.price,
-                                    color = Color(0xFFEE0000),
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(horizontal = 8.dp),
-                                )
-                                Text(
-                                    p.points,
-                                    color = DemoColors.Muted,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                                )
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        p.price,
+                                        color = Color(0xFFEE0000),
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 14.sp,
+                                    )
+                                    Text(
+                                        p.soldLabel,
+                                        color = DemoColors.Muted,
+                                        fontSize = 11.sp,
+                                    )
+                                }
                             }
                         }
                         if (row.size == 1) Spacer(Modifier.weight(1f))
@@ -541,8 +715,8 @@ private fun MallListScreen(
 private data class MallProductUi(
     val name: String,
     val price: String,
-    val points: String,
-    val tag: String?,
+    val soldLabel: String,
+    val virtual: Boolean = false,
 )
 
 private data class MallOrderUi(
@@ -559,10 +733,11 @@ private fun OrderListScreen(onBack: () -> Unit, onOpen: () -> Unit) {
     // Flutter MallOrdersPage: tabs 全部/待支付/已支付/已取消 + order cards
     val tabs = listOf("全部", "待支付", "已支付", "已取消")
     var tab by remember { mutableStateOf("全部") }
+    // Flutter live SoT 订单形态（与商城推荐同款商品）
     val all = listOf(
-        MallOrderUi("MO-1001", "车载香薰套装", 2, "128.00", "待支付", unpaid = true),
-        MallOrderUi("MO-0998", "脚垫 · 全包围", 1, "399.00", "已支付"),
-        MallOrderUi("MO-0992", "雨刷片一对", 1, "59.00", "已取消"),
+        MallOrderUi("MO-1001", "店庆纪念马克杯", 2, "79.80", "待支付", unpaid = true),
+        MallOrderUi("MO-0998", "电子礼品卡 50 元", 1, "50.00", "已支付"),
+        MallOrderUi("MO-0992", "品牌帆布袋", 1, "29.00", "已取消"),
     )
     val filtered = when (tab) {
         "待支付" -> all.filter { it.status == "待支付" }
@@ -586,7 +761,7 @@ private fun OrderListScreen(onBack: () -> Unit, onOpen: () -> Unit) {
                     Text(
                         t,
                         fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (sel) Color(0xFFFF9500) else DemoColors.TextSecondary,
+                        color = if (sel) DemoColors.Accent else DemoColors.TextSecondary,
                         fontSize = 14.sp,
                     )
                     Spacer(Modifier.height(6.dp))
@@ -594,7 +769,7 @@ private fun OrderListScreen(onBack: () -> Unit, onOpen: () -> Unit) {
                         Modifier
                             .width(28.dp)
                             .height(2.dp)
-                            .background(if (sel) Color(0xFFFF9500) else Color.Transparent),
+                            .background(if (sel) DemoColors.Accent else Color.Transparent),
                     )
                 }
             }
