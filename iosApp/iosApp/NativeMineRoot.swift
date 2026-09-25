@@ -48,10 +48,9 @@ struct MineRootView: View {
                             Text(label, font: .system(size: 12), color: DesignTokens.ink).lineLimit(1)
                         }
                         .frame(maxWidth: .infinity)
+                        .onTapGesture { onDeferred(label) }
                     }
                 }
-                .padding(.vertical, 20)
-                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
                 Text("个人功能", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     ForEach(functions, id: \.0) { item in

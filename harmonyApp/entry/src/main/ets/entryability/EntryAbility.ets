@@ -3,6 +3,8 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 
 const DOMAIN = 0x0000;
+/** Shared with Index: pending myai:// / xiaomao:// URI for secondary Compose island. */
+export const PENDING_DEEP_LINK_KEY = 'pending_deep_link_uri';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -12,11 +14,20 @@ export default class EntryAbility extends UIAbility {
       hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
     }
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
-    // Deep link: module.json5 declares myai:// skill; forward want.uri into Kotlin
-    // acceptDeepLink when ArkTS↔libkn bridge for router is wired (registry: ohos partial).
-    if (want?.uri) {
-      hilog.info(DOMAIN, 'testTag', 'Pending deep link uri=%{public}s', want.uri);
+    this.stashDeepLink(want);
+  }
+
+  onNewWant(want: Want, launchParam: AbilityConstant.LaunchParam): void {
+    this.stashDeepLink(want);
+  }
+
+  private stashDeepLink(want: Want | undefined): void {
+    const uri = want?.uri;
+    if (!uri) {
+      return;
     }
+    AppStorage.setOrCreate(PENDING_DEEP_LINK_KEY, uri);
+    hilog.info(DOMAIN, 'testTag', 'Pending deep link uri=%{public}s', uri);
   }
 
   onDestroy(): void {
@@ -24,7 +35,6 @@ export default class EntryAbility extends UIAbility {
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
-    // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
     windowStage.loadContent('pages/Index', (err) => {
@@ -37,17 +47,14 @@ export default class EntryAbility extends UIAbility {
   }
 
   onWindowStageDestroy(): void {
-    // Main window is destroyed, release UI related resources
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
   }
 
   onForeground(): void {
-    // Ability has brought to foreground
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onForeground');
   }
 
   onBackground(): void {
-    // Ability has back to background
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onBackground');
   }
 }

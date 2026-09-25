@@ -11,6 +11,7 @@ import { DesignTokens, AppPhase, MainTab } from './NativeShellShared';
 import { NativeHomeContent } from './NativeHomeContent';
 import { HuaweiQuickLoginPane } from '../auth/HuaweiQuickLoginPane';
 import { AuthSession, sharedSessionStore } from '../auth/SessionStore';
+import { PENDING_DEEP_LINK_KEY } from '../entryability/EntryAbility';
 
 const DOMAIN = 0x0000;
 
@@ -61,7 +62,46 @@ struct Index {
     });
     setTimeout(() => {
       this.phase = this.privacyAccepted ? AppPhase.Main : AppPhase.Privacy;
+      this.consumePendingDeepLink();
     }, 1200);
+  }
+
+  /** myai://… / path from EntryAbility → SecondaryRouteIsland. */
+  private consumePendingDeepLink(): void {
+    const uri = AppStorage.get<string>(PENDING_DEEP_LINK_KEY);
+    if (!uri) {
+      return;
+    }
+    AppStorage.delete(PENDING_DEEP_LINK_KEY);
+    const route = this.routeFromDeepLinkUri(uri);
+    if (route) {
+      this.privacyAccepted = true;
+      this.phase = AppPhase.Main;
+      this.openDeferred(route);
+    }
+  }
+
+  private routeFromDeepLinkUri(uri: string): string | undefined {
+    const raw = uri.trim();
+    if (!raw) {
+      return undefined;
+    }
+    if (raw.startsWith('/')) {
+      return raw;
+    }
+    // myai:///friend → /friend ; myai://home/search → /home/search
+    const schemeSplit = raw.indexOf('://');
+    if (schemeSplit < 0) {
+      return raw.startsWith('/') ? raw : `/${raw}`;
+    }
+    let path = raw.substring(schemeSplit + 3);
+    while (path.startsWith('/')) {
+      path = path.substring(1);
+    }
+    if (!path) {
+      return undefined;
+    }
+    return `/${path}`;
   }
 
   private applySession(session: AuthSession): void {
@@ -70,7 +110,7 @@ struct Index {
     this.showLogin = false;
   }
 
-  /** kind 0 = Mine island, kind 1 = deferred feature page. */
+  /** kind 0 = Mine island, kind 1 = secondary RoutePath (set via SetOhosSecondaryRoute). */
   private openComposeHost(kind: number, routeCode: number) {
     const abi: string = deviceInfo.abiList;
     if (libentry === undefined) {
@@ -100,8 +140,35 @@ struct Index {
   }
 
   private openDeferred(title: string): void {
-    this.stubTitle = title;
-    this.showStub = true;
+    const abi: string = deviceInfo.abiList;
+    if (libentry === undefined) {
+      this.errorMessage = `libentry.so failed (abi=${abi})`;
+      return;
+    }
+    const setRoute = libentry.SetOhosSecondaryRoute;
+    if (setRoute !== undefined) {
+      setRoute(title);
+    } else {
+      const setHost = libentry.SetOhosHost;
+      if (setHost !== undefined) {
+        setHost(1, 0);
+      }
+    }
+    const createController = libentry.MainArkUIViewController;
+    if (createController === undefined) {
+      this.errorMessage = 'MainArkUIViewController missing';
+      return;
+    }
+    try {
+      this.islandController = createController();
+      this.showIsland = true;
+      this.showStub = false;
+    } catch (error) {
+      this.errorMessage = String(error);
+      this.stubTitle = title;
+      this.showStub = true;
+      hilog.error(DOMAIN, 'Compose', 'secondary create failed %{public}s', String(error));
+    }
   }
 
 
@@ -375,6 +442,7 @@ struct Index {
                 .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(12)
               Text(label).fontSize(11).fontColor(DesignTokens.ink)
             }.width('25%').padding({ top: 8, bottom: 8 })
+            .onClick(() => this.openDeferred(label))
           })
         }.width('100%')
 
@@ -389,8 +457,8 @@ struct Index {
             .onClick(() => {
               if (label === '设置') {
                 this.openMineIsland(false);
-              } else if (label === '粉丝群') {
-                this.openDeferred('短视频');
+              } else {
+                this.openDeferred(label);
               }
             })
           })

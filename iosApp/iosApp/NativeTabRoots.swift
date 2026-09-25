@@ -115,7 +115,11 @@ struct HomeTabView: View {
                                 .fill(topTab == index ? DesignTokens.link : .clear)
                                 .frame(width: 20, height: 3)
                         }
-                        .onTapGesture { topTab = index }
+                        .onTapGesture {
+                            topTab = index
+                            if index == 1 { onDeferred("/video/short") }
+                            else if index == 2 { onDeferred("Club") }
+                        }
                     }
                     Spacer()
                 }
@@ -155,6 +159,7 @@ struct HomeTabView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
                             .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                            .onTapGesture { onDeferred(action.0) }
                         }
                     }
                     .padding(.horizontal, 16)
@@ -190,6 +195,7 @@ struct HomeTabView: View {
                         .onTapGesture {
                             if label == "更多" { onDeferred("全部服务") }
                             else if label == "直播带货" { onDeferred("直播") }
+                            else { onDeferred(label) }
                         }
                     }
                 }

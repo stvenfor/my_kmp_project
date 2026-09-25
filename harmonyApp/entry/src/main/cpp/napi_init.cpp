@@ -40,6 +40,7 @@ static napi_value AudioOnPageHide(napi_env env, napi_callback_info info) {
 }
 
 extern "C" void KnSetOhosHost(int kind, int routeCode);
+extern "C" void KnSetOhosSecondaryRoute(void* routePtr);
 
 static napi_value NapiSetOhosHost(napi_env env, napi_callback_info info) {
     size_t argc = 2;
@@ -57,6 +58,25 @@ static napi_value NapiSetOhosHost(napi_env env, napi_callback_info info) {
     return nullptr;
 }
 
+static napi_value NapiSetOhosSecondaryRoute(napi_env env, napi_callback_info info) {
+    size_t argc = 1;
+    napi_value args[1] = {nullptr};
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
+    static const char kDefault[] = "/home/search";
+    if (argc < 1 || args[0] == nullptr) {
+        KnSetOhosSecondaryRoute(const_cast<char*>(kDefault));
+        return nullptr;
+    }
+    size_t len = 0;
+    napi_get_value_string_utf8(env, args[0], nullptr, 0, &len);
+    char* buf = new char[len + 1];
+    napi_get_value_string_utf8(env, args[0], buf, len + 1, &len);
+    buf[len] = '\0';
+    KnSetOhosSecondaryRoute(buf);
+    delete[] buf;
+    return nullptr;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     OH_LOG_INFO(LOG_APP, "libentry Init: register exports then Compose ArkUI bootstrap");
@@ -64,6 +84,7 @@ static napi_value Init(napi_env env, napi_value exports) {
     napi_property_descriptor desc[] = {
         {"MainArkUIViewController", nullptr, NapiMainArkUIViewController, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"SetOhosHost", nullptr, NapiSetOhosHost, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"SetOhosSecondaryRoute", nullptr, NapiSetOhosSecondaryRoute, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AudioOnPageHide", nullptr, AudioOnPageHide, nullptr, nullptr, nullptr, napi_default, nullptr},
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);

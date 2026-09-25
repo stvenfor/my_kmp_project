@@ -16,19 +16,19 @@ Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all
 | chat UI | partial | partial | partial | list/detail + send input wired | features/chat | feature/chat | pixel 6.6 |
 | IM engine | partial | partial | partial | MockImEngine with sendText (Flutter also mock) | components/rongcloud_im | feature/chat/ImEngine.kt | vendor SDK later |
 | community publish | partial | partial | partial | local form+validation→feed; Flutter publish also「开发中」; no image_picker | features/community | feature/community | image_picker + remote API |
-| media playback | partial | stub | missing | Android MediaPlayer audio; iOS stub; OHOS missing; video Surface TBD | features/video, music | feature/media createMediaPlayer | iOS AVPlayer; OHOS MediaKit; video surface |
+| media playback | partial | partial | stub | Android MediaPlayer；iOS AVPlayer audio；OHOS stub；video Surface TBD | features/video, music | feature/media createMediaPlayer | OHOS MediaKit；video surface |
 | WeChat/Alipay pay | stub | stub | stub | adapters null; flags false; UI shows unavailable (no fake Success) | features/pay, wys_login_share_pay | feature/commerce FlaggedPayGateway | real OpenSDK per target then 8.5 sandbox |
 | WebView + JS bridge | ready | partial | partial | Android offline fixture「离线网页」evidenced (`web_open.png`); iOS WKWebView; OHOS placeholder | commons/ui kit/web | PlatformWebView + OfflineWebFixtureUrl | iOS/OHOS 5.5; OHOS real Web |
-| deeplink delivery | ready | ready | partial | Android cold-start `myai://home`/`chat` evidenced; iOS/OHOS code ready, device accept pending | components/linking deeplink | DeepLinkRouter + DeepLinkEntry + MainActivity/iOSApp | 5.5 iOS/OHOS; OHOS ArkTS→Kotlin handoff |
+| deeplink delivery | ready | ready | ready | Android/iOS cold-start + OHOS `want.uri`→`AppStorage`→`SetOhosSecondaryRoute` evidenced (`bridges/OHOS/deeplink_friend.kmp.png`) | components/linking deeplink | DeepLinkRouter + shells | keep regression on EntryAbility onNewWant |
 | scan/camera | ready | partial | missing | Android deny UX evidenced (`scan_perm_denied.png`); iOS permission path; OHOS no camera | toolkit scan | PlatformCameraScan + ScanScreen | OHOS camera N-API; iOS 5.5 accept |
 | push entry | missing | missing | missing | no JPush-equivalent — enumerated incomplete (task 5.4) | wys_push | — | add PushBridge expect/actual + vendor SDK |
 | friend list | partial | partial | partial | Android list→detail mock evidenced; no relation/IM vendor SDK | features/friend | feature/friend | 9.4 iOS/OHOS + Flutter pixel; vendor SDK later |
 | live | partial | partial | partial | Android list→room mock evidenced; no realtime/push stream | features/live | feature/live | realtime SDK / 9.4 |
 | classroom | partial | partial | partial | Android my_class→homework_stats→teacher/student/dubbing/review/gift/video mock; no realtime classroom | features/classroom | feature/classroom ClassroomRouteHost | 9.4 three-platform + Flutter pixel |
-| short video | partial | stub | missing | Android short list→play→publish→help + dubbing graph mock; Surface/video decode TBD | features/video | feature/media VideoRouteHost | iOS/OHOS player; real short-videos API |
-| AI stream | stub | missing | missing | Android AiStreamScreen mock chunk stream; no SSE/backend | features/ai | feature/ai AiStreamScreen | AiStreamRepository SSE |
-| music | partial | stub | missing | Android list→now_playing + MediaPlayer; no mini bar global yet | features/music | feature/media MusicListScreen | mini player + iOS/OHOS |
+| short video | partial | partial | partial | 三端 short list UI evidenced；Surface/decode TBD | features/video | feature/media VideoRouteHost | real player surfaces |
+| AI stream | stub | stub | stub | 三端 AiStreamScreen mock chunk；无 SSE | features/ai | feature/ai AiStreamScreen | AiStreamRepository SSE |
+| music | partial | partial | stub | Android+iOS list/now_playing；OHOS stub player | features/music | feature/media MusicListScreen | OHOS MediaKit |
 | image_picker | missing | missing | missing | no adapter | image_picker plugin | — | with publish/mine |
 | DoKit / bfui / BLE / invoice demos | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal | features/bfui, bluetooth, settings debug | — | optional later |
 | face verify | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal unless product adds | wys_face_verify | — | optional later |
-| in-scope RoutePath UI (78) | ready | missing | missing | 本轮仅 Android 像素并排验收；iOS/OHOS 端到端未跑 | my_ai_project RoutePath | AppRoutePath + *RouteHost | schedule iOS Simulator + Harmony publish/device accept |
+| in-scope RoutePath UI (78) | ready | ready | ready | Android 并排 + iOS Simulator + Harmony ParityPhone 证据已归档；厂商 SDK 另行列 | my_ai_project RoutePath | AppRoutePath + SecondaryRouteIsland | pay/push/WeChat 等仍 incomplete |

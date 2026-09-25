@@ -14,7 +14,9 @@ import androidx.compose.ui.window.ComposeArkUIViewController
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.feature.mine.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.OhosComposeHostRequest
+import com.example.my_kmp_project.feature.shell.SecondaryRouteIsland
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.toKString
 import kotlinx.coroutines.initMainHandler
 import platform.ArkTS.ArkTS_Napi_NativeModule.napi_env
 import platform.ArkTS.ArkTS_Napi_NativeModule.napi_value
@@ -23,14 +25,14 @@ import kotlin.experimental.ExperimentalNativeApi
 private const val OhosSmokeUiOnly: Boolean = false
 
 /**
- * ADR 0002: Harmony Compose host is **Mine island only**.
- * ArkTS owns splash / tabs / Mine root / auth / deferred stubs.
+ * ADR 0002: Harmony Compose host — Mine island + secondary RoutePath screens.
+ * ArkTS owns splash / tabs / Mine root / auth.
  */
 @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
 @CName("MainArkUIViewController")
 fun MainArkUIViewController(env: napi_env): napi_value {
     return try {
-        println("DemoKN: MainArkUIViewController (MineIsland) enter")
+        println("DemoKN: MainArkUIViewController enter mode=${OhosComposeHostRequest.mode}")
         initMainHandler(env)
         if (!OhosSmokeUiOnly) {
             com.example.my_kmp_project.core.network.platformNetworkBootstrap()
@@ -41,10 +43,16 @@ fun MainArkUIViewController(env: napi_env): napi_value {
             } else {
                 var closed by remember { mutableStateOf(false) }
                 if (!closed) {
-                    MineIsland(
-                        initialRoute = OhosComposeHostRequest.mineRoute,
-                        onRequestClose = { closed = true },
-                    )
+                    when (OhosComposeHostRequest.mode) {
+                        1 -> SecondaryRouteIsland(
+                            initialRoute = OhosComposeHostRequest.secondaryRoute,
+                            onRequestClose = { closed = true },
+                        )
+                        else -> MineIsland(
+                            initialRoute = OhosComposeHostRequest.mineRoute,
+                            onRequestClose = { closed = true },
+                        )
+                    }
                 } else {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("已关闭")
@@ -59,12 +67,29 @@ fun MainArkUIViewController(env: napi_env): napi_value {
     }
 }
 
-/** kind ignored for features; routeCode 0=settings, 1=personalized. */
+/**
+ * kind: 0 = Mine island (routeCode 0=settings, 1=personalized, 2=membership)
+ * kind: 1 = Secondary route — [routeCode] ignored; use [KnSetOhosSecondaryRoute] for path.
+ */
 @OptIn(ExperimentalNativeApi::class)
 @CName("KnSetOhosHost")
 fun KnSetOhosHost(kind: Int, routeCode: Int) {
-    OhosComposeHostRequest.mineRoute =
-        if (routeCode == 1) MineIslandRoute.Personalized else MineIslandRoute.Settings
+    OhosComposeHostRequest.mode = kind
+    if (kind == 0) {
+        OhosComposeHostRequest.mineRoute = when (routeCode) {
+            1 -> MineIslandRoute.Personalized
+            2 -> MineIslandRoute.Membership
+            else -> MineIslandRoute.Settings
+        }
+    }
+}
+
+@OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
+@CName("KnSetOhosSecondaryRoute")
+fun KnSetOhosSecondaryRoute(routePtr: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?) {
+    val route = routePtr?.toKString() ?: "/home/search"
+    OhosComposeHostRequest.mode = 1
+    OhosComposeHostRequest.secondaryRoute = route
 }
 
 @OptIn(ExperimentalNativeApi::class)

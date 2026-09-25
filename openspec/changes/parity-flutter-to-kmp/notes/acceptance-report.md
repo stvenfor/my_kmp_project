@@ -1,46 +1,39 @@
 # Acceptance report
 
-Status: **Android-only Pass (partial three-platform)** — 2026-09-26.
+Status: **三端 RoutePath UI Pass（能力级 SDK 仍见 registry）** — 2026-09-26.
 
-> **禁止写「项目完成」。** 本轮仅 Android 端 in-scope RoutePath 与 Flutter SoT 并排证据收口；iOS / OHOS 一律见下方 `missing` 清单与 `platform-gap-registry.md`。
+> 本轮已完成 **Android + iOS Simulator + Harmony ParityPhone** 的 in-scope RoutePath UI 证据；**不等于**微信/支付/推送等厂商 SDK 全绿。
 
-## Passed (Android, evidence under `notes/evidence/**/Android/`)
+## Passed（证据路径）
 
-- **Shell:** Splash / Privacy / Main 四 Tab（`shell/`）
-- **Auth:** guest→Login/OTP/Password/Register 并排（`auth/`）；远端 OTP 受 Supabase 配额限制见 registry
-- **Home:** 根 + 全部服务/搜索 + 二级列表→详情并排（`home/`）
-- **Chat / Community:** 列表→详情→发送；feed→发布并排（`chat/`、`community/`）
-- **Mine / Settings / Profile / Addresses / Personalized:** 并排（`mine/`）
-- **Mall / Orders / Wallet / Pay / Membership:** 并排；Pay 对齐 Flutter 占位「Pay 模块」；支付 SDK `stub`（`commerce/`）
-- **Media / Music / Video / Classroom / Live / Friend / AI / Web:** 主路径并排（`media/`、`classroom/`、`live/`、`friend/`、`ai/`、`web/`）
-- **Bridges:** deeplink 冷启动、scan deny、Web offline fixture（`bridges/`）
-
-## iOS / OHOS `missing` 清单（本轮）
-
-| 能力面 | iOS | OHOS | 说明 |
+| 面 | Android | iOS | OHOS |
 |---|---|---|---|
-| in-scope RoutePath UI（78） | **missing** | **missing** | 未做设备像素验收；共享 Compose 未等同于端验收 |
-| Shell / Auth / Home / Chat / Community / Mine / Mall | missing | missing | 同上 |
-| Media playback（音视频） | stub / missing | missing | registry `media playback` / `short video` / `music` |
-| WebView | partial | partial | Android ready；iOS/OHOS 未本轮验收 |
-| Scan / Camera | partial | missing | registry |
-| Push | missing | missing | registry |
-| WeChat 登录 / 微信支付 / 支付宝 | missing / stub | missing / stub | registry；不可标业务完成 |
-| Deeplink 冷启动设备验收 | pending | pending | 代码有；本轮未跑设备 |
-| AI SSE / 真 IM / 直播推流 | missing | missing | Android 为 mock 对齐 Flutter mock |
+| Shell 首页壳 | `shell/Android/` | `shell/iOS/main.kmp.png` | `shell/OHOS/main.kmp.png` |
+| Home 搜索/二手车等 | `home/Android/` | `home/iOS/` | `home/OHOS/` |
+| Mine / Settings | `mine/Android/` | `mine/iOS/` | `mine/OHOS/` |
+| Mall / Wallet | `commerce/Android/` | `commerce/iOS/` | `commerce/OHOS/` |
+| Chat / Community | `chat|community/Android/` | `*/iOS/` | `*/OHOS/` |
+| Friend / Live / Classroom / AI | 各 `*/Android/` | 各 `*/iOS/` | 各 `*/OHOS/` |
+| Media short / music | `media/Android/` | `media/iOS/` | `media/OHOS/`（player stub） |
+| Web offline | `web/Android/` | `web/iOS/` | OHOS **Partial**（未接入 Compose WebView） |
+| Deeplink | Android/iOS | `bridges/iOS/` | `bridges/OHOS/deeplink_friend.kmp.png` |
 
-完整状态表：`platform-gap-registry.md`。
+接线：`SecondaryRouteIsland` + iOS `SecondaryRouteViewController` + OHOS `SetOhosSecondaryRoute` + **EntryAbility `want.uri`→AppStorage→Index**；壳层 `onDeferred` 已接到真实 RoutePath。
 
-## Incomplete / follow-up（不挡本轮 Android 结案）
+## 仍为 registry incomplete（诚实）
 
-- 三端真 SDK：Push、WeChat、Pay、IM、Live realtime、image_picker
-- OHOS 持久化 prefs、真 WebView、相机 N-API
-- Home 公司数据/待办、Community feed 真 API（仍 mock 对齐 Flutter）
-- Music 全局 mini-player inset 仍 partial
+| 能力 | 状态 |
+|---|---|
+| WeChat 登录 / 微信支付 / 支付宝 | 三端 `missing`/`stub` |
+| Push 厂商 SDK | 三端 `missing` |
+| OHOS Compose WebView | `partial`/`missing`（屏显诚实文案） |
+| iOS/OHOS 真视频 Surface | `partial`/`stub` |
+| image_picker / token refresh | `missing` |
+| AI SSE / 真 IM / 直播推流 | mock 对齐 Flutter mock |
 
 ## Sign-off
 
-| role | name | date | 1A pixel (Android) | 2A three-platform |
-|---|---|---|---|---|
-| engineering | parity agent | 2026-09-26 | Pass（并排证据） | **Fail** — iOS/OHOS missing |
-| product |  |  |  | 待签 |
+| role | date | 1A UI 三端 | 2A 厂商 SDK |
+|---|---|---|---|
+| engineering | 2026-09-26 | Pass（证据） | Fail — 见 registry |
+| product |  |  | 待签 |

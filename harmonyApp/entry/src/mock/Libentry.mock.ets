@@ -4,6 +4,7 @@ import { ArkUIViewController } from 'compose/src/main/cpp/types/libcompose_arkui
 const NativeMock = {
   MainArkUIViewController: (): ArkUIViewController | undefined => undefined,
   SetOhosHost: (_kind: number, _routeCode: number): void => {},
+  SetOhosSecondaryRoute: (_route: string): void => {},
   AudioOnPageHide: (): void => {},
 };
 

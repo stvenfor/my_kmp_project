@@ -55,7 +55,7 @@ enum MainTab: Int, CaseIterable, Identifiable {
 }
 
 /// ADR 0002: SwiftUI owns splash / privacy / tab roots / Mine root / auth.
-/// Compose is only pushed for Mine secondary island and deferred native stubs.
+/// Compose hosts Mine island + secondary RoutePath screens (shared with Android).
 struct ContentView: View {
     @State private var phase: AppPhase = .splash
     @State private var privacyAccepted = UserDefaults.standard.bool(forKey: "privacy_accepted")
@@ -64,7 +64,7 @@ struct ContentView: View {
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
-    @State private var stubTitle: String? = nil
+    @State private var secondaryRoute: String? = nil
 
     var body: some View {
         Group {
@@ -87,6 +87,31 @@ struct ContentView: View {
             }
         }
         .ignoresSafeArea(.keyboard)
+        .onOpenURL { url in
+            openDeepLink(url.absoluteString)
+        }
+        .onAppear {
+            if let pending = UserDefaults.standard.string(forKey: "pending_deeplink") {
+                UserDefaults.standard.removeObject(forKey: "pending_deeplink")
+                openDeepLink(pending)
+            }
+            // Launch arg: -route /home/search
+            let args = ProcessInfo.processInfo.arguments
+            if let idx = args.firstIndex(of: "-route"), idx + 1 < args.count {
+                secondaryRoute = args[idx + 1]
+            }
+        }
+    }
+
+    private func openDeepLink(_ uri: String) {
+        if let route = MainViewControllerKt.AcceptDeepLinkFromIos(uri: uri) {
+            secondaryRoute = route
+            return
+        }
+        // Fallback: treat path after scheme as route
+        if let url = URL(string: uri), !url.path.isEmpty {
+            secondaryRoute = url.path.hasPrefix("/") ? url.path : "/\(url.path)"
+        }
     }
 
     private var mainShell: some View {
@@ -94,7 +119,7 @@ struct ContentView: View {
             Group {
                 switch tab {
                 case .home:
-                    HomeTabView(onDeferred: { stubTitle = $0 })
+                    HomeTabView(onDeferred: { secondaryRoute = $0 })
                 case .chat:
                     if isLoggedIn {
                         ChatTabView()
@@ -120,7 +145,7 @@ struct ContentView: View {
                             mineIslandRoute = "personalized"
                             showMineIsland = true
                         },
-                        onDeferred: { stubTitle = $0 }
+                        onDeferred: { secondaryRoute = $0 }
                     )
                 }
             }
@@ -151,39 +176,19 @@ struct ContentView: View {
             MineIslandHost(route: mineIslandRoute)
                 .ignoresSafeArea(.all)
         }
-        .sheet(item: Binding(
-            get: { stubTitle.map { StubItem(title: $0) } },
-            set: { stubTitle = $0?.title }
+        .fullScreenCover(item: Binding(
+            get: { secondaryRoute.map { SecondaryRouteItem(route: $0) } },
+            set: { secondaryRoute = $0?.route }
         )) { item in
-            DeferredStubView(title: item.title) { stubTitle = nil }
+            SecondaryRouteHost(routeOrLabel: item.route)
+                .ignoresSafeArea(.all)
         }
     }
 }
 
-private struct StubItem: Identifiable {
-    let title: String
-    var id: String { title }
-}
-
-private struct DeferredStubView: View {
-    var title: String
-    var onClose: () -> Void
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: DesignTokens.spacingMd) {
-                Text(title, font: .title2, color: DesignTokens.ink)
-                Text("一期后置 · 原生占位", color: DesignTokens.body)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭", action: onClose)
-                }
-            }
-            .navigationTitle(title)
-        }
-    }
+private struct SecondaryRouteItem: Identifiable {
+    let route: String
+    var id: String { route }
 }
 
 private struct SplashView: View {
@@ -248,12 +253,20 @@ private struct NativeLoginView: View {
     }
 }
 
-// MARK: - Compose hosts (island / deferred features only)
+// MARK: - Compose hosts (island / secondary RoutePath)
 
 private struct MineIslandHost: UIViewControllerRepresentable {
     var route: String
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MineIslandViewController(route: route)
+    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+
+private struct SecondaryRouteHost: UIViewControllerRepresentable {
+    var routeOrLabel: String
+    func makeUIViewController(context: Context) -> UIViewController {
+        MainViewControllerKt.SecondaryRouteViewController(routeOrLabel: routeOrLabel)
     }
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }

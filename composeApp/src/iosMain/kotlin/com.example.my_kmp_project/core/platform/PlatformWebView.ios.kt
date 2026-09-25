@@ -114,9 +114,15 @@ internal actual fun PlatformWebView(
 
     DisposableEffect(url) {
         bridge.openUrl(url)
-        val nsUrl = NSURL.URLWithString(url)
-        if (nsUrl != null) {
-            webView.loadRequest(NSURLRequest.requestWithURL(nsUrl))
+        if (url.startsWith("data:text/html")) {
+            // WKWebView often fails NSURLRequest for long percent-encoded data: URLs.
+            val html = decodeDataHtmlUrl(url)
+            webView.loadHTMLString(html, baseURL = null)
+        } else {
+            val nsUrl = NSURL.URLWithString(url)
+            if (nsUrl != null) {
+                webView.loadRequest(NSURLRequest.requestWithURL(nsUrl))
+            }
         }
         onDispose { }
     }
@@ -146,4 +152,36 @@ private fun String.toJsStringLiteral(): String {
         append('"')
     }
     return escaped
+}
+
+/** Decode `data:text/html;charset=utf-8,<percent-encoded>` for [WKWebView.loadHTMLString]. */
+private fun decodeDataHtmlUrl(url: String): String {
+    val comma = url.indexOf(',')
+    if (comma < 0) return "<html><body>invalid data url</body></html>"
+    val encoded = url.substring(comma + 1)
+    return decodeUriComponent(encoded)
+}
+
+private fun decodeUriComponent(encoded: String): String {
+    val bytes = ArrayList<Byte>()
+    var i = 0
+    while (i < encoded.length) {
+        val c = encoded[i]
+        when {
+            c == '%' && i + 2 < encoded.length -> {
+                val hex = encoded.substring(i + 1, i + 3)
+                bytes.add(hex.toInt(16).toByte())
+                i += 3
+            }
+            c == '+' -> {
+                bytes.add(' '.code.toByte())
+                i += 1
+            }
+            else -> {
+                bytes.add(c.code.toByte())
+                i += 1
+            }
+        }
+    }
+    return bytes.toByteArray().decodeToString()
 }

@@ -205,10 +205,20 @@ private fun TypeTag(type: String) {
 }
 
 internal fun formatLedgerAmount(amount: Double): String {
-    val abs = abs(amount)
-    return if (abs >= 10_000.0) {
-        "¥ ${"%.2f".format(amount / 10_000.0)} 万"
+    val absVal = abs(amount)
+    return if (absVal >= 10_000.0) {
+        "¥ ${formatTwoDecimals(amount / 10_000.0)} 万"
     } else {
-        "¥ ${"%.2f".format(amount)}"
+        "¥ ${formatTwoDecimals(amount)}"
     }
+}
+
+/** KMP-safe 2-decimal format (no JVM String.format). */
+private fun formatTwoDecimals(value: Double): String {
+    val cents = kotlin.math.round(value * 100.0).toLong()
+    val sign = if (cents < 0) "-" else ""
+    val a = abs(cents)
+    val whole = a / 100
+    val frac = (a % 100).toString().padStart(2, '0')
+    return "$sign$whole.$frac"
 }

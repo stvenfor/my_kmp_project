@@ -2,6 +2,7 @@ package com.example.my_kmp_project.feature.home
 
 import com.example.my_kmp_project.core.platform.WebBridgeMethods
 import com.example.my_kmp_project.core.platform.WebBridgeRegistry
+import kotlin.concurrent.Volatile
 
 /**
  * Flutter `HomeWebHandlers` analogue — registers Home H5 bridge actions.

@@ -83,7 +83,7 @@ export struct HuaweiQuickLoginPane {
     try {
       const authRequest = new authentication.HuaweiIDProvider().createAuthorizationWithHuaweiIDRequest();
       // 需 AGC 申请 quickLoginMobilePhone；未批时会失败并提示 tip。
-      authRequest.scopes = 'quickLoginAnonymousPhone';
+      authRequest.scopes = ['quickLoginAnonymousPhone'];
       authRequest.forceAuthorization = false;
       const controller = new authentication.AuthenticationController();
       controller.executeRequest(authRequest).then((response: authentication.AuthorizationWithHuaweiIDResponse) => {

@@ -42,6 +42,7 @@ export struct NativeHomeContent {
         .onClick(() => {
           if (label === '更多') this.onDeferred('全部服务');
           else if (label === '直播带货') this.onDeferred('直播');
+          else this.onDeferred(label);
         })
       })
     }.width('100%')
@@ -115,7 +116,11 @@ export struct NativeHomeContent {
                 .height(3)
                 .borderRadius(2)
                 .backgroundColor(this.topTab === index ? DesignTokens.link : Color.Transparent)
-            }.onClick(() => { this.topTab = index; })
+            }.onClick(() => {
+              this.topTab = index;
+              if (index === 1) this.onDeferred('/video/short');
+              else if (index === 2) this.onDeferred('Club');
+            })
           })
         }
         .width('100%')
@@ -235,5 +240,6 @@ export struct NativeHomeContent {
     .backgroundColor(DesignTokens.canvas)
     .borderRadius(8)
     .border({ width: 0.5, color: DesignTokens.hairline })
+    .onClick(() => this.onDeferred(title))
   }
 }
