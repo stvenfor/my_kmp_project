@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -20,12 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeMockData
-
+import com.example.my_kmp_project.feature.home.HomeServiceAssets
 @Composable
 internal fun JetpackTodoStrip(onDeferred: (String) -> Unit) {
     Column(
@@ -67,18 +70,22 @@ internal fun JetpackServiceGrid(onDeferred: (String) -> Unit) {
     Column(
         Modifier
             .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(DemoColors.Background)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
     ) {
         Text(
             "常用服务",
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
             color = DemoColors.TextPrimary,
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
         )
-        HomeMockData.services.chunked(4).forEach { row ->
+        HomeMockData.services.chunked(4).forEachIndexed { rowIndex, row ->
             Row(Modifier.fillMaxWidth()) {
-                row.forEach { item ->
+                row.forEachIndexed { colIndex, item ->
+                    val index = rowIndex * 4 + colIndex
                     Column(
                         Modifier
                             .weight(1f)
@@ -92,10 +99,27 @@ internal fun JetpackServiceGrid(onDeferred: (String) -> Unit) {
                             .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(item.label, fontSize = 12.sp, color = DemoColors.TextPrimary)
-                        item.badge?.let {
-                            Text(it, fontSize = 10.sp, color = DemoColors.Accent)
+                        Box {
+                            HomeAssetIcon(
+                                resource = HomeServiceAssets.serviceAt(index),
+                                size = 44.dp,
+                                contentDescription = item.label,
+                            )
+                            item.badge?.let {
+                                Text(
+                                    it,
+                                    fontSize = 9.sp,
+                                    color = Color.White,
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(DemoColors.Danger)
+                                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                                )
+                            }
                         }
+                        Spacer(Modifier.height(6.dp))
+                        Text(item.label, fontSize = 12.sp, color = DemoColors.TextPrimary)
                     }
                 }
                 repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
@@ -106,6 +130,11 @@ internal fun JetpackServiceGrid(onDeferred: (String) -> Unit) {
 
 @Composable
 internal fun JetpackContactList(onDeferred: (String) -> Unit) {
+    val avatarColors = listOf(
+        Color(0xFF0070F3),
+        Color(0xFF7928CA),
+        Color(0xFFEE0000),
+    )
     Column(
         Modifier
             .padding(start = 16.dp, end = 16.dp, top = 16.dp)
@@ -117,22 +146,46 @@ internal fun JetpackContactList(onDeferred: (String) -> Unit) {
             fontSize = 16.sp,
             modifier = Modifier.padding(bottom = 8.dp),
         )
-        HomeMockData.contacts.forEach { c ->
+        HomeMockData.contacts.forEachIndexed { index, c ->
             Row(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
                     .background(DemoColors.Background)
                     .clickable { onDeferred(c.title) }
-                    .padding(14.dp)
-                    .padding(bottom = 8.dp),
+                    .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                Box(
+                    Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(avatarColors[index % avatarColors.size].copy(alpha = 0.15f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        c.title.take(1),
+                        color = avatarColors[index % avatarColors.size],
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(c.title, fontWeight = FontWeight.Medium)
+                    Text(c.title, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
                     Text(c.subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
                 }
-                c.trailing?.let { Text(it, color = DemoColors.Accent) }
+                c.trailing?.let {
+                    Text(
+                        it,
+                        color = DemoColors.Accent,
+                        fontSize = 13.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(DemoColors.Primary.copy(alpha = 0.08f))
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
+                }
             }
             Spacer(Modifier.height(8.dp))
         }

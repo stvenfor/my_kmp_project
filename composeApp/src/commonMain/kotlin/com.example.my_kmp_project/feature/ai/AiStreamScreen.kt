@@ -1,6 +1,7 @@
 package com.example.my_kmp_project.feature.ai
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,10 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,6 +41,7 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 internal object AiRoutes {
     const val Stream = "/ai/stream"
 
@@ -52,7 +54,7 @@ internal object AiRoutes {
 private data class AiBubble(val id: String, val role: String, val text: String)
 
 /**
- * AI 小石头 — mock 流式回复（真 SSE 见 platform-gap）。
+ * AI 小石头 — Flutter-aligned chrome；真 SSE 见 platform-gap。
  */
 @Composable
 internal fun AiStreamScreen(onBack: () -> Unit) {
@@ -76,11 +78,15 @@ internal fun AiStreamScreen(onBack: () -> Unit) {
         }
     }
 
-    fun streamReply(prompt: String) {
+    fun send(prompt: String) {
+        val q = prompt.trim()
+        if (q.isEmpty() || streaming) return
+        bubbles = bubbles + AiBubble("u-${bubbles.size}", "user", q)
+        input = ""
         scope.launch {
             streaming = true
             stopRequested = false
-            val full = "关于「$prompt」：建议每天跟读 15 分钟，并记录生词。（mock 流）"
+            val full = "关于「$q」：建议每天跟读 15 分钟，并记录生词。（mock 流）"
             val id = "a-${bubbles.size}"
             bubbles = bubbles + AiBubble(id, "assistant", "")
             val idx = bubbles.lastIndex
@@ -96,45 +102,63 @@ internal fun AiStreamScreen(onBack: () -> Unit) {
     }
 
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
         MineTopBar(
             title = "AI 小石头",
             onBack = onBack,
+            containerColor = Color.White,
             actions = {
                 if (streaming) {
                     TextButton(onClick = { stopRequested = true }) {
-                        Text("停止", color = DemoColors.Accent)
+                        Text("停止", color = DemoColors.Primary)
                     }
                 }
             },
         )
         LazyColumn(
             state = listState,
-            modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.weight(1f).padding(horizontal = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            item { Spacer(Modifier.height(8.dp)) }
+            item { Spacer(Modifier.height(10.dp)) }
             items(bubbles, key = { it.id }) { b ->
                 val mine = b.role == "user"
-                Box(
-                    Modifier.fillMaxWidth(),
-                    contentAlignment = if (mine) Alignment.CenterEnd else Alignment.CenterStart,
-                ) {
-                    Text(
-                        b.text.ifEmpty { "…" },
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (mine) DemoColors.Primary else DemoColors.Background)
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
-                        color = if (mine) DemoColors.OnPrimary else DemoColors.TextPrimary,
-                        fontSize = 14.sp,
-                    )
+                if (mine) {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                        Text(
+                            b.text,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(DemoColors.Primary)
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            color = Color.White,
+                            fontSize = 15.sp,
+                        )
+                    }
+                } else {
+                    Column(
+                        Modifier
+                            .fillMaxWidth(0.92f)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.White)
+                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(16.dp))
+                            .padding(14.dp),
+                    ) {
+                        Text("AI 小石头", fontSize = 12.sp, color = DemoColors.Primary, fontWeight = FontWeight.Medium)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            b.text.ifEmpty { "…" },
+                            color = DemoColors.TextPrimary,
+                            fontSize = 15.sp,
+                            lineHeight = 22.sp,
+                        )
+                    }
                 }
             }
             item { Spacer(Modifier.height(8.dp)) }
         }
         Row(
-            Modifier.padding(horizontal = 12.dp),
+            Modifier.padding(horizontal = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             chips.forEach { chip ->
@@ -142,17 +166,21 @@ internal fun AiStreamScreen(onBack: () -> Unit) {
                     chip,
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(DemoColors.Toolbar)
-                        .clickable(enabled = !streaming) { input = chip }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                    fontSize = 12.sp,
+                        .background(Color.White)
+                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(16.dp))
+                        .clickable(enabled = !streaming) { send(chip) }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    fontSize = 13.sp,
                     color = DemoColors.TextSecondary,
                 )
             }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         Row(
-            Modifier.fillMaxWidth().padding(12.dp),
+            Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             BasicTextField(
@@ -162,27 +190,24 @@ internal fun AiStreamScreen(onBack: () -> Unit) {
                 textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(DemoColors.Background)
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color(0xFFF5F5F5))
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 decorationBox = { inner ->
                     if (input.isEmpty()) Text("输入问题…", color = DemoColors.Muted, fontSize = 15.sp)
                     inner()
                 },
             )
-            Spacer(Modifier.size(8.dp))
-            Button(
-                onClick = {
-                    val q = input.trim()
-                    if (q.isEmpty() || streaming) return@Button
-                    bubbles = bubbles + AiBubble("u-${bubbles.size}", "user", q)
-                    input = ""
-                    streamReply(q)
-                },
-                enabled = !streaming,
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
+            Spacer(Modifier.size(10.dp))
+            Box(
+                Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(if (streaming || input.isBlank()) DemoColors.Muted else DemoColors.Primary)
+                    .clickable(enabled = !streaming) { send(input) },
+                contentAlignment = Alignment.Center,
             ) {
-                Text("发送", color = DemoColors.OnPrimary, fontWeight = FontWeight.Medium)
+                Text("↑", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
         }
     }

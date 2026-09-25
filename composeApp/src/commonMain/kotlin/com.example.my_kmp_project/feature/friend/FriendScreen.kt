@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -31,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,7 +63,7 @@ private object FriendMockData {
 }
 
 /**
- * IM 通讯录：搜索 / 新的朋友 / 好友列表 / 建群（mock；真 IM 见 gap）。
+ * IM 通讯录：搜索 / 新的朋友 / 好友列表 / 建群（分组白卡片对齐 Flutter ChatTheme）。
  */
 @Composable
 internal fun FriendScreen(onBack: () -> Unit) {
@@ -72,10 +72,7 @@ internal fun FriendScreen(onBack: () -> Unit) {
 
     if (selected != null) {
         ReportMainTabRoot(isRoot = false)
-        FriendDetailScreen(
-            friend = selected,
-            onBack = { selectedId = null },
-        )
+        FriendDetailScreen(friend = selected, onBack = { selectedId = null })
     } else {
         ReportMainTabRoot(isRoot = false)
         FriendListContent(
@@ -95,43 +92,32 @@ private fun FriendListContent(
     var query by remember { mutableStateOf("") }
     var searchHits by remember { mutableStateOf<List<FriendItem>>(emptyList()) }
     var incoming by remember {
-        mutableStateOf(
-            listOf(
-                IncomingRequest("i1", "王同学"),
-                IncomingRequest("i2", "李老师"),
-            ),
-        )
+        mutableStateOf(listOf(IncomingRequest("i1", "王同学"), IncomingRequest("i2", "李老师")))
     }
     var friendList by remember { mutableStateOf(friends) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DemoColors.PageBg),
-    ) {
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
         MineTopBar(
             title = "通讯录",
             onBack = onBack,
-            containerColor = DemoColors.PageBg,
+            containerColor = Color.White,
             actions = {
                 TextButton(onClick = { showPlatformToast("建群成功（mock）· 请到聊天 Tab") }) {
-                    Text("建群", color = DemoColors.Accent)
+                    Text("建群", color = DemoColors.Primary)
                 }
             },
         )
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
         ) {
             item {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DemoColors.Background)
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     BasicTextField(
@@ -147,6 +133,7 @@ private fun FriendListContent(
                     Text(
                         "搜索",
                         color = DemoColors.Primary,
+                        fontWeight = FontWeight.Medium,
                         fontSize = 14.sp,
                         modifier = Modifier.clickable {
                             if (query.isBlank()) {
@@ -155,122 +142,156 @@ private fun FriendListContent(
                                 searchHits = FriendMockData.directory.filter {
                                     it.name.contains(query.trim())
                                 }
-                                if (searchHits.isEmpty()) {
-                                    showPlatformToast("未找到用户")
-                                }
+                                if (searchHits.isEmpty()) showPlatformToast("未找到用户")
                             }
                         },
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
             }
             if (searchHits.isNotEmpty()) {
                 item {
-                    Text("搜索结果", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+                    SectionLabel("搜索结果")
                     Spacer(Modifier.height(8.dp))
+                    GroupedCard {
+                        searchHits.forEachIndexed { i, hit ->
+                            FriendRow(
+                                name = hit.name,
+                                subtitle = hit.remark,
+                                trailing = {
+                                    PillButton("加好友") { showPlatformToast("已发送好友申请") }
+                                },
+                            )
+                            if (i < searchHits.lastIndex) {
+                                HorizontalDivider(
+                                    Modifier.padding(start = 70.dp),
+                                    color = DemoColors.Divider,
+                                    thickness = 0.5.dp,
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
                 }
-                items(searchHits, key = { "hit-${it.id}" }) { hit ->
-                    Row(
-                        Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Avatar(hit.name)
-                        Spacer(Modifier.width(12.dp))
-                        Text(hit.name, Modifier.weight(1f), color = DemoColors.TextPrimary)
-                        Text(
-                            "加好友",
-                            color = DemoColors.Primary,
-                            fontSize = 13.sp,
-                            modifier = Modifier.clickable {
-                                showPlatformToast("已发送好友申请")
+            }
+            item {
+                SectionLabel("新的朋友（${incoming.size}）")
+                Spacer(Modifier.height(8.dp))
+                GroupedCard {
+                    incoming.forEachIndexed { i, req ->
+                        FriendRow(
+                            name = req.name,
+                            subtitle = "请求添加你为好友",
+                            trailing = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    PillButton("接受") {
+                                        friendList = friendList + FriendItem(req.id, req.name, "刚刚", "新朋友")
+                                        incoming = incoming.filterNot { it.id == req.id }
+                                        showPlatformToast("已添加")
+                                    }
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        "拒绝",
+                                        color = DemoColors.Muted,
+                                        fontSize = 13.sp,
+                                        modifier = Modifier.clickable {
+                                            incoming = incoming.filterNot { it.id == req.id }
+                                        },
+                                    )
+                                }
                             },
                         )
+                        if (i < incoming.lastIndex) {
+                            HorizontalDivider(
+                                Modifier.padding(start = 70.dp),
+                                color = DemoColors.Divider,
+                                thickness = 0.5.dp,
+                            )
+                        }
                     }
-                    HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
                 }
-            }
-            item {
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    "新的朋友（${incoming.size}）",
-                    fontWeight = FontWeight.SemiBold,
-                    color = DemoColors.TextPrimary,
-                )
+                Spacer(Modifier.height(16.dp))
+                SectionLabel("好友（${friendList.size}）")
                 Spacer(Modifier.height(8.dp))
-            }
-            items(incoming, key = { it.id }) { req ->
-                Row(
-                    Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Avatar(req.name)
-                    Spacer(Modifier.width(12.dp))
-                    Text(req.name, Modifier.weight(1f), color = DemoColors.TextPrimary)
-                    Text(
-                        "接受",
-                        color = DemoColors.Primary,
-                        fontSize = 13.sp,
-                        modifier = Modifier.clickable {
-                            friendList = friendList + FriendItem(req.id, req.name, "刚刚", "新朋友")
-                            incoming = incoming.filterNot { it.id == req.id }
-                            showPlatformToast("已添加")
-                        },
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        "拒绝",
-                        color = DemoColors.Muted,
-                        fontSize = 13.sp,
-                        modifier = Modifier.clickable {
-                            incoming = incoming.filterNot { it.id == req.id }
-                        },
-                    )
-                }
-                HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
-            }
-            item {
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    "好友（${friendList.size}）",
-                    fontWeight = FontWeight.SemiBold,
-                    color = DemoColors.TextPrimary,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            if (friendList.isEmpty()) {
-                item {
-                    Text("暂无好友", color = DemoColors.Muted, fontSize = 13.sp)
-                }
-            }
-            items(friendList, key = { it.id }) { row ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onOpen(row.id) }
-                        .padding(vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Avatar(row.name)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = row.name,
-                            color = DemoColors.TextPrimary,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 17.sp,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = row.lastSeen,
-                            color = DemoColors.Muted,
-                            fontSize = 13.sp,
-                        )
+                GroupedCard {
+                    if (friendList.isEmpty()) {
+                        Text("暂无好友", color = DemoColors.Muted, modifier = Modifier.padding(16.dp))
+                    } else {
+                        friendList.forEachIndexed { i, row ->
+                            FriendRow(
+                                name = row.name,
+                                subtitle = row.lastSeen,
+                                onClick = { onOpen(row.id) },
+                            )
+                            if (i < friendList.lastIndex) {
+                                HorizontalDivider(
+                                    Modifier.padding(start = 70.dp),
+                                    color = DemoColors.Divider,
+                                    thickness = 0.5.dp,
+                                )
+                            }
+                        }
                     }
                 }
-                HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
+                Spacer(Modifier.height(28.dp))
             }
         }
     }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(text, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary, fontSize = 14.sp)
+}
+
+@Composable
+private fun GroupedCard(content: @Composable () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White),
+    ) { content() }
+}
+
+@Composable
+private fun FriendRow(
+    name: String,
+    subtitle: String,
+    onClick: (() -> Unit)? = null,
+    trailing: @Composable (() -> Unit)? = null,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Avatar(name)
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(name, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = DemoColors.TextPrimary)
+            Spacer(Modifier.height(3.dp))
+            Text(subtitle, fontSize = 13.sp, color = DemoColors.Muted)
+        }
+        trailing?.invoke()
+    }
+}
+
+@Composable
+private fun PillButton(label: String, onClick: () -> Unit) {
+    Text(
+        label,
+        color = DemoColors.Primary,
+        fontSize = 13.sp,
+        fontWeight = FontWeight.Medium,
+        modifier = Modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(DemoColors.Primary.copy(alpha = 0.08f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+    )
 }
 
 @Composable
@@ -279,12 +300,12 @@ private fun Avatar(name: String) {
         modifier = Modifier
             .size(44.dp)
             .clip(CircleShape)
-            .background(DemoColors.Accent.copy(alpha = 0.15f)),
+            .background(DemoColors.Primary.copy(alpha = 0.12f)),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = name.take(1),
-            color = DemoColors.Accent,
+            color = DemoColors.Primary,
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
         )
@@ -292,42 +313,34 @@ private fun Avatar(name: String) {
 }
 
 @Composable
-private fun FriendDetailScreen(
-    friend: FriendItem,
-    onBack: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DemoColors.PageBg),
-    ) {
-        MineTopBar(title = friend.name, onBack = onBack, containerColor = DemoColors.PageBg)
+private fun FriendDetailScreen(friend: FriendItem, onBack: () -> Unit) {
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = friend.name, onBack = onBack, containerColor = Color.White)
         Column(
-            modifier = Modifier
-                .fillMaxSize()
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                text = friend.remark,
-                color = DemoColors.TextPrimary,
-                fontSize = 15.sp,
-            )
-            Text(
-                text = "最近活跃：${friend.lastSeen}",
-                color = DemoColors.TextSecondary,
-                fontSize = 13.sp,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Avatar(friend.name)
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text(friend.name, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+                    Text(friend.lastSeen, fontSize = 13.sp, color = DemoColors.Muted)
+                }
+            }
+            Text(friend.remark, color = DemoColors.TextPrimary, fontSize = 15.sp)
             Button(
                 onClick = { showPlatformToast("请到聊天 Tab 打开会话（mock）") },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = DemoColors.Primary,
-                    contentColor = DemoColors.OnPrimary,
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
             ) {
-                Text("发消息")
+                Text("发消息", color = DemoColors.OnPrimary)
             }
         }
     }

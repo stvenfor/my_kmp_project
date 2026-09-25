@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -21,8 +22,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
@@ -147,7 +153,7 @@ private fun ClassroomListContent(
         )
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .padding(horizontal = 16.dp),
         ) {
             item {
@@ -155,72 +161,99 @@ private fun ClassroomListContent(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("班级", color = DemoColors.TextPrimary, fontWeight = FontWeight.SemiBold)
+                    Text("班级", color = DemoColors.TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Text(
                         text = "禁用班级",
-                        color = DemoColors.Muted,
-                        fontSize = 13.sp,
+                        color = DemoColors.Primary,
+                        fontSize = 14.sp,
                         modifier = Modifier.clickable {
-                            showPlatformToast("功能开发中")
+                            showPlatformToast("禁用班级功能开发中")
                         },
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "列表 → 详情 → 课表 / 作业统计",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
             items(classes, key = { it.id }) { row ->
+                val members = 12 + (row.id.toIntOrNull() ?: 0)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onOpen(row.id) }
-                        .padding(vertical = 12.dp),
+                        .padding(bottom = 12.dp)
+                        .shadow(4.dp, RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White),
                 ) {
-                    Text(
-                        text = row.title,
-                        color = DemoColors.TextPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${row.schedule} · ${row.teacher} · 邀请码 ${row.id}ABC · ${12 + (row.id.toIntOrNull() ?: 0)} 人",
-                        color = DemoColors.Muted,
-                        fontSize = 12.sp,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { onOpen(row.id) }
+                            .padding(16.dp),
+                    ) {
                         Text(
-                            "邀请同学",
-                            color = DemoColors.Primary,
-                            fontSize = 12.sp,
-                            modifier = Modifier.clickable { showPlatformToast("邀请链接已复制（mock）") },
+                            text = row.title,
+                            color = DemoColors.TextPrimary,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp,
                         )
-                        if (onHomeworkStats != null) {
-                            Text(
-                                "作业统计",
-                                color = DemoColors.Primary,
-                                fontSize = 12.sp,
-                                modifier = Modifier.clickable(onClick = onHomeworkStats),
-                            )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("邀请码：${row.id}ABC", color = DemoColors.Muted, fontSize = 13.sp)
+                            Text("班级成员：$members", color = DemoColors.Muted, fontSize = 13.sp)
                         }
-                        Text(
-                            "排行榜",
-                            color = DemoColors.Muted,
-                            fontSize = 12.sp,
-                            modifier = Modifier.clickable { showPlatformToast("排行榜开发中") },
-                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("${row.schedule} · ${row.teacher}", color = DemoColors.TextSecondary, fontSize = 12.sp)
                     }
+                    HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
+                    Row(Modifier.fillMaxWidth()) {
+                        ClassActionCell("邀请同学", Modifier.weight(1f)) {
+                            showPlatformToast("邀请同学功能开发中")
+                        }
+                        ClassActionCell("作业统计", Modifier.weight(1f)) {
+                            onHomeworkStats?.invoke() ?: showPlatformToast("作业统计")
+                        }
+                        ClassActionCell("排行榜", Modifier.weight(1f)) {
+                            showPlatformToast("排行榜功能开发中")
+                        }
+                    }
+                    Text(
+                        "作业点评 >",
+                        color = DemoColors.Primary,
+                        fontSize = 13.sp,
+                        modifier = Modifier
+                            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp, top = 4.dp)
+                            .clickable { onHomeworkStats?.invoke() },
+                    )
                 }
-                HorizontalDivider(color = DemoColors.Divider)
             }
         }
+        Button(
+            onClick = { showPlatformToast("创建班级功能开发中") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .height(48.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
+            elevation = ButtonDefaults.buttonElevation(0.dp),
+        ) {
+            Text("创建班级", color = DemoColors.OnPrimary, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+        }
     }
+}
+
+@Composable
+private fun ClassActionCell(label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Text(
+        text = label,
+        color = DemoColors.TextPrimary,
+        fontSize = 13.sp,
+        textAlign = TextAlign.Center,
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+    )
 }
 
 @Composable

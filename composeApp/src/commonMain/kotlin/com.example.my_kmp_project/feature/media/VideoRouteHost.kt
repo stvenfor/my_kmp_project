@@ -1,20 +1,24 @@
 package com.example.my_kmp_project.feature.media
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -36,15 +40,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.community_avatar
+import my_kmp_project.composeapp.generated.resources.home_all_services_dubbing_home
+import my_kmp_project.composeapp.generated.resources.home_all_services_small_video
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_01
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_02
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_03
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_04
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_05
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_06
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_07
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_08
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_09
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_10
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+
 /** Flutter `RoutePath` video graph — Android-first clickable mock. */
 internal object VideoRoutes {
     const val Hub = "/video"
@@ -72,6 +98,8 @@ private data class ShortItem(
     val duration: String,
     val status: String,
     val likes: Int,
+    val cover: DrawableResource,
+    val aspectRatio: Float = 1.35f,
 )
 
 private data class DubbingItem(
@@ -79,23 +107,25 @@ private data class DubbingItem(
     val title: String,
     val tags: String,
     val desc: String,
+    val cover: DrawableResource = Res.drawable.home_dubbing_home_cover_05,
 )
 
 private object VideoMock {
     val shorts = listOf(
-        ShortItem("s1", "口语跟读 · 第一课", "02:15", "已发布", 128),
-        ShortItem("s2", "周末活动花絮", "00:48", "已发布", 56),
-        ShortItem("s3", "学习打卡", "01:32", "上传中", 0),
-        ShortItem("s4", "校园开放日", "03:05", "已发布", 210),
+        ShortItem("s1", "口语跟读 · 第一课", "02:15", "已发布", 128, Res.drawable.home_dubbing_home_cover_01, 1.45f),
+        ShortItem("s2", "周末活动花絮", "00:48", "已发布", 56, Res.drawable.home_dubbing_home_cover_02, 1.2f),
+        ShortItem("s3", "学习打卡", "01:32", "上传中", 0, Res.drawable.home_dubbing_home_cover_03, 1.5f),
+        ShortItem("s4", "校园开放日", "03:05", "已发布", 210, Res.drawable.home_dubbing_home_cover_04, 1.3f),
+        ShortItem("s5", "社团晚会精选", "01:08", "审核中", 42, Res.drawable.home_dubbing_home_cover_06, 1.4f),
     )
     val dubbing = listOf(
-        DubbingItem("d1", "经典台词 · 致橡树", "朗读 · 情感", "适合跟读练习"),
-        DubbingItem("d2", "日常口语 · 点餐", "口语 · 场景", "场景对话配音"),
-        DubbingItem("d3", "新闻播报片段", "播音 · 正式", "语速与停顿训练"),
+        DubbingItem("d1", "经典台词 · 致橡树", "朗读 · 情感", "适合跟读练习", Res.drawable.home_dubbing_home_cover_05),
+        DubbingItem("d2", "日常口语 · 点餐", "口语 · 场景", "场景对话配音", Res.drawable.home_dubbing_home_cover_07),
+        DubbingItem("d3", "新闻播报片段", "播音 · 正式", "语速与停顿训练", Res.drawable.home_dubbing_home_cover_08),
     )
     val works = listOf(
-        DubbingItem("w1", "我的作品 · 致橡树", "已完成", "时长 01:20"),
-        DubbingItem("w2", "点餐练习 v2", "待审核", "时长 00:45"),
+        DubbingItem("w1", "我的作品 · 致橡树", "已完成", "时长 01:20", Res.drawable.home_dubbing_home_cover_09),
+        DubbingItem("w2", "点餐练习 v2", "待审核", "时长 00:45", Res.drawable.home_dubbing_home_cover_10),
     )
 }
 
@@ -153,28 +183,54 @@ private fun VideoHubLanding(
 ) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "视频", onBack = onBack)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Video 模块入口 · 短视频 / 配音", color = DemoColors.TextSecondary, fontSize = 13.sp)
-            HubCard("短视频", "列表 → 播放 → 发布 → 帮助", onShort)
-            HubCard("配音", "视频列表 → 详情 → 作品", onDubbing)
+        MineTopBar(title = "视频", onBack = onBack, containerColor = Color.White)
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            HubMediaCard(
+                title = "小视频",
+                subtitle = "作品墙 · 发布 · 全屏播放",
+                cover = Res.drawable.home_all_services_small_video,
+                onClick = onShort,
+            )
+            HubMediaCard(
+                title = "配音",
+                subtitle = "素材库 · 作品 · 排行",
+                cover = Res.drawable.home_all_services_dubbing_home,
+                onClick = onDubbing,
+            )
         }
     }
 }
 
 @Composable
-private fun HubCard(title: String, subtitle: String, onClick: () -> Unit) {
-    Column(
+private fun HubMediaCard(
+    title: String,
+    subtitle: String,
+    cover: DrawableResource,
+    onClick: () -> Unit,
+) {
+    Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Background)
+            .shadow(6.dp, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White)
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = DemoColors.TextPrimary)
-        Spacer(Modifier.height(4.dp))
-        Text(subtitle, fontSize = 13.sp, color = DemoColors.TextSecondary)
+        Image(
+            painter = painterResource(cover),
+            contentDescription = title,
+            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Crop,
+        )
+        Spacer(Modifier.size(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = DemoColors.TextPrimary)
+            Spacer(Modifier.height(4.dp))
+            Text(subtitle, fontSize = 13.sp, color = DemoColors.Muted)
+        }
+        Text("›", fontSize = 22.sp, color = DemoColors.Muted)
     }
 }
 
@@ -185,97 +241,193 @@ private fun ShortVideoPage(
     onPublish: () -> Unit,
     onPlay: () -> Unit,
 ) {
+    val headerBrush = Brush.verticalGradient(
+        listOf(Color(0xFFDCEEF9), Color(0xFFF5F5F5)),
+    )
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(
-            title = "小视频",
-            onBack = onBack,
-            actions = {
-                TextButton(onClick = onHelp) { Text("帮助", color = DemoColors.Accent) }
-            },
-        )
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier.size(56.dp).clip(CircleShape).background(DemoColors.Accent.copy(0.2f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("我", color = DemoColors.Accent, fontWeight = FontWeight.Bold)
-                }
-                Spacer(Modifier.size(12.dp))
-                Column {
-                    Text("演示用户", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-                    Text("销售顾问 · 示范门店", fontSize = 12.sp, color = DemoColors.Muted)
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                StatCell("作品", "${VideoMock.shorts.size}")
-                StatCell("获赞", "394")
-                StatCell("粉丝", "128")
-            }
-            Spacer(Modifier.height(12.dp))
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(72.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DemoColors.Background)
-                    .clickable(onClick = onPublish)
-                    .padding(12.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("+ 发布短视频", color = DemoColors.Primary, fontWeight = FontWeight.Medium)
-            }
-            Spacer(Modifier.height(12.dp))
-            Text("我的作品", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-            Spacer(Modifier.height(8.dp))
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        Box(Modifier.fillMaxWidth().background(headerBrush)) {
+            MineTopBar(
+                title = "小视频",
+                onBack = onBack,
+                containerColor = Color.Transparent,
+                actions = {
+                    TextButton(onClick = onHelp) { Text("帮助", color = DemoColors.Primary) }
+                },
+            )
         }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            modifier = Modifier.padding(horizontal = 12.dp).weight(1f),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(VideoMock.shorts, key = { it.id }) { item ->
-                Column(
-                    Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(DemoColors.Background)
-                        .clickable {
-                            if (item.status == "上传中") {
-                                showPlatformToast("视频上传中…")
-                            } else {
-                                onPlay()
-                            }
-                        }
-                        .padding(8.dp),
-                ) {
-                    Box(
-                        Modifier.fillMaxWidth().height(100.dp).background(DemoColors.Toolbar, RoundedCornerShape(6.dp)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(item.duration, fontSize = 12.sp, color = DemoColors.TextSecondary)
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    Text(item.title, fontSize = 13.sp, color = DemoColors.TextPrimary, maxLines = 2)
-                    Text(item.status, fontSize = 11.sp, color = DemoColors.Muted)
+            item(span = { GridItemSpan(2) }) {
+                Column {
+                    Spacer(Modifier.height(4.dp))
+                    ShortVideoProfileCard()
+                    Spacer(Modifier.height(12.dp))
+                    ShortVideoPublishTile(onClick = onPublish)
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        "我的作品",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = DemoColors.TextPrimary,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                    )
+                    Spacer(Modifier.height(4.dp))
                 }
             }
+            items(VideoMock.shorts, key = { it.id }) { item ->
+                ShortVideoCoverTile(item = item, onPlay = onPlay)
+            }
+            item(span = { GridItemSpan(2) }) {
+                Text(
+                    "没有更多了",
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                    textAlign = TextAlign.Center,
+                    color = DemoColors.Muted,
+                    fontSize = 12.sp,
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun ShortVideoProfileCard() {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
+            .shadow(8.dp, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.Top) {
+            Column(Modifier.weight(1f)) {
+                Text("演示用户", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = DemoColors.TextPrimary)
+                Spacer(Modifier.height(4.dp))
+                Text("销售顾问 · 示范门店", fontSize = 13.sp, color = DemoColors.Muted)
+            }
+            Image(
+                painter = painterResource(Res.drawable.community_avatar),
+                contentDescription = "头像",
+                modifier = Modifier.size(48.dp).clip(CircleShape),
+                contentScale = ContentScale.Crop,
+            )
+        }
+        Spacer(Modifier.height(16.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            StatCell("作品", "${VideoMock.shorts.size}")
+            StatCell("获赞", "394")
+            StatCell("粉丝", "128")
+        }
+    }
+}
+
+@Composable
+private fun ShortVideoPublishTile(onClick: () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
+            .height(132.dp)
+            .border(BorderStroke(1.5.dp, Color(0xFF91D5FF)), RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Box(
+            Modifier.size(44.dp).clip(CircleShape).background(DemoColors.Primary),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("+", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        }
+        Spacer(Modifier.height(10.dp))
+        Text("发布小视频", fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = DemoColors.Primary)
+        Spacer(Modifier.height(6.dp))
         Text(
-            "没有更多了",
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            "拍视频，增加人气（长按已发布小视频可删除）",
+            fontSize = 11.sp,
             color = DemoColors.Muted,
-            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
         )
+    }
+}
+
+@Composable
+private fun ShortVideoCoverTile(item: ShortItem, onPlay: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f / item.aspectRatio)
+            .clip(RoundedCornerShape(8.dp))
+            .clickable {
+                when (item.status) {
+                    "上传中" -> showPlatformToast("视频上传中，请稍后再试")
+                    else -> onPlay()
+                }
+            },
+    ) {
+        Image(
+            painter = painterResource(item.cover),
+            contentDescription = item.title,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+        )
+        if (item.status == "上传中") {
+            Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.55f)))
+        }
+        if (item.status == "审核中") {
+            Text(
+                "审核中",
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Black.copy(alpha = 0.45f))
+                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                color = Color.White,
+                fontSize = 11.sp,
+            )
+        }
+        Box(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Transparent, Color(0xCC000000)),
+                    ),
+                )
+                .padding(start = 8.dp, end = 8.dp, top = 28.dp, bottom = 8.dp),
+        ) {
+            Column {
+                Text(
+                    item.title,
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Medium,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text("▶ ${item.likes} · ${item.duration}", color = Color.White.copy(0.85f), fontSize = 11.sp)
+            }
+        }
     }
 }
 
 @Composable
 private fun StatCell(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontWeight = FontWeight.Bold, color = DemoColors.TextPrimary)
+        Text(value, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DemoColors.TextPrimary)
+        Spacer(Modifier.height(2.dp))
         Text(label, fontSize = 12.sp, color = DemoColors.Muted)
     }
 }
@@ -431,19 +583,32 @@ private fun DubbingVideoListPage(
                 TextButton(onClick = onWorks) { Text("作品", color = DemoColors.Accent) }
             },
         )
-        LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(VideoMock.dubbing, key = { it.id }) { item ->
-                Column(
+                Row(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DemoColors.Background)
+                        .shadow(4.dp, RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
                         .clickable(onClick = onOpen)
-                        .padding(14.dp),
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(item.title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-                    Spacer(Modifier.height(4.dp))
-                    Text(item.tags, fontSize = 12.sp, color = DemoColors.Muted)
+                    Image(
+                        painter = painterResource(item.cover),
+                        contentDescription = item.title,
+                        modifier = Modifier.size(72.dp).clip(RoundedCornerShape(10.dp)),
+                        contentScale = ContentScale.Crop,
+                    )
+                    Spacer(Modifier.size(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(item.title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary, fontSize = 15.sp)
+                        Spacer(Modifier.height(4.dp))
+                        Text(item.tags, fontSize = 12.sp, color = DemoColors.Primary)
+                        Spacer(Modifier.height(4.dp))
+                        Text(item.desc, fontSize = 12.sp, color = DemoColors.Muted)
+                    }
                 }
             }
         }
@@ -456,13 +621,16 @@ private fun DubbingVideoDetailPage(onBack: () -> Unit, onWorks: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg).verticalScroll(rememberScrollState())) {
         MineTopBar(title = "配音详情", onBack = onBack)
-        Box(
-            Modifier.fillMaxWidth().height(200.dp).padding(16.dp)
-                .clip(RoundedCornerShape(12.dp)).background(DemoColors.Toolbar),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("PlayableVideoHeader（mock）", color = DemoColors.TextSecondary)
-        }
+        Image(
+            painter = painterResource(item.cover),
+            contentDescription = item.title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .padding(16.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Crop,
+        )
         Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(item.title, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DemoColors.TextPrimary)
             Text(item.tags, color = DemoColors.Muted, fontSize = 13.sp)
@@ -501,18 +669,29 @@ private fun DubbingWorkListPage(onBack: () -> Unit, onOpen: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(title = "配音作品", onBack = onBack)
-        LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(VideoMock.works, key = { it.id }) { item ->
-                Column(
+                Row(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DemoColors.Background)
+                        .shadow(4.dp, RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
                         .clickable(onClick = onOpen)
-                        .padding(14.dp),
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(item.title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-                    Text(item.tags + " · " + item.desc, fontSize = 12.sp, color = DemoColors.Muted)
+                    Image(
+                        painter = painterResource(item.cover),
+                        contentDescription = item.title,
+                        modifier = Modifier.size(64.dp).clip(RoundedCornerShape(10.dp)),
+                        contentScale = ContentScale.Crop,
+                    )
+                    Spacer(Modifier.size(12.dp))
+                    Column {
+                        Text(item.title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+                        Text(item.tags + " · " + item.desc, fontSize = 12.sp, color = DemoColors.Muted)
+                    }
                 }
             }
         }
@@ -525,13 +704,16 @@ private fun DubbingWorkDetailPage(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(title = "作品详情", onBack = onBack)
-        Box(
-            Modifier.fillMaxWidth().height(180.dp).padding(16.dp)
-                .clip(RoundedCornerShape(12.dp)).background(DemoColors.Toolbar),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("作品播放头（mock）", color = DemoColors.TextSecondary)
-        }
+        Image(
+            painter = painterResource(VideoMock.works.first().cover),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(16.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Crop,
+        )
         Row(Modifier.padding(horizontal = 16.dp)) {
             TextButton(onClick = { tab = 0 }) {
                 Text("介绍", color = if (tab == 0) DemoColors.Primary else DemoColors.Muted)
