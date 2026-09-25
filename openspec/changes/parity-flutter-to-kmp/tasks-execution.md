@@ -206,30 +206,30 @@
 - [ ] R.homeHotRankDetail.ui.i / R.homeHotRankDetail.ui.h（或 registry `missing`）
 
 ## `/home/used_car` — `homeUsedCarList`
-- [ ] R.homeUsedCarList.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeUsedCarList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeUsedCarList.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeUsedCarList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeUsedCarList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeUsedCarList.ev.a 证据 `notes/evidence/.../home_used_car.{flutter,kmp}.png`
+- [x] R.homeUsedCarList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeUsedCarList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeUsedCarList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeUsedCarList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeUsedCarList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeUsedCarList.ev.a 证据 `notes/evidence/.../home_used_car.{flutter,kmp}.png`
 - [ ] R.homeUsedCarList.ui.i / R.homeUsedCarList.ui.h（或 registry `missing`）
 
 ## `/home/used_car/detail` — `homeUsedCarDetail`
-- [ ] R.homeUsedCarDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeUsedCarDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeUsedCarDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeUsedCarDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeUsedCarDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeUsedCarDetail.ev.a 证据 `notes/evidence/.../home_used_car_detail.{flutter,kmp}.png`
+- [x] R.homeUsedCarDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeUsedCarDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeUsedCarDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeUsedCarDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeUsedCarDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeUsedCarDetail.ev.a 证据 `notes/evidence/.../home_used_car_detail.{flutter,kmp}.png`
 - [ ] R.homeUsedCarDetail.ui.i / R.homeUsedCarDetail.ui.h（或 registry `missing`）
 
 ## `/home/used_car/create` — `homeUsedCarCreate`
-- [ ] R.homeUsedCarCreate.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeUsedCarCreate.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeUsedCarCreate.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeUsedCarCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeUsedCarCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeUsedCarCreate.ev.a 证据 `notes/evidence/.../home_used_car_create.{flutter,kmp}.png`
+- [x] R.homeUsedCarCreate.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeUsedCarCreate.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeUsedCarCreate.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeUsedCarCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeUsedCarCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeUsedCarCreate.ev.a 证据 `notes/evidence/.../home_used_car_create.{flutter,kmp}.png`
 - [ ] R.homeUsedCarCreate.ui.i / R.homeUsedCarCreate.ui.h（或 registry `missing`）
 
 ## `/home/ledger` — `homeLedgerList`

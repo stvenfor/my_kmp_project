@@ -123,17 +123,11 @@ internal fun HomeRouteHost(
             onItem = { onNavigate(HomeRoutes.UsedCarDetail) },
             onCreate = { onNavigate(HomeRoutes.UsedCarCreate) },
         )
-        HomeRoutes.UsedCarDetail -> CrudDetailScreen(
-            "二手车详情",
-            HomeSecondaryMock.usedCarOrders.first().let {
-                "${it.vehicleModel}\n${it.plateNo} · ${it.modelYear}款 · ${it.mileageKm}km\n${it.amountLabel} ¥${it.amount}"
-            },
-            onBack,
+        HomeRoutes.UsedCarDetail -> UsedCarDetailScreen(
+            order = HomeSecondaryMock.usedCarOrders.first(),
+            onBack = onBack,
         )
-        HomeRoutes.UsedCarCreate -> CrudCreateScreen("发布二手车", onBack) {
-            showPlatformToast("已提交（mock）")
-            onBack()
-        }
+        HomeRoutes.UsedCarCreate -> UsedCarCreateScreen(onBack = onBack)
         HomeRoutes.Ledger -> CrudListScreen(
             title = "收支",
             items = HomeSecondaryMock.ledger,
@@ -1085,6 +1079,196 @@ private fun NewCarFollowListScreen(
             colors = ButtonDefaults.buttonColors(containerColor = accent),
         ) {
             Text("新建跟进", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable
+private fun UsedCarCreateScreen(onBack: () -> Unit) {
+    // Flutter UsedCarCreatePage — 新建业务单
+    val accent = Color(0xFF0B6E4F)
+    val bg = Color(0xFFF3F5F8)
+    val kinds = listOf("置换" to "trade_in", "专卖" to "consign", "收车" to "purchase")
+    var kind by remember { mutableStateOf("置换") }
+    var customer by remember { mutableStateOf("张先生 138****2101") }
+    var model by remember { mutableStateOf("") }
+    var plate by remember { mutableStateOf("") }
+    var vin by remember { mutableStateOf("") }
+    var mileage by remember { mutableStateOf("") }
+    var year by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(bg)) {
+        MineTopBar(title = "新建业务单", onBack = onBack, containerColor = Color.White)
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text("业务类型", fontWeight = FontWeight.SemiBold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                kinds.forEach { (label, _) ->
+                    val selected = kind == label
+                    Text(
+                        label,
+                        color = if (selected) Color.White else Color(0xFF1C2430),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(if (selected) accent else Color.White)
+                            .border(0.5.dp, if (selected) accent else DemoColors.Divider, RoundedCornerShape(16.dp))
+                            .clickable { kind = label }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                    )
+                }
+            }
+            Text("客户", fontWeight = FontWeight.SemiBold)
+            Text(
+                customer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White)
+                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .clickable {
+                        customer = if (customer.startsWith("张")) "李女士 139****8820" else "张先生 138****2101"
+                    }
+                    .padding(14.dp),
+            )
+            UsedCarField("车型名", model) { model = it }
+            UsedCarField("车牌", plate) { plate = it }
+            UsedCarField("VIN", vin) { vin = it }
+            UsedCarField("里程(km)", mileage) { mileage = it }
+            UsedCarField("年款", year) { year = it }
+            UsedCarField("金额(元)", amount) { amount = it }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "提交",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(accent)
+                    .clickable {
+                        showPlatformToast("已提交（$kind）")
+                        onBack()
+                    }
+                    .padding(vertical = 14.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun UsedCarField(label: String, value: String, onChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onChange,
+        label = { Text(label) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+    )
+}
+
+@Composable
+private fun UsedCarDetailScreen(order: UsedCarOrderRow, onBack: () -> Unit) {
+    // Flutter UsedCarDetailPage
+    val bg = Color(0xFFF3F5F8)
+    val ink = Color(0xFF1C2430)
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(bg)) {
+        MineTopBar(title = "业务单详情", onBack = onBack, containerColor = Color.White)
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White)
+                    .padding(18.dp),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        order.kindLabel,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF0B6E4F))
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                    Text(
+                        order.statusLabel,
+                        color = Color(0xFF0B6E4F),
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF0B6E4F).copy(alpha = 0.12f))
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(order.vehicleModel, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = ink)
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "${order.amountLabel} ¥${order.amount}",
+                    color = Color(0xFF0B6E4F),
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                )
+            }
+            UsedCarSection(
+                "客户",
+                listOf("姓名" to order.customerName, "手机" to "138****0000"),
+            )
+            UsedCarSection(
+                "车辆",
+                listOf(
+                    "车型" to order.vehicleModel,
+                    "车牌" to order.plateNo,
+                    "VIN" to "L6T********DEMO",
+                    "里程" to "${order.mileageKm} km",
+                    "年款" to "${order.modelYear}",
+                ),
+            )
+            UsedCarSection(
+                "审核",
+                listOf(
+                    "状态" to order.statusLabel,
+                    "提交时间" to order.submittedDate,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun UsedCarSection(title: String, rows: List<Pair<String, String>>) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .padding(16.dp),
+    ) {
+        Text(title, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+        Spacer(Modifier.height(10.dp))
+        rows.forEach { (k, v) ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(k, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                Text(v, color = DemoColors.TextPrimary, fontSize = 13.sp)
+            }
         }
     }
 }
