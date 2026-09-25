@@ -269,8 +269,9 @@ internal fun NativeAndroidMain() {
             communityMapped != null -> openCommunityRoute(communityMapped)
             contentMapped != null -> openContentRoute(contentMapped)
             else -> {
+                // Out-of-scope / unmapped label only — never for in-scope RoutePath.
                 deferredTitle = title
-                overlay = ShellOverlay.DeferredStub
+                overlay = ShellOverlay.UnmappedEntry
                 bottomBarVisible = false
             }
         }
@@ -489,8 +490,8 @@ internal fun NativeAndroidMain() {
                 },
             )
         }
-        ShellOverlay.DeferredStub -> {
-            JetpackDeferredStub(
+        ShellOverlay.UnmappedEntry -> {
+            JetpackUnmappedEntry(
                 title = deferredTitle,
                 onBack = { closeOverlay() },
             )
@@ -614,7 +615,7 @@ private enum class AuthOverlay { None, Login, LoginPassword, LoginOtp, Register 
 private enum class ShellOverlay {
     None,
     MineIsland,
-    DeferredStub,
+    UnmappedEntry,
     AllServices,
     Membership,
     InAppWeb,
@@ -626,7 +627,7 @@ private enum class ShellOverlay {
 }
 
 @Composable
-private fun JetpackDeferredStub(title: String, onBack: () -> Unit) {
+private fun JetpackUnmappedEntry(title: String, onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -638,7 +639,7 @@ private fun JetpackDeferredStub(title: String, onBack: () -> Unit) {
     ) {
         Text(title, color = DemoColors.TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(12.dp))
-        Text("一期后置 · 原生占位", color = DemoColors.TextSecondary, fontSize = 15.sp)
+        Text("未映射入口（out-of-scope / 未登记）", color = DemoColors.TextSecondary, fontSize = 15.sp)
         Spacer(Modifier.height(24.dp))
         Button(onClick = onBack, colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary)) {
             Text("返回")

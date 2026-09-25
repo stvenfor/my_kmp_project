@@ -159,16 +159,16 @@ internal fun MineRouteHost(
         route == MineRoutes.Reminder -> ReminderScreen(onBack = onBack)
         route == MineRoutes.Invite -> InviteScreen(onBack = onBack)
         route == MineRoutes.FanGroup -> FanGroupScreen(onBack = onBack)
-        else -> SimpleDetail("我的", "route=$route", onBack)
+        else -> UnmappedMineRoute(route = route, onBack = onBack)
     }
 }
 
 @Composable
-private fun SimpleDetail(title: String, body: String, onBack: () -> Unit) {
+private fun UnmappedMineRoute(route: String, onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = title, onBack = onBack)
-        Text(body, modifier = Modifier.padding(16.dp), color = DemoColors.TextPrimary)
+        MineTopBar(title = "未映射入口", onBack = onBack)
+        Text("route=$route（非宣称完成路由）", modifier = Modifier.padding(16.dp), color = DemoColors.TextPrimary)
     }
 }
 

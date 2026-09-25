@@ -31,3 +31,4 @@ Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all
 | image_picker | missing | missing | missing | no adapter | image_picker plugin | — | with publish/mine |
 | DoKit / bfui / BLE / invoice demos | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal | features/bfui, bluetooth, settings debug | — | optional later |
 | face verify | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal unless product adds | wys_face_verify | — | optional later |
+| in-scope RoutePath UI (78) | ready | missing | missing | 本轮仅 Android 像素并排验收；iOS/OHOS 端到端未跑 | my_ai_project RoutePath | AppRoutePath + *RouteHost | schedule iOS Simulator + Harmony publish/device accept |

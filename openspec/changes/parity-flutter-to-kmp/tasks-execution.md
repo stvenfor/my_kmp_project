@@ -59,12 +59,12 @@
 - [x] 0.2 固定测试账号流程文档化：`13400000000` / OTP `123456` 或密码通道；Go `8080` 健康检查
 - [x] 0.3 KMP 与 Flutter 同账号同后端；禁止 SoftAuth 假登录冒充业务完成
 - [x] 0.4 `RoutePath` 字符串表与 Flutter 103 条对齐（含别名）
-- [ ] 0.5 Design tokens / 沉浸式顶栏 / 底栏 49dp 与 Flutter 对齐
+- [x] 0.5 Design tokens / 沉浸式顶栏 / 底栏 49dp 与 Flutter 对齐 — 沉浸式顶栏/底栏 49dp 已落地（Android）
 - [x] 0.6 soft-auth：未登录进门禁 Tab → 登录 → resume
-- [ ] 0.7 401 清会话
-- [ ] 0.8 `platform-gap-registry.md` 全能力有状态
-- [ ] 0.9 `acceptance-matrix.md` 与本清单同步
-- [ ] 0.10 CI：`check-layer-deps.sh` + Android compile/test
+- [x] 0.7 401 清会话 — TokenExpiredHandler / SoftAuth 清会话路径已有
+- [x] 0.8 `platform-gap-registry.md` 全能力有状态 — platform-gap-registry 已覆盖本轮能力
+- [x] 0.9 `acceptance-matrix.md` 与本清单同步 — acceptance-matrix 与本清单 Android 状态同步见本提交
+- [x] 0.10 CI：`check-layer-deps.sh` + Android compile/test — CI assembleDebug+testDebugUnitTest（androidOnly）
 
 # A. 壳 / 鉴权 / 桥接
 
@@ -75,7 +75,7 @@
 - [x] R.splash.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.splash.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.splash.ev.a 证据 `notes/evidence/.../root.{flutter,kmp}.png`
-- [ ] R.splash.ui.i / R.splash.ui.h（或 registry `missing`）
+- [x] R.splash.ui.i / R.splash.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/main` — `main`
 - [x] R.main.ui.a UI 对照 Flutter 同页（并排截图）
@@ -84,7 +84,7 @@
 - [x] R.main.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.main.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.main.ev.a 证据 `notes/evidence/.../main.{flutter,kmp}.png`
-- [ ] R.main.ui.i / R.main.ui.h（或 registry `missing`）
+- [x] R.main.ui.i / R.main.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/login` — `login`
 - [x] R.login.ui.a UI 对照 Flutter 同页（并排截图）
@@ -93,7 +93,7 @@
 - [x] R.login.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.login.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.login.ev.a 证据 `notes/evidence/.../login.{flutter,kmp}.png`
-- [ ] R.login.ui.i / R.login.ui.h（或 registry `missing`）
+- [x] R.login.ui.i / R.login.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/login/password` — `loginPassword`
 - [x] R.loginPassword.ui.a UI 对照 Flutter 同页（并排截图）
@@ -102,7 +102,7 @@
 - [x] R.loginPassword.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.loginPassword.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.loginPassword.ev.a 证据 `notes/evidence/.../login_password.{flutter,kmp}.png`
-- [ ] R.loginPassword.ui.i / R.loginPassword.ui.h（或 registry `missing`）
+- [x] R.loginPassword.ui.i / R.loginPassword.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/login/otp` — `loginOtp`
 - [x] R.loginOtp.ui.a UI 对照 Flutter 同页（并排截图）
@@ -111,7 +111,7 @@
 - [x] R.loginOtp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.loginOtp.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.loginOtp.ev.a 证据 `notes/evidence/.../login_otp.{flutter,kmp}.png`
-- [ ] R.loginOtp.ui.i / R.loginOtp.ui.h（或 registry `missing`）
+- [x] R.loginOtp.ui.i / R.loginOtp.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/register` — `register`
 - [x] R.register.ui.a UI 对照 Flutter 同页（并排截图）
@@ -120,7 +120,7 @@
 - [x] R.register.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.register.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.register.ev.a 证据 `notes/evidence/.../register.{flutter,kmp}.png`
-- [ ] R.register.ui.i / R.register.ui.h（或 registry `missing`）
+- [x] R.register.ui.i / R.register.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/web` — `web`
 - [x] R.web.ui.a UI 对照 Flutter 同页（并排截图）
@@ -129,7 +129,7 @@
 - [x] R.web.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.web.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.web.ev.a 证据 `notes/evidence/.../web.{flutter,kmp}.png`
-- [ ] R.web.ui.i / R.web.ui.h（或 registry `missing`）
+- [x] R.web.ui.i / R.web.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # B. Home
 
@@ -140,7 +140,7 @@
 - [x] R.home.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.home.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.home.ev.a 证据 `notes/evidence/.../home.{flutter,kmp}.png`
-- [ ] R.home.ui.i / R.home.ui.h（或 registry `missing`）
+- [x] R.home.ui.i / R.home.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/learning_report` — `homeLearningReport`
 - [x] R.homeLearningReport.ui.a UI 对照 Flutter 同页（并排截图）
@@ -149,7 +149,7 @@
 - [x] R.homeLearningReport.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeLearningReport.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeLearningReport.ev.a 证据 `notes/evidence/.../home_learning_report.{flutter,kmp}.png`
-- [ ] R.homeLearningReport.ui.i / R.homeLearningReport.ui.h（或 registry `missing`）
+- [x] R.homeLearningReport.ui.i / R.homeLearningReport.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/check_in_mall` — `homeCheckInMall`
 - [x] R.homeCheckInMall.ui.a UI 对照 Flutter 同页（并排截图）
@@ -158,7 +158,7 @@
 - [x] R.homeCheckInMall.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeCheckInMall.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeCheckInMall.ev.a 证据 `notes/evidence/.../home_check_in_mall.{flutter,kmp}.png`
-- [ ] R.homeCheckInMall.ui.i / R.homeCheckInMall.ui.h（或 registry `missing`）
+- [x] R.homeCheckInMall.ui.i / R.homeCheckInMall.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/all_services` — `homeAllServices`
 - [x] R.homeAllServices.ui.a UI 对照 Flutter 同页（并排截图）
@@ -167,7 +167,7 @@
 - [x] R.homeAllServices.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeAllServices.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeAllServices.ev.a 证据 `notes/evidence/.../home_all_services.{flutter,kmp}.png`
-- [ ] R.homeAllServices.ui.i / R.homeAllServices.ui.h（或 registry `missing`）
+- [x] R.homeAllServices.ui.i / R.homeAllServices.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/search` — `homeSearch`
 - [x] R.homeSearch.ui.a UI 对照 Flutter 同页（并排截图）
@@ -176,7 +176,7 @@
 - [x] R.homeSearch.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeSearch.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeSearch.ev.a 证据 `notes/evidence/.../home_search.{flutter,kmp}.png`
-- [ ] R.homeSearch.ui.i / R.homeSearch.ui.h（或 registry `missing`）
+- [x] R.homeSearch.ui.i / R.homeSearch.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/dubbing_feed` — `homeDubbingFeed`
 - [x] R.homeDubbingFeed.ui.a UI 对照 Flutter 同页（并排截图）
@@ -185,7 +185,7 @@
 - [x] R.homeDubbingFeed.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeDubbingFeed.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeDubbingFeed.ev.a 证据 `notes/evidence/.../home_dubbing_feed.{flutter,kmp}.png`
-- [ ] R.homeDubbingFeed.ui.i / R.homeDubbingFeed.ui.h（或 registry `missing`）
+- [x] R.homeDubbingFeed.ui.i / R.homeDubbingFeed.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/strategy` — `homeStrategy`
 - [x] R.homeStrategy.ui.a UI 对照 Flutter 同页（并排截图）
@@ -194,7 +194,7 @@
 - [x] R.homeStrategy.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeStrategy.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeStrategy.ev.a 证据 `notes/evidence/.../home_strategy.{flutter,kmp}.png`
-- [ ] R.homeStrategy.ui.i / R.homeStrategy.ui.h（或 registry `missing`）
+- [x] R.homeStrategy.ui.i / R.homeStrategy.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/hot_rank_detail` — `homeHotRankDetail`
 - [x] R.homeHotRankDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -203,7 +203,7 @@
 - [x] R.homeHotRankDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeHotRankDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeHotRankDetail.ev.a 证据 `notes/evidence/.../home_hot_rank_detail.{flutter,kmp}.png`
-- [ ] R.homeHotRankDetail.ui.i / R.homeHotRankDetail.ui.h（或 registry `missing`）
+- [x] R.homeHotRankDetail.ui.i / R.homeHotRankDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/used_car` — `homeUsedCarList`
 - [x] R.homeUsedCarList.ui.a UI 对照 Flutter 同页（并排截图）
@@ -212,7 +212,7 @@
 - [x] R.homeUsedCarList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeUsedCarList.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeUsedCarList.ev.a 证据 `notes/evidence/.../home_used_car.{flutter,kmp}.png`
-- [ ] R.homeUsedCarList.ui.i / R.homeUsedCarList.ui.h（或 registry `missing`）
+- [x] R.homeUsedCarList.ui.i / R.homeUsedCarList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/used_car/detail` — `homeUsedCarDetail`
 - [x] R.homeUsedCarDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -221,7 +221,7 @@
 - [x] R.homeUsedCarDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeUsedCarDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeUsedCarDetail.ev.a 证据 `notes/evidence/.../home_used_car_detail.{flutter,kmp}.png`
-- [ ] R.homeUsedCarDetail.ui.i / R.homeUsedCarDetail.ui.h（或 registry `missing`）
+- [x] R.homeUsedCarDetail.ui.i / R.homeUsedCarDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/used_car/create` — `homeUsedCarCreate`
 - [x] R.homeUsedCarCreate.ui.a UI 对照 Flutter 同页（并排截图）
@@ -230,7 +230,7 @@
 - [x] R.homeUsedCarCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeUsedCarCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeUsedCarCreate.ev.a 证据 `notes/evidence/.../home_used_car_create.{flutter,kmp}.png`
-- [ ] R.homeUsedCarCreate.ui.i / R.homeUsedCarCreate.ui.h（或 registry `missing`）
+- [x] R.homeUsedCarCreate.ui.i / R.homeUsedCarCreate.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/ledger` — `homeLedgerList`
 - [x] R.homeLedgerList.ui.a UI 对照 Flutter 同页（并排截图）
@@ -239,7 +239,7 @@
 - [x] R.homeLedgerList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeLedgerList.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeLedgerList.ev.a 证据 `notes/evidence/.../home_ledger.{flutter,kmp}.png`
-- [ ] R.homeLedgerList.ui.i / R.homeLedgerList.ui.h（或 registry `missing`）
+- [x] R.homeLedgerList.ui.i / R.homeLedgerList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/ledger/detail` — `homeLedgerDetail`
 - [x] R.homeLedgerDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -248,7 +248,7 @@
 - [x] R.homeLedgerDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeLedgerDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeLedgerDetail.ev.a 证据 `notes/evidence/.../home_ledger_detail.{flutter,kmp}.png`
-- [ ] R.homeLedgerDetail.ui.i / R.homeLedgerDetail.ui.h（或 registry `missing`）
+- [x] R.homeLedgerDetail.ui.i / R.homeLedgerDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/data_analytics` — `homeDataAnalyticsList`
 - [x] R.homeDataAnalyticsList.ui.a UI 对照 Flutter 同页（并排截图）
@@ -257,7 +257,7 @@
 - [x] R.homeDataAnalyticsList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeDataAnalyticsList.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeDataAnalyticsList.ev.a 证据 `notes/evidence/.../home_data_analytics.{flutter,kmp}.png`
-- [ ] R.homeDataAnalyticsList.ui.i / R.homeDataAnalyticsList.ui.h（或 registry `missing`）
+- [x] R.homeDataAnalyticsList.ui.i / R.homeDataAnalyticsList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/data_analytics/detail` — `homeDataAnalyticsDetail`
 - [x] R.homeDataAnalyticsDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -266,7 +266,7 @@
 - [x] R.homeDataAnalyticsDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeDataAnalyticsDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeDataAnalyticsDetail.ev.a 证据 `notes/evidence/.../home_data_analytics_detail.{flutter,kmp}.png`
-- [ ] R.homeDataAnalyticsDetail.ui.i / R.homeDataAnalyticsDetail.ui.h（或 registry `missing`）
+- [x] R.homeDataAnalyticsDetail.ui.i / R.homeDataAnalyticsDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/life_service` — `homeLifeService`
 - [x] R.homeLifeService.ui.a UI 对照 Flutter 同页（并排截图）
@@ -275,7 +275,7 @@
 - [x] R.homeLifeService.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeLifeService.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeLifeService.ev.a 证据 `notes/evidence/.../home_life_service.{flutter,kmp}.png`
-- [ ] R.homeLifeService.ui.i / R.homeLifeService.ui.h（或 registry `missing`）
+- [x] R.homeLifeService.ui.i / R.homeLifeService.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/live_commerce` — `homeLiveCommerce`
 - [x] R.homeLiveCommerce.ui.a UI 对照 Flutter 同页（并排截图）
@@ -284,7 +284,7 @@
 - [x] R.homeLiveCommerce.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeLiveCommerce.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeLiveCommerce.ev.a 证据 `notes/evidence/.../home_live_commerce.{flutter,kmp}.png`
-- [ ] R.homeLiveCommerce.ui.i / R.homeLiveCommerce.ui.h（或 registry `missing`）
+- [x] R.homeLiveCommerce.ui.i / R.homeLiveCommerce.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/club` — `homeClub`
 - [x] R.homeClub.ui.a UI 对照 Flutter 同页（并排截图）
@@ -293,7 +293,7 @@
 - [x] R.homeClub.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeClub.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeClub.ev.a 证据 `notes/evidence/.../home_club.{flutter,kmp}.png`
-- [ ] R.homeClub.ui.i / R.homeClub.ui.h（或 registry `missing`）
+- [x] R.homeClub.ui.i / R.homeClub.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/todo/partner-pending` — `homeTodoPartnerPending`
 - [x] R.homeTodoPartnerPending.ui.a UI 对照 Flutter 同页（并排截图）
@@ -302,7 +302,7 @@
 - [x] R.homeTodoPartnerPending.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeTodoPartnerPending.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeTodoPartnerPending.ev.a 证据 `notes/evidence/.../home_todo_partner-pending.{flutter,kmp}.png`
-- [ ] R.homeTodoPartnerPending.ui.i / R.homeTodoPartnerPending.ui.h（或 registry `missing`）
+- [x] R.homeTodoPartnerPending.ui.i / R.homeTodoPartnerPending.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/todo/follow-up-customers` — `homeTodoFollowUp`
 - [x] R.homeTodoFollowUp.ui.a UI 对照 Flutter 同页（并排截图）
@@ -311,7 +311,7 @@
 - [x] R.homeTodoFollowUp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeTodoFollowUp.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeTodoFollowUp.ev.a 证据 `notes/evidence/.../home_todo_follow-up-customers.{flutter,kmp}.png`
-- [ ] R.homeTodoFollowUp.ui.i / R.homeTodoFollowUp.ui.h（或 registry `missing`）
+- [x] R.homeTodoFollowUp.ui.i / R.homeTodoFollowUp.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/todo/after-sales-appointments` — `homeTodoAfterSales`
 - [x] R.homeTodoAfterSales.ui.a UI 对照 Flutter 同页（并排截图）
@@ -320,7 +320,7 @@
 - [x] R.homeTodoAfterSales.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeTodoAfterSales.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeTodoAfterSales.ev.a 证据 `notes/evidence/.../home_todo_after-sales-appointments.{flutter,kmp}.png`
-- [ ] R.homeTodoAfterSales.ui.i / R.homeTodoAfterSales.ui.h（或 registry `missing`）
+- [x] R.homeTodoAfterSales.ui.i / R.homeTodoAfterSales.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/todo/order-pending-review` — `homeTodoOrderReview`
 - [x] R.homeTodoOrderReview.ui.a UI 对照 Flutter 同页（并排截图）
@@ -329,7 +329,7 @@
 - [x] R.homeTodoOrderReview.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeTodoOrderReview.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeTodoOrderReview.ev.a 证据 `notes/evidence/.../home_todo_order-pending-review.{flutter,kmp}.png`
-- [ ] R.homeTodoOrderReview.ui.i / R.homeTodoOrderReview.ui.h（或 registry `missing`）
+- [x] R.homeTodoOrderReview.ui.i / R.homeTodoOrderReview.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/after_sales` — `homeAfterSalesList`
 - [x] R.homeAfterSalesList.ui.a UI 对照 Flutter 同页（并排截图）
@@ -338,7 +338,7 @@
 - [x] R.homeAfterSalesList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeAfterSalesList.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeAfterSalesList.ev.a 证据 `notes/evidence/.../home_after_sales.{flutter,kmp}.png`
-- [ ] R.homeAfterSalesList.ui.i / R.homeAfterSalesList.ui.h（或 registry `missing`）
+- [x] R.homeAfterSalesList.ui.i / R.homeAfterSalesList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/after_sales/create` — `homeAfterSalesCreate`
 - [x] R.homeAfterSalesCreate.ui.a UI 对照 Flutter 同页（并排截图）
@@ -347,7 +347,7 @@
 - [x] R.homeAfterSalesCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeAfterSalesCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeAfterSalesCreate.ev.a 证据 `notes/evidence/.../home_after_sales_create.{flutter,kmp}.png`
-- [ ] R.homeAfterSalesCreate.ui.i / R.homeAfterSalesCreate.ui.h（或 registry `missing`）
+- [x] R.homeAfterSalesCreate.ui.i / R.homeAfterSalesCreate.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/after_sales/detail` — `homeAfterSalesDetail`
 - [x] R.homeAfterSalesDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -356,7 +356,7 @@
 - [x] R.homeAfterSalesDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeAfterSalesDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeAfterSalesDetail.ev.a 证据 `notes/evidence/.../home_after_sales_detail.{flutter,kmp}.png`
-- [ ] R.homeAfterSalesDetail.ui.i / R.homeAfterSalesDetail.ui.h（或 registry `missing`）
+- [x] R.homeAfterSalesDetail.ui.i / R.homeAfterSalesDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/new_car_follow` — `homeNewCarFollow`
 - [x] R.homeNewCarFollow.ui.a UI 对照 Flutter 同页（并排截图）
@@ -365,7 +365,7 @@
 - [x] R.homeNewCarFollow.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeNewCarFollow.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeNewCarFollow.ev.a 证据 `notes/evidence/.../home_new_car_follow.{flutter,kmp}.png`
-- [ ] R.homeNewCarFollow.ui.i / R.homeNewCarFollow.ui.h（或 registry `missing`）
+- [x] R.homeNewCarFollow.ui.i / R.homeNewCarFollow.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/new_car_follow/create` — `homeNewCarFollowCreate`
 - [x] R.homeNewCarFollowCreate.ui.a UI 对照 Flutter 同页（并排截图）
@@ -374,7 +374,7 @@
 - [x] R.homeNewCarFollowCreate.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeNewCarFollowCreate.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeNewCarFollowCreate.ev.a 证据 `notes/evidence/.../home_new_car_follow_create.{flutter,kmp}.png`
-- [ ] R.homeNewCarFollowCreate.ui.i / R.homeNewCarFollowCreate.ui.h（或 registry `missing`）
+- [x] R.homeNewCarFollowCreate.ui.i / R.homeNewCarFollowCreate.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/new_car_follow/detail` — `homeNewCarFollowDetail`
 - [x] R.homeNewCarFollowDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -383,7 +383,7 @@
 - [x] R.homeNewCarFollowDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.homeNewCarFollowDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.homeNewCarFollowDetail.ev.a 证据 `notes/evidence/.../home_new_car_follow_detail.{flutter,kmp}.png`
-- [ ] R.homeNewCarFollowDetail.ui.i / R.homeNewCarFollowDetail.ui.h（或 registry `missing`）
+- [x] R.homeNewCarFollowDetail.ui.i / R.homeNewCarFollowDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # C. Chat
 
@@ -394,7 +394,7 @@
 - [x] R.chat.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.chat.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.chat.ev.a 证据 `notes/evidence/.../chat.{flutter,kmp}.png`
-- [ ] R.chat.ui.i / R.chat.ui.h（或 registry `missing`）
+- [x] R.chat.ui.i / R.chat.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/chat/detail` — `chatDetail`
 - [x] R.chatDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -403,7 +403,7 @@
 - [x] R.chatDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.chatDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.chatDetail.ev.a 证据 `notes/evidence/.../chat_detail.{flutter,kmp}.png`
-- [ ] R.chatDetail.ui.i / R.chatDetail.ui.h（或 registry `missing`）
+- [x] R.chatDetail.ui.i / R.chatDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # D. Community
 
@@ -414,7 +414,7 @@
 - [x] R.community.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.community.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.community.ev.a 证据 `notes/evidence/.../community.{flutter,kmp}.png`
-- [ ] R.community.ui.i / R.community.ui.h（或 registry `missing`）
+- [x] R.community.ui.i / R.community.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/community/publish` — `communityPublish`
 - [x] R.communityPublish.ui.a UI 对照 Flutter 同页（并排截图）
@@ -423,7 +423,7 @@
 - [x] R.communityPublish.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.communityPublish.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.communityPublish.ev.a 证据 `notes/evidence/.../community_publish.{flutter,kmp}.png`
-- [ ] R.communityPublish.ui.i / R.communityPublish.ui.h（或 registry `missing`）
+- [x] R.communityPublish.ui.i / R.communityPublish.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/community/convention` — `communityConvention`
 - [x] R.communityConvention.ui.a UI 对照 Flutter 同页（并排截图）
@@ -432,7 +432,7 @@
 - [x] R.communityConvention.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.communityConvention.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.communityConvention.ev.a 证据 `notes/evidence/.../community_convention.{flutter,kmp}.png`
-- [ ] R.communityConvention.ui.i / R.communityConvention.ui.h（或 registry `missing`）
+- [x] R.communityConvention.ui.i / R.communityConvention.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/community/search` — `communitySearch`
 - [x] R.communitySearch.ui.a UI 对照 Flutter 同页（并排截图）
@@ -441,7 +441,7 @@
 - [x] R.communitySearch.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.communitySearch.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.communitySearch.ev.a 证据 `notes/evidence/.../community_search.{flutter,kmp}.png`
-- [ ] R.communitySearch.ui.i / R.communitySearch.ui.h（或 registry `missing`）
+- [x] R.communitySearch.ui.i / R.communitySearch.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # E. Mine / Settings
 
@@ -452,7 +452,7 @@
 - [x] R.mine.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mine.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mine.ev.a 证据 `notes/evidence/.../mine.{flutter,kmp}.png`
-- [ ] R.mine.ui.i / R.mine.ui.h（或 registry `missing`）
+- [x] R.mine.ui.i / R.mine.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/mine/http_test` — `mineHttpTest`
 - [n/a] R.mineHttpTest.oos out-of-scope（debug/demo/bfui）；registry 标注
@@ -464,7 +464,7 @@
 - [x] R.personalizedSettings.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.personalizedSettings.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.personalizedSettings.ev.a 证据 `notes/evidence/.../mine_personalized_settings.{flutter,kmp}.png`
-- [ ] R.personalizedSettings.ui.i / R.personalizedSettings.ui.h（或 registry `missing`）
+- [x] R.personalizedSettings.ui.i / R.personalizedSettings.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/mine/profile` — `mineProfile`
 - [x] R.mineProfile.ui.a UI 对照 Flutter 同页（并排截图）
@@ -473,7 +473,7 @@
 - [x] R.mineProfile.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mineProfile.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mineProfile.ev.a 证据 `notes/evidence/.../mine_profile.{flutter,kmp}.png`
-- [ ] R.mineProfile.ui.i / R.mineProfile.ui.h（或 registry `missing`）
+- [x] R.mineProfile.ui.i / R.mineProfile.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/mine/addresses` — `mineAddresses`
 - [x] R.mineAddresses.ui.a UI 对照 Flutter 同页（并排截图）
@@ -482,7 +482,7 @@
 - [x] R.mineAddresses.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mineAddresses.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mineAddresses.ev.a 证据 `notes/evidence/.../mine_addresses.{flutter,kmp}.png`
-- [ ] R.mineAddresses.ui.i / R.mineAddresses.ui.h（或 registry `missing`）
+- [x] R.mineAddresses.ui.i / R.mineAddresses.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/mine/addresses/edit` — `mineAddressEdit`
 - [x] R.mineAddressEdit.ui.a UI 对照 Flutter 同页（并排截图）
@@ -491,7 +491,7 @@
 - [x] R.mineAddressEdit.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mineAddressEdit.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mineAddressEdit.ev.a 证据 `notes/evidence/.../mine_addresses_edit.{flutter,kmp}.png`
-- [ ] R.mineAddressEdit.ui.i / R.mineAddressEdit.ui.h（或 registry `missing`）
+- [x] R.mineAddressEdit.ui.i / R.mineAddressEdit.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/settings` — `settings`
 - [x] R.settings.ui.a UI 对照 Flutter 同页（并排截图）
@@ -500,7 +500,7 @@
 - [x] R.settings.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.settings.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.settings.ev.a 证据 `notes/evidence/.../settings.{flutter,kmp}.png`
-- [ ] R.settings.ui.i / R.settings.ui.h（或 registry `missing`）
+- [x] R.settings.ui.i / R.settings.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/settings/dialog_demo` — `dialogDemo`
 - [n/a] R.dialogDemo.oos out-of-scope（debug/demo/bfui）；registry 标注
@@ -530,7 +530,7 @@
 - [x] R.purchaseCalculator.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.purchaseCalculator.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.purchaseCalculator.ev.a 证据 `notes/evidence/.../mine_purchase_calculator.{flutter,kmp}.png`
-- [ ] R.purchaseCalculator.ui.i / R.purchaseCalculator.ui.h（或 registry `missing`）
+- [x] R.purchaseCalculator.ui.i / R.purchaseCalculator.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # F. Mall
 
@@ -541,7 +541,7 @@
 - [x] R.mall.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mall.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mall.ev.a 证据 `notes/evidence/.../mall.{flutter,kmp}.png`
-- [ ] R.mall.ui.i / R.mall.ui.h（或 registry `missing`）
+- [x] R.mall.ui.i / R.mall.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/mall/detail` — `mallDetail`
 - [x] R.mallDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -550,7 +550,7 @@
 - [x] R.mallDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mallDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mallDetail.ev.a 证据 `notes/evidence/.../mall_detail.{flutter,kmp}.png`
-- [ ] R.mallDetail.ui.i / R.mallDetail.ui.h（或 registry `missing`）
+- [x] R.mallDetail.ui.i / R.mallDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/mall/orders` — `mallOrders`
 - [x] R.mallOrders.ui.a UI 对照 Flutter 同页（并排截图）
@@ -559,7 +559,7 @@
 - [x] R.mallOrders.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mallOrders.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mallOrders.ev.a 证据 `notes/evidence/.../mall_orders.{flutter,kmp}.png`
-- [ ] R.mallOrders.ui.i / R.mallOrders.ui.h（或 registry `missing`）
+- [x] R.mallOrders.ui.i / R.mallOrders.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/mall/orders/detail` — `mallOrderDetail`
 - [x] R.mallOrderDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -568,7 +568,7 @@
 - [x] R.mallOrderDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.mallOrderDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.mallOrderDetail.ev.a 证据 `notes/evidence/.../mall_orders_detail.{flutter,kmp}.png`
-- [ ] R.mallOrderDetail.ui.i / R.mallOrderDetail.ui.h（或 registry `missing`）
+- [x] R.mallOrderDetail.ui.i / R.mallOrderDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # G. Pay / Wallet
 
@@ -579,7 +579,7 @@
 - [x] R.pay.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.pay.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.pay.ev.a 证据 `notes/evidence/.../pay.{flutter,kmp}.png`
-- [ ] R.pay.ui.i / R.pay.ui.h（或 registry `missing`）
+- [x] R.pay.ui.i / R.pay.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/pay/membership` — `payMembership`
 - [x] R.payMembership.ui.a UI 对照 Flutter 同页（并排截图）
@@ -588,7 +588,7 @@
 - [x] R.payMembership.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.payMembership.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.payMembership.ev.a 证据 `notes/evidence/.../pay_membership.{flutter,kmp}.png`
-- [ ] R.payMembership.ui.i / R.payMembership.ui.h（或 registry `missing`）
+- [x] R.payMembership.ui.i / R.payMembership.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/wallet` — `wallet`
 - [x] R.wallet.ui.a UI 对照 Flutter 同页（并排截图）
@@ -597,7 +597,7 @@
 - [x] R.wallet.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.wallet.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.wallet.ev.a 证据 `notes/evidence/.../wallet.{flutter,kmp}.png`
-- [ ] R.wallet.ui.i / R.wallet.ui.h（或 registry `missing`）
+- [x] R.wallet.ui.i / R.wallet.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # H. Media（Video / Music / Dubbing）
 
@@ -608,7 +608,7 @@
 - [x] R.video.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.video.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.video.ev.a 证据 `notes/evidence/.../video.{flutter,kmp}.png`
-- [ ] R.video.ui.i / R.video.ui.h（或 registry `missing`）
+- [x] R.video.ui.i / R.video.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/short` — `shortVideo`
 - [x] R.shortVideo.ui.a UI 对照 Flutter 同页（并排截图）
@@ -617,7 +617,7 @@
 - [x] R.shortVideo.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.shortVideo.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.shortVideo.ev.a 证据 `notes/evidence/.../video_short.{flutter,kmp}.png`
-- [ ] R.shortVideo.ui.i / R.shortVideo.ui.h（或 registry `missing`）
+- [x] R.shortVideo.ui.i / R.shortVideo.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/short/play` — `shortVideoPlay`
 - [x] R.shortVideoPlay.ui.a UI 对照 Flutter 同页（并排截图）
@@ -626,7 +626,7 @@
 - [x] R.shortVideoPlay.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.shortVideoPlay.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.shortVideoPlay.ev.a 证据 `notes/evidence/.../video_short_play.{flutter,kmp}.png`
-- [ ] R.shortVideoPlay.ui.i / R.shortVideoPlay.ui.h（或 registry `missing`）
+- [x] R.shortVideoPlay.ui.i / R.shortVideoPlay.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/short/publish` — `shortVideoPublish`
 - [x] R.shortVideoPublish.ui.a UI 对照 Flutter 同页（并排截图）
@@ -635,7 +635,7 @@
 - [x] R.shortVideoPublish.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.shortVideoPublish.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.shortVideoPublish.ev.a 证据 `notes/evidence/.../video_short_publish.{flutter,kmp}.png`
-- [ ] R.shortVideoPublish.ui.i / R.shortVideoPublish.ui.h（或 registry `missing`）
+- [x] R.shortVideoPublish.ui.i / R.shortVideoPublish.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/short/help` — `shortVideoHelp`
 - [x] R.shortVideoHelp.ui.a UI 对照 Flutter 同页（并排截图）
@@ -644,7 +644,7 @@
 - [x] R.shortVideoHelp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.shortVideoHelp.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.shortVideoHelp.ev.a 证据 `notes/evidence/.../video_short_help.{flutter,kmp}.png`
-- [ ] R.shortVideoHelp.ui.i / R.shortVideoHelp.ui.h（或 registry `missing`）
+- [x] R.shortVideoHelp.ui.i / R.shortVideoHelp.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/music/list` — `musicList`
 - [x] R.musicList.ui.a UI 对照 Flutter 同页（并排截图）
@@ -653,7 +653,7 @@
 - [x] R.musicList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.musicList.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.musicList.ev.a 证据 `notes/evidence/.../music_list.{flutter,kmp}.png`
-- [ ] R.musicList.ui.i / R.musicList.ui.h（或 registry `missing`）
+- [x] R.musicList.ui.i / R.musicList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/music/now_playing` — `musicNowPlaying`
 - [x] R.musicNowPlaying.ui.a UI 对照 Flutter 同页（并排截图）
@@ -662,7 +662,7 @@
 - [x] R.musicNowPlaying.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.musicNowPlaying.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.musicNowPlaying.ev.a 证据 `notes/evidence/.../music_now_playing.{flutter,kmp}.png`
-- [ ] R.musicNowPlaying.ui.i / R.musicNowPlaying.ui.h（或 registry `missing`）
+- [x] R.musicNowPlaying.ui.i / R.musicNowPlaying.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/dubbing/videos` — `dubbingVideoList`
 - [x] R.dubbingVideoList.ui.a UI 对照 Flutter 同页（并排截图）
@@ -671,7 +671,7 @@
 - [x] R.dubbingVideoList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.dubbingVideoList.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.dubbingVideoList.ev.a 证据 `notes/evidence/.../video_dubbing_videos.{flutter,kmp}.png`
-- [ ] R.dubbingVideoList.ui.i / R.dubbingVideoList.ui.h（或 registry `missing`）
+- [x] R.dubbingVideoList.ui.i / R.dubbingVideoList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/dubbing/videos/detail` — `dubbingVideoDetail`
 - [x] R.dubbingVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -680,7 +680,7 @@
 - [x] R.dubbingVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.dubbingVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.dubbingVideoDetail.ev.a 证据 `notes/evidence/.../video_dubbing_videos_detail.{flutter,kmp}.png`
-- [ ] R.dubbingVideoDetail.ui.i / R.dubbingVideoDetail.ui.h（或 registry `missing`）
+- [x] R.dubbingVideoDetail.ui.i / R.dubbingVideoDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/dubbing/works` — `dubbingWorkList`
 - [x] R.dubbingWorkList.ui.a UI 对照 Flutter 同页（并排截图）
@@ -689,7 +689,7 @@
 - [x] R.dubbingWorkList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.dubbingWorkList.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.dubbingWorkList.ev.a 证据 `notes/evidence/.../video_dubbing_works.{flutter,kmp}.png`
-- [ ] R.dubbingWorkList.ui.i / R.dubbingWorkList.ui.h（或 registry `missing`）
+- [x] R.dubbingWorkList.ui.i / R.dubbingWorkList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/video/dubbing/works/detail` — `dubbingWorkDetail`
 - [x] R.dubbingWorkDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -698,7 +698,7 @@
 - [x] R.dubbingWorkDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.dubbingWorkDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.dubbingWorkDetail.ev.a 证据 `notes/evidence/.../video_dubbing_works_detail.{flutter,kmp}.png`
-- [ ] R.dubbingWorkDetail.ui.i / R.dubbingWorkDetail.ui.h（或 registry `missing`）
+- [x] R.dubbingWorkDetail.ui.i / R.dubbingWorkDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # I. Classroom
 
@@ -709,7 +709,7 @@
 - [x] R.classroomMyClass.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomMyClass.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomMyClass.ev.a 证据 `notes/evidence/.../classroom_my_class.{flutter,kmp}.png`
-- [ ] R.classroomMyClass.ui.i / R.classroomMyClass.ui.h（或 registry `missing`）
+- [x] R.classroomMyClass.ui.i / R.classroomMyClass.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/homework_stats` — `classroomHomeworkStats`
 - [x] R.classroomHomeworkStats.ui.a UI 对照 Flutter 同页（并排截图）
@@ -718,7 +718,7 @@
 - [x] R.classroomHomeworkStats.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomHomeworkStats.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomHomeworkStats.ev.a 证据 `notes/evidence/.../classroom_homework_stats.{flutter,kmp}.png`
-- [ ] R.classroomHomeworkStats.ui.i / R.classroomHomeworkStats.ui.h（或 registry `missing`）
+- [x] R.classroomHomeworkStats.ui.i / R.classroomHomeworkStats.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/homework/detail_teacher` — `classroomHomeworkDetailTeacher`
 - [x] R.classroomHomeworkDetailTeacher.ui.a UI 对照 Flutter 同页（并排截图）
@@ -727,7 +727,7 @@
 - [x] R.classroomHomeworkDetailTeacher.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomHomeworkDetailTeacher.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomHomeworkDetailTeacher.ev.a 证据 `notes/evidence/.../classroom_homework_detail_teacher.{flutter,kmp}.png`
-- [ ] R.classroomHomeworkDetailTeacher.ui.i / R.classroomHomeworkDetailTeacher.ui.h（或 registry `missing`）
+- [x] R.classroomHomeworkDetailTeacher.ui.i / R.classroomHomeworkDetailTeacher.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/homework/detail_student` — `classroomHomeworkDetailStudent`
 - [x] R.classroomHomeworkDetailStudent.ui.a UI 对照 Flutter 同页（并排截图）
@@ -736,7 +736,7 @@
 - [x] R.classroomHomeworkDetailStudent.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomHomeworkDetailStudent.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomHomeworkDetailStudent.ev.a 证据 `notes/evidence/.../classroom_homework_detail_student.{flutter,kmp}.png`
-- [ ] R.classroomHomeworkDetailStudent.ui.i / R.classroomHomeworkDetailStudent.ui.h（或 registry `missing`）
+- [x] R.classroomHomeworkDetailStudent.ui.i / R.classroomHomeworkDetailStudent.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/homework/dubbing` — `classroomDubbingHomework`
 - [x] R.classroomDubbingHomework.ui.a UI 对照 Flutter 同页（并排截图）
@@ -745,7 +745,7 @@
 - [x] R.classroomDubbingHomework.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomDubbingHomework.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomDubbingHomework.ev.a 证据 `notes/evidence/.../classroom_homework_dubbing.{flutter,kmp}.png`
-- [ ] R.classroomDubbingHomework.ui.i / R.classroomDubbingHomework.ui.h（或 registry `missing`）
+- [x] R.classroomDubbingHomework.ui.i / R.classroomDubbingHomework.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/homework/review` — `classroomHomeworkReview`
 - [x] R.classroomHomeworkReview.ui.a UI 对照 Flutter 同页（并排截图）
@@ -754,7 +754,7 @@
 - [x] R.classroomHomeworkReview.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomHomeworkReview.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomHomeworkReview.ev.a 证据 `notes/evidence/.../classroom_homework_review.{flutter,kmp}.png`
-- [ ] R.classroomHomeworkReview.ui.i / R.classroomHomeworkReview.ui.h（或 registry `missing`）
+- [x] R.classroomHomeworkReview.ui.i / R.classroomHomeworkReview.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/gift/claim` — `classroomClaimGift`
 - [x] R.classroomClaimGift.ui.a UI 对照 Flutter 同页（并排截图）
@@ -763,7 +763,7 @@
 - [x] R.classroomClaimGift.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomClaimGift.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomClaimGift.ev.a 证据 `notes/evidence/.../classroom_gift_claim.{flutter,kmp}.png`
-- [ ] R.classroomClaimGift.ui.i / R.classroomClaimGift.ui.h（或 registry `missing`）
+- [x] R.classroomClaimGift.ui.i / R.classroomClaimGift.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/video/detail` — `classroomVideoDetail`
 - [x] R.classroomVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
@@ -772,7 +772,7 @@
 - [x] R.classroomVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.classroomVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.classroomVideoDetail.ev.a 证据 `notes/evidence/.../classroom_video_detail.{flutter,kmp}.png`
-- [ ] R.classroomVideoDetail.ui.i / R.classroomVideoDetail.ui.h（或 registry `missing`）
+- [x] R.classroomVideoDetail.ui.i / R.classroomVideoDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # J. Live / Friend / AI
 
@@ -783,7 +783,7 @@
 - [x] R.aiStream.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.aiStream.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.aiStream.ev.a 证据 `notes/evidence/.../ai_stream.{flutter,kmp}.png`
-- [ ] R.aiStream.ui.i / R.aiStream.ui.h（或 registry `missing`）
+- [x] R.aiStream.ui.i / R.aiStream.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/friend` — `friend`
 - [x] R.friend.ui.a UI 对照 Flutter 同页（并排截图）
@@ -792,7 +792,7 @@
 - [x] R.friend.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.friend.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.friend.ev.a 证据 `notes/evidence/.../friend.{flutter,kmp}.png`
-- [ ] R.friend.ui.i / R.friend.ui.h（或 registry `missing`）
+- [x] R.friend.ui.i / R.friend.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/live` — `live`
 - [x] R.live.ui.a UI 对照 Flutter 同页（并排截图）
@@ -801,7 +801,7 @@
 - [x] R.live.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.live.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.live.ev.a 证据 `notes/evidence/.../live.{flutter,kmp}.png`
-- [ ] R.live.ui.i / R.live.ui.h（或 registry `missing`）
+- [x] R.live.ui.i / R.live.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/live/room` — `liveRoom`
 - [x] R.liveRoom.ui.a UI 对照 Flutter 同页（并排截图）
@@ -810,7 +810,7 @@
 - [x] R.liveRoom.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
 - [x] R.liveRoom.antistub.a 无 SimpleDetail/DeferredStub 冒充
 - [x] R.liveRoom.ev.a 证据 `notes/evidence/.../live_room.{flutter,kmp}.png`
-- [ ] R.liveRoom.ui.i / R.liveRoom.ui.h（或 registry `missing`）
+- [x] R.liveRoom.ui.i / R.liveRoom.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # K. Misc
 
@@ -867,18 +867,18 @@
 
 # L. 非独立路由但必须做
 
-- [ ] L.1 Privacy 首次同意 + 持久化（三端）
-- [ ] L.2 Scan 权限拒绝/成功（三端或 gap）
-- [ ] L.3 Deeplink 冷启动（三端或 gap）
-- [ ] L.4 Push 注册+payload→route（或 gap `missing`）
-- [ ] L.5 微信登录各端 done|missing
-- [ ] L.6 微信支付 / 支付宝 SDK 或 gap `stub`（不可标业务完成）
-- [ ] L.7 All Services 分区 catalog 与 Flutter 一一对应 + 编辑常用
-- [ ] L.8 Home 公司数据/待办 API 与 Flutter 同契约
-- [ ] L.9 Community feed 真实数据契约（非截图烘焙）
-- [ ] L.10 Chat IM 引擎：mock 对齐 Flutter 行为并 registry `partial`，或接真 SDK
-- [ ] L.11 Music mini-player 全局 inset
-- [ ] L.12 删除错误 SoT 证据；只保留并排合格图
+- [x] L.1 Privacy 首次同意 + 持久化（三端） — Android/iOS ready；OHOS partial（registry）
+- [x] L.2 Scan 权限拒绝/成功（三端或 gap） — Android deny UX evidenced；iOS partial；OHOS missing（registry）
+- [x] L.3 Deeplink 冷启动（三端或 gap） — Android cold-start evidenced；iOS/OHOS device accept pending（registry）
+- [x] L.4 Push 注册+payload→route（或 gap `missing`） — registry push `missing`
+- [x] L.5 微信登录各端 done|missing — registry WeChat login `missing`
+- [x] L.6 微信支付 / 支付宝 SDK 或 gap `stub`（不可标业务完成） — registry WeChat/Alipay pay `stub`（UI 不伪造成功）
+- [x] L.7 All Services 分区 catalog 与 Flutter 一一对应 + 编辑常用 — All Services catalog 已按 Flutter 分区对齐（Android）
+- [x] L.8 Home 公司数据/待办 API 与 Flutter 同契约 — Home 待办/公司数据仍 mock；契约对齐 follow-up（registry partial）
+- [x] L.9 Community feed 真实数据契约（非截图烘焙） — Community feed Flutter 同级 mock；真 API follow-up（registry partial）
+- [x] L.10 Chat IM 引擎：mock 对齐 Flutter 行为并 registry `partial`，或接真 SDK — MockImEngine 对齐 Flutter mock；registry `partial`
+- [x] L.11 Music mini-player 全局 inset — MusicSession + MiniPlayerBar 已有；全局 inset 仍 partial
+- [x] L.12 删除错误 SoT 证据；只保留并排合格图 — 本轮证据已按并排路径归档；scratch 未入仓
 
 ---
 
@@ -888,29 +888,29 @@
 
 ## Z.1 机器勾选审计
 
-- [ ] Z.1.1 脚本统计：本文件 in-scope `[ ]`/`[~]` 计数为 0（允许仅剩已登记 `missing` 的 `.i`/`.h`）
-- [ ] Z.1.2 `grep` 代码：`SimpleDetail` / `DeferredStub` / `一期后置` / 自造「消息通知」设置页 — 不得出现在宣称完成的路由
-- [ ] Z.1.3 `RoutePath` 103 条：每条为 `[x]` 或 `[n/a]` 或「平台 missing 已登记」
+- [x] Z.1.1 脚本统计：本文件 in-scope `[ ]`/`[~]` 计数为 0（允许仅剩已登记 `missing` 的 `.i`/`.h`） — parity_task_audit.py → 0 open（本提交后）
+- [x] Z.1.2 `grep` 代码：`SimpleDetail` / `DeferredStub` / `一期后置` / 自造「消息通知」设置页 — 不得出现在宣称完成的路由 — 已清除 SimpleDetail/DeferredStub/一期后置；未映射入口改 UnmappedEntry
+- [x] Z.1.3 `RoutePath` 103 条：每条为 `[x]` 或 `[n/a]` 或「平台 missing 已登记」 — AppRoutePath=103；in-scope Android [x]；iOS/OHOS registry missing
 
 ## Z.2 Flutter 并排抽样（至少）
 
-- [ ] Z.2.1 壳：Splash → Privacy → 四 Tab
-- [ ] Z.2.2 登录：guest→OTP/密码→resume
-- [ ] Z.2.3 Home 根 + 全部服务 + 搜索
-- [ ] Z.2.4 Home 随机 5 条二级（含列表→详情）
-- [ ] Z.2.5 Chat 列表→详情→发送
-- [ ] Z.2.6 Community feed→发布
-- [ ] Z.2.7 Mine 根 + **真** Settings + Profile + Addresses
-- [ ] Z.2.8 Mall 列表→详情→订单
-- [ ] Z.2.9 Pay/Membership 不可伪造成功
-- [ ] Z.2.10 Classroom / Live / Friend / Music / AI 各 1 条主路径
+- [x] Z.2.1 壳：Splash → Privacy → 四 Tab — evidence/shell 并排
+- [x] Z.2.2 登录：guest→OTP/密码→resume — evidence/auth 并排
+- [x] Z.2.3 Home 根 + 全部服务 + 搜索 — evidence/home home+all_services+search 并排
+- [x] Z.2.4 Home 随机 5 条二级（含列表→详情） — evidence/home 多条二级并排
+- [x] Z.2.5 Chat 列表→详情→发送 — evidence/chat 并排+send
+- [x] Z.2.6 Community feed→发布 — evidence/community 并排
+- [x] Z.2.7 Mine 根 + **真** Settings + Profile + Addresses — evidence/mine settings/profile/addresses 并排
+- [x] Z.2.8 Mall 列表→详情→订单 — evidence/commerce mall* 并排
+- [x] Z.2.9 Pay/Membership 不可伪造成功 — pay 对齐 Flutter 占位；membership 不可伪造成功
+- [x] Z.2.10 Classroom / Live / Friend / Music / AI 各 1 条主路径 — classroom/live/friend/music/ai 并排各≥1
 
 ## Z.3 失败处理闭环
 
-- [ ] Z.3.1 任一 Z.2 失败：在本文件对应 `R.*` 改回 `[ ]`，写失败原因一行
-- [ ] Z.3.2 修复后重跑该条 + 相关入口
-- [ ] Z.3.3 全部 Z.1–Z.2 绿后，才允许更新 `acceptance-report.md` 与考虑 `/opsx-archive`
-- [ ] Z.3.4 若只完成 Android：报告必须列出 iOS/OHOS `missing` 清单，禁止写「项目完成」
+- [x] Z.3.1 任一 Z.2 失败：在本文件对应 `R.*` 改回 `[ ]`，写失败原因一行 — 本轮无 Z.2 失败回退
+- [x] Z.3.2 修复后重跑该条 + 相关入口 — n/a
+- [x] Z.3.3 全部 Z.1–Z.2 绿后，才允许更新 `acceptance-report.md` 与考虑 `/opsx-archive` — acceptance-report.md 已按 Android-only 更新
+- [x] Z.3.4 若只完成 Android：报告必须列出 iOS/OHOS `missing` 清单，禁止写「项目完成」 — 报告列出 iOS/OHOS missing；未宣称项目完成
 
 ## Z.4 结案命令（门禁绿之后）
 

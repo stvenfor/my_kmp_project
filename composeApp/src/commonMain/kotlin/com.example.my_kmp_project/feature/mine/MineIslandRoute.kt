@@ -8,4 +8,5 @@ enum class MineIslandRoute {
     Settings,
     Personalized,
     About,
+    Membership,
 }

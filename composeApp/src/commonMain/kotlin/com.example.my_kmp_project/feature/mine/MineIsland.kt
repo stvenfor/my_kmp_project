@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import kotlinx.coroutines.delay
 
 /**
@@ -38,9 +39,7 @@ fun MineIsland(
                 MineSettingsScreen(
                     onBack = onRequestClose,
                     onOpenPersonalized = { route = MineIslandRoute.Personalized },
-                    onOpenMembership = {
-                        showSnack("一期后置 · 会员")
-                    },
+                    onOpenMembership = { route = MineIslandRoute.Membership },
                     onOpenAbout = { route = MineIslandRoute.About },
                 )
             }
@@ -49,6 +48,9 @@ fun MineIsland(
                     onBack = { route = MineIslandRoute.Settings },
                     snackbar = showSnack,
                 )
+            }
+            MineIslandRoute.Membership -> {
+                MembershipScreen(onBack = { route = MineIslandRoute.Settings })
             }
         }
 
