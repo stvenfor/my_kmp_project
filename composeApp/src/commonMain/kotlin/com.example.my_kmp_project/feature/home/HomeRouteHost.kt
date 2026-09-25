@@ -125,12 +125,12 @@ internal fun HomeRouteHost(
             onBack()
         }
         HomeRoutes.Ledger -> CrudListScreen(
-            title = "台账",
+            title = "收支",
             items = HomeSecondaryMock.ledger,
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.LedgerDetail) },
         )
-        HomeRoutes.LedgerDetail -> CrudDetailScreen("台账详情", HomeSecondaryMock.ledger.first(), onBack)
+        HomeRoutes.LedgerDetail -> CrudDetailScreen("收支详情", HomeSecondaryMock.ledger.first(), onBack)
         HomeRoutes.DataAnalytics -> CrudListScreen(
             title = "数据分析",
             items = HomeSecondaryMock.analytics,
@@ -144,7 +144,7 @@ internal fun HomeRouteHost(
         HomeRoutes.TodoAfterSales -> CrudListScreen("售后预约", HomeSecondaryMock.appointments, onBack)
         HomeRoutes.TodoOrderReview -> CrudListScreen("订单待审核", HomeSecondaryMock.orders, onBack)
         HomeRoutes.AfterSales -> CrudListScreen(
-            title = "售后",
+            title = "售后专区",
             items = HomeSecondaryMock.afterSales,
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.AfterSalesDetail) },
