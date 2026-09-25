@@ -161,9 +161,7 @@ internal fun HomeRouteHost(
         }
         HomeRoutes.AfterSalesDetail ->
             CrudDetailScreen("售后详情", HomeSecondaryMock.afterSales.first(), onBack)
-        HomeRoutes.NewCarFollow -> CrudListScreen(
-            title = "新车跟进",
-            items = HomeSecondaryMock.newCars,
+        HomeRoutes.NewCarFollow -> NewCarFollowListScreen(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.NewCarFollowDetail) },
             onCreate = { onNavigate(HomeRoutes.NewCarFollowCreate) },
@@ -173,7 +171,13 @@ internal fun HomeRouteHost(
             onBack()
         }
         HomeRoutes.NewCarFollowDetail ->
-            CrudDetailScreen("跟进详情", HomeSecondaryMock.newCars.first(), onBack)
+            CrudDetailScreen(
+                "跟进详情",
+                HomeSecondaryMock.newCarFollows.first().let {
+                    "${it.customerName}\n${it.phone}\n意向: ${it.vehicle}\n阶段 ${it.stage}"
+                },
+                onBack,
+            )
         else -> CrudDetailScreen("未识别路由", "route=$route", onBack)
     }
 }
@@ -191,6 +195,17 @@ internal data class UsedCarOrderRow(
     val amountLabel: String,
     val amount: Int,
     val customerName: String,
+)
+
+internal data class NewCarFollowRow(
+    val customerName: String,
+    val phone: String,
+    val vehicle: String,
+    val stage: String,
+    val intentBand: String,
+    val nextFollow: String,
+    val owner: String,
+    val overdue: Boolean = false,
 )
 
 internal object HomeSecondaryMock {
@@ -267,6 +282,36 @@ internal object HomeSecondaryMock {
     val newCars = listOf(
         HomeListRow("客户 孙某", "银河 L7 · 试驾完成"),
         HomeListRow("客户 吴某", "星愿 · 报价跟进"),
+    )
+    val newCarFollows = listOf(
+        NewCarFollowRow(
+            customerName = "孙某",
+            phone = "138****2101",
+            vehicle = "银河 L7",
+            stage = "跟进中",
+            intentBand = "高",
+            nextFollow = "今日 15:00",
+            owner = "销售顾问",
+        ),
+        NewCarFollowRow(
+            customerName = "吴某",
+            phone = "139****8820",
+            vehicle = "星愿",
+            stage = "报价",
+            intentBand = "中",
+            nextFollow = "明日 10:30",
+            owner = "销售顾问",
+        ),
+        NewCarFollowRow(
+            customerName = "赵某",
+            phone = "186****4412",
+            vehicle = "星越 L",
+            stage = "试驾",
+            intentBand = "低",
+            nextFollow = "09-20 已逾期",
+            owner = "网销",
+            overdue = true,
+        ),
     )
 }
 
@@ -395,6 +440,198 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
                     Text(item.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun NewCarFollowListScreen(
+    onBack: () -> Unit,
+    onItem: (NewCarFollowRow) -> Unit,
+    onCreate: () -> Unit,
+) {
+    // Flutter NewCarFollowListPage: profile header + intent tabs + cards + FAB
+    val bg = Color(0xFFF5F6F8)
+    val accent = Color(0xFF3B8CFF)
+    val ink = Color(0xFF1A1A1A)
+    val tabs = listOf("全部", "高意向", "中意向", "低意向", "逾期")
+    var tab by remember { mutableStateOf("全部") }
+    val all = HomeSecondaryMock.newCarFollows
+    val filtered = when (tab) {
+        "高意向" -> all.filter { it.intentBand == "高" }
+        "中意向" -> all.filter { it.intentBand == "中" }
+        "低意向" -> all.filter { it.intentBand == "低" }
+        "逾期" -> all.filter { it.overdue }
+        else -> all
+    }
+    val active = all.count { !it.overdue }
+    val overdue = all.count { it.overdue }
+    val high = all.count { it.intentBand == "高" }
+
+    ReportMainTabRoot(isRoot = false)
+    Box(Modifier.fillMaxSize().background(bg)) {
+        Column(Modifier.fillMaxSize()) {
+            MineTopBar(title = "新车跟进", onBack = onBack, containerColor = Color.White)
+            LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
+                item {
+                    Column(
+                        Modifier
+                            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 20.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("销售顾问", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = ink)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        "顾问",
+                                        color = Color.White,
+                                        fontSize = 12.sp,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(accent)
+                                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                                    )
+                                }
+                                Spacer(Modifier.height(6.dp))
+                                Text("演示门店", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                            }
+                            Box(
+                                Modifier
+                                    .width(56.dp)
+                                    .height(56.dp)
+                                    .clip(RoundedCornerShape(28.dp))
+                                    .background(Color(0xFFE8EEF8)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("销", color = accent, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                            }
+                        }
+                        Spacer(Modifier.height(20.dp))
+                        Row(Modifier.fillMaxWidth()) {
+                            listOf(
+                                "$active" to "跟进中",
+                                "$overdue" to "逾期",
+                                "$high" to "高意向",
+                                "0" to "战败",
+                            ).forEach { (v, label) ->
+                                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(v, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = ink)
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(label, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                                }
+                            }
+                        }
+                    }
+                }
+                item {
+                    Row(
+                        Modifier
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    ) {
+                        tabs.forEach { t ->
+                            val sel = tab == t
+                            Column(
+                                Modifier
+                                    .clickable { tab = t }
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Text(
+                                    t,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (sel) ink else DemoColors.TextSecondary,
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                Box(
+                                    Modifier
+                                        .width(28.dp)
+                                        .height(3.dp)
+                                        .background(if (sel) accent else Color.Transparent),
+                                )
+                            }
+                        }
+                    }
+                }
+                if (filtered.isEmpty()) {
+                    item {
+                        Column(
+                            Modifier.fillMaxWidth().padding(48.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text("暂无跟进档案", fontWeight = FontWeight.SemiBold)
+                            Spacer(Modifier.height(8.dp))
+                            Text("点击下方按钮新建客户跟进", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                        }
+                    }
+                } else {
+                    items(filtered) { row ->
+                        Column(
+                            Modifier
+                                .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color.White)
+                                .clickable { onItem(row) }
+                                .padding(14.dp),
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "客户",
+                                    fontSize = 11.sp,
+                                    color = accent,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Color(0x1A3B8CFF))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(row.customerName, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = ink)
+                                Spacer(Modifier.weight(1f))
+                                Text(
+                                    "${row.intentBand}意向",
+                                    fontSize = 12.sp,
+                                    color = when (row.intentBand) {
+                                        "高" -> Color(0xFFE53935)
+                                        "中" -> Color(0xFFFF9500)
+                                        else -> DemoColors.TextSecondary
+                                    },
+                                )
+                            }
+                            Spacer(Modifier.height(10.dp))
+                            Text(row.phone, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                            Spacer(Modifier.height(6.dp))
+                            Text("意向车型: ${row.vehicle}", fontSize = 13.sp, color = DemoColors.TextSecondary)
+                            Spacer(Modifier.height(8.dp))
+                            Row {
+                                Text("阶段 ${row.stage}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                                Spacer(Modifier.width(12.dp))
+                                Text("下次跟进 ${row.nextFollow}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            Text("负责人 ${row.owner}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        }
+                    }
+                }
+            }
+        }
+        Button(
+            onClick = onCreate,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = accent),
+        ) {
+            Text("新建跟进", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }
