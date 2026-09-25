@@ -63,7 +63,18 @@ internal object DeepLinkRouter {
                 ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = AppRoutes.Mine.MINE)
             AppRoutes.Auth.LOGIN, "auth/login" ->
                 ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutes.Auth.LOGIN)
-            else -> null
+            else -> {
+                // Secondary product routes (Flutter RoutePath / AppRoutePath)
+                when {
+                    path.startsWith("/home/") ->
+                        ParsedDeepLink(rawUri = uri, tab = MainTab.Home, route = path)
+                    path.startsWith("/settings") ->
+                        ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
+                    path.startsWith("/mine/") ->
+                        ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
+                    else -> null
+                }
+            }
         }
     }
 

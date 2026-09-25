@@ -153,10 +153,10 @@ internal fun HomeRouteHost(
                 },
                 onBack,
             )
-        HomeRoutes.TodoPartner -> CrudListScreen("新伙伴待确认", HomeSecondaryMock.partners, onBack)
-        HomeRoutes.TodoFollowUp -> CrudListScreen("待跟进客户", HomeSecondaryMock.followUps, onBack)
-        HomeRoutes.TodoAfterSales -> CrudListScreen("售后预约", HomeSecondaryMock.appointments, onBack)
-        HomeRoutes.TodoOrderReview -> CrudListScreen("订单待审核", HomeSecondaryMock.orders, onBack)
+        HomeRoutes.TodoPartner -> PartnerPendingScreen(onBack = onBack)
+        HomeRoutes.TodoFollowUp -> FollowUpCustomersScreen(onBack = onBack)
+        HomeRoutes.TodoAfterSales -> AfterSalesAppointmentsScreen(onBack = onBack)
+        HomeRoutes.TodoOrderReview -> StoreReviewOrdersScreen(onBack = onBack)
         HomeRoutes.AfterSales -> AfterSalesListScreen(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.AfterSalesDetail) },
@@ -1408,6 +1408,152 @@ private fun AfterSalesListScreen(
                     Text(row.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun PartnerPendingScreen(onBack: () -> Unit) {
+    // Flutter PartnerPendingPage + _TodoForbiddenPanel (403 / 非店管)
+    TodoForbiddenScreen(title = "新伙伴待确认", onBack = onBack)
+}
+
+@Composable
+private fun FollowUpCustomersScreen(onBack: () -> Unit) {
+    TodoForbiddenScreen(title = "待跟进客户", onBack = onBack)
+}
+
+@Composable
+private fun AfterSalesAppointmentsScreen(onBack: () -> Unit) {
+    TodoForbiddenScreen(title = "售后预约", onBack = onBack)
+}
+
+@Composable
+private fun StoreReviewOrdersScreen(onBack: () -> Unit) {
+    TodoForbiddenScreen(title = "订单待审核", onBack = onBack)
+}
+
+@Composable
+private fun TodoForbiddenScreen(title: String, onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        MineTopBar(title = title, onBack = onBack, containerColor = DemoColors.PageBg)
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(
+                Modifier
+                    .padding(horizontal = 28.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 22.dp, vertical = 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    Modifier
+                        .width(64.dp)
+                        .height(64.dp)
+                        .clip(RoundedCornerShape(32.dp))
+                        .background(DemoColors.Accent.copy(alpha = 0.08f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("🔒", fontSize = 26.sp)
+                }
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    "暂无查看权限",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = DemoColors.TextPrimary,
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "该待办仅门店管理员可查看。\n如需处理，请联系店管开通权限，或切换有权限的账号。",
+                    fontSize = 13.sp,
+                    color = DemoColors.TextSecondary,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 20.sp,
+                )
+                Spacer(Modifier.height(22.dp))
+                Text(
+                    "返回",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DemoColors.Accent)
+                        .clickable(onClick = onBack)
+                        .padding(vertical = 12.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TodoEmpty(title: String, subtitle: String) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+            Spacer(Modifier.height(6.dp))
+            Text(subtitle, fontSize = 13.sp, color = DemoColors.TextSecondary)
+        }
+    }
+}
+
+@Composable
+private fun TodoCard(
+    avatarLabel: String,
+    title: String,
+    subtitle: String,
+    badge: String? = null,
+    badgeColor: Color = DemoColors.Accent,
+    avatarTint: Color = DemoColors.Accent.copy(alpha = 0.12f),
+    avatarFg: Color = DemoColors.Accent,
+    footer: (@Composable () -> Unit)? = null,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+            .padding(14.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .width(44.dp)
+                    .height(44.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(avatarTint),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(avatarLabel.take(1), color = avatarFg, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                Spacer(Modifier.height(2.dp))
+                Text(subtitle, fontSize = 13.sp, color = DemoColors.TextSecondary)
+            }
+            if (badge != null) {
+                Text(
+                    badge,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = badgeColor,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(badgeColor.copy(alpha = 0.12f))
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                )
+            }
+        }
+        if (footer != null) {
+            Spacer(Modifier.height(12.dp))
+            footer()
         }
     }
 }

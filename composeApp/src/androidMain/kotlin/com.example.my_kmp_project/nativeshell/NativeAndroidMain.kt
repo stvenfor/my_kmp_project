@@ -22,7 +22,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -37,6 +40,7 @@ import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.TokenExpiredHandler
 import com.example.my_kmp_project.core.platform.DefaultWebBridgeHost
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.router.AppRoutes
 import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.core.router.MainTab
@@ -277,24 +281,44 @@ internal fun NativeAndroidMain() {
     }
 
     LaunchedEffect(Unit) {
-        val pending = DeepLinkRouter.consumePending() ?: return@LaunchedEffect
-        when {
-            pending.route == AppRoutes.Auth.LOGIN -> {
-                authOverlay = AuthOverlay.Login
-                bottomBarVisible = false
-            }
-            pending.tab != null -> {
-                val target = pending.tab
-                if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
-                    AuthGate.rememberPending(target)
-                    authOverlay = AuthOverlay.Login
-                    bottomBarVisible = false
-                } else {
-                    tab = target
-                    keptTabs = keptTabs + target
+        snapshotFlow { DeepLinkRouter.pendingDeepLink }
+            .filterNotNull()
+            .distinctUntilChanged()
+            .collect { pending ->
+                DeepLinkRouter.consumePending()
+                when {
+                    pending.route == AppRoutes.Auth.LOGIN -> {
+                        authOverlay = AuthOverlay.Login
+                        bottomBarVisible = false
+                    }
+                    pending.route.startsWith("/home/") -> {
+                        tab = MainTab.Home
+                        keptTabs = keptTabs + MainTab.Home
+                        openHomeRoute(pending.route)
+                    }
+                    pending.route == AppRoutePath.settings || pending.route.startsWith("/settings") -> {
+                        tab = MainTab.Mine
+                        keptTabs = keptTabs + MainTab.Mine
+                        openMineRoute(MineRoutes.Settings)
+                    }
+                    pending.route.startsWith("/mine/") -> {
+                        tab = MainTab.Mine
+                        keptTabs = keptTabs + MainTab.Mine
+                        openMineRoute(pending.route)
+                    }
+                    pending.tab != null -> {
+                        val target = pending.tab
+                        if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
+                            AuthGate.rememberPending(target)
+                            authOverlay = AuthOverlay.Login
+                            bottomBarVisible = false
+                        } else {
+                            tab = target
+                            keptTabs = keptTabs + target
+                        }
+                    }
                 }
             }
-        }
     }
 
     when (overlay) {

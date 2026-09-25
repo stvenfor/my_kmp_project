@@ -296,39 +296,39 @@
 - [ ] R.homeClub.ui.i / R.homeClub.ui.h（或 registry `missing`）
 
 ## `/home/todo/partner-pending` — `homeTodoPartnerPending`
-- [ ] R.homeTodoPartnerPending.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeTodoPartnerPending.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeTodoPartnerPending.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeTodoPartnerPending.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeTodoPartnerPending.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeTodoPartnerPending.ev.a 证据 `notes/evidence/.../home_todo_partner-pending.{flutter,kmp}.png`
+- [x] R.homeTodoPartnerPending.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeTodoPartnerPending.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeTodoPartnerPending.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeTodoPartnerPending.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeTodoPartnerPending.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeTodoPartnerPending.ev.a 证据 `notes/evidence/.../home_todo_partner-pending.{flutter,kmp}.png`
 - [ ] R.homeTodoPartnerPending.ui.i / R.homeTodoPartnerPending.ui.h（或 registry `missing`）
 
 ## `/home/todo/follow-up-customers` — `homeTodoFollowUp`
-- [ ] R.homeTodoFollowUp.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeTodoFollowUp.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeTodoFollowUp.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeTodoFollowUp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeTodoFollowUp.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeTodoFollowUp.ev.a 证据 `notes/evidence/.../home_todo_follow-up-customers.{flutter,kmp}.png`
+- [x] R.homeTodoFollowUp.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeTodoFollowUp.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeTodoFollowUp.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeTodoFollowUp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeTodoFollowUp.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeTodoFollowUp.ev.a 证据 `notes/evidence/.../home_todo_follow-up-customers.{flutter,kmp}.png`
 - [ ] R.homeTodoFollowUp.ui.i / R.homeTodoFollowUp.ui.h（或 registry `missing`）
 
 ## `/home/todo/after-sales-appointments` — `homeTodoAfterSales`
-- [ ] R.homeTodoAfterSales.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeTodoAfterSales.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeTodoAfterSales.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeTodoAfterSales.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeTodoAfterSales.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeTodoAfterSales.ev.a 证据 `notes/evidence/.../home_todo_after-sales-appointments.{flutter,kmp}.png`
+- [x] R.homeTodoAfterSales.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeTodoAfterSales.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeTodoAfterSales.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeTodoAfterSales.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeTodoAfterSales.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeTodoAfterSales.ev.a 证据 `notes/evidence/.../home_todo_after-sales-appointments.{flutter,kmp}.png`
 - [ ] R.homeTodoAfterSales.ui.i / R.homeTodoAfterSales.ui.h（或 registry `missing`）
 
 ## `/home/todo/order-pending-review` — `homeTodoOrderReview`
-- [ ] R.homeTodoOrderReview.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.homeTodoOrderReview.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.homeTodoOrderReview.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.homeTodoOrderReview.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.homeTodoOrderReview.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.homeTodoOrderReview.ev.a 证据 `notes/evidence/.../home_todo_order-pending-review.{flutter,kmp}.png`
+- [x] R.homeTodoOrderReview.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeTodoOrderReview.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeTodoOrderReview.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeTodoOrderReview.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeTodoOrderReview.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeTodoOrderReview.ev.a 证据 `notes/evidence/.../home_todo_order-pending-review.{flutter,kmp}.png`
 - [ ] R.homeTodoOrderReview.ui.i / R.homeTodoOrderReview.ui.h（或 registry `missing`）
 
 ## `/home/after_sales` — `homeAfterSalesList`
