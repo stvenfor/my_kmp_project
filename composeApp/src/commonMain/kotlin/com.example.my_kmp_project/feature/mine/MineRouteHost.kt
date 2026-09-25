@@ -368,22 +368,114 @@ private data class MallProductUi(
     val tag: String?,
 )
 
+private data class MallOrderUi(
+    val no: String,
+    val title: String,
+    val qty: Int,
+    val amount: String,
+    val status: String,
+    val unpaid: Boolean = false,
+)
+
 @Composable
 private fun OrderListScreen(onBack: () -> Unit, onOpen: () -> Unit) {
-    val orders = listOf("MO-1001 待发货", "MO-0998 已完成", "MO-0992 已取消")
+    // Flutter MallOrdersPage: tabs 全部/待支付/已支付/已取消 + order cards
+    val tabs = listOf("全部", "待支付", "已支付", "已取消")
+    var tab by remember { mutableStateOf("全部") }
+    val all = listOf(
+        MallOrderUi("MO-1001", "车载香薰套装", 2, "128.00", "待支付", unpaid = true),
+        MallOrderUi("MO-0998", "脚垫 · 全包围", 1, "399.00", "已支付"),
+        MallOrderUi("MO-0992", "雨刷片一对", 1, "59.00", "已取消"),
+    )
+    val filtered = when (tab) {
+        "待支付" -> all.filter { it.status == "待支付" }
+        "已支付" -> all.filter { it.status == "已支付" || it.status == "待发货" }
+        "已取消" -> all.filter { it.status == "已取消" }
+        else -> all
+    }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "我的订单", onBack = onBack)
-        LazyColumn {
-            items(orders) { o ->
-                Text(
-                    o,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = onOpen)
-                        .padding(16.dp),
-                )
-                HorizontalDivider(color = DemoColors.Divider)
+    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+        MineTopBar(title = "我的订单", onBack = onBack, containerColor = Color.White)
+        Row(Modifier.fillMaxWidth().background(Color.White)) {
+            tabs.forEach { t ->
+                val sel = tab == t
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .clickable { tab = t }
+                        .padding(vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        t,
+                        fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal,
+                        color = if (sel) Color(0xFFFF9500) else DemoColors.TextSecondary,
+                        fontSize = 14.sp,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Box(
+                        Modifier
+                            .width(28.dp)
+                            .height(2.dp)
+                            .background(if (sel) Color(0xFFFF9500) else Color.Transparent),
+                    )
+                }
+            }
+        }
+        if (filtered.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("暂无订单", color = DemoColors.TextSecondary)
+            }
+        } else {
+            LazyColumn(contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp)) {
+                items(filtered) { o ->
+                    Row(
+                        Modifier
+                            .padding(bottom = 10.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .clickable(onClick = onOpen)
+                            .padding(12.dp),
+                    ) {
+                        Box(
+                            Modifier
+                                .width(72.dp)
+                                .height(72.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFFEEEEEE)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("购", color = DemoColors.Muted)
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Row {
+                                Text(
+                                    o.title,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 15.sp,
+                                    modifier = Modifier.weight(1f),
+                                    maxLines = 2,
+                                )
+                                Text(o.status, color = DemoColors.TextSecondary, fontSize = 12.sp)
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            Text("共${o.qty}件 · ${o.no}", color = DemoColors.TextSecondary, fontSize = 12.sp)
+                            if (o.unpaid) {
+                                Spacer(Modifier.height(4.dp))
+                                Text("待支付 · 请尽快完成", color = Color(0xFFFF9500), fontSize = 12.sp)
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "¥${o.amount}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                modifier = Modifier.align(Alignment.End),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
