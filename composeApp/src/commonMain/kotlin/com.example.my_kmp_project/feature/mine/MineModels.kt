@@ -52,25 +52,25 @@ internal object MineCatalog {
         MineStat("9366", "累计客户"),
     )
 
-    /** Gold screenshot demo profile for pixel accept (design D / open questions). */
+    /** Flutter SoT logged-in defaults (`MineController._syncUser` + `MineQuickServiceData`). */
     val goldDemoProfile = MineProfileUi(
-        displayName = "用户0000",
-        roleBadge = "销售经理",
-        storeName = "[4S]北京大兴兴荣丰田汽车销售服务有限公司",
-        maskedPhone = "138****0000",
-        stats = demoStats,
+        displayName = "qa_user",
+        roleBadge = "销售顾问",
+        storeName = "[4S]北京沃德龙鼎吉利",
+        maskedPhone = "138****5172",
+        stats = guestStats,
     )
 
+    /** Flutter `MineQuickServiceData.items` — mall / wallet / order only. */
     val quickServices = listOf(
-        MineQuickService("mall", "商城", MineIcons.Bag, Color(0xFF007AFF), badge = "HOT"),
+        MineQuickService("mall", "商城", MineIcons.Bag, Color(0xFF0070F3), badge = "HOT"),
         MineQuickService("wallet", "我的钱包", MineIcons.CreditCard, Color(0xFF5856D6)),
-        MineQuickService("course", "我的课程", MineIcons.PlayRect, Color(0xFFFF9500)),
         MineQuickService("order", "我的订单", MineIcons.DocText, Color(0xFF34C759)),
     )
 
+    /** Flutter `MineMenuData.items`. */
     val menuItems = listOf(
-        MineMenuEntry("profile", "个人资料"),
-        MineMenuEntry("address", "地址管理"),
+        MineMenuEntry("address", "收货地址"),
         MineMenuEntry("cooperation", "商务合作"),
         MineMenuEntry("reminder", "提醒事项"),
         MineMenuEntry("invite", "邀请好友"),
@@ -79,31 +79,40 @@ internal object MineCatalog {
         MineMenuEntry("settings", "设置"),
     )
 
+    /** Flutter `MineFunctionData.catalog` order. */
     val functions = listOf(
         MineFunctionEntry(
             id = "sms",
             title = "短信模板",
             subtitle = "一键发送 轻松快捷",
             icon = MineIcons.Sms,
-            iconColor = Color(0xFF007AFF),
-            accentColor = Color(0x14007AFF),
+            iconColor = Color(0xFF0070F3),
+            accentColor = Color(0x140070F3),
         ),
         MineFunctionEntry(
             id = "calculator",
             title = "购车计算器",
             subtitle = "全款/贷款/保险全能算",
             icon = MineIcons.Calculate,
-            iconColor = Color(0xFF007AFF),
-            accentColor = Color(0x14007AFF),
+            iconColor = Color(0xFF0070F3),
+            accentColor = Color(0x140070F3),
             highlightValue = "5830.00",
         ),
         MineFunctionEntry(
             id = "used_car",
             title = "二手车",
-            subtitle = "置换/专卖/估价",
+            subtitle = "置换/专卖/收车",
             icon = MineIcons.Car,
-            iconColor = Color(0xFF007AFF),
-            accentColor = Color(0x14007AFF),
+            iconColor = Color(0xFF0070F3),
+            accentColor = Color(0x140070F3),
+        ),
+        MineFunctionEntry(
+            id = "ledger",
+            title = "收支",
+            subtitle = "个人收支记录",
+            icon = MineIcons.CreditCard,
+            iconColor = Color(0xFF1C7C54),
+            accentColor = Color(0x141C7C54),
         ),
         MineFunctionEntry(
             id = "short_video",
@@ -126,16 +135,16 @@ internal object MineCatalog {
             title = "店铺收款码",
             subtitle = "常见问题 功能介绍",
             icon = MineIcons.QrCode,
-            iconColor = Color(0xFF007AFF),
-            accentColor = Color(0x14007AFF),
+            iconColor = Color(0xFF0070F3),
+            accentColor = Color(0x140070F3),
         ),
         MineFunctionEntry(
             id = "qa",
             title = "选买问答",
             subtitle = "在线解答客户问题",
             icon = MineIcons.Support,
-            iconColor = Color(0xFF007AFF),
-            accentColor = Color(0x14007AFF),
+            iconColor = Color(0xFF0070F3),
+            accentColor = Color(0x140070F3),
         ),
         MineFunctionEntry(
             id = "poster",

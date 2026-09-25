@@ -36,6 +36,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -70,7 +71,9 @@ private val UnreadBadge = Color(0xFFEE0000)
 private val LikeRed = Color(0xFFEE0000)
 
 @Composable
-internal fun JetpackChatRoot() {
+internal fun JetpackChatRoot(
+    onOpenContacts: () -> Unit = {},
+) {
     val engine = remember { MockImEngine() }
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -129,7 +132,7 @@ internal fun JetpackChatRoot() {
             ) {
                 Text(
                     if (searchOpen) "✕" else "⌕",
-                    color = DemoColors.Accent,
+                    color = DemoColors.TextPrimary,
                     fontSize = 20.sp,
                 )
             }
@@ -142,7 +145,7 @@ internal fun JetpackChatRoot() {
                     },
                 contentAlignment = Alignment.Center,
             ) {
-                Text("✎", color = DemoColors.Accent, fontSize = 20.sp)
+                Text("✎", color = DemoColors.TextPrimary, fontSize = 20.sp)
             }
         }
         if (searchOpen) {
@@ -174,47 +177,135 @@ internal fun JetpackChatRoot() {
                 )
             }
         }
-        LazyColumn(
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-        ) {
-            item {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(DemoColors.Background)
-                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
-                ) {
-                    if (filtered.isEmpty()) {
-                        Text(
-                            "无匹配会话",
-                            color = DemoColors.TextSecondary,
-                            modifier = Modifier.padding(16.dp),
-                        )
-                    } else {
-                        filtered.forEachIndexed { index, conv ->
-                            ChatConversationRow(
-                                peer = ChatPeer(
-                                    name = conv.title,
-                                    snippet = conv.lastMessage,
-                                    time = conv.updatedAtLabel,
-                                    badge = conv.unreadCount.takeIf { it > 0 }?.toString(),
-                                    online = index % 2 == 0,
-                                ),
-                                onClick = { openId = conv.id },
+        if (conversations.isEmpty()) {
+            Box(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                ChatConversationEmpty(
+                    connectionHint = "IM 已连接",
+                    onGoContacts = onOpenContacts,
+                    onRefreshHint = { listEpoch += 1 },
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+            ) {
+                item {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(DemoColors.Background)
+                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
+                    ) {
+                        if (filtered.isEmpty()) {
+                            Text(
+                                "没有匹配的会话",
+                                color = DemoColors.TextSecondary,
+                                modifier = Modifier.padding(16.dp),
                             )
-                            if (index != filtered.lastIndex) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(start = 72.dp),
-                                    thickness = 0.5.dp,
-                                    color = DemoColors.Divider,
+                        } else {
+                            filtered.forEachIndexed { index, conv ->
+                                ChatConversationRow(
+                                    peer = ChatPeer(
+                                        name = conv.title,
+                                        snippet = conv.lastMessage,
+                                        time = conv.updatedAtLabel,
+                                        badge = conv.unreadCount.takeIf { it > 0 }?.toString(),
+                                        online = index % 2 == 0,
+                                    ),
+                                    onClick = { openId = conv.id },
                                 )
+                                if (index != filtered.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(start = 72.dp),
+                                        thickness = 0.5.dp,
+                                        color = DemoColors.Divider,
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/** Flutter `ConversationListEmpty`. */
+@Composable
+private fun ChatConversationEmpty(
+    connectionHint: String,
+    onGoContacts: () -> Unit,
+    onRefreshHint: () -> Unit,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            Modifier
+                .size(96.dp)
+                .clip(CircleShape)
+                .background(DemoColors.Background)
+                .border(0.5.dp, DemoColors.Divider, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("💬", fontSize = 36.sp, color = DemoColors.Muted)
+        }
+        Spacer(Modifier.height(20.dp))
+        Text(
+            "还没有消息",
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = DemoColors.TextPrimary,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "加个好友，发一条问候吧",
+            fontSize = 15.sp,
+            color = DemoColors.TextSecondary,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            connectionHint,
+            fontSize = 12.sp,
+            color = DemoColors.Muted,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(28.dp))
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(DemoColors.Accent)
+                .clickable(onClick = onGoContacts),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                "去通讯录",
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "下拉也可刷新",
+            fontSize = 12.sp,
+            color = DemoColors.Muted,
+            modifier = Modifier.clickable(onClick = onRefreshHint),
+        )
     }
 }
 
@@ -477,46 +568,38 @@ internal fun JetpackCommunityRoot(
     onPlayVideo: (String) -> Unit = {},
 ) {
     var filter by remember { mutableStateOf("最新") }
-    var like0 by remember { mutableStateOf(true to 158) }
-    var like1 by remember { mutableStateOf(false to 77) }
+    var like0 by remember { mutableStateOf(false to 0) }
+    var like1 by remember { mutableStateOf(false to 0) }
     val published = remember { CommunityPublishBus.lastPublishedBody }
 
     fun postsForFilter(): List<CommunityFeedPost> {
+        // Aligned to Flutter live SoT feed (HTTP posts on device: 测试甲 + 九宫格图).
         val base = listOf(
             CommunityFeedPost(
                 id = "post_0",
-                name = "张三",
-                meta = "7分钟前 · 来自 iPhone",
-                body = "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev",
-                videoCoverUrl = "https://picsum.photos/seed/video_0/640/360",
-                imageUrls = emptyList(),
+                name = "测试甲",
+                meta = "19小时前 · 来自 iPhone",
+                body = "这么擦擦 8\n#Flutter开发",
+                videoCoverUrl = null,
+                imageUrls = List(9) { "https://picsum.photos/seed/sot_a_$it/400/400" },
                 likes = like0.second,
                 liked = like0.first,
-                comments = "6",
+                comments = "0",
                 hotScore = 200,
-                thread = listOf(
-                    CommunityThreadLine.Comment("李四", "说得对！"),
-                    CommunityThreadLine.Reply("赵六", "张三", "同感 +1"),
-                ),
+                thread = emptyList(),
             ),
             CommunityFeedPost(
                 id = "post_1",
-                name = "李四",
-                meta = "42分钟前 · 来自 Android",
-                body = "周末 hiking，天气太好了！#户外",
+                name = "测试甲",
+                meta = "19小时前 · 来自 iPhone",
+                body = "好喜欢的好喜欢的好\n#纳指大涨超2%再创新高",
                 videoCoverUrl = null,
-                imageUrls = listOf(
-                    "https://picsum.photos/seed/post_1_0/400/400",
-                    "https://picsum.photos/seed/post_1_1/400/400",
-                ),
+                imageUrls = List(9) { "https://picsum.photos/seed/sot_b_$it/400/400" },
                 likes = like1.second,
                 liked = like1.first,
-                comments = "2",
+                comments = "0",
                 hotScore = 90,
-                thread = listOf(
-                    CommunityThreadLine.Comment("王五", "说得对！"),
-                    CommunityThreadLine.Reply("小明", "李四", "同感 +1"),
-                ),
+                thread = emptyList(),
             ),
         )
         val withPublished = if (published != null) {
@@ -538,7 +621,7 @@ internal fun JetpackCommunityRoot(
         } else base
         return when (filter) {
             "热门" -> withPublished.sortedByDescending { it.hotScore }
-            "关注" -> withPublished.filter { it.name == "张三" || it.id == "post_new" }
+            "关注" -> withPublished // Flutter live may be empty; keep feed visible for parity
             else -> withPublished
         }
     }
@@ -777,13 +860,16 @@ private fun CommunityPostCard(
         }
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Flutter LikeBarWidget: count > 0 → number, else 「赞」/「评论」
+            val likeLabel = likes.toIntOrNull()?.takeIf { it > 0 }?.toString() ?: "赞"
+            val commentLabel = comments.toIntOrNull()?.takeIf { it > 0 }?.toString() ?: "评论"
             CommunityAction(
-                label = likes,
+                label = likeLabel,
                 tint = if (liked) LikeRed else DemoColors.TextSecondary,
                 icon = if (liked) "♥" else "♡",
                 onClick = onToggleLike,
             )
-            CommunityAction(label = comments, tint = DemoColors.TextSecondary, icon = "💬")
+            CommunityAction(label = commentLabel, tint = DemoColors.TextSecondary, icon = "💬")
             CommunityAction(label = "分享", tint = DemoColors.TextSecondary, icon = "↗")
         }
         if (thread.isNotEmpty()) {

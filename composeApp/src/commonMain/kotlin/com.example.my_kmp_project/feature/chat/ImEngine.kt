@@ -24,45 +24,54 @@ internal data class ImMessage(
     val timeLabel: String,
 )
 
-/** In-memory mock engine for development and CI (Flutter Rong wrapper is also mock). */
-internal class MockImEngine : ImEngine {
-    private val conversationState = mutableListOf(
-        ImConversation(
-            id = "c1",
-            title = "Mock好友1",
-            lastMessage = "晚上一起吃饭吗？",
-            updatedAtLabel = "22:50",
-            unreadCount = 2,
-        ),
-        ImConversation(
-            id = "c2",
-            title = "Mock好友2",
-            lastMessage = "你好",
-            updatedAtLabel = "22:45",
-        ),
-        ImConversation(
-            id = "c3",
-            title = "Mock好友3",
-            lastMessage = "你好",
-            updatedAtLabel = "22:40",
-        ),
-    )
-
-    private val messagesByConversation: MutableMap<String, MutableList<ImMessage>> = mutableMapOf(
-        "c1" to mutableListOf(
-            ImMessage("m1", "c1", "Mock好友1", "你好，在吗？", isSelf = false, timeLabel = "22:20"),
-            ImMessage("m2", "c1", "我", "在的，有什么事？", isSelf = true, timeLabel = "22:22"),
-            ImMessage("m3", "c1", "Mock好友1", "晚上一起吃饭吗？", isSelf = false, timeLabel = "22:50"),
-        ),
-        "c2" to mutableListOf(
-            ImMessage("m4", "c2", "Mock好友2", "你好", isSelf = false, timeLabel = "22:45"),
-        ),
-        "c3" to mutableListOf(
-            ImMessage("m5", "c3", "Mock好友3", "你好", isSelf = false, timeLabel = "22:40"),
-        ),
-    )
-
+/**
+ * In-memory mock engine.
+ * Default is empty to match Flutter live SoT (ConversationListEmpty).
+ * Pass [seedDemo] = true for local demos / tests that need sample threads.
+ */
+internal class MockImEngine(
+    seedDemo: Boolean = false,
+) : ImEngine {
+    private val conversationState = mutableListOf<ImConversation>()
+    private val messagesByConversation: MutableMap<String, MutableList<ImMessage>> = mutableMapOf()
     private var seq = 100
+
+    init {
+        if (seedDemo) {
+            conversationState += listOf(
+                ImConversation(
+                    id = "c1",
+                    title = "Mock好友1",
+                    lastMessage = "晚上一起吃饭吗？",
+                    updatedAtLabel = "22:50",
+                    unreadCount = 2,
+                ),
+                ImConversation(
+                    id = "c2",
+                    title = "Mock好友2",
+                    lastMessage = "你好",
+                    updatedAtLabel = "22:45",
+                ),
+                ImConversation(
+                    id = "c3",
+                    title = "Mock好友3",
+                    lastMessage = "你好",
+                    updatedAtLabel = "22:40",
+                ),
+            )
+            messagesByConversation["c1"] = mutableListOf(
+                ImMessage("m1", "c1", "Mock好友1", "你好，在吗？", isSelf = false, timeLabel = "22:20"),
+                ImMessage("m2", "c1", "我", "在的，有什么事？", isSelf = true, timeLabel = "22:22"),
+                ImMessage("m3", "c1", "Mock好友1", "晚上一起吃饭吗？", isSelf = false, timeLabel = "22:50"),
+            )
+            messagesByConversation["c2"] = mutableListOf(
+                ImMessage("m4", "c2", "Mock好友2", "你好", isSelf = false, timeLabel = "22:45"),
+            )
+            messagesByConversation["c3"] = mutableListOf(
+                ImMessage("m5", "c3", "Mock好友3", "你好", isSelf = false, timeLabel = "22:40"),
+            )
+        }
+    }
 
     override fun conversations(): List<ImConversation> = conversationState.toList()
 

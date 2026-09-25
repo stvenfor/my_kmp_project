@@ -422,7 +422,9 @@ internal fun NativeAndroidMain() {
                                         MainTab.Home -> JetpackHomeRoot(
                                             onDeferred = { openDeferred(it) },
                                         )
-                                        MainTab.Chat -> JetpackChatRoot()
+                                        MainTab.Chat -> JetpackChatRoot(
+                                            onOpenContacts = { openDeferred("通讯录") },
+                                        )
                                         MainTab.Community -> JetpackCommunityRoot(
                                             onOpen = { label -> openDeferred(label) },
                                             onPreviewImages = { urls, index ->

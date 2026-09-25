@@ -21,6 +21,8 @@ internal object MineIcons {
     val Settings: ImageVector by lazy { settings() }
     val Logout: ImageVector by lazy { logout() }
     val Login: ImageVector by lazy { login() }
+    /** Flutter MineHeader 4th icon — person / profile. */
+    val Person: ImageVector by lazy { person() }
     val Bag: ImageVector by lazy { bag() }
     val CreditCard: ImageVector by lazy { creditCard() }
     val PlayRect: ImageVector by lazy { playRect() }
@@ -216,6 +218,22 @@ internal object MineIcons {
         horizontalLineToRelative(-2f)
         verticalLineToRelative(-2f)
         horizontalLineToRelative(2f)
+        close()
+    }
+
+    private fun person() = solid {
+        moveTo(12f, 12f)
+        curveToRelative(2.21f, 0f, 4f, -1.79f, 4f, -4f)
+        reflectiveCurveToRelative(-1.79f, -4f, -4f, -4f)
+        reflectiveCurveToRelative(-4f, 1.79f, -4f, 4f)
+        reflectiveCurveToRelative(1.79f, 4f, 4f, 4f)
+        close()
+        moveTo(12f, 14f)
+        curveToRelative(-2.67f, 0f, -8f, 1.34f, -8f, 4f)
+        verticalLineToRelative(2f)
+        horizontalLineToRelative(16f)
+        verticalLineToRelative(-2f)
+        curveToRelative(0f, -2.66f, -5.33f, -4f, -8f, -4f)
         close()
     }
 

@@ -34,15 +34,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.offset
-import com.example.my_kmp_project.core.network.NetworkConfig
-import com.example.my_kmp_project.getPlatform
 
 @Composable
 internal fun MineHomeContent(
     loggedIn: Boolean,
     displayName: String?,
     onLoginClick: () -> Unit,
-    onLogoutClick: () -> Unit,
+    @Suppress("UNUSED_PARAMETER") onLogoutClick: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenPersonalized: () -> Unit,
     snackbar: (String) -> Unit,
@@ -61,7 +59,8 @@ internal fun MineHomeContent(
             loggedIn = loggedIn,
             onOpenPersonalized = onOpenPersonalized,
             onOpenSettings = onOpenSettings,
-            onAuthAction = if (loggedIn) onLogoutClick else onLoginClick,
+            onOpenProfile = { snackbar("个人资料") },
+            onLoginClick = onLoginClick,
             onCalendar = { snackbar("签到日历") },
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -74,7 +73,6 @@ internal fun MineHomeContent(
                 when (service.id) {
                     "mall" -> snackbar("商城")
                     "wallet" -> snackbar("我的钱包")
-                    "course" -> snackbar("我的课程")
                     "order" -> snackbar("我的订单")
                     else -> snackbar(service.label)
                 }
@@ -86,6 +84,7 @@ internal fun MineHomeContent(
                     "sms" -> snackbar("短信模板")
                     "calculator" -> snackbar("购车计算器")
                     "used_car" -> snackbar("二手车")
+                    "ledger" -> snackbar("台账")
                     "short_video" -> snackbar("小视频")
                     "after_sales" -> snackbar("售后")
                     else -> snackbar(item.title)
@@ -98,17 +97,9 @@ internal fun MineHomeContent(
             onOther = { item ->
                 when (item.id) {
                     "address" -> snackbar("地址管理")
-                    "profile" -> snackbar("个人资料")
                     else -> snackbar(item.label)
                 }
             },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "平台：${getPlatform().name} · ${NetworkConfig.effectiveBaseUrl()}",
-            color = MineTheme.LabelTertiary,
-            fontSize = 11.sp,
-            modifier = Modifier.padding(horizontal = 20.dp),
         )
     }
 }
@@ -118,7 +109,8 @@ private fun MineTopChrome(
     loggedIn: Boolean,
     onOpenPersonalized: () -> Unit,
     onOpenSettings: () -> Unit,
-    onAuthAction: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onLoginClick: () -> Unit,
     onCalendar: () -> Unit,
 ) {
     Row(
@@ -140,9 +132,10 @@ private fun MineTopChrome(
         TopIconButton(icon = MineIcons.Info, onClick = onOpenPersonalized)
         TopIconButton(icon = MineIcons.Calendar, onClick = onCalendar)
         TopIconButton(icon = MineIcons.Settings, onClick = onOpenSettings)
+        // Flutter MineHeader 4th icon: profile (not logout)
         TopIconButton(
-            icon = if (loggedIn) MineIcons.Logout else MineIcons.Login,
-            onClick = onAuthAction,
+            icon = if (loggedIn) MineIcons.Person else MineIcons.Login,
+            onClick = if (loggedIn) onOpenProfile else onLoginClick,
         )
     }
 }

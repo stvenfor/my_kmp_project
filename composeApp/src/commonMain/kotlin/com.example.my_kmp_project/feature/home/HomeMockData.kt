@@ -126,16 +126,15 @@ internal object HomeMockData {
         HomeServiceItem("更多"),
     )
 
+    /** Flutter `HomeRepository.loadDashboard` contacts. */
     val contacts = listOf(
-        HomeContactItem("李大仁", "专属客户顾问 · 金牌销售"),
-        HomeContactItem("AI在线咨询", "7×24 小时智能客服", "聊"),
-        HomeContactItem("400 售后热线", "工作日 9:00-18:00", "拨"),
+        HomeContactItem("销售顾问小王", "在线 · 专属顾问", "chat"),
+        HomeContactItem("售后服务热线", "400-800-8888", "phone"),
     )
 
+    /** Flutter `HomeRepository.loadDashboard` news. */
     val news = listOf(
-        HomeNewsItem("2024年新能源汽车市场趋势分析报告发布", "汽车之家行业频道", "2024.05.11"),
-        HomeNewsItem("吉利星越L新款上市，配置全面升级", "汽车之家", "2024.05.10"),
-        HomeNewsItem("经销商数字化转型白皮书：从流量到留量", "i车商资讯", "2024.05.09"),
+        HomeNewsItem("吉利银河 E8 获年度车型奖", "汽车之家", "09-20"),
     )
 
     /** Extra tool row — preserves existing KMP wiring for media/web/friend/classroom. */

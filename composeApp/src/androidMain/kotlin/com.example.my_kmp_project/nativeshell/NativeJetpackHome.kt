@@ -58,10 +58,11 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun JetpackHomeRoot(onDeferred: (String) -> Unit) {
-    var metricTab by remember { mutableIntStateOf(1) } // SoT capture had「昨日」selected
+    var metricTab by remember { mutableIntStateOf(0) } // Flutter HomeController default: 今日
     val greeting = remember { flutterStyleGreeting() }
     var refreshing by remember { mutableStateOf(false) }
-    var showTodos by remember { mutableStateOf(true) }
+    // Flutter SoT (live API): empty todoCards → HomeTodoCardStrip shrinks.
+    var showTodos by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
 
@@ -371,13 +372,21 @@ private fun JetpackStoreMetrics(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     row.forEach { m ->
-                        Column(Modifier.weight(1f)) {
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(DemoColors.PageBg)
+                                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
+                        ) {
                             Text(
                                 m.value,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 22.sp,
                                 color = DemoColors.TextPrimary,
                             )
+                            Spacer(Modifier.height(4.dp))
                             Text(m.label, fontSize = 12.sp, color = DemoColors.TextSecondary)
                         }
                     }
@@ -393,15 +402,22 @@ private fun JetpackStoreMetrics(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     HomeMockData.metricDetails.forEach { detail ->
-                        Column(Modifier.weight(1f)) {
-                            Text(detail.value, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(DemoColors.Accent.copy(alpha = 0.06f))
+                                .padding(horizontal = 8.dp, vertical = 10.dp),
+                        ) {
                             Text(
-                                "${detail.label} ›",
-                                fontSize = 11.sp,
-                                color = DemoColors.TextSecondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                                detail.value,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp,
+                                color = DemoColors.Accent,
                             )
+                            Spacer(Modifier.height(2.dp))
+                            Text(detail.label, fontSize = 11.sp, color = DemoColors.TextSecondary)
+                            Text("详情", fontSize = 11.sp, color = DemoColors.Accent, fontWeight = FontWeight.Medium)
                         }
                     }
                 }

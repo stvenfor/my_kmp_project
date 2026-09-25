@@ -23,218 +23,319 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeMockData
 import com.example.my_kmp_project.feature.home.HomeServiceAssets
+
+/**
+ * Flutter `HomeTodoCardStrip` — no section title; 2-col white cards.
+ * When todo API empty, parent hides this composable.
+ */
 @Composable
 internal fun JetpackTodoStrip(onDeferred: (String) -> Unit) {
+    val cards = HomeMockData.quickActions
+    if (cards.isEmpty()) return
     Column(
         Modifier
             .padding(start = 16.dp, end = 16.dp, top = 12.dp)
             .fillMaxWidth(),
     ) {
-        Text(
-            "待办",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp,
-            color = DemoColors.TextPrimary,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-        HomeMockData.quickActions.forEach { action ->
+        cards.chunked(2).forEach { row ->
             Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DemoColors.Background)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
-                    .clickable { onDeferred(action.title) }
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(Modifier.weight(1f)) {
-                    Text(action.title, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
-                    Text(action.subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                row.forEach { action ->
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(DemoColors.Background)
+                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
+                            .clickable { onDeferred(action.title) }
+                            .padding(12.dp),
+                    ) {
+                        Text(
+                            action.title,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = DemoColors.TextPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            action.subtitle,
+                            fontSize = 12.sp,
+                            color = DemoColors.TextSecondary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            action.actionLabel,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = DemoColors.Accent,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(DemoColors.Accent.copy(alpha = 0.1f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                        )
+                    }
                 }
-                Text(action.actionLabel, color = DemoColors.Accent, fontSize = 13.sp)
+                if (row.size == 1) Spacer(Modifier.weight(1f))
             }
         }
     }
 }
 
+/** Flutter `HomeServiceGrid` — title 服务推荐 + 全部 › */
 @Composable
 internal fun JetpackServiceGrid(onDeferred: (String) -> Unit) {
     Column(
         Modifier
             .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Background)
-            .padding(horizontal = 8.dp, vertical = 12.dp),
+            .fillMaxWidth(),
     ) {
-        Text(
-            "常用服务",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp,
-            color = DemoColors.TextPrimary,
-            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
-        )
-        HomeMockData.services.chunked(4).forEachIndexed { rowIndex, row ->
-            Row(Modifier.fillMaxWidth()) {
-                row.forEachIndexed { colIndex, item ->
-                    val index = rowIndex * 4 + colIndex
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .clickable {
-                                when (item.label) {
-                                    "更多" -> onDeferred("全部服务")
-                                    "直播" -> onDeferred("直播带货")
-                                    else -> onDeferred(item.label)
+        Row(
+            Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "服务推荐",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = DemoColors.TextPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                "全部",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = DemoColors.Accent,
+                modifier = Modifier.clickable { onDeferred("全部服务") },
+            )
+            Text("›", fontSize = 16.sp, color = DemoColors.Accent)
+        }
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(DemoColors.Background)
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+        ) {
+            HomeMockData.services.chunked(4).forEachIndexed { rowIndex, row ->
+                Row(Modifier.fillMaxWidth()) {
+                    row.forEachIndexed { colIndex, item ->
+                        val index = rowIndex * 4 + colIndex
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clickable {
+                                    when (item.label) {
+                                        "更多" -> onDeferred("全部服务")
+                                        "直播" -> onDeferred("直播带货")
+                                        else -> onDeferred(item.label)
+                                    }
+                                }
+                                .padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Box {
+                                HomeAssetIcon(
+                                    resource = HomeServiceAssets.serviceAt(index),
+                                    size = 44.dp,
+                                    contentDescription = item.label,
+                                )
+                                item.badge?.let { badge ->
+                                    val bg = if (badge == "热门") Color(0xFFFF9500) else DemoColors.Accent
+                                    Text(
+                                        badge,
+                                        fontSize = 9.sp,
+                                        color = Color.White,
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(bg)
+                                            .padding(horizontal = 4.dp, vertical = 1.dp),
+                                    )
                                 }
                             }
-                            .padding(vertical = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Box {
-                            HomeAssetIcon(
-                                resource = HomeServiceAssets.serviceAt(index),
-                                size = 44.dp,
-                                contentDescription = item.label,
-                            )
-                            item.badge?.let {
-                                Text(
-                                    it,
-                                    fontSize = 9.sp,
-                                    color = Color.White,
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(DemoColors.Danger)
-                                        .padding(horizontal = 4.dp, vertical = 1.dp),
-                                )
-                            }
+                            Spacer(Modifier.height(6.dp))
+                            Text(item.label, fontSize = 12.sp, color = DemoColors.TextPrimary)
                         }
-                        Spacer(Modifier.height(6.dp))
-                        Text(item.label, fontSize = 12.sp, color = DemoColors.TextPrimary)
                     }
+                    repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
-                repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
 }
 
+/** Flutter `HomeContactList` — 联系汽车之家 */
 @Composable
 internal fun JetpackContactList(onDeferred: (String) -> Unit) {
-    val avatarColors = listOf(
-        Color(0xFF0070F3),
-        Color(0xFF7928CA),
-        Color(0xFFEE0000),
-    )
     Column(
         Modifier
             .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .fillMaxWidth(),
     ) {
         Text(
-            "联系人",
+            "联系汽车之家",
             fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp,
+            fontSize = 18.sp,
+            color = DemoColors.TextPrimary,
             modifier = Modifier.padding(bottom = 8.dp),
         )
-        HomeMockData.contacts.forEachIndexed { index, c ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DemoColors.Background)
-                    .clickable { onDeferred(c.title) }
-                    .padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(DemoColors.Background)
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
+        ) {
+            HomeMockData.contacts.forEachIndexed { index, c ->
+                Row(
                     Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(avatarColors[index % avatarColors.size].copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center,
+                        .fillMaxWidth()
+                        .clickable { onDeferred(c.title) }
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Box(
+                        Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(DemoColors.Accent.copy(alpha = 0.12f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            if (c.trailing == "phone") "☎" else c.title.take(1),
+                            color = DemoColors.Accent,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(c.title, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
+                        Text(c.subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                    }
                     Text(
-                        c.title.take(1),
-                        color = avatarColors[index % avatarColors.size],
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(c.title, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
-                    Text(c.subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
-                }
-                c.trailing?.let {
-                    Text(
-                        it,
+                        if (c.trailing == "phone") "拨打" else "聊",
                         color = DemoColors.Accent,
                         fontSize = 13.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(DemoColors.Primary.copy(alpha = 0.08f))
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    )
+                }
+                if (index < HomeMockData.contacts.lastIndex) {
+                    HorizontalDivider(
+                        Modifier.padding(start = 70.dp),
+                        color = DemoColors.Divider,
+                        thickness = 0.5.dp,
                     )
                 }
             }
-            Spacer(Modifier.height(8.dp))
         }
     }
 }
 
+/** Flutter `HomeNewsList` — 行业动态 */
 @Composable
 internal fun JetpackNewsList() {
     Column(
         Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .fillMaxWidth(),
     ) {
-        Text(
-            "资讯",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
+        Row(
+            Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "行业动态",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 18.sp,
+                color = DemoColors.TextPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            Text("查看更多", fontSize = 13.sp, color = DemoColors.Accent, fontWeight = FontWeight.Medium)
+            Text("›", fontSize = 16.sp, color = DemoColors.Accent)
+        }
         HomeMockData.news.forEach { n ->
-            Column(
+            Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(DemoColors.Background)
+                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(n.title, fontWeight = FontWeight.Medium, maxLines = 2)
-                Text("${n.source} · ${n.date}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        n.title,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 15.sp,
+                        color = DemoColors.TextPrimary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "${n.source}  ${n.date}",
+                        fontSize = 12.sp,
+                        color = DemoColors.TextSecondary,
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Box(
+                    Modifier
+                        .width(96.dp)
+                        .height(72.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(DemoColors.PageBg),
+                )
             }
-            HorizontalDivider(color = DemoColors.Divider)
             Spacer(Modifier.height(8.dp))
         }
     }
 }
 
+/** Flutter `_LearningReportEntry`. */
 @Composable
 internal fun JetpackLearningReportEntry(onDeferred: (String) -> Unit) {
     Row(
         Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Accent.copy(alpha = 0.08f))
+            .clip(RoundedCornerShape(8.dp))
+            .background(DemoColors.Background)
+            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
             .clickable { onDeferred("学习报告") }
             .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("学习报告", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-        Text("查看 >", color = DemoColors.Accent)
+        Box(
+            Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(DemoColors.Accent.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("报", color = DemoColors.Accent, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text("学习报告", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = DemoColors.TextPrimary)
+            Text("今日高光 · 学习记录", fontSize = 13.sp, color = DemoColors.TextSecondary)
+        }
+        Text("›", color = DemoColors.TextSecondary, fontSize = 18.sp)
     }
 }
 
@@ -242,7 +343,7 @@ internal fun JetpackLearningReportEntry(onDeferred: (String) -> Unit) {
 internal fun JetpackStrategyEntry(onDeferred: (String) -> Unit) {
     Row(
         Modifier
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(DemoColors.Background)
@@ -258,12 +359,12 @@ internal fun JetpackStrategyEntry(onDeferred: (String) -> Unit) {
                 .background(DemoColors.Accent.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Text("投", color = DemoColors.Accent, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("策", color = DemoColors.Accent, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text("投资策略", color = DemoColors.TextPrimary)
-            Text("资产九宫格 · 恐贪定投 · 趋势策略", fontSize = 12.sp, color = DemoColors.TextSecondary)
+            Text("投资策略", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = DemoColors.TextPrimary)
+            Text("资产九宫格 · 恐贪定投 · 趋势策略", fontSize = 13.sp, color = DemoColors.TextSecondary)
         }
         Text("›", color = DemoColors.TextSecondary)
     }
