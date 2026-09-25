@@ -46,6 +46,8 @@ import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.core.router.MainTab
 import com.example.my_kmp_project.feature.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
+import com.example.my_kmp_project.feature.auth.LoginOtpScreen
+import com.example.my_kmp_project.feature.auth.LoginPasswordScreen
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
@@ -287,10 +289,16 @@ internal fun NativeAndroidMain() {
             .collect { pending ->
                 DeepLinkRouter.consumePending()
                 when {
-                    pending.route == AppRoutes.Auth.LOGIN ||
-                        pending.route == AppRoutePath.loginPassword ||
-                        pending.route == AppRoutePath.loginOtp -> {
+                    pending.route == AppRoutes.Auth.LOGIN -> {
                         authOverlay = AuthOverlay.Login
+                        bottomBarVisible = false
+                    }
+                    pending.route == AppRoutePath.loginPassword -> {
+                        authOverlay = AuthOverlay.LoginPassword
+                        bottomBarVisible = false
+                    }
+                    pending.route == AppRoutePath.loginOtp -> {
+                        authOverlay = AuthOverlay.LoginOtp
                         bottomBarVisible = false
                     }
                     pending.route.startsWith("/home/") -> {
@@ -429,6 +437,15 @@ internal fun NativeAndroidMain() {
                     bottomBarVisible = true
                 },
             )
+            AuthOverlay.LoginPassword -> LoginPasswordScreen(
+                onLoginSuccess = { afterAuthSuccess() },
+                onOpenRegister = { authOverlay = AuthOverlay.Register },
+                onBack = { authOverlay = AuthOverlay.Login },
+            )
+            AuthOverlay.LoginOtp -> LoginOtpScreen(
+                onLoginSuccess = { afterAuthSuccess() },
+                onBack = { authOverlay = AuthOverlay.Login },
+            )
             AuthOverlay.Register -> RegisterScreen(
                 onRegistered = { afterAuthSuccess() },
                 onBack = { authOverlay = AuthOverlay.Login },
@@ -517,7 +534,7 @@ internal fun NativeAndroidMain() {
     }
 }
 
-private enum class AuthOverlay { None, Login, Register }
+private enum class AuthOverlay { None, Login, LoginPassword, LoginOtp, Register }
 private enum class ShellOverlay {
     None,
     MineIsland,

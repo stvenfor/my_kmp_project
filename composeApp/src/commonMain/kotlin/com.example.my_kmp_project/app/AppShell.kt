@@ -43,6 +43,7 @@ import com.example.my_kmp_project.core.design.ImmersiveInsets.shellContentInsets
 import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.TokenExpiredHandler
 import com.example.my_kmp_project.core.router.AppRoute
+import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.router.AppRoutes
 import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.core.router.LocalAppNavigator
@@ -52,6 +53,8 @@ import com.example.my_kmp_project.core.ui.MainTabChromeController
 import com.example.my_kmp_project.feature.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.AuthSessionState
+import com.example.my_kmp_project.feature.auth.LoginOtpScreen
+import com.example.my_kmp_project.feature.auth.LoginPasswordScreen
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
 import com.example.my_kmp_project.feature.chat.ChatScreen
@@ -82,6 +85,8 @@ private enum class AppPhase {
 private enum class AuthOverlay {
     None,
     Login,
+    LoginPassword,
+    LoginOtp,
     Register,
 }
 
@@ -261,10 +266,16 @@ private fun MainShell() {
     LaunchedEffect(Unit) {
         val pending = DeepLinkRouter.consumePending() ?: return@LaunchedEffect
         when {
-            pending.route == AppRoutes.Auth.LOGIN ||
-                pending.route == AppRoutePath.loginPassword ||
-                pending.route == AppRoutePath.loginOtp -> {
+            pending.route == AppRoutes.Auth.LOGIN -> {
                 authOverlay = AuthOverlay.Login
+                tabChrome.updateBottomBarVisible(false)
+            }
+            pending.route == AppRoutePath.loginPassword -> {
+                authOverlay = AuthOverlay.LoginPassword
+                tabChrome.updateBottomBarVisible(false)
+            }
+            pending.route == AppRoutePath.loginOtp -> {
+                authOverlay = AuthOverlay.LoginOtp
                 tabChrome.updateBottomBarVisible(false)
             }
             pending.tab != null -> {
@@ -353,6 +364,15 @@ private fun MainShell() {
                                 AuthGate.clearPending()
                                 tabChrome.updateBottomBarVisible(true)
                             },
+                        )
+                        AuthOverlay.LoginPassword -> LoginPasswordScreen(
+                            onLoginSuccess = { afterAuthSuccess() },
+                            onOpenRegister = { authOverlay = AuthOverlay.Register },
+                            onBack = { authOverlay = AuthOverlay.Login },
+                        )
+                        AuthOverlay.LoginOtp -> LoginOtpScreen(
+                            onLoginSuccess = { afterAuthSuccess() },
+                            onBack = { authOverlay = AuthOverlay.Login },
                         )
                         AuthOverlay.Register -> RegisterScreen(
                             onRegistered = { afterAuthSuccess() },

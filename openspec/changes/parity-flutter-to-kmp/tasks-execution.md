@@ -96,21 +96,21 @@
 - [ ] R.login.ui.i / R.login.ui.h（或 registry `missing`）
 
 ## `/login/password` — `loginPassword`
-- [ ] R.loginPassword.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.loginPassword.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.loginPassword.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.loginPassword.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.loginPassword.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.loginPassword.ev.a 证据 `notes/evidence/.../login_password.{flutter,kmp}.png`
+- [x] R.loginPassword.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.loginPassword.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.loginPassword.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.loginPassword.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.loginPassword.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.loginPassword.ev.a 证据 `notes/evidence/.../login_password.{flutter,kmp}.png`
 - [ ] R.loginPassword.ui.i / R.loginPassword.ui.h（或 registry `missing`）
 
 ## `/login/otp` — `loginOtp`
-- [ ] R.loginOtp.ui.a UI 对照 Flutter 同页（并排截图）
-- [ ] R.loginOtp.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [ ] R.loginOtp.nav.a 导航参数/返回栈对齐 RoutePath
-- [ ] R.loginOtp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [ ] R.loginOtp.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [ ] R.loginOtp.ev.a 证据 `notes/evidence/.../login_otp.{flutter,kmp}.png`
+- [x] R.loginOtp.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.loginOtp.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.loginOtp.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.loginOtp.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.loginOtp.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.loginOtp.ev.a 证据 `notes/evidence/.../login_otp.{flutter,kmp}.png`
 - [ ] R.loginOtp.ui.i / R.loginOtp.ui.h（或 registry `missing`）
 
 ## `/register` — `register`

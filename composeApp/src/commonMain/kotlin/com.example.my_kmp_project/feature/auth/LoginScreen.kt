@@ -60,6 +60,11 @@ internal fun LoginScreen(
     var otpHint by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(email, phone) {
+        AuthPendingCredentials.email = email
+        AuthPendingCredentials.phone = phone
+    }
+
     LaunchedEffect(otpCooldown) {
         if (otpCooldown <= 0) return@LaunchedEffect
         delay(1_000)
