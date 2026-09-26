@@ -17,3 +17,6 @@ internal actual fun saveStringList(key: String, values: List<String>) {
     val prefs = ctx.getSharedPreferences("home_favorites", Context.MODE_PRIVATE)
     prefs.edit().putString(key, values.joinToString("\u001f")).apply()
 }
+
+internal actual fun platformTodayYmd(): String =
+    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())

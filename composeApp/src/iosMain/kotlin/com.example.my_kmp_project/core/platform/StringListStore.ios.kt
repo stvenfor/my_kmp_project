@@ -12,3 +12,9 @@ internal actual fun loadStringList(key: String): List<String>? {
 internal actual fun saveStringList(key: String, values: List<String>) {
     NSUserDefaults.standardUserDefaults.setObject(values, key)
 }
+
+internal actual fun platformTodayYmd(): String {
+    val formatter = platform.Foundation.NSDateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter.stringFromDate(platform.Foundation.NSDate())
+}

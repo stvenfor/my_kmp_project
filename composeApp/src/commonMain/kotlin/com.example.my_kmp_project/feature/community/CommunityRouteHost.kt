@@ -27,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,10 +39,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.loadStringList
+import com.example.my_kmp_project.core.platform.platformTodayYmd
+import com.example.my_kmp_project.core.platform.saveStringList
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
@@ -86,6 +93,7 @@ internal fun CommunityRouteHost(
         CommunityRoutes.Publish -> CommunityPublishScreen(
             onBack = onBack,
             onPickTopic = { onNavigate(CommunityRoutes.TopicSelect) },
+            onOpenConvention = { onNavigate(CommunityRoutes.Convention) },
             onPublished = { body ->
                 CommunityPublishBus.lastPublishedBody = body
                 showPlatformToast("发布成功")
@@ -131,12 +139,90 @@ internal fun CommunityRouteHost(
 private fun CommunityPublishScreen(
     onBack: () -> Unit,
     onPickTopic: () -> Unit,
+    onOpenConvention: () -> Unit,
     onPublished: (String) -> Unit,
 ) {
     ReportMainTabRoot(isRoot = false)
     var body by remember { mutableStateOf("") }
     var imageCount by remember { mutableStateOf(0) }
     var topic by remember { mutableStateOf<String?>(null) }
+    var showConvention by remember { mutableStateOf(false) }
+
+    // Flutter CommunityConventionDialog.maybeShow — once per local calendar day.
+    LaunchedEffect(Unit) {
+        val today = platformTodayYmd()
+        val ack = loadStringList(ConventionAckKey)?.firstOrNull()
+        if (ack != today) showConvention = true
+    }
+
+    if (showConvention) {
+        Dialog(
+            onDismissRequest = { /* barrierDismissible=false */ },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+                usePlatformDefaultWidth = false,
+            ),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .padding(start = 22.dp, end = 22.dp, top = 28.dp, bottom = 22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    "社区公约",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = Color(0xFF1A1A1A),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(18.dp))
+                Text(
+                    "亲爱的用户，您好：\n\n" +
+                        "欢迎来到支付宝理财社区-盘友圈，我们希望打造一个友善、有趣、有料的理财社区。\n\n" +
+                        "为了更好的体验，期待大家都能做到：\n" +
+                        "尊重他人：请勿侵权和恶意行为；\n" +
+                        "尊重事实：请勿传播不良价值观、营销广告；\n" +
+                        "尊重平台：请勿发布违反法律法规、金融法规的内容。\n\n" +
+                        "一个友善温暖的理财社区，需要大家一起来守护，感谢～",
+                    fontSize = 14.sp,
+                    color = Color(0xFF333333),
+                    lineHeight = 23.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "点击了解完整社区公约",
+                    color = Color(0xFF1677FF),
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .clickable {
+                            showConvention = false
+                            onOpenConvention()
+                        }
+                        .padding(vertical = 4.dp),
+                )
+                Spacer(Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        saveStringList(ConventionAckKey, listOf(platformTodayYmd()))
+                        showConvention = false
+                    },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(22.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1677FF)),
+                ) {
+                    Text("我知道了", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
+            }
+        }
+    }
+
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(
             title = "发布",
@@ -188,6 +274,8 @@ private fun CommunityPublishScreen(
         }
     }
 }
+
+private const val ConventionAckKey = "community_convention_ack_date"
 
 @Composable
 private fun CommunitySearchScreen(onBack: () -> Unit) {

@@ -4,3 +4,6 @@ package com.example.my_kmp_project.core.platform
 internal expect fun loadStringList(key: String): List<String>?
 
 internal expect fun saveStringList(key: String, values: List<String>)
+
+/** Local calendar yyyy-MM-dd (device timezone). */
+internal expect fun platformTodayYmd(): String
