@@ -457,19 +457,209 @@ struct HomeTabView: View {
     }
 }
 
-// MARK: - Chat
+// MARK: - Chat (Flutter MockImChatStore / ChatPage / ChatDetailPage SoT)
+
+private struct ChatConv: Identifiable {
+    let id: String
+    let peerId: String
+    var title: String
+    var lastMessage: String
+    var lastMessageAt: Date
+    var unreadCount: Int
+    var isOnline: Bool
+}
+
+private struct ChatMsg: Identifiable {
+    let id: String
+    var body: String
+    var isSelf: Bool
+    var createdAt: Date
+    var sendStatus: String // sending | success | failed
+    var readStatus: String // unread | read
+    var type: String // text | image | voice | custom | time
+}
+
+/// Flutter `MockImChatStore` + mock `ImChatRepository._send` port for SwiftUI tab root.
+@MainActor
+private final class FlutterChatStore: ObservableObject {
+    @Published var conversations: [ChatConv] = []
+    @Published private var messagesById: [String: [ChatMsg]] = [:]
+
+    init() { seed() }
+
+    private func seed() {
+        let now = Date()
+        let peers = ["mock_peer_01", "mock_peer_02", "mock_peer_03"]
+        var convs: [ChatConv] = []
+        for (i, peer) in peers.enumerated() {
+            let storageId = "private_\(peer)"
+            convs.append(ChatConv(
+                id: storageId,
+                peerId: peer,
+                title: "Mock好友\(i + 1)",
+                lastMessage: i == 0 ? "晚上一起吃饭吗？" : "你好",
+                lastMessageAt: now.addingTimeInterval(-Double(5 * (i + 1)) * 60),
+                unreadCount: i == 0 ? 2 : 0,
+                isOnline: i % 2 == 0
+            ))
+            if i == 0 {
+                // Newest-first (Flutter insert(0) + reverse ListView).
+                messagesById[storageId] = [
+                    ChatMsg(id: "m_2", body: "在的，有什么事？", isSelf: true,
+                            createdAt: now.addingTimeInterval(-28 * 60),
+                            sendStatus: "success", readStatus: "read", type: "text"),
+                    ChatMsg(id: "m_1", body: "你好，在吗？", isSelf: false,
+                            createdAt: now.addingTimeInterval(-30 * 60),
+                            sendStatus: "success", readStatus: "read", type: "text"),
+                ]
+            }
+        }
+        conversations = convs.sorted { $0.lastMessageAt > $1.lastMessageAt }
+    }
+
+    func messages(for id: String) -> [ChatMsg] {
+        // Newest-first in store; UI reverses for chronological bottom-up like Flutter.
+        Array((messagesById[id] ?? []).reversed())
+    }
+
+    func newestFirst(for id: String) -> [ChatMsg] {
+        messagesById[id] ?? []
+    }
+
+    func filter(_ query: String) -> [ChatConv] {
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !q.isEmpty else { return conversations }
+        return conversations.filter {
+            $0.title.lowercased().contains(q) || $0.lastMessage.lowercased().contains(q)
+        }
+    }
+
+    func markRead(_ id: String) {
+        if var list = messagesById[id] {
+            for i in list.indices where !list[i].isSelf && list[i].readStatus == "unread" {
+                list[i].readStatus = "read"
+            }
+            messagesById[id] = list
+        }
+        if let i = conversations.firstIndex(where: { $0.id == id }) {
+            conversations[i].unreadCount = 0
+        }
+    }
+
+    func ensure(id: String, title: String, lastMessage: String, unread: Int) -> String {
+        let storageId = id.hasPrefix("private_") || id.hasPrefix("group_") ? id : "private_\(id)"
+        if let i = conversations.firstIndex(where: { $0.id == storageId }) {
+            conversations[i].title = title.isEmpty ? conversations[i].title : title
+            if !lastMessage.isEmpty { conversations[i].lastMessage = lastMessage }
+            if unread > 0 { conversations[i].unreadCount = unread }
+            conversations[i].lastMessageAt = Date()
+        } else {
+            let peer = storageId.replacingOccurrences(of: "private_", with: "")
+            conversations.insert(ChatConv(
+                id: storageId, peerId: peer, title: title.isEmpty ? "推送会话" : title,
+                lastMessage: lastMessage.isEmpty ? "来自 Push/Deeplink 的 mock 会话" : lastMessage,
+                lastMessageAt: Date(), unreadCount: unread, isOnline: false
+            ), at: 0)
+            if !lastMessage.isEmpty {
+                messagesById[storageId] = [
+                    ChatMsg(id: "m_push", body: lastMessage, isSelf: false, createdAt: Date(),
+                            sendStatus: "success", readStatus: "unread", type: "text"),
+                ]
+            }
+        }
+        conversations.sort { $0.lastMessageAt > $1.lastMessageAt }
+        return storageId
+    }
+
+    func sendText(_ id: String, _ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        send(id: id, type: "text", body: trimmed, preview: trimmed)
+    }
+
+    func sendImage(_ id: String) {
+        send(id: id, type: "image", body: "https://picsum.photos/seed/chat/600", preview: "[图片]")
+    }
+
+    func sendVoice(_ id: String) {
+        send(id: id, type: "voice", body: "[语音]", preview: "[语音]")
+    }
+
+    func sendCustom(_ id: String, _ label: String) {
+        send(id: id, type: "custom", body: label, preview: "[自定义消息]")
+    }
+
+    private func send(id: String, type: String, body: String, preview: String) {
+        let now = Date()
+        var list = messagesById[id] ?? []
+        if let latest = list.first, latest.type != "time",
+           abs(now.timeIntervalSince(latest.createdAt)) >= 5 * 60 {
+            list.insert(ChatMsg(id: "time_\(Int(now.timeIntervalSince1970))", body: Self.hm(now),
+                                isSelf: false, createdAt: now, sendStatus: "success",
+                                readStatus: "read", type: "time"), at: 0)
+        } else if list.isEmpty {
+            list.insert(ChatMsg(id: "time_\(Int(now.timeIntervalSince1970))", body: Self.hm(now),
+                                isSelf: false, createdAt: now, sendStatus: "success",
+                                readStatus: "read", type: "time"), at: 0)
+        }
+        let localId = "local_\(Int(now.timeIntervalSince1970 * 1000))"
+        list.insert(ChatMsg(id: localId, body: body, isSelf: true, createdAt: now,
+                            sendStatus: "sending", readStatus: "unread", type: type), at: 0)
+        messagesById[id] = list
+        if let i = conversations.firstIndex(where: { $0.id == id }) {
+            conversations[i].lastMessage = preview
+            conversations[i].lastMessageAt = now
+        }
+        conversations.sort { $0.lastMessageAt > $1.lastMessageAt }
+        objectWillChange.send()
+
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 280_000_000)
+            if var cur = messagesById[id], let idx = cur.firstIndex(where: { $0.id == localId }) {
+                cur[idx].sendStatus = "success"
+                messagesById[id] = cur
+                objectWillChange.send()
+            }
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            if var cur = messagesById[id], let idx = cur.firstIndex(where: { $0.id == localId && $0.isSelf }) {
+                cur[idx].readStatus = "read"
+                messagesById[id] = cur
+                objectWillChange.send()
+            }
+        }
+    }
+
+    static func hm(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        return f.string(from: date)
+    }
+
+    static func listTime(_ date: Date) -> String {
+        let cal = Calendar.current
+        if cal.isDateInToday(date) { return hm(date) }
+        if cal.isDateInYesterday(date) { return "昨天" }
+        let f = DateFormatter()
+        f.dateFormat = "M/d"
+        return f.string(from: date)
+    }
+
+    static func statusLabel(_ m: ChatMsg) -> String {
+        guard m.isSelf, m.type != "time" else { return "" }
+        switch m.sendStatus {
+        case "sending": return "发送中"
+        case "failed": return "发送失败"
+        default: return m.readStatus == "read" ? "已读" : "送达"
+        }
+    }
+}
 
 struct ChatTabView: View {
     var onDeferred: (String) -> Void = { _ in }
     var initialPeer: String? = nil
-    private let peers: [(String, String, String, String?, Bool)] = [
-        ("Mock好友1", "晚上一起吃饭吗？", "22:50", "2", true),
-        ("Mock好友2", "你好", "22:45", nil, false),
-        ("Mock好友3", "你好", "22:40", nil, true),
-    ]
-    @State private var selectedPeer: String? = nil
+    @StateObject private var store = FlutterChatStore()
+    @State private var selectedId: String? = nil
     @State private var draft = ""
-    @State private var messages: [String] = []
     @State private var searchOpen = false
     @State private var searchQuery = ""
     @State private var inputMode: ChatInputMode = .keyboard
@@ -478,16 +668,12 @@ struct ChatTabView: View {
 
     private enum ChatInputMode { case keyboard, voice }
 
-    private var visiblePeers: [(String, String, String, String?, Bool)] {
-        let q = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !q.isEmpty else { return peers }
-        return peers.filter { $0.0.contains(q) || $0.1.contains(q) }
-    }
+    private var visible: [ChatConv] { store.filter(searchQuery) }
 
     var body: some View {
         VStack(spacing: 0) {
-            if let peer = selectedPeer {
-                chatDetail(peer: peer)
+            if let id = selectedId, let conv = store.conversations.first(where: { $0.id == id }) {
+                chatDetail(conv)
             } else {
                 chatList
             }
@@ -495,14 +681,16 @@ struct ChatTabView: View {
         .background(DesignTokens.canvasSoft2)
         .onAppear {
             if let peer = initialPeer, !peer.isEmpty {
-                selectedPeer = peer
-                messages = ["你好，我是\(peer)", "方便聊一下车源吗？"]
+                let id = store.ensure(id: peer, title: peer, lastMessage: "来自 Push/Deeplink 的 mock 会话", unread: 1)
+                selectedId = id
+                store.markRead(id)
             }
         }
         .onChange(of: initialPeer) { _, peer in
             if let peer, !peer.isEmpty {
-                selectedPeer = peer
-                messages = ["你好，我是\(peer)", "方便聊一下车源吗？"]
+                let id = store.ensure(id: peer, title: peer, lastMessage: "来自 Push/Deeplink 的 mock 会话", unread: 1)
+                selectedId = id
+                store.markRead(id)
             }
         }
     }
@@ -523,67 +711,57 @@ struct ChatTabView: View {
                         .foregroundStyle(DesignTokens.link)
                         .frame(width: 40, height: 40)
                 }
-                Button {
-                    onDeferred("/friend")
-                } label: {
+                Button { onDeferred("/friend") } label: {
                     Image(systemName: "square.and.pencil")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(DesignTokens.link)
                         .frame(width: 40, height: 40)
                 }
             }
-            .padding(.leading, 16)
-            .padding(.trailing, 8)
-            .padding(.vertical, 8)
+            .padding(.leading, 16).padding(.trailing, 8).padding(.vertical, 8)
 
             if searchOpen {
                 HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 14))
-                        .foregroundStyle(DesignTokens.mute)
-                    TextField("搜索会话名称或消息", text: $searchQuery)
-                        .font(.system(size: 15))
+                    Image(systemName: "magnifyingglass").font(.system(size: 14)).foregroundStyle(DesignTokens.mute)
+                    TextField("搜索会话名称或消息", text: $searchQuery).font(.system(size: 15))
                 }
-                .padding(.horizontal, 12)
-                .frame(height: 40)
+                .padding(.horizontal, 12).frame(height: 40)
                 .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
+                .padding(.horizontal, 16).padding(.bottom, 8)
             }
 
-            if visiblePeers.isEmpty {
-                VStack(spacing: 8) {
+            if visible.isEmpty {
+                VStack {
                     Spacer()
-                    Text("无匹配会话", font: .system(size: 15), color: DesignTokens.body)
+                    Text(searchQuery.isEmpty ? "还没有消息" : "没有匹配的会话",
+                         font: .system(size: 15), color: DesignTokens.body)
                     Spacer()
                 }
             } else {
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(Array(visiblePeers.enumerated()), id: \.offset) { index, peer in
+                        ForEach(Array(visible.enumerated()), id: \.element.id) { index, conv in
                             HStack(spacing: 12) {
                                 ZStack(alignment: .bottomTrailing) {
-                                    Text(String(peer.0.suffix(1)), color: DesignTokens.link)
-                                        .frame(width: 48, height: 48)
+                                    Text(String(conv.title.suffix(1)), color: DesignTokens.link)
+                                        .frame(width: 52, height: 52)
                                         .background(DesignTokens.link.opacity(0.15), in: Circle())
-                                    if peer.4 {
-                                        Circle()
-                                            .fill(DesignTokens.link)
-                                            .frame(width: 10, height: 10)
-                                            .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                                    if conv.isOnline {
+                                        Circle().fill(DesignTokens.link).frame(width: 12, height: 12)
+                                            .overlay(Circle().stroke(.white, lineWidth: 2))
                                     }
                                 }
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(peer.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                                    Text(peer.1, font: .system(size: 13), color: DesignTokens.body).lineLimit(1)
+                                    Text(conv.title, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                    Text(conv.lastMessage, font: .system(size: 13), color: DesignTokens.body).lineLimit(1)
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 6) {
-                                    Text(peer.2, font: .system(size: 11), color: DesignTokens.body)
-                                    if let badge = peer.3 {
-                                        Text(badge, font: .system(size: 11), color: .white)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 2)
+                                    Text(FlutterChatStore.listTime(conv.lastMessageAt), font: .system(size: 11), color: DesignTokens.body)
+                                    if conv.unreadCount > 0 {
+                                        Text(conv.unreadCount > 99 ? "99+" : "\(conv.unreadCount)",
+                                             font: .system(size: 11), color: .white)
+                                            .padding(.horizontal, 6).padding(.vertical, 2)
                                             .background(Color(red: 0xEE/255, green: 0, blue: 0), in: Capsule())
                                     }
                                 }
@@ -591,11 +769,14 @@ struct ChatTabView: View {
                             .padding(16)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                selectedPeer = peer.0
-                                messages = ["你好，在吗？", peer.1]
+                                selectedId = conv.id
+                                store.markRead(conv.id)
                                 draft = ""
+                                inputMode = .keyboard
+                                showEmoji = false
+                                showMore = false
                             }
-                            if index != visiblePeers.count - 1 {
+                            if index != visible.count - 1 {
                                 Divider().overlay(DesignTokens.hairline).padding(.leading, 76)
                             }
                         }
@@ -608,45 +789,56 @@ struct ChatTabView: View {
         }
     }
 
-    private func chatDetail(peer: String) -> some View {
-        VStack(spacing: 0) {
+    private func chatDetail(_ conv: ChatConv) -> some View {
+        let msgs = store.newestFirst(for: conv.id)
+        return VStack(spacing: 0) {
             HStack {
-                Button {
-                    selectedPeer = nil
-                } label: {
+                Button { selectedId = nil } label: {
                     Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link)
                 }
-                Text(peer, font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                Text(conv.title, font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
                 Spacer()
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 16).padding(.vertical, 12)
             .background(DesignTokens.canvas)
-            .overlay(alignment: .bottom) {
-                Rectangle().fill(DesignTokens.hairline).frame(height: 0.5)
-            }
+            .overlay(alignment: .bottom) { Rectangle().fill(DesignTokens.hairline).frame(height: 0.5) }
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(Array(messages.enumerated()), id: \.offset) { index, body in
-                        let isSelf = index % 2 == 1
-                        HStack {
-                            if isSelf { Spacer(minLength: 48) }
-                            Text(body, font: .system(size: 15), color: isSelf ? .white : DesignTokens.ink)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(
-                                    isSelf ? DesignTokens.link : DesignTokens.canvas,
-                                    in: RoundedRectangle(cornerRadius: 12)
-                                )
-                            if !isSelf { Spacer(minLength: 48) }
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 12) {
+                        ForEach(msgs.reversed()) { msg in
+                            if msg.type == "time" {
+                                Text(msg.body, font: .system(size: 12), color: DesignTokens.mute)
+                                    .frame(maxWidth: .infinity)
+                            } else {
+                                HStack {
+                                    if msg.isSelf { Spacer(minLength: 48) }
+                                    VStack(alignment: msg.isSelf ? .trailing : .leading, spacing: 2) {
+                                        Text(msg.type == "image" ? "[图片]" : (msg.type == "voice" ? "[语音]" : msg.body),
+                                             font: .system(size: 15),
+                                             color: msg.isSelf ? .white : DesignTokens.ink)
+                                            .padding(.horizontal, 12).padding(.vertical, 8)
+                                            .background(msg.isSelf ? DesignTokens.link : DesignTokens.canvas,
+                                                        in: RoundedRectangle(cornerRadius: 12))
+                                        let status = FlutterChatStore.statusLabel(msg)
+                                        Text(status.isEmpty ? FlutterChatStore.hm(msg.createdAt) : status,
+                                             font: .system(size: 11), color: DesignTokens.mute)
+                                    }
+                                    if !msg.isSelf { Spacer(minLength: 48) }
+                                }
+                                .id(msg.id)
+                            }
                         }
                     }
+                    .padding(16)
                 }
-                .padding(16)
+                .onChange(of: msgs.first?.id) { _, _ in
+                    if let id = msgs.first?.id {
+                        withAnimation { proxy.scrollTo(id, anchor: .bottom) }
+                    }
+                }
             }
 
-            // Flutter InputPanel: voice ↔ keyboard, emoji, more (album/camera)
             VStack(spacing: 0) {
                 HStack(spacing: 8) {
                     Button {
@@ -655,28 +847,22 @@ struct ChatTabView: View {
                         showMore = false
                     } label: {
                         Image(systemName: inputMode == .voice ? "keyboard" : "mic")
-                            .font(.system(size: 20))
-                            .foregroundStyle(DesignTokens.body)
+                            .font(.system(size: 20)).foregroundStyle(DesignTokens.body)
                             .frame(width: 36, height: 36)
                     }
                     if inputMode == .voice {
                         Text("按住 说话")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(DesignTokens.ink)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 40)
+                            .frame(maxWidth: .infinity).frame(height: 40)
                             .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                            .onTapGesture { store.sendVoice(conv.id) }
                     } else {
                         TextField("输入消息…", text: $draft)
-                            .padding(.horizontal, 12)
-                            .frame(height: 40)
+                            .padding(.horizontal, 12).frame(height: 40)
                             .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
                     }
                     Button {
-                        showEmoji.toggle()
-                        showMore = false
-                        inputMode = .keyboard
+                        showEmoji.toggle(); showMore = false; inputMode = .keyboard
                     } label: {
                         Image(systemName: "face.smiling")
                             .font(.system(size: 20))
@@ -684,24 +870,20 @@ struct ChatTabView: View {
                             .frame(width: 36, height: 36)
                     }
                     if draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        Button {
-                            showMore.toggle()
-                            showEmoji = false
-                        } label: {
-                            Image(systemName: "plus.circle")
-                                .font(.system(size: 28))
+                        Button { showMore.toggle(); showEmoji = false } label: {
+                            Image(systemName: "plus.circle").font(.system(size: 28))
                                 .foregroundStyle(showMore ? DesignTokens.link : DesignTokens.body)
                         }
                     } else {
                         Button {
-                            let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-                            guard !text.isEmpty else { return }
-                            messages.append(text)
+                            store.sendText(conv.id, draft)
                             draft = ""
+                            inputMode = .keyboard
+                            showEmoji = false
+                            showMore = false
                         } label: {
                             Text("发送", font: .system(size: 14, weight: .semibold), color: .white)
-                                .padding(.horizontal, 12)
-                                .frame(height: 36)
+                                .padding(.horizontal, 12).frame(height: 36)
                                 .background(DesignTokens.link, in: Capsule())
                         }
                     }
@@ -709,28 +891,24 @@ struct ChatTabView: View {
                 .padding(12)
 
                 if showEmoji {
-                    let emojis = ["😀", "😁", "😂", "🤣", "😊", "😍", "🥰", "😘", "👍", "🙏", "🔥", "🎉", "🚗", "🏠", "✅", "❤️"]
+                    let emojis = ["😀", "😂", "🥰", "😎", "🤔", "👍", "🙏", "🎉",
+                                  "❤️", "🔥", "👋", "😭", "🤣", "😊", "🥳", "💪"]
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: 8) {
                         ForEach(emojis, id: \.self) { e in
-                            Text(e).font(.system(size: 28))
-                                .onTapGesture { draft += e }
+                            Text(e).font(.system(size: 28)).onTapGesture { draft += e }
                         }
                     }
-                    .padding(12)
-                    .frame(height: 160)
-                    .background(DesignTokens.canvas)
+                    .padding(12).frame(height: 160).background(DesignTokens.canvas)
                 }
 
                 if showMore {
                     HStack(spacing: 24) {
-                        moreAction("照片", "photo.on.rectangle") { messages.append("[图片]") }
-                        moreAction("拍摄", "camera") { messages.append("[拍摄]") }
-                        moreAction("文件", "doc") { messages.append("[文件]") }
-                        moreAction("位置", "location") { messages.append("[位置]") }
+                        moreAction("照片", "photo.on.rectangle") { store.sendImage(conv.id); showMore = false }
+                        moreAction("拍摄", "camera") { store.sendImage(conv.id); showMore = false }
+                        moreAction("文件", "doc") { store.sendCustom(conv.id, "文件"); showMore = false }
+                        moreAction("位置", "location") { store.sendCustom(conv.id, "位置"); showMore = false }
                     }
-                    .padding(.vertical, 20)
-                    .frame(maxWidth: .infinity)
-                    .background(DesignTokens.canvas)
+                    .padding(.vertical, 20).frame(maxWidth: .infinity).background(DesignTokens.canvas)
                 }
             }
             .background(DesignTokens.canvasSoft2)

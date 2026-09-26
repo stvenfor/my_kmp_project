@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,11 +20,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,7 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,35 +45,46 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 /**
- * Authenticated Chat tab root (soft gate is owned by shell/auth — this screen assumes
- * the caller only shows it after login).
+ * Authenticated Chat tab — Flutter `ChatPage` / `ChatDetailPage` SoT via [MockImEngine].
  */
 @Composable
 internal fun ChatScreen(
-    engine: ImEngine = remember { MockImEngine() },
+    engine: ImEngine = remember { MockImEngine(seedDemo = true) },
 ) {
     var selectedConversationId by remember { mutableStateOf<String?>(null) }
-    var messageEpoch by remember { mutableStateOf(0) }
+    var revision by remember { mutableStateOf(0) }
+    var searchOpen by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+
+    DisposableEffect(engine) {
+        val unsub = engine.observe { revision += 1 }
+        onDispose { unsub() }
+    }
+
     val selected = selectedConversationId?.let { id ->
         engine.conversations().firstOrNull { it.id == id }
     }
 
     if (selected != null) {
         ReportMainTabRoot(isRoot = false)
-        val messages = remember(selected.id, messageEpoch) { engine.messages(selected.id) }
+        LaunchedEffect(selected.id) { engine.markConversationRead(selected.id) }
         ChatDetailScreen(
             conversation = selected,
-            messages = messages,
+            messages = remember(selected.id, revision) { engine.messages(selected.id) },
             onBack = { selectedConversationId = null },
-            onSend = { text ->
-                engine.sendText(selected.id, text)
-                messageEpoch += 1
-            },
+            onSend = { text -> engine.sendText(selected.id, text) },
         )
     } else {
         ReportMainTabRoot(isRoot = true)
         ChatListContent(
-            conversations = engine.conversations(),
+            conversations = remember(revision, query) { engine.filterConversations(query) },
+            searchOpen = searchOpen,
+            query = query,
+            onQueryChange = { query = it },
+            onToggleSearch = {
+                searchOpen = !searchOpen
+                if (!searchOpen) query = ""
+            },
             onOpen = { selectedConversationId = it },
         )
     }
@@ -78,6 +93,10 @@ internal fun ChatScreen(
 @Composable
 private fun ChatListContent(
     conversations: List<ImConversation>,
+    searchOpen: Boolean,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onToggleSearch: () -> Unit,
     onOpen: (String) -> Unit,
 ) {
     Column(
@@ -101,16 +120,39 @@ private fun ChatListContent(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = "⌕",
+                text = if (searchOpen) "✕" else "⌕",
                 color = DemoColors.Accent,
                 fontSize = 22.sp,
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .clickable(onClick = onToggleSearch)
+                    .padding(horizontal = 8.dp),
             )
             Text(
                 text = "✎",
                 color = DemoColors.Accent,
                 fontSize = 22.sp,
                 modifier = Modifier.padding(end = 8.dp),
+            )
+        }
+        if (searchOpen) {
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                textStyle = TextStyle(fontSize = 14.sp, color = DemoColors.TextPrimary),
+                singleLine = true,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(DemoColors.Background)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                decorationBox = { inner ->
+                    if (query.isEmpty()) {
+                        Text("搜索会话名称或消息", color = DemoColors.Muted, fontSize = 14.sp)
+                    }
+                    inner()
+                },
             )
         }
         if (conversations.isEmpty()) {
@@ -120,23 +162,19 @@ private fun ChatListContent(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "还没有消息",
+                        text = if (query.isNotBlank()) "没有匹配的会话" else "还没有消息",
                         color = DemoColors.TextPrimary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 17.sp,
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "加个好友，发一条问候吧",
-                        color = DemoColors.TextSecondary,
-                        fontSize = 15.sp,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "IM 已连接",
-                        color = DemoColors.Muted,
-                        fontSize = 12.sp,
-                    )
+                    if (query.isBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "加个好友，发一条问候吧",
+                            color = DemoColors.TextSecondary,
+                            fontSize = 15.sp,
+                        )
+                    }
                 }
             }
         } else {
@@ -146,10 +184,7 @@ private fun ChatListContent(
                     .background(DemoColors.Background),
             ) {
                 items(conversations, key = { it.id }) { row ->
-                    ConversationRow(
-                        conversation = row,
-                        onClick = { onOpen(row.id) },
-                    )
+                    ConversationRow(conversation = row, onClick = { onOpen(row.id) })
                     HorizontalDivider(
                         color = DemoColors.Divider,
                         thickness = 0.5.dp,
@@ -173,19 +208,31 @@ private fun ConversationRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(DemoColors.Accent.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = conversation.title.take(1),
-                color = DemoColors.Accent,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-            )
+        Box {
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .background(DemoColors.Accent.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = conversation.title.take(1),
+                    color = DemoColors.Accent,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                )
+            }
+            if (conversation.isOnline) {
+                Box(
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(1.dp)
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(DemoColors.Accent),
+                )
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -214,33 +261,33 @@ private fun ConversationRow(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-            Text(
-                text = conversation.lastMessage,
-                color = DemoColors.TextSecondary,
-                fontSize = 15.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
-            if (conversation.unreadCount > 0) {
-                Box(
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .size(20.dp)
-                        .clip(CircleShape)
-                        .background(DemoColors.Danger),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = conversation.unreadCount.toString(),
-                        color = DemoColors.OnPrimary,
-                        fontSize = 11.sp,
-                    )
+                Text(
+                    text = conversation.lastMessage,
+                    color = DemoColors.TextSecondary,
+                    fontSize = 15.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                if (conversation.unreadCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .clip(CircleShape)
+                            .background(DemoColors.Danger)
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = if (conversation.unreadCount > 99) "99+" else conversation.unreadCount.toString(),
+                            color = DemoColors.OnPrimary,
+                            fontSize = 11.sp,
+                        )
+                    }
                 }
             }
         }
     }
-}
 }
 
 @Composable
@@ -267,9 +314,21 @@ internal fun ChatDetailScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
+            reverseLayout = true,
+            contentPadding = PaddingValues(bottom = 8.dp),
         ) {
             items(messages, key = { it.id }) { msg ->
-                MessageBubble(message = msg)
+                if (msg.type == ImMessageType.Time) {
+                    Text(
+                        msg.body,
+                        fontSize = 12.sp,
+                        color = DemoColors.Muted,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                    )
+                } else {
+                    MessageBubble(message = msg)
+                }
             }
         }
         Row(
@@ -280,58 +339,66 @@ internal fun ChatDetailScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            androidx.compose.material3.OutlinedTextField(
+            BasicTextField(
                 value = draft,
                 onValueChange = { draft = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("输入消息", color = DemoColors.Muted, fontSize = 14.sp) },
-                singleLine = true,
-            )
-            androidx.compose.material3.Button(
-                onClick = {
-                    val text = draft
-                    if (text.isNotBlank()) {
-                        onSend(text)
-                        draft = ""
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(DemoColors.PageBg)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                decorationBox = { inner ->
+                    if (draft.isEmpty()) {
+                        Text("输入消息…", color = DemoColors.Muted, fontSize = 14.sp)
                     }
+                    inner()
                 },
-                enabled = draft.isNotBlank(),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = DemoColors.Primary,
-                    contentColor = DemoColors.OnPrimary,
-                ),
-            ) {
-                Text("发送")
-            }
+            )
+            Text(
+                "发送",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(if (draft.isNotBlank()) DemoColors.Accent else DemoColors.Muted)
+                    .clickable(enabled = draft.isNotBlank()) {
+                        val text = draft
+                        if (text.isNotBlank()) {
+                            onSend(text)
+                            draft = ""
+                        }
+                    }
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+            )
         }
     }
 }
 
 @Composable
 private fun MessageBubble(message: ImMessage) {
-    val bubbleColor = if (message.isSelf) DemoColors.Accent else Color(0xFFE9E9EB)
-    val textColor = if (message.isSelf) DemoColors.OnPrimary else DemoColors.TextPrimary
-    Column(
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = if (message.isSelf) Alignment.End else Alignment.Start,
+        horizontalArrangement = if (message.isSelf) Arrangement.End else Arrangement.Start,
     ) {
-        Text(
-            text = "${message.senderName} · ${message.timeLabel}",
-            color = DemoColors.Muted,
-            fontSize = 11.sp,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Card(
-            modifier = Modifier.widthIn(max = 280.dp),
-            colors = CardDefaults.cardColors(containerColor = bubbleColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = RoundedCornerShape(18.dp),
-        ) {
+        Column(horizontalAlignment = if (message.isSelf) Alignment.End else Alignment.Start) {
             Text(
                 text = message.body,
-                color = textColor,
-                fontSize = 17.sp,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                color = if (message.isSelf) Color.White else DemoColors.TextPrimary,
+                fontSize = 15.sp,
+                modifier = Modifier
+                    .widthIn(max = 280.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (message.isSelf) DemoColors.Accent else DemoColors.Background)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+            )
+            val status = message.statusLabel()
+            Text(
+                text = if (status.isNotEmpty()) status else message.timeLabel,
+                color = DemoColors.Muted,
+                fontSize = 11.sp,
+                modifier = Modifier.padding(top = 2.dp),
             )
         }
     }

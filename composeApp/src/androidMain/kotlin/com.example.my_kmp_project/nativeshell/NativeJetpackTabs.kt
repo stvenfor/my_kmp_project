@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -89,8 +90,13 @@ internal fun JetpackChatRoot(
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf<String?>(null) }
-    var listEpoch by remember { mutableStateOf(0) }
+    var revision by remember { mutableStateOf(0) }
     var missingDetail by remember { mutableStateOf(false) }
+
+    DisposableEffect(engine) {
+        val unsub = engine.observe { revision += 1 }
+        onDispose { unsub() }
+    }
 
     LaunchedEffect(pendingDetail, showMissingDetailParams) {
         if (showMissingDetailParams) {
@@ -100,15 +106,14 @@ internal fun JetpackChatRoot(
             return@LaunchedEffect
         }
         val args = pendingDetail ?: return@LaunchedEffect
-        engine.ensureConversation(
+        val id = engine.ensureConversation(
             id = args.id,
             title = args.peerName,
             lastMessage = args.lastMessage,
             unreadCount = args.unreadCount,
         )
-        listEpoch += 1
         missingDetail = false
-        openId = args.id
+        openId = id
         onPendingDetailConsumed()
     }
 
@@ -141,23 +146,21 @@ internal fun JetpackChatRoot(
         return
     }
 
-    val conversations = remember(listEpoch) { engine.conversations() }
-    val filtered = remember(conversations, query) {
-        val q = query.trim()
-        if (q.isEmpty()) conversations
-        else conversations.filter {
-            it.title.contains(q, ignoreCase = true) ||
-                it.lastMessage.contains(q, ignoreCase = true)
-        }
+    val conversations = remember(revision) { engine.conversations() }
+    val filtered = remember(conversations, query, revision) {
+        engine.filterConversations(query)
     }
     val open = openId?.let { id -> conversations.firstOrNull { it.id == id } }
     if (open != null) {
+        LaunchedEffect(open.id) {
+            engine.markConversationRead(open.id)
+        }
         JetpackChatDetail(
             conversation = open,
             engine = engine,
+            revision = revision,
             onBack = {
                 openId = null
-                listEpoch += 1
             },
         )
         return
@@ -247,7 +250,7 @@ internal fun JetpackChatRoot(
                 ChatConversationEmpty(
                     connectionHint = "IM 已连接",
                     onGoContacts = onOpenContacts,
-                    onRefreshHint = { listEpoch += 1 },
+                    onRefreshHint = { revision += 1 },
                 )
             }
         } else {
@@ -276,8 +279,12 @@ internal fun JetpackChatRoot(
                                         name = conv.title,
                                         snippet = conv.lastMessage,
                                         time = conv.updatedAtLabel,
-                                        badge = conv.unreadCount.takeIf { it > 0 }?.toString(),
-                                        online = index % 2 == 0,
+                                        badge = when {
+                                            conv.unreadCount <= 0 -> null
+                                            conv.unreadCount > 99 -> "99+"
+                                            else -> conv.unreadCount.toString()
+                                        },
+                                        online = conv.isOnline,
                                     ),
                                     onClick = { openId = conv.id },
                                 )
@@ -373,10 +380,10 @@ private fun ChatConversationEmpty(
 private fun JetpackChatDetail(
     conversation: ImConversation,
     engine: ImEngine,
+    revision: Int,
     onBack: () -> Unit,
 ) {
-    var epoch by remember { mutableStateOf(0) }
-    val messages = remember(conversation.id, epoch) { engine.messages(conversation.id) }
+    val messages = remember(conversation.id, revision) { engine.messages(conversation.id) }
     var draft by remember { mutableStateOf("") }
     var previewUrl by remember { mutableStateOf<String?>(null) }
     var sending by remember { mutableStateOf(false) }
@@ -407,29 +414,47 @@ private fun JetpackChatDetail(
                 .fillMaxWidth(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
+            reverseLayout = true,
         ) {
+            // reverseLayout: index 0 is bottom — Flutter MessageListView reverse + newest-first store
             items(messages, key = { it.id }) { bubble ->
-                val isImage = bubble.body.startsWith("[image]")
+                if (bubble.type == com.example.my_kmp_project.feature.chat.ImMessageType.Time) {
+                    Text(
+                        bubble.body,
+                        fontSize = 12.sp,
+                        color = DemoColors.Muted,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                    )
+                    return@items
+                }
+                val isImage = bubble.type == com.example.my_kmp_project.feature.chat.ImMessageType.Image
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = if (bubble.isSelf) Arrangement.End else Arrangement.Start,
                 ) {
                     Column(horizontalAlignment = if (bubble.isSelf) Alignment.End else Alignment.Start) {
                         if (isImage) {
-                            val url = bubble.body.removePrefix("[image]").trim()
+                            val url = bubble.body.trim().ifBlank { "https://picsum.photos/seed/chat/600" }
                             Box(
                                 Modifier
                                     .size(140.dp)
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(DemoColors.Background)
-                                    .clickable { previewUrl = url.ifBlank { "https://picsum.photos/seed/chat/600" } },
+                                    .clickable { previewUrl = url },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text("图片", color = DemoColors.Accent)
                             }
                         } else {
                             Text(
-                                bubble.body,
+                                when (bubble.type) {
+                                    com.example.my_kmp_project.feature.chat.ImMessageType.Voice -> "[语音]"
+                                    com.example.my_kmp_project.feature.chat.ImMessageType.Custom ->
+                                        if (bubble.body == "Demo 名片" || bubble.body.contains("名片")) "Demo 名片"
+                                        else bubble.body
+                                    else -> bubble.body
+                                },
                                 color = if (bubble.isSelf) Color.White else DemoColors.TextPrimary,
                                 fontSize = 15.sp,
                                 modifier = Modifier
@@ -440,8 +465,9 @@ private fun JetpackChatDetail(
                                     .padding(horizontal = 12.dp, vertical = 8.dp),
                             )
                         }
+                        val status = bubble.statusLabel()
                         Text(
-                            bubble.timeLabel,
+                            if (status.isNotEmpty()) status else bubble.timeLabel,
                             fontSize = 11.sp,
                             color = DemoColors.Muted,
                             modifier = Modifier.padding(top = 2.dp),
@@ -450,7 +476,7 @@ private fun JetpackChatDetail(
                 }
             }
         }
-        // Flutter InputPanel: voice ↔ keyboard, emoji, more (album/camera/file/location)
+        // Flutter InputPanel: voice ↔ keyboard, emoji, more
         Column(Modifier.fillMaxWidth().background(DemoColors.PageBg)) {
             Row(
                 Modifier
@@ -478,7 +504,10 @@ private fun JetpackChatDetail(
                             .height(40.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(DemoColors.Background)
-                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
+                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                            .clickable {
+                                engine.sendVoice(conversation.id)
+                            },
                         contentAlignment = Alignment.Center,
                     ) {
                         Text("按住 说话", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
@@ -542,9 +571,11 @@ private fun JetpackChatDetail(
                                 val sent = engine.sendText(conversation.id, text)
                                 if (sent != null) {
                                     draft = ""
-                                    epoch += 1
+                                    voiceMode = false
+                                    showEmoji = false
+                                    showMore = false
                                 } else {
-                                    showPlatformToast("发送失败，请重试")
+                                    showPlatformToast("发送失败")
                                 }
                                 sending = false
                             }
@@ -553,9 +584,10 @@ private fun JetpackChatDetail(
                 }
             }
             if (showEmoji) {
+                // Flutter ChatDetailViewModel.emojiList
                 val emojis = listOf(
-                    "😀", "😁", "😂", "🤣", "😊", "😍", "🥰", "😘",
-                    "👍", "🙏", "🔥", "🎉", "🚗", "🏠", "✅", "❤️",
+                    "😀", "😂", "🥰", "😎", "🤔", "👍", "🙏", "🎉",
+                    "❤️", "🔥", "👋", "😭", "🤣", "😊", "🥳", "💪",
                 )
                 Column(
                     Modifier
@@ -589,26 +621,25 @@ private fun JetpackChatDetail(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     ChatMoreAction("照片") {
-                        engine.sendText(
+                        engine.sendImage(
                             conversation.id,
-                            "[image]https://picsum.photos/seed/${conversation.id}/600",
+                            "https://picsum.photos/seed/${conversation.peerId}/600",
                         )
-                        epoch += 1
                         showMore = false
                     }
                     ChatMoreAction("拍摄") {
-                        engine.sendText(conversation.id, "[拍摄]")
-                        epoch += 1
+                        engine.sendImage(
+                            conversation.id,
+                            "https://picsum.photos/seed/${conversation.peerId}_cam/600",
+                        )
                         showMore = false
                     }
                     ChatMoreAction("文件") {
-                        engine.sendText(conversation.id, "[文件]")
-                        epoch += 1
+                        engine.sendCustom(conversation.id, "文件")
                         showMore = false
                     }
                     ChatMoreAction("位置") {
-                        engine.sendText(conversation.id, "[位置]")
-                        epoch += 1
+                        engine.sendCustom(conversation.id, "位置")
                         showMore = false
                     }
                 }

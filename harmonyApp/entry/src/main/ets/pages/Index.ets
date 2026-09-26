@@ -69,6 +69,27 @@ interface MineMenuRow {
   badge: boolean;
 }
 
+/** Flutter MockImChatStore conversation / message shapes for ArkTS ChatPane. */
+interface ChatConv {
+  id: string;
+  peerId: string;
+  title: string;
+  lastMessage: string;
+  lastMessageAtMs: number;
+  unreadCount: number;
+  isOnline: boolean;
+}
+
+interface ChatMsg {
+  id: string;
+  body: string;
+  isSelf: boolean;
+  createdAtMs: number;
+  sendStatus: string; // sending | success | failed
+  readStatus: string; // unread | read
+  type: string; // text | image | voice | custom | time
+}
+
 /**
  * ADR 0002: ArkTS owns splash / privacy / tab roots / Mine root / auth /
  * deferred secondary stubs. Compose hosts **Mine island only**.
@@ -87,23 +108,24 @@ struct Index {
   @State stubTitle: string = '';
   @State showStub: boolean = false;
   @State loginDisplayName: string = '访客';
-  @State chatPeer: string = '';
+  @State chatSelectedId: string = '';
   @State chatDraft: string = '';
-  @State chatMessages: string[] = [];
+  @State chatConversations: ChatConv[] = [];
+  @State chatMessagesById: Record<string, ChatMsg[]> = {};
   @State chatSearchOpen: boolean = false;
   @State chatSearchQuery: string = '';
   @State chatVoiceMode: boolean = false;
   @State chatShowEmoji: boolean = false;
   @State chatShowMore: boolean = false;
+  @State chatTick: number = 0; // bump to force UI refresh after async send/read
   @State communityLiked: boolean = false;
   @State nativePane: string = '';
   @State featurePath: string = '';
   private islandController: ArkUIViewController | undefined = undefined;
   private pref: preferences.Preferences | undefined = undefined;
+  private chatLocalSeq: number = 0;
+  private chatSeeded: boolean = false;
 
-  private readonly chatPeers: string[] = ['Mock好友1', 'Mock好友2', 'Mock好友3'];
-  private readonly chatSnippets: string[] = ['晚上一起吃饭吗？', '你好', '你好'];
-  private readonly chatTimes: string[] = ['22:50', '22:45', '22:40'];
   private readonly communityAuthors: string[] = ['张三', '李四', '王五'];
   private readonly mineFunctions: MineFunctionCard[] = [
     { title: '短信模板', subtitle: '一键发送 轻松快捷', value: '' },
@@ -134,6 +156,7 @@ struct Index {
   aboutToAppear() {
     registerVideoInteropBuilders();
     registerWebInteropBuilders();
+    this.ensureChatSeed();
     const ctx = getContext(this) as common.UIAbilityContext;
     preferences.getPreferences(ctx, { name: 'native_shell' }).then((p: preferences.Preferences) => {
       this.pref = p;
@@ -198,7 +221,7 @@ struct Index {
   private peerFromChatDetail(raw: String): string {
     const qIndex = raw.indexOf('?');
     if (qIndex < 0) {
-      return 'Mock好友1';
+      return 'mock_peer_01';
     }
     const query = raw.substring(qIndex + 1);
     const parts = query.split('&');
@@ -218,7 +241,331 @@ struct Index {
         peer = value;
       }
     }
-    return peer.length > 0 ? peer : 'Mock好友1';
+    return peer.length > 0 ? peer : 'mock_peer_01';
+  }
+
+  /** Flutter MockImChatStore.seed — 3 peers, private_$id, unread on first. */
+  private ensureChatSeed(): void {
+    if (this.chatSeeded) {
+      return;
+    }
+    this.chatSeeded = true;
+    const now = Date.now();
+    const peers: string[] = ['mock_peer_01', 'mock_peer_02', 'mock_peer_03'];
+    const convs: ChatConv[] = [];
+    const msgs: Record<string, ChatMsg[]> = {};
+    for (let i = 0; i < peers.length; i++) {
+      const peer = peers[i];
+      const storageId = `private_${peer}`;
+      convs.push({
+        id: storageId,
+        peerId: peer,
+        title: `Mock好友${i + 1}`,
+        lastMessage: i === 0 ? '晚上一起吃饭吗？' : '你好',
+        lastMessageAtMs: now - 5 * 60 * 1000 * (i + 1),
+        unreadCount: i === 0 ? 2 : 0,
+        isOnline: i % 2 === 0,
+      });
+      if (i === 0) {
+        // Newest-first (Flutter insert(0) + reverse ListView).
+        msgs[storageId] = [
+          {
+            id: 'm_2',
+            body: '在的，有什么事？',
+            isSelf: true,
+            createdAtMs: now - 28 * 60 * 1000,
+            sendStatus: 'success',
+            readStatus: 'read',
+            type: 'text',
+          },
+          {
+            id: 'm_1',
+            body: '你好，在吗？',
+            isSelf: false,
+            createdAtMs: now - 30 * 60 * 1000,
+            sendStatus: 'success',
+            readStatus: 'read',
+            type: 'text',
+          },
+        ];
+      }
+    }
+    convs.sort((a, b) => b.lastMessageAtMs - a.lastMessageAtMs);
+    this.chatConversations = convs;
+    this.chatMessagesById = msgs;
+  }
+
+  private chatHm(ms: number): string {
+    const d = new Date(ms);
+    const h = d.getHours().toString().padStart(2, '0');
+    const m = d.getMinutes().toString().padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
+  private chatListTime(ms: number): string {
+    const d = new Date(ms);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) {
+      return this.chatHm(ms);
+    }
+    const y = new Date(now);
+    y.setDate(y.getDate() - 1);
+    if (d.toDateString() === y.toDateString()) {
+      return '昨天';
+    }
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  }
+
+  private chatStatusLabel(m: ChatMsg): string {
+    if (!m.isSelf || m.type === 'time') {
+      return '';
+    }
+    if (m.sendStatus === 'sending') {
+      return '发送中';
+    }
+    if (m.sendStatus === 'failed') {
+      return '发送失败';
+    }
+    return m.readStatus === 'read' ? '已读' : '送达';
+  }
+
+  private visibleChatConversations(): ChatConv[] {
+    const q = this.chatSearchQuery.trim().toLowerCase();
+    if (q.length === 0) {
+      return this.chatConversations;
+    }
+    return this.chatConversations.filter((c: ChatConv) =>
+      c.title.toLowerCase().indexOf(q) >= 0 || c.lastMessage.toLowerCase().indexOf(q) >= 0);
+  }
+
+  private messagesFor(id: string): ChatMsg[] {
+    // Newest-first in store; UI shows chronological (reverse for List).
+    const list = this.chatMessagesById[id];
+    return list !== undefined ? list : [];
+  }
+
+  private markChatRead(id: string): void {
+    const list = this.chatMessagesById[id];
+    if (list !== undefined) {
+      const next: ChatMsg[] = [];
+      for (let i = 0; i < list.length; i++) {
+        const m = list[i];
+        if (!m.isSelf && m.readStatus === 'unread') {
+          next.push({
+            id: m.id,
+            body: m.body,
+            isSelf: m.isSelf,
+            createdAtMs: m.createdAtMs,
+            sendStatus: m.sendStatus,
+            readStatus: 'read',
+            type: m.type,
+          });
+        } else {
+          next.push(m);
+        }
+      }
+      const map: Record<string, ChatMsg[]> = {};
+      const keys = Object.keys(this.chatMessagesById);
+      for (let k = 0; k < keys.length; k++) {
+        map[keys[k]] = keys[k] === id ? next : this.chatMessagesById[keys[k]];
+      }
+      this.chatMessagesById = map;
+    }
+    const convs: ChatConv[] = [];
+    for (let i = 0; i < this.chatConversations.length; i++) {
+      const c = this.chatConversations[i];
+      if (c.id === id) {
+        convs.push({
+          id: c.id,
+          peerId: c.peerId,
+          title: c.title,
+          lastMessage: c.lastMessage,
+          lastMessageAtMs: c.lastMessageAtMs,
+          unreadCount: 0,
+          isOnline: c.isOnline,
+        });
+      } else {
+        convs.push(c);
+      }
+    }
+    this.chatConversations = convs;
+    this.chatTick = this.chatTick + 1;
+  }
+
+  private ensureChatConversation(rawId: string, title: string): string {
+    this.ensureChatSeed();
+    const storageId = (rawId.indexOf('private_') === 0 || rawId.indexOf('group_') === 0)
+      ? rawId : `private_${rawId}`;
+    const existing = this.chatConversations.find((c: ChatConv) => c.id === storageId);
+    if (existing) {
+      if (title.length > 0 && existing.title !== title) {
+        const convs: ChatConv[] = [];
+        for (let i = 0; i < this.chatConversations.length; i++) {
+          const c = this.chatConversations[i];
+          if (c.id === storageId) {
+            convs.push({
+              id: c.id,
+              peerId: c.peerId,
+              title: title,
+              lastMessage: c.lastMessage,
+              lastMessageAtMs: Date.now(),
+              unreadCount: c.unreadCount > 0 ? c.unreadCount : 1,
+              isOnline: c.isOnline,
+            });
+          } else {
+            convs.push(c);
+          }
+        }
+        convs.sort((a, b) => b.lastMessageAtMs - a.lastMessageAtMs);
+        this.chatConversations = convs;
+      }
+      return storageId;
+    }
+    const peer = storageId.replace('private_', '');
+    const now = Date.now();
+    const conv: ChatConv = {
+      id: storageId,
+      peerId: peer,
+      title: title.length > 0 ? title : '推送会话',
+      lastMessage: '来自 Push/Deeplink 的 mock 会话',
+      lastMessageAtMs: now,
+      unreadCount: 1,
+      isOnline: false,
+    };
+    this.chatConversations = [conv].concat(this.chatConversations);
+    const map: Record<string, ChatMsg[]> = {};
+    const keys = Object.keys(this.chatMessagesById);
+    for (let k = 0; k < keys.length; k++) {
+      map[keys[k]] = this.chatMessagesById[keys[k]];
+    }
+    map[storageId] = [{
+      id: 'm_push',
+      body: '来自 Push/Deeplink 的 mock 会话',
+      isSelf: false,
+      createdAtMs: now,
+      sendStatus: 'success',
+      readStatus: 'unread',
+      type: 'text',
+    }];
+    this.chatMessagesById = map;
+    return storageId;
+  }
+
+  private sendChat(id: string, type: string, body: string, preview: string): void {
+    const text = body.trim();
+    if (text.length === 0) {
+      return;
+    }
+    const now = Date.now();
+    let list: ChatMsg[] = this.messagesFor(id).slice();
+    const latest = list.length > 0 ? list[0] : undefined;
+    if (latest === undefined ||
+      (latest.type !== 'time' && Math.abs(now - latest.createdAtMs) >= 5 * 60 * 1000)) {
+      list = [{
+        id: `time_${now}`,
+        body: this.chatHm(now),
+        isSelf: false,
+        createdAtMs: now,
+        sendStatus: 'success',
+        readStatus: 'read',
+        type: 'time',
+      }].concat(list);
+    }
+    this.chatLocalSeq += 1;
+    const localId = `local_${this.chatLocalSeq}_${now}`;
+    list = [{
+      id: localId,
+      body: text,
+      isSelf: true,
+      createdAtMs: now,
+      sendStatus: 'sending',
+      readStatus: 'unread',
+      type: type,
+    }].concat(list);
+    const map: Record<string, ChatMsg[]> = {};
+    const keys = Object.keys(this.chatMessagesById);
+    for (let k = 0; k < keys.length; k++) {
+      map[keys[k]] = this.chatMessagesById[keys[k]];
+    }
+    map[id] = list;
+    this.chatMessagesById = map;
+
+    const convs: ChatConv[] = [];
+    for (let i = 0; i < this.chatConversations.length; i++) {
+      const c = this.chatConversations[i];
+      if (c.id === id) {
+        convs.push({
+          id: c.id,
+          peerId: c.peerId,
+          title: c.title,
+          lastMessage: preview,
+          lastMessageAtMs: now,
+          unreadCount: c.unreadCount,
+          isOnline: c.isOnline,
+        });
+      } else {
+        convs.push(c);
+      }
+    }
+    convs.sort((a, b) => b.lastMessageAtMs - a.lastMessageAtMs);
+    this.chatConversations = convs;
+    this.chatTick = this.chatTick + 1;
+
+    setTimeout(() => {
+      this.patchChatMsg(id, localId, 'success', undefined);
+      setTimeout(() => {
+        this.patchChatMsg(id, localId, undefined, 'read');
+      }, 2000);
+    }, 280);
+  }
+
+  private patchChatMsg(id: string, localId: string, sendStatus?: string, readStatus?: string): void {
+    const list = this.messagesFor(id);
+    if (list.length === 0) {
+      return;
+    }
+    const next: ChatMsg[] = [];
+    for (let i = 0; i < list.length; i++) {
+      const m = list[i];
+      if (m.id === localId) {
+        next.push({
+          id: m.id,
+          body: m.body,
+          isSelf: m.isSelf,
+          createdAtMs: m.createdAtMs,
+          sendStatus: sendStatus !== undefined ? sendStatus : m.sendStatus,
+          readStatus: readStatus !== undefined ? readStatus : m.readStatus,
+          type: m.type,
+        });
+      } else {
+        next.push(m);
+      }
+    }
+    const map: Record<string, ChatMsg[]> = {};
+    const keys = Object.keys(this.chatMessagesById);
+    for (let k = 0; k < keys.length; k++) {
+      map[keys[k]] = keys[k] === id ? next : this.chatMessagesById[keys[k]];
+    }
+    this.chatMessagesById = map;
+    this.chatTick = this.chatTick + 1;
+  }
+
+  private openChatDetail(id: string): void {
+    this.chatSelectedId = id;
+    this.markChatRead(id);
+    this.chatDraft = '';
+    this.chatVoiceMode = false;
+    this.chatShowEmoji = false;
+    this.chatShowMore = false;
+  }
+
+  private chatDetailTitle(): string {
+    for (let i = 0; i < this.chatConversations.length; i++) {
+      if (this.chatConversations[i].id === this.chatSelectedId) {
+        return this.chatConversations[i].title;
+      }
+    }
+    return '';
   }
 
   /** kind 0 = Mine island, kind 1 = secondary RoutePath (set via SetOhosSecondaryRoute). */
@@ -277,7 +624,7 @@ struct Index {
     }
     if (path === '/chat' || title === '消息') {
       this.tab = MainTab.Chat;
-      this.chatPeer = '';
+      this.chatSelectedId = '';
       if (!this.isLoggedIn) {
         this.showLogin = true;
       }
@@ -285,8 +632,10 @@ struct Index {
     }
     if (path.indexOf('/chat/detail') === 0 || title.indexOf('/chat/detail') === 0) {
       const raw = title.indexOf('/chat/detail') === 0 ? title : path;
-      this.chatPeer = this.peerFromChatDetail(raw);
-      this.chatMessages = [`你好，我是${this.chatPeer}`, '方便聊一下车源吗？'];
+      const peer = this.peerFromChatDetail(raw);
+      this.ensureChatSeed();
+      const id = this.ensureChatConversation(peer, peer);
+      this.openChatDetail(id);
       this.tab = MainTab.Chat;
       if (!this.isLoggedIn) {
         this.showLogin = true;
@@ -436,200 +785,248 @@ struct Index {
 
   @Builder
   ChatPane() {
-    if (this.chatPeer.length > 0) {
-      Column() {
-        Row() {
-          Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => {
-            this.chatPeer = '';
-            this.chatMessages = [];
-            this.chatDraft = '';
-          })
-          Text(this.chatPeer).fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
-        }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
-
-        List({ space: 12 }) {
-          ForEach(this.chatMessages, (body: string, index: number) => {
-            ListItem() {
-              Row() {
-                if (index % 2 === 1) {
-                  Blank().layoutWeight(1)
-                }
-                Text(body)
-                  .fontSize(15)
-                  .fontColor(index % 2 === 1 ? Color.White : DesignTokens.ink)
-                  .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-                  .backgroundColor(index % 2 === 1 ? DesignTokens.link : DesignTokens.canvas)
-                  .borderRadius(12)
-                if (index % 2 === 0) {
-                  Blank().layoutWeight(1)
-                }
-              }.width('100%')
-            }
-          })
-        }.layoutWeight(1).padding(16).width('100%')
-
-        Column() {
-          Row({ space: 8 }) {
-            Text(this.chatVoiceMode ? '⌨' : '🎤')
-              .fontSize(20).fontColor(DesignTokens.body).width(36).height(36).textAlign(TextAlign.Center)
-              .onClick(() => {
-                this.chatVoiceMode = !this.chatVoiceMode;
-                this.chatShowEmoji = false;
-                this.chatShowMore = false;
-              })
-            if (this.chatVoiceMode) {
-              Text('按住 说话')
-                .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                .layoutWeight(1).height(40).textAlign(TextAlign.Center)
-                .backgroundColor(DesignTokens.canvas).borderRadius(8)
-                .border({ width: 0.5, color: DesignTokens.hairline })
-            } else {
-              TextInput({ placeholder: '输入消息…', text: this.chatDraft })
-                .layoutWeight(1)
-                .height(40)
-                .onChange((v: string) => { this.chatDraft = v; })
-            }
-            Text('☺')
-              .fontSize(22)
-              .fontColor(this.chatShowEmoji ? DesignTokens.link : DesignTokens.body)
-              .width(36).height(36).textAlign(TextAlign.Center)
-              .onClick(() => {
-                this.chatShowEmoji = !this.chatShowEmoji;
-                this.chatShowMore = false;
-                this.chatVoiceMode = false;
-              })
-            if (this.chatDraft.trim().length === 0) {
-              Text('＋')
-                .fontSize(28)
-                .fontColor(this.chatShowMore ? DesignTokens.link : DesignTokens.body)
-                .width(36).height(36).textAlign(TextAlign.Center)
-                .onClick(() => {
-                  this.chatShowMore = !this.chatShowMore;
-                  this.chatShowEmoji = false;
-                })
-            } else {
-              Text('发送')
-                .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
-                .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-                .backgroundColor(DesignTokens.link).borderRadius(18)
-                .onClick(() => {
-                  const t = this.chatDraft.trim();
-                  if (t.length === 0) {
-                    return;
-                  }
-                  this.chatMessages = this.chatMessages.concat([t]);
-                  this.chatDraft = '';
-                })
-            }
-          }.padding(12).width('100%')
-
-          if (this.chatShowEmoji) {
-            Flex({ wrap: FlexWrap.Wrap }) {
-              ForEach(['😀', '😁', '😂', '🤣', '😊', '😍', '🥰', '😘', '👍', '🙏', '🔥', '🎉', '🚗', '🏠', '✅', '❤️'],
-                (e: string) => {
-                  Text(e).fontSize(28).width('12.5%').textAlign(TextAlign.Center).padding(4)
-                    .onClick(() => { this.chatDraft = this.chatDraft + e; })
-                })
-            }.width('100%').height(160).padding(12).backgroundColor(DesignTokens.canvas)
-          }
-
-          if (this.chatShowMore) {
-            Row({ space: 24 }) {
-              ForEach([['照片', '[图片]'], ['拍摄', '[拍摄]'], ['文件', '[文件]'], ['位置', '[位置]']],
-                (item: string[]) => {
-                  Column({ space: 8 }) {
-                    Text(item[0].substring(0, 1))
-                      .width(52).height(52).textAlign(TextAlign.Center)
-                      .fontColor(DesignTokens.link).backgroundColor(DesignTokens.canvasSoft2).borderRadius(12)
-                    Text(item[0]).fontSize(12).fontColor(DesignTokens.body)
-                  }.onClick(() => {
-                    this.chatMessages = this.chatMessages.concat([item[1]]);
-                    this.chatShowMore = false;
-                  })
-                })
-            }
-            .justifyContent(FlexAlign.Center)
-            .width('100%')
-            .padding({ top: 20, bottom: 20 })
-            .backgroundColor(DesignTokens.canvas)
-          }
-        }.width('100%').backgroundColor(DesignTokens.canvasSoft2)
-      }
-      .width('100%')
-      .height('100%')
-      .backgroundColor(DesignTokens.canvasSoft2)
+    // chatTick kept in tree so async send/read patches refresh UI
+    Text(`${this.chatTick}`).height(0).opacity(0)
+    if (this.chatSelectedId.length > 0) {
+      this.ChatDetailPane()
     } else {
-      Column() {
-        Row() {
-          Text('消息').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
-          Text(this.chatSearchOpen ? '✕' : '⌕')
-            .fontSize(20).fontColor(DesignTokens.link).margin({ right: 16 })
-            .onClick(() => {
-              this.chatSearchOpen = !this.chatSearchOpen;
-              if (!this.chatSearchOpen) {
-                this.chatSearchQuery = '';
-              }
-            })
-          Text('✎').fontSize(20).fontColor(DesignTokens.link)
-            .onClick(() => this.openDeferred('/friend'))
-        }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
+      this.ChatListPane()
+    }
+  }
 
-        if (this.chatSearchOpen) {
-          TextInput({ placeholder: '搜索会话名称或消息', text: this.chatSearchQuery })
-            .height(40)
-            .margin({ left: 16, right: 16, bottom: 8 })
-            .backgroundColor(DesignTokens.canvas)
-            .borderRadius(10)
-            .onChange((v: string) => { this.chatSearchQuery = v; })
-        }
+  @Builder
+  ChatListPane() {
+    Column() {
+      Row() {
+        Text('消息').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
+        Text(this.chatSearchOpen ? '✕' : '⌕')
+          .fontSize(20).fontColor(DesignTokens.link).margin({ right: 16 })
+          .onClick(() => {
+            this.chatSearchOpen = !this.chatSearchOpen;
+            if (!this.chatSearchOpen) {
+              this.chatSearchQuery = '';
+            }
+          })
+        Text('✎').fontSize(20).fontColor(DesignTokens.link)
+          .onClick(() => this.openDeferred('/friend'))
+      }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
+
+      if (this.chatSearchOpen) {
+        TextInput({ placeholder: '搜索会话名称或消息', text: this.chatSearchQuery })
+          .height(40)
+          .margin({ left: 16, right: 16, bottom: 8 })
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(10)
+          .onChange((v: string) => { this.chatSearchQuery = v; })
+      }
+
+      if (this.visibleChatConversations().length === 0) {
         Column() {
-          ForEach(this.chatPeers, (name: string, index: number) => {
-            Row({ space: 12 }) {
-              Text(name.substring(name.length - 1))
-                .width(48)
-                .height(48)
-                .textAlign(TextAlign.Center)
-                .fontColor(DesignTokens.link)
-                .backgroundColor('#260070F3')
-                .borderRadius(24)
+          Blank()
+          Text(this.chatSearchQuery.trim().length === 0 ? '还没有消息' : '没有匹配的会话')
+            .fontSize(15).fontColor(DesignTokens.body)
+          Blank()
+        }.width('100%').layoutWeight(1)
+      } else {
+        List() {
+          ForEach(this.visibleChatConversations(), (conv: ChatConv, index: number) => {
+            ListItem() {
               Column() {
-                Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(this.chatSnippets[index]).fontSize(13).fontColor(DesignTokens.body).maxLines(1)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              Column() {
-                Text(this.chatTimes[index]).fontSize(11).fontColor(DesignTokens.body)
-                if (index === 0) {
-                  Text('2')
-                    .fontSize(11)
-                    .fontColor(Color.White)
-                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-                    .backgroundColor('#EE0000')
-                    .borderRadius(10)
-                    .margin({ top: 6 })
+                Row({ space: 12 }) {
+                  Stack({ alignContent: Alignment.BottomEnd }) {
+                    Text(conv.title.substring(conv.title.length - 1))
+                      .width(52).height(52).textAlign(TextAlign.Center)
+                      .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(26)
+                    if (conv.isOnline) {
+                      Text('')
+                        .width(12).height(12)
+                        .backgroundColor(DesignTokens.link)
+                        .borderRadius(6)
+                        .border({ width: 2, color: Color.White })
+                    }
+                  }
+                  Column() {
+                    Text(conv.title).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                    Text(conv.lastMessage).fontSize(13).fontColor(DesignTokens.body).maxLines(1)
+                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                  Column() {
+                    Text(this.chatListTime(conv.lastMessageAtMs)).fontSize(11).fontColor(DesignTokens.body)
+                    if (conv.unreadCount > 0) {
+                      Text(conv.unreadCount > 99 ? '99+' : `${conv.unreadCount}`)
+                        .fontSize(11).fontColor(Color.White)
+                        .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                        .backgroundColor('#EE0000').borderRadius(10).margin({ top: 6 })
+                    }
+                  }
+                }
+                .padding(16)
+                .width('100%')
+                .onClick(() => this.openChatDetail(conv.id))
+                if (index < this.visibleChatConversations().length - 1) {
+                  Divider().strokeWidth(0.5).color(DesignTokens.hairline).margin({ left: 76 })
                 }
               }
             }
-            .padding(16)
-            .width('100%')
-            .onClick(() => {
-              this.chatPeer = name;
-              this.chatMessages = ['你好，在吗？', this.chatSnippets[index]];
-              this.chatDraft = '';
-            })
-            if (index < this.chatPeers.length - 1) {
-              Divider().strokeWidth(0.5).color(DesignTokens.hairline)
-            }
-          })
+          }, (conv: ChatConv) => `${conv.id}_${conv.unreadCount}_${conv.lastMessageAtMs}_${this.chatTick}`)
         }
         .width('100%')
+        .layoutWeight(1)
         .margin({ left: 16, right: 16 })
         .backgroundColor(DesignTokens.canvas)
         .borderRadius(12)
       }
-      .width('100%')
-      .height('100%')
-      .backgroundColor(DesignTokens.canvasSoft2)
     }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
+  }
+
+  @Builder
+  ChatDetailPane() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => {
+          this.chatSelectedId = '';
+          this.chatDraft = '';
+          this.chatShowEmoji = false;
+          this.chatShowMore = false;
+          this.chatVoiceMode = false;
+        })
+        Text(this.chatDetailTitle())
+          .fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List({ space: 12 }) {
+        // Chronological: reverse newest-first store (Flutter reverse:true ListView)
+        ForEach(this.messagesFor(this.chatSelectedId).slice().reverse(), (msg: ChatMsg) => {
+          ListItem() {
+            if (msg.type === 'time') {
+              Text(msg.body).fontSize(12).fontColor(DesignTokens.mute)
+                .width('100%').textAlign(TextAlign.Center)
+            } else {
+              Row() {
+                if (msg.isSelf) {
+                  Blank().layoutWeight(1)
+                }
+                Column() {
+                  Text(msg.type === 'image' ? '[图片]' : (msg.type === 'voice' ? '[语音]' : msg.body))
+                    .fontSize(15)
+                    .fontColor(msg.isSelf ? Color.White : DesignTokens.ink)
+                    .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+                    .backgroundColor(msg.isSelf ? DesignTokens.link : DesignTokens.canvas)
+                    .borderRadius(12)
+                  Text(this.chatStatusLabel(msg).length > 0
+                    ? this.chatStatusLabel(msg) : this.chatHm(msg.createdAtMs))
+                    .fontSize(11).fontColor(DesignTokens.mute)
+                    .margin({ top: 2 })
+                }.alignItems(msg.isSelf ? HorizontalAlign.End : HorizontalAlign.Start)
+                if (!msg.isSelf) {
+                  Blank().layoutWeight(1)
+                }
+              }.width('100%')
+            }
+          }
+        }, (msg: ChatMsg) => `${msg.id}_${msg.sendStatus}_${msg.readStatus}_${this.chatTick}`)
+      }.layoutWeight(1).padding(16).width('100%')
+
+      Column() {
+        Row({ space: 8 }) {
+          Text(this.chatVoiceMode ? '⌨' : '🎤')
+            .fontSize(20).fontColor(DesignTokens.body).width(36).height(36).textAlign(TextAlign.Center)
+            .onClick(() => {
+              this.chatVoiceMode = !this.chatVoiceMode;
+              this.chatShowEmoji = false;
+              this.chatShowMore = false;
+            })
+          if (this.chatVoiceMode) {
+            Text('按住 说话')
+              .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              .layoutWeight(1).height(40).textAlign(TextAlign.Center)
+              .backgroundColor(DesignTokens.canvas).borderRadius(8)
+              .border({ width: 0.5, color: DesignTokens.hairline })
+              .onClick(() => this.sendChat(this.chatSelectedId, 'voice', '[语音]', '[语音]'))
+          } else {
+            TextInput({ placeholder: '输入消息…', text: this.chatDraft })
+              .layoutWeight(1)
+              .height(40)
+              .onChange((v: string) => { this.chatDraft = v; })
+          }
+          Text('☺')
+            .fontSize(22)
+            .fontColor(this.chatShowEmoji ? DesignTokens.link : DesignTokens.body)
+            .width(36).height(36).textAlign(TextAlign.Center)
+            .onClick(() => {
+              this.chatShowEmoji = !this.chatShowEmoji;
+              this.chatShowMore = false;
+              this.chatVoiceMode = false;
+            })
+          if (this.chatDraft.trim().length === 0) {
+            Text('＋')
+              .fontSize(28)
+              .fontColor(this.chatShowMore ? DesignTokens.link : DesignTokens.body)
+              .width(36).height(36).textAlign(TextAlign.Center)
+              .onClick(() => {
+                this.chatShowMore = !this.chatShowMore;
+                this.chatShowEmoji = false;
+              })
+          } else {
+            Text('发送')
+              .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
+              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+              .backgroundColor(DesignTokens.link).borderRadius(18)
+              .onClick(() => {
+                const t = this.chatDraft.trim();
+                if (t.length === 0) {
+                  return;
+                }
+                this.sendChat(this.chatSelectedId, 'text', t, t);
+                this.chatDraft = '';
+                this.chatShowEmoji = false;
+                this.chatShowMore = false;
+                this.chatVoiceMode = false;
+              })
+          }
+        }.padding(12).width('100%')
+
+        if (this.chatShowEmoji) {
+          Flex({ wrap: FlexWrap.Wrap }) {
+            ForEach(['😀', '😂', '🥰', '😎', '🤔', '👍', '🙏', '🎉', '❤️', '🔥', '👋', '😭', '🤣', '😊', '🥳', '💪'],
+              (e: string) => {
+                Text(e).fontSize(28).width('12.5%').textAlign(TextAlign.Center).padding(4)
+                  .onClick(() => { this.chatDraft = this.chatDraft + e; })
+              })
+          }.width('100%').height(160).padding(12).backgroundColor(DesignTokens.canvas)
+        }
+
+        if (this.chatShowMore) {
+          Row({ space: 24 }) {
+            ForEach([
+              ['照片', 'image', 'https://picsum.photos/seed/chat/600', '[图片]'],
+              ['拍摄', 'image', 'https://picsum.photos/seed/chat_cam/600', '[图片]'],
+              ['文件', 'custom', '文件', '[自定义消息]'],
+              ['位置', 'custom', '位置', '[自定义消息]'],
+            ], (item: string[]) => {
+              Column({ space: 8 }) {
+                Text(item[0].substring(0, 1))
+                  .width(52).height(52).textAlign(TextAlign.Center)
+                  .fontColor(DesignTokens.link).backgroundColor(DesignTokens.canvasSoft2).borderRadius(12)
+                Text(item[0]).fontSize(12).fontColor(DesignTokens.body)
+              }.onClick(() => {
+                this.sendChat(this.chatSelectedId, item[1], item[2], item[3]);
+                this.chatShowMore = false;
+              })
+            })
+          }
+          .justifyContent(FlexAlign.Center)
+          .width('100%')
+          .padding({ top: 20, bottom: 20 })
+          .backgroundColor(DesignTokens.canvas)
+        }
+      }.width('100%').backgroundColor(DesignTokens.canvasSoft2)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
   }
 
   @Builder
