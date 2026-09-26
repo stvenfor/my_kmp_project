@@ -45,6 +45,15 @@ import {
   NativeStoreQrPane,
   NativeQaPane,
   NativePosterPane,
+  NativeBusinessPane,
+  NativeRemindersPane,
+  NativeFeedbackPane,
+  NativeProfilePane,
+  NativeAddressesPane,
+  NativeDubbingFeedPane,
+  NativeHotRankPane,
+  NativeDataAnalyticsPane,
+  NativeBusinessCardPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -429,6 +438,60 @@ struct Index {
     }
     if (path === '/mine/poster') {
       this.nativePane = 'poster';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/business') {
+      this.nativePane = 'business';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/reminders') {
+      this.nativePane = 'reminders';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/feedback') {
+      this.nativePane = 'feedback';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/profile') {
+      this.nativePane = 'profile';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/addresses') {
+      this.nativePane = 'addresses';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/dubbing_feed') {
+      this.nativePane = 'dubbing';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/hot_rank_detail') {
+      this.nativePane = 'hot_rank';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/data_analytics') {
+      this.nativePane = 'data_analytics';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/business_card' || title === '电子名片') {
+      this.nativePane = 'business_card';
       this.featurePath = '';
       this.showStub = false;
       return;
@@ -1368,6 +1431,42 @@ struct Index {
 
       if (this.nativePane === 'poster') {
         NativePosterPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'business') {
+        NativeBusinessPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'reminders') {
+        NativeRemindersPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'feedback') {
+        NativeFeedbackPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'profile') {
+        NativeProfilePane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'addresses') {
+        NativeAddressesPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'dubbing') {
+        NativeDubbingFeedPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'hot_rank') {
+        NativeHotRankPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'data_analytics') {
+        NativeDataAnalyticsPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'business_card') {
+        NativeBusinessCardPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {

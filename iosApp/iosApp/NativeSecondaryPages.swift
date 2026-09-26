@@ -1879,6 +1879,305 @@ struct NativePosterPage: View {
     }
 }
 
+
+struct NativeBusinessPage: View {
+    var onClose: () -> Void
+    @State private var note = ""
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "商务合作", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("渠道合作", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                    Text("提交合作意向后，商务同学会在 1–2 个工作日内联系您。", font: .system(size: 14), color: DesignTokens.body)
+                    TextField("请简述合作意向…", text: $note, axis: .vertical)
+                        .lineLimit(4...8)
+                        .padding(12)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                    Button("提交") {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                        .frame(maxWidth: .infinity)
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeRemindersPage: View {
+    var onClose: () -> Void
+    private let items: [(String, String)] = [
+        ("回访陈先生", "今天 16:00"),
+        ("提交周报", "周五 18:00"),
+        ("试驾接待 · 周女士", "周六 10:30"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "提醒事项", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(items.enumerated()), id: \.offset) { _, it in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(it.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Text(it.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                        }
+                        .padding(16).background(DesignTokens.canvas)
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+                Button("新建提醒") {}
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+                    .padding(.bottom, 24)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeFeedbackPage: View {
+    var onClose: () -> Void
+    @State private var kind = 0
+    @State private var content = ""
+    private let kinds = ["功能建议", "体验问题", "其它"]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "意见反馈", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("反馈类型", font: .system(size: 14, weight: .medium), color: DesignTokens.body)
+                    HStack(spacing: 8) {
+                        ForEach(Array(kinds.enumerated()), id: \.offset) { i, k in
+                            Text(k, font: .system(size: 13), color: kind == i ? .white : DesignTokens.ink)
+                                .padding(.horizontal, 12).padding(.vertical, 8)
+                                .background(kind == i ? DesignTokens.link : DesignTokens.canvas, in: Capsule())
+                                .onTapGesture { kind = i }
+                        }
+                    }
+                    TextField("请描述问题或建议…", text: $content, axis: .vertical)
+                        .lineLimit(5...10)
+                        .padding(12)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                    Button("提交反馈") {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeProfilePage: View {
+    var onClose: () -> Void
+    @State private var nickname = "qa_user"
+    @State private var role = "销售顾问"
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "个人资料", onClose: onClose, dark: false)
+            VStack(spacing: 16) {
+                Circle().fill(DesignTokens.link.opacity(0.15)).frame(width: 72, height: 72)
+                    .overlay(Image(systemName: "person.fill").font(.system(size: 28)).foregroundStyle(DesignTokens.link))
+                labeled("昵称", $nickname)
+                labeled("职位", $role)
+                Button("保存") { onClose() }
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+                    .frame(maxWidth: .infinity)
+                Spacer()
+            }
+            .padding(16)
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+    private func labeled(_ title: String, _ text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title, font: .system(size: 13), color: DesignTokens.body)
+            TextField(title, text: text)
+                .padding(12)
+                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+        }
+    }
+}
+
+struct NativeAddressesPage: View {
+    var onClose: () -> Void
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "收货地址", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 12) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text("默认地址", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                Text("默认", font: .system(size: 11), color: DesignTokens.link)
+                                    .padding(.horizontal, 6).padding(.vertical, 2)
+                                    .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                            }
+                            Text("北京市大兴区 · 兴荣丰田", font: .system(size: 14), color: DesignTokens.body)
+                            Text("qa_user  138****5172", font: .system(size: 13), color: DesignTokens.mute)
+                        }
+                        Spacer()
+                    }
+                    .padding(16)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    Button("添加地址") {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeDubbingFeedPage: View {
+    var onClose: () -> Void
+    private let items: [(String, String, String)] = [
+        ("小王子 · 片段 3", "难度初级 · 女声", "热"),
+        ("飞屋环游记 · OP", "难度中级 · 男声", ""),
+        ("穿条纹睡衣的男孩", "难度高级 · 男声", "新"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "配音", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(items.enumerated()), id: \.offset) { _, it in
+                        HStack {
+                            RoundedRectangle(cornerRadius: 8).fill(DesignTokens.canvasSoft2).frame(width: 56, height: 56)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(it.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                Text(it.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            if !it.2.isEmpty {
+                                Text(it.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                                    .padding(.horizontal, 8).padding(.vertical, 4)
+                                    .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                            }
+                        }
+                        .padding(16).background(DesignTokens.canvas)
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+                Button("开始配音") {}
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+                    .padding(.bottom, 24)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeHotRankPage: View {
+    var onClose: () -> Void
+    private let ranks: [(String, String, String)] = [
+        ("穿条纹睡衣的男孩", "热度 9821", "1"),
+        ("蛮荒故事", "热度 8740", "2"),
+        ("爱冒险的朵拉", "热度 7655", "3"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "热配榜", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(ranks.enumerated()), id: \.offset) { _, r in
+                        HStack(spacing: 12) {
+                            Text(r.2, font: .system(size: 18, weight: .bold), color: DesignTokens.link)
+                                .frame(width: 28)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(r.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                Text(r.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                        }
+                        .padding(16).background(DesignTokens.canvas)
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeDataAnalyticsPage: View {
+    var onClose: () -> Void
+    private let rows: [(String, String)] = [
+        ("本周成交", "12 台"),
+        ("进店客流", "286"),
+        ("试驾转化", "18.4%"),
+        ("售后进厂", "64"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "数据分析", onClose: onClose, dark: false)
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(r.0, font: .system(size: 13), color: DesignTokens.body)
+                            Text(r.1, font: .system(size: 22, weight: .semibold), color: DesignTokens.ink)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeBusinessCardPage: View {
+    var onClose: () -> Void
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "电子名片", onClose: onClose, dark: false)
+            VStack(spacing: 16) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(colors: [DesignTokens.link, Color(red: 0.2, green: 0.35, blue: 0.85)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .frame(height: 180)
+                    .overlay(
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("qa_user", font: .system(size: 22, weight: .bold), color: .white)
+                            Text("销售顾问 · 沃德龙鼎", font: .system(size: 14), color: .white.opacity(0.9))
+                            Text("138****5172", font: .system(size: 14), color: .white.opacity(0.85))
+                            Spacer()
+                            Text("扫码加好友 / 预约到店", font: .system(size: 12), color: .white.opacity(0.75))
+                        }
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    )
+                Button("分享名片") {}
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+                Spacer()
+            }
+            .padding(16)
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {

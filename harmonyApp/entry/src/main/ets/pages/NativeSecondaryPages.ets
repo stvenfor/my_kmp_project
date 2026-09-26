@@ -1952,3 +1952,281 @@ export struct NativePosterPane {
     }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
+
+@Component
+export struct NativeBusinessPane {
+  onClose: () => void = () => {};
+  @State note: string = '';
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('商务合作').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Column({ space: 16 }) {
+        Text('渠道合作').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('提交合作意向后，商务同学会在 1–2 个工作日内联系您。').fontSize(14).fontColor(DesignTokens.body)
+        TextArea({ placeholder: '请简述合作意向…', text: this.note })
+          .height(120).padding(12).backgroundColor(DesignTokens.canvas).borderRadius(10)
+          .onChange((v: string) => { this.note = v; })
+        Button('提交').backgroundColor(DesignTokens.link).width('100%')
+      }.padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeRemindersPane {
+  onClose: () => void = () => {};
+  private items: string[][] = [
+    ['回访陈先生', '今天 16:00'],
+    ['提交周报', '周五 18:00'],
+    ['试驾接待 · 周女士', '周六 10:30'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('提醒事项').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.items, (it: string[]) => {
+          ListItem() {
+            Column({ space: 4 }) {
+              Text(it[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(it[1]).fontSize(13).fontColor(DesignTokens.body)
+            }.alignItems(HorizontalAlign.Start).padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+      Button('新建提醒').backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeFeedbackPane {
+  onClose: () => void = () => {};
+  @State kind: number = 0;
+  @State content: string = '';
+  private kinds: string[] = ['功能建议', '体验问题', '其它'];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('意见反馈').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Column({ space: 16 }) {
+        Text('反馈类型').fontSize(14).fontColor(DesignTokens.body)
+        Row({ space: 8 }) {
+          ForEach(this.kinds, (k: string, i: number) => {
+            Text(k).fontSize(13)
+              .fontColor(this.kind === i ? Color.White : DesignTokens.ink)
+              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+              .backgroundColor(this.kind === i ? DesignTokens.link : DesignTokens.canvas)
+              .borderRadius(16)
+              .onClick(() => { this.kind = i; })
+          })
+        }
+        TextArea({ placeholder: '请描述问题或建议…', text: this.content })
+          .height(140).padding(12).backgroundColor(DesignTokens.canvas).borderRadius(10)
+          .onChange((v: string) => { this.content = v; })
+        Button('提交反馈').backgroundColor(DesignTokens.link).width('100%')
+      }.padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeProfilePane {
+  onClose: () => void = () => {};
+  @State nickname: string = 'qa_user';
+  @State role: string = '销售顾问';
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('个人资料').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Column({ space: 16 }) {
+        Text('头').fontSize(28).fontColor(DesignTokens.link)
+          .width(72).height(72).textAlign(TextAlign.Center)
+          .borderRadius(36).backgroundColor('#260070F3')
+        Text('昵称').fontSize(13).fontColor(DesignTokens.body)
+        TextInput({ text: this.nickname }).height(44).padding({ left: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(10)
+          .onChange((v: string) => { this.nickname = v; })
+        Text('职位').fontSize(13).fontColor(DesignTokens.body)
+        TextInput({ text: this.role }).height(44).padding({ left: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(10)
+          .onChange((v: string) => { this.role = v; })
+        Button('保存').backgroundColor(DesignTokens.link).width('100%').onClick(() => this.onClose())
+      }.padding(16).width('100%').alignItems(HorizontalAlign.Start)
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeAddressesPane {
+  onClose: () => void = () => {};
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('收货地址').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Column({ space: 12 }) {
+        Column({ space: 6 }) {
+          Row({ space: 8 }) {
+            Text('默认地址').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Text('默认').fontSize(11).fontColor(DesignTokens.link)
+              .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+              .backgroundColor('#1A0070F3').borderRadius(8)
+          }
+          Text('北京市大兴区 · 兴荣丰田').fontSize(14).fontColor(DesignTokens.body)
+          Text('qa_user  138****5172').fontSize(13).fontColor(DesignTokens.mute)
+        }.alignItems(HorizontalAlign.Start).padding(16).width('100%')
+        .backgroundColor(DesignTokens.canvas).borderRadius(12)
+        Button('添加地址').backgroundColor(DesignTokens.link).width('100%')
+      }.padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeDubbingFeedPane {
+  onClose: () => void = () => {};
+  private items: string[][] = [
+    ['小王子 · 片段 3', '难度初级 · 女声', '热'],
+    ['飞屋环游记 · OP', '难度中级 · 男声', ''],
+    ['穿条纹睡衣的男孩', '难度高级 · 男声', '新'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('配音').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.items, (it: string[]) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Column().width(56).height(56).borderRadius(8).backgroundColor(DesignTokens.canvasSoft2)
+              Column({ space: 4 }) {
+                Text(it[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(it[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              if (it[2].length > 0) {
+                Text(it[2]).fontSize(11).fontColor(DesignTokens.link)
+                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                  .backgroundColor('#1A0070F3').borderRadius(12)
+              }
+            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+      Button('开始配音').backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeHotRankPane {
+  onClose: () => void = () => {};
+  private ranks: string[][] = [
+    ['穿条纹睡衣的男孩', '热度 9821', '1'],
+    ['蛮荒故事', '热度 8740', '2'],
+    ['爱冒险的朵拉', '热度 7655', '3'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('热配榜').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.ranks, (r: string[]) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Text(r[2]).fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.link).width(28)
+              Column({ space: 4 }) {
+                Text(r[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeDataAnalyticsPane {
+  onClose: () => void = () => {};
+  private rows: string[][] = [
+    ['本周成交', '12 台'],
+    ['进店客流', '286'],
+    ['试驾转化', '18.4%'],
+    ['售后进厂', '64'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('数据分析').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Grid() {
+        ForEach(this.rows, (r: string[]) => {
+          GridItem() {
+            Column({ space: 8 }) {
+              Text(r[0]).fontSize(13).fontColor(DesignTokens.body)
+              Text(r[1]).fontSize(22).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.alignItems(HorizontalAlign.Start).padding(16).width('100%')
+            .backgroundColor(DesignTokens.canvas).borderRadius(12)
+          }
+        })
+      }.columnsTemplate('1fr 1fr').columnsGap(12).rowsGap(12).padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeBusinessCardPane {
+  onClose: () => void = () => {};
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('电子名片').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Column({ space: 16 }) {
+        Column({ space: 8 }) {
+          Text('qa_user').fontSize(22).fontWeight(FontWeight.Bold).fontColor(Color.White)
+          Text('销售顾问 · 沃德龙鼎').fontSize(14).fontColor('#E6FFFFFF')
+          Text('138****5172').fontSize(14).fontColor('#D9FFFFFF')
+          Blank().height(40)
+          Text('扫码加好友 / 预约到店').fontSize(12).fontColor('#BFFFFFFF')
+        }
+        .alignItems(HorizontalAlign.Start)
+        .padding(20).width('100%').height(180).borderRadius(16)
+        .linearGradient({ angle: 135, colors: [['#0070F3', 0], ['#3359D9', 1]] })
+        Button('分享名片').backgroundColor(DesignTokens.link).width('100%')
+      }.padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}

@@ -97,6 +97,7 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['设置', '/settings'],
   ['个性化', '/mine/personalized_settings'],
   ['会员', '/pay/membership'],
+  ['电子名片', '/mine/business_card'],
   ['关于', '/mine/about'],
 ]);
 

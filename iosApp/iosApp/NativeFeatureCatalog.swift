@@ -80,7 +80,8 @@ enum NativeRouteResolver {
         "好友": "/friend", "通讯录": "/friend", "朋友": "/friend",
         "首页": "/home", "聊天": "/chat", "社区": "/community", "我的": "/mine",
         "设置": "/settings", "个性化": "/mine/personalized_settings",
-        "会员": "/pay/membership", "关于": "/mine/about",
+        "会员": "/pay/membership", "电子名片": "/mine/business_card",
+        "关于": "/mine/about",
     ]
 }
 
@@ -488,6 +489,24 @@ struct NativeFeatureHost: View {
             NativeQaPage(onClose: onClose)
         } else if path == "/mine/poster" {
             NativePosterPage(onClose: onClose)
+        } else if path == "/mine/business" {
+            NativeBusinessPage(onClose: onClose)
+        } else if path == "/mine/reminders" {
+            NativeRemindersPage(onClose: onClose)
+        } else if path == "/mine/feedback" {
+            NativeFeedbackPage(onClose: onClose)
+        } else if path == "/mine/profile" {
+            NativeProfilePage(onClose: onClose)
+        } else if path == "/mine/addresses" {
+            NativeAddressesPage(onClose: onClose)
+        } else if path == "/home/dubbing_feed" {
+            NativeDubbingFeedPage(onClose: onClose)
+        } else if path == "/home/hot_rank_detail" {
+            NativeHotRankPage(onClose: onClose)
+        } else if path == "/home/data_analytics" {
+            NativeDataAnalyticsPage(onClose: onClose)
+        } else if path == "/mine/business_card" || pathOrLabel == "电子名片" {
+            NativeBusinessCardPage(onClose: onClose)
         } else {
             genericList
         }
