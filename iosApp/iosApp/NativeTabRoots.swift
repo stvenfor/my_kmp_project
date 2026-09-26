@@ -471,6 +471,11 @@ struct ChatTabView: View {
     @State private var messages: [String] = []
     @State private var searchOpen = false
     @State private var searchQuery = ""
+    @State private var inputMode: ChatInputMode = .keyboard
+    @State private var showEmoji = false
+    @State private var showMore = false
+
+    private enum ChatInputMode { case keyboard, voice }
 
     private var visiblePeers: [(String, String, String, String?, Bool)] {
         let q = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -628,34 +633,109 @@ struct ChatTabView: View {
                 .padding(16)
             }
 
-            // Flutter InputPanel chrome: mic + field + emoji + more
-            HStack(spacing: 8) {
-                Image(systemName: "mic")
-                    .font(.system(size: 20))
-                    .foregroundStyle(DesignTokens.body)
-                    .frame(width: 36, height: 36)
-                TextField("输入消息…", text: $draft)
-                    .padding(.horizontal, 12)
-                    .frame(height: 40)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
-                Image(systemName: "face.smiling")
-                    .font(.system(size: 20))
-                    .foregroundStyle(DesignTokens.body)
-                    .frame(width: 36, height: 36)
-                Button {
-                    let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !text.isEmpty else { return }
-                    messages.append(text)
-                    draft = ""
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(DesignTokens.link)
+            // Flutter InputPanel: voice ↔ keyboard, emoji, more (album/camera)
+            VStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Button {
+                        inputMode = inputMode == .voice ? .keyboard : .voice
+                        showEmoji = false
+                        showMore = false
+                    } label: {
+                        Image(systemName: inputMode == .voice ? "keyboard" : "mic")
+                            .font(.system(size: 20))
+                            .foregroundStyle(DesignTokens.body)
+                            .frame(width: 36, height: 36)
+                    }
+                    if inputMode == .voice {
+                        Text("按住 说话")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(DesignTokens.ink)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                    } else {
+                        TextField("输入消息…", text: $draft)
+                            .padding(.horizontal, 12)
+                            .frame(height: 40)
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                    }
+                    Button {
+                        showEmoji.toggle()
+                        showMore = false
+                        inputMode = .keyboard
+                    } label: {
+                        Image(systemName: "face.smiling")
+                            .font(.system(size: 20))
+                            .foregroundStyle(showEmoji ? DesignTokens.link : DesignTokens.body)
+                            .frame(width: 36, height: 36)
+                    }
+                    if draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Button {
+                            showMore.toggle()
+                            showEmoji = false
+                        } label: {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 28))
+                                .foregroundStyle(showMore ? DesignTokens.link : DesignTokens.body)
+                        }
+                    } else {
+                        Button {
+                            let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+                            guard !text.isEmpty else { return }
+                            messages.append(text)
+                            draft = ""
+                        } label: {
+                            Text("发送", font: .system(size: 14, weight: .semibold), color: .white)
+                                .padding(.horizontal, 12)
+                                .frame(height: 36)
+                                .background(DesignTokens.link, in: Capsule())
+                        }
+                    }
+                }
+                .padding(12)
+
+                if showEmoji {
+                    let emojis = ["😀", "😁", "😂", "🤣", "😊", "😍", "🥰", "😘", "👍", "🙏", "🔥", "🎉", "🚗", "🏠", "✅", "❤️"]
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: 8) {
+                        ForEach(emojis, id: \.self) { e in
+                            Text(e).font(.system(size: 28))
+                                .onTapGesture { draft += e }
+                        }
+                    }
+                    .padding(12)
+                    .frame(height: 160)
+                    .background(DesignTokens.canvas)
+                }
+
+                if showMore {
+                    HStack(spacing: 24) {
+                        moreAction("照片", "photo.on.rectangle") { messages.append("[图片]") }
+                        moreAction("拍摄", "camera") { messages.append("[拍摄]") }
+                        moreAction("文件", "doc") { messages.append("[文件]") }
+                        moreAction("位置", "location") { messages.append("[位置]") }
+                    }
+                    .padding(.vertical, 20)
+                    .frame(maxWidth: .infinity)
+                    .background(DesignTokens.canvas)
                 }
             }
-            .padding(12)
             .background(DesignTokens.canvasSoft2)
         }
+    }
+
+    private func moreAction(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 22))
+                    .foregroundStyle(DesignTokens.link)
+                    .frame(width: 52, height: 52)
+                    .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 12))
+                Text(title, font: .system(size: 12), color: DesignTokens.body)
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 

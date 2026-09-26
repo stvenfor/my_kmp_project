@@ -381,6 +381,14 @@ struct NativeFeatureHost: View {
             NativeSearchPage(onClose: onClose)
         } else if path == "/home/all_services" {
             NativeAllServicesPage(onClose: onClose, onOpen: { onOpen?($0) })
+        } else if path == "/home/learning_report" || pathOrLabel == "学习报告" {
+            NativeLearningReportPage(onClose: onClose)
+        } else if path == "/mine/purchase_calculator" || pathOrLabel == "购车计算器" {
+            NativePurchaseCalculatorPage(onClose: onClose)
+        } else if path == "/friend" {
+            NativeFriendPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/community/search" {
+            NativeCommunitySearchPage(onClose: onClose)
         } else {
             genericList
         }
