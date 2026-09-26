@@ -144,6 +144,8 @@ struct Index {
   @State selectedStoreId: string = '1';
   @State nativePane: string = '';
   @State featurePath: string = '';
+  /** Flutter MinePage._navFadeExtent = 72 — collapsed nav opacity 0..1. */
+  @State mineNavOpacity: number = 0;
   private islandController: ArkUIViewController | undefined = undefined;
   private pref: preferences.Preferences | undefined = undefined;
   private chatLocalSeq: number = 0;
@@ -1459,18 +1461,37 @@ struct Index {
 
   @Builder
   MinePane() {
-    Scroll() {
-      Column({ space: 16 }) {
-        Row() {
-          Text('我的').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
-          Text('ⓘ').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
-            .onClick(() => this.openMineIsland(true))
-          Text('📅').fontSize(16).margin({ right: 8 })
-            .onClick(() => this.openDeferred('签到日历'))
-          Text('⚙').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
-            .onClick(() => this.openMineIsland(false))
-          Text(this.isLoggedIn ? '👤' : '＋')
-            .fontSize(16).fontColor(DesignTokens.link)
+    Stack({ alignContent: Alignment.Top }) {
+      Scroll() {
+        Column({ space: 16 }) {
+          Row() {
+            Text('我的').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
+            Text('ⓘ').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
+              .onClick(() => this.openMineIsland(true))
+            Text('📅').fontSize(16).margin({ right: 8 })
+              .onClick(() => this.openDeferred('签到日历'))
+            Text('⚙').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
+              .onClick(() => this.openMineIsland(false))
+            Text(this.isLoggedIn ? '👤' : '＋')
+              .fontSize(16).fontColor(DesignTokens.link)
+              .onClick(() => {
+                if (this.isLoggedIn) {
+                  this.openDeferred('个人资料');
+                } else {
+                  this.showLogin = true;
+                }
+              })
+          }.width('100%')
+
+          Row({ space: 16 }) {
+            Column() {
+              Text('头')
+                .width(64).height(64)
+                .textAlign(TextAlign.Center)
+                .fontSize(22).fontColor(DesignTokens.link)
+                .backgroundColor('#1A0070F3')
+                .borderRadius(32)
+            }
             .onClick(() => {
               if (this.isLoggedIn) {
                 this.openDeferred('个人资料');
@@ -1478,153 +1499,180 @@ struct Index {
                 this.showLogin = true;
               }
             })
-        }.width('100%')
 
-        Row({ space: 16 }) {
-          Column() {
-            Text('头')
-              .width(64).height(64)
-              .textAlign(TextAlign.Center)
-              .fontSize(22).fontColor(DesignTokens.link)
-              .backgroundColor('#1A0070F3')
-              .borderRadius(32)
-          }
-          .onClick(() => {
-            if (this.isLoggedIn) {
-              this.openDeferred('个人资料');
-            } else {
-              this.showLogin = true;
-            }
-          })
-
-          Column({ space: 8 }) {
-            Row({ space: 8 }) {
-              Text(this.isLoggedIn ? (this.loginDisplayName || 'qa_user') : '访客')
-                .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-              Text(this.isLoggedIn ? '销售顾问' : '未登录')
-                .fontSize(11).fontWeight(FontWeight.Medium).fontColor(Color.White)
-                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                .backgroundColor(DesignTokens.link)
-                .borderRadius(6)
-            }
-            Row({ space: 4 }) {
-              Text(this.isLoggedIn ? this.mineStoreName() : '登录后查看门店信息')
-                .fontSize(12).fontColor(DesignTokens.body).layoutWeight(1)
-              Text('▾').fontSize(10).fontColor(DesignTokens.body)
-            }
-            .width('100%')
-            .onClick(() => {
-              if (this.isLoggedIn) {
-                this.showSwitchStore = true;
-              } else {
-                this.showLogin = true;
+            Column({ space: 8 }) {
+              Row({ space: 8 }) {
+                Text(this.isLoggedIn ? (this.loginDisplayName || 'qa_user') : '访客')
+                  .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(this.isLoggedIn ? '销售顾问' : '未登录')
+                  .fontSize(11).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                  .backgroundColor(DesignTokens.link)
+                  .borderRadius(6)
               }
-            })
-            Row({ space: 16 }) {
-              Text('电子名片')
-                .fontSize(12).fontColor(DesignTokens.link)
-                .padding({ left: 10, right: 10, top: 6, bottom: 6 })
-                .backgroundColor('#140070F3')
-                .borderRadius(20)
-                .onClick(() => this.openDeferred('电子名片'))
-              Text(this.isLoggedIn ? '138****5172' : '— — —')
-                .fontSize(12).fontColor(DesignTokens.body)
-            }
-            if (!this.isLoggedIn) {
-              Button('登录').backgroundColor(DesignTokens.link).onClick(() => {
-                this.showLogin = true;
+              Row({ space: 4 }) {
+                Text(this.isLoggedIn ? this.mineStoreName() : '登录后查看门店信息')
+                  .fontSize(12).fontColor(DesignTokens.body).layoutWeight(1)
+                Text('▾').fontSize(10).fontColor(DesignTokens.body)
+              }
+              .width('100%')
+              .onClick(() => {
+                if (this.isLoggedIn) {
+                  this.showSwitchStore = true;
+                } else {
+                  this.showLogin = true;
+                }
               })
-            }
-          }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-        }
-        .width('100%')
-        .padding(16)
-        .alignItems(VerticalAlign.Top)
-        .backgroundColor(DesignTokens.canvas)
-        .borderRadius(12)
-
-        Row() {
-          this.MetricCell('0', '加入天数')
-          this.MetricCell('0', '员工数')
-          this.MetricCell('0', '店铺天数')
-          this.MetricCell('0', '累计客户')
-        }
-        .width('100%')
-        .padding(12)
-        .backgroundColor(DesignTokens.canvas)
-        .borderRadius(12)
-
-        Text('常用服务').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-        Row() {
-          ForEach(['商城', '我的钱包', '我的订单'], (label: string) => {
-            Column({ space: 6 }) {
-              Text(label.substring(0, 1))
-                .width(44).height(44).textAlign(TextAlign.Center)
-                .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(12)
-              Text(label).fontSize(11).fontColor(DesignTokens.ink)
-            }.layoutWeight(1).padding({ top: 8, bottom: 8 })
-            .onClick(() => this.openDeferred(label))
-          })
-        }
-        .width('100%')
-        .padding(8)
-        .backgroundColor(DesignTokens.canvas)
-        .borderRadius(12)
-
-        Row() {
-          Text('个人功能').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
-          Text('长按拖动顺序').fontSize(12).fontColor(DesignTokens.body)
-        }.width('100%')
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(this.mineFunctions, (item: MineFunctionCard) => {
-            Column({ space: 4 }) {
-              Text(item.title.substring(0, 1))
-                .width(44).height(44).textAlign(TextAlign.Center)
-                .fontColor(DesignTokens.link).backgroundColor('#140070F3').borderRadius(12)
-              Blank().height(8)
-              Text(item.title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-              Text(item.subtitle).fontSize(11).fontColor(DesignTokens.body).maxLines(2)
-              if (item.value.length > 0) {
-                Text(item.value).fontSize(15).fontWeight(FontWeight.Bold).fontColor(DesignTokens.link)
+              Row({ space: 16 }) {
+                Text('电子名片')
+                  .fontSize(12).fontColor(DesignTokens.link)
+                  .padding({ left: 10, right: 10, top: 6, bottom: 6 })
+                  .backgroundColor('#140070F3')
+                  .borderRadius(20)
+                  .onClick(() => this.openDeferred('电子名片'))
+                Text(this.isLoggedIn ? '138****5172' : '— — —')
+                  .fontSize(12).fontColor(DesignTokens.body)
               }
-            }
-            .width('48%')
-            .padding(16)
-            .margin({ bottom: 12 })
-            .alignItems(HorizontalAlign.Start)
-            .backgroundColor(DesignTokens.canvas)
-            .borderRadius(12)
-            .border({ width: 0.5, color: DesignTokens.hairline })
-            .onClick(() => this.openDeferred(item.title))
-          }, (item: MineFunctionCard) => item.title)
-        }.width('100%').justifyContent(FlexAlign.SpaceBetween)
+              if (!this.isLoggedIn) {
+                Button('登录').backgroundColor(DesignTokens.link).onClick(() => {
+                  this.showLogin = true;
+                })
+              }
+            }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+          }
+          .width('100%')
+          .padding(16)
+          .alignItems(VerticalAlign.Top)
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
 
-        Column() {
-          ForEach(this.mineMenu, (item: MineMenuRow) => {
-            Row() {
-              Text(item.label).fontSize(15).fontColor(DesignTokens.ink).layoutWeight(1)
-              if (item.badge) {
-                Text('●').fontSize(8).fontColor(Color.Red).margin({ right: 8 })
-              }
-              Text('›').fontColor(DesignTokens.mute)
-            }
-            .width('100%')
-            .padding(16)
-            .onClick(() => {
-              if (item.label === '设置') {
-                this.openMineIsland(false);
-              } else {
-                this.openDeferred(item.label);
-              }
+          Row() {
+            this.MetricCell('0', '加入天数')
+            this.MetricCell('0', '员工数')
+            this.MetricCell('0', '店铺天数')
+            this.MetricCell('0', '累计客户')
+          }
+          .width('100%')
+          .padding(12)
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
+
+          Text('常用服务').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
+          Row() {
+            ForEach(['商城', '我的钱包', '我的订单'], (label: string) => {
+              Column({ space: 6 }) {
+                Text(label.substring(0, 1))
+                  .width(44).height(44).textAlign(TextAlign.Center)
+                  .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(12)
+                Text(label).fontSize(11).fontColor(DesignTokens.ink)
+              }.layoutWeight(1).padding({ top: 8, bottom: 8 })
+              .onClick(() => this.openDeferred(label))
             })
-          }, (item: MineMenuRow) => item.label)
+          }
+          .width('100%')
+          .padding(8)
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
+
+          Row() {
+            Text('个人功能').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
+            Text('长按拖动顺序').fontSize(12).fontColor(DesignTokens.body)
+          }.width('100%')
+          Flex({ wrap: FlexWrap.Wrap }) {
+            ForEach(this.mineFunctions, (item: MineFunctionCard) => {
+              Column({ space: 4 }) {
+                Text(item.title.substring(0, 1))
+                  .width(44).height(44).textAlign(TextAlign.Center)
+                  .fontColor(DesignTokens.link).backgroundColor('#140070F3').borderRadius(12)
+                Blank().height(8)
+                Text(item.title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(item.subtitle).fontSize(11).fontColor(DesignTokens.body).maxLines(2)
+                if (item.value.length > 0) {
+                  Text(item.value).fontSize(15).fontWeight(FontWeight.Bold).fontColor(DesignTokens.link)
+                }
+              }
+              .width('48%')
+              .padding(16)
+              .margin({ bottom: 12 })
+              .alignItems(HorizontalAlign.Start)
+              .backgroundColor(DesignTokens.canvas)
+              .borderRadius(12)
+              .border({ width: 0.5, color: DesignTokens.hairline })
+              .onClick(() => this.openDeferred(item.title))
+            }, (item: MineFunctionCard) => item.title)
+          }.width('100%').justifyContent(FlexAlign.SpaceBetween)
+
+          Column() {
+            ForEach(this.mineMenu, (item: MineMenuRow) => {
+              Row() {
+                Text(item.label).fontSize(15).fontColor(DesignTokens.ink).layoutWeight(1)
+                if (item.badge) {
+                  Text('●').fontSize(8).fontColor(Color.Red).margin({ right: 8 })
+                }
+                Text('›').fontColor(DesignTokens.mute)
+              }
+              .width('100%')
+              .padding(16)
+              .onClick(() => {
+                if (item.label === '设置') {
+                  this.openMineIsland(false);
+                } else {
+                  this.openDeferred(item.label);
+                }
+              })
+            }, (item: MineMenuRow) => item.label)
+          }
+          .width('100%')
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
+        }
+        .padding(16)
+        .width('100%')
+      }
+      .width('100%')
+      .height('100%')
+      .scrollBar(BarState.Off)
+      .onDidScroll((_xOffset: number, yOffset: number) => {
+        const next = Math.min(1, Math.max(0, yOffset / 72));
+        if (Math.abs(next - this.mineNavOpacity) >= 0.01) {
+          this.mineNavOpacity = next;
+        }
+      })
+
+      // Flutter `_MineCollapsedNavBar`
+      if (this.mineNavOpacity >= 0.05) {
+        Column() {
+          Row() {
+            Text('我的')
+              .fontSize(20)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(DesignTokens.ink)
+              .layoutWeight(1)
+              .margin({ left: 16 })
+            Text('ⓘ').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
+              .onClick(() => this.openMineIsland(true))
+            Text('📅').fontSize(16).margin({ right: 8 })
+              .onClick(() => this.openDeferred('签到日历'))
+            Text('⚙').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
+              .onClick(() => this.openMineIsland(false))
+            Text(this.isLoggedIn ? '👤' : '＋')
+              .fontSize(16).fontColor(DesignTokens.link)
+              .onClick(() => {
+                if (this.isLoggedIn) {
+                  this.openDeferred('个人资料');
+                } else {
+                  this.showLogin = true;
+                }
+              })
+          }
+          .width('100%')
+          .height(44)
+          Divider().color(DesignTokens.hairline)
         }
         .width('100%')
         .backgroundColor(DesignTokens.canvas)
-        .borderRadius(12)
+        .opacity(this.mineNavOpacity)
       }
-      .padding(16)
-      .width('100%')
     }
     .width('100%')
     .height('100%')

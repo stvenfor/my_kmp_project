@@ -29,16 +29,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.offset
 import com.example.my_kmp_project.core.platform.showPlatformToast
+
+/** Flutter `MinePage._navFadeExtent` — scroll distance to full collapsed-nav opacity. */
+private val MineNavFadeExtent = 72.dp
+private val MineToolbarHeight = 44.dp
 
 @Composable
 internal fun MineHomeContent(
@@ -57,6 +63,13 @@ internal fun MineHomeContent(
     }
     var showSwitchStore by remember { mutableStateOf(false) }
     val profile = base.copy(storeName = if (loggedIn) storeName else base.storeName)
+    val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+    val navOpacity = with(density) {
+        (scrollState.value / MineNavFadeExtent.toPx()).coerceIn(0f, 1f)
+    }
+    val onOpenProfile = { snackbar("个人资料") }
+    val onCalendar = { snackbar("签到日历") }
 
     if (showSwitchStore && loggedIn) {
         SwitchStoreDialog(
@@ -71,80 +84,98 @@ internal fun MineHomeContent(
         )
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MineTheme.Background)
-            .verticalScroll(rememberScrollState())
-            .statusBarsPadding()
-            .padding(bottom = 24.dp),
+            .background(MineTheme.Background),
     ) {
-        MineTopChrome(
-            loggedIn = loggedIn,
-            onOpenPersonalized = onOpenPersonalized,
-            onOpenSettings = onOpenSettings,
-            onOpenProfile = { snackbar("个人资料") },
-            onLoginClick = onLoginClick,
-            onCalendar = { snackbar("签到日历") },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        ProfileCard(
-            profile = profile,
-            loggedIn = loggedIn,
-            snackbar = snackbar,
-            onLoginClick = onLoginClick,
-            onSwitchStore = {
-                if (loggedIn) {
-                    if (MineStoreCatalog.stores.isEmpty()) {
-                        showPlatformToast("暂无可切换店铺")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .statusBarsPadding()
+                .padding(bottom = 24.dp),
+        ) {
+            MineTopChrome(
+                loggedIn = loggedIn,
+                onOpenPersonalized = onOpenPersonalized,
+                onOpenSettings = onOpenSettings,
+                onOpenProfile = onOpenProfile,
+                onLoginClick = onLoginClick,
+                onCalendar = onCalendar,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            ProfileCard(
+                profile = profile,
+                loggedIn = loggedIn,
+                snackbar = snackbar,
+                onLoginClick = onLoginClick,
+                onSwitchStore = {
+                    if (loggedIn) {
+                        if (MineStoreCatalog.stores.isEmpty()) {
+                            showPlatformToast("暂无可切换店铺")
+                        } else {
+                            showSwitchStore = true
+                        }
                     } else {
-                        showSwitchStore = true
+                        showPlatformToast("请先登录")
                     }
-                } else {
-                    showPlatformToast("请先登录")
-                }
-            },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        StatsBar(stats = profile.stats)
-        Spacer(modifier = Modifier.height(8.dp))
-        QuickServicesSection(
-            onTap = { service ->
-                when (service.id) {
-                    "mall" -> snackbar("商城")
-                    "wallet" -> snackbar("我的钱包")
-                    "order" -> snackbar("我的订单")
-                    else -> snackbar(service.label)
-                }
-            },
-        )
-        FunctionSection(
-            onTap = { item ->
-                // Labels must match MineRoutes.fromLabel / HomeRoutes.fromLabel
-                when (item.id) {
-                    "sms" -> snackbar("短信模板")
-                    "calculator" -> snackbar("购车计算器")
-                    "used_car" -> snackbar("二手车")
-                    "ledger" -> snackbar("收支")
-                    "short_video" -> snackbar("小视频")
-                    "after_sales" -> snackbar("售后专区")
-                    "qr_pay" -> snackbar("店铺收款码")
-                    "qa" -> snackbar("选买问答")
-                    "poster" -> snackbar("商家海报")
-                    else -> snackbar(item.title)
-                }
-            },
-            onReorderHint = { snackbar("长按拖动顺序（即将支持）") },
-        )
-        MenuSection(
-            onSettings = onOpenSettings,
-            onOther = { item ->
-                when (item.id) {
-                    "address" -> snackbar("地址管理")
-                    else -> snackbar(item.label)
-                }
-            },
-        )
+                },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            StatsBar(stats = profile.stats)
+            Spacer(modifier = Modifier.height(8.dp))
+            QuickServicesSection(
+                onTap = { service ->
+                    when (service.id) {
+                        "mall" -> snackbar("商城")
+                        "wallet" -> snackbar("我的钱包")
+                        "order" -> snackbar("我的订单")
+                        else -> snackbar(service.label)
+                    }
+                },
+            )
+            FunctionSection(
+                onTap = { item ->
+                    // Labels must match MineRoutes.fromLabel / HomeRoutes.fromLabel
+                    when (item.id) {
+                        "sms" -> snackbar("短信模板")
+                        "calculator" -> snackbar("购车计算器")
+                        "used_car" -> snackbar("二手车")
+                        "ledger" -> snackbar("收支")
+                        "short_video" -> snackbar("小视频")
+                        "after_sales" -> snackbar("售后专区")
+                        "qr_pay" -> snackbar("店铺收款码")
+                        "qa" -> snackbar("选买问答")
+                        "poster" -> snackbar("商家海报")
+                        else -> snackbar(item.title)
+                    }
+                },
+                onReorderHint = { snackbar("长按拖动顺序（即将支持）") },
+            )
+            MenuSection(
+                onSettings = onOpenSettings,
+                onOther = { item ->
+                    when (item.id) {
+                        "address" -> snackbar("地址管理")
+                        else -> snackbar(item.label)
+                    }
+                },
+            )
+        }
+
+        // Flutter `_MineCollapsedNavBar` — fades in over first 72px of scroll.
+        if (navOpacity >= 0.05f) {
+            MineCollapsedNavBar(
+                loggedIn = loggedIn,
+                opacity = navOpacity,
+                onOpenPersonalized = onOpenPersonalized,
+                onOpenSettings = onOpenSettings,
+                onOpenProfile = onOpenProfile,
+                onLoginClick = onLoginClick,
+                onCalendar = onCalendar,
+            )
+        }
     }
 }
 
@@ -181,6 +212,52 @@ private fun MineTopChrome(
             icon = if (loggedIn) MineIcons.Person else MineIcons.Login,
             onClick = if (loggedIn) onOpenProfile else onLoginClick,
         )
+    }
+}
+
+/** Flutter `_MineCollapsedNavBar` — sticky surface bar with title + header icons. */
+@Composable
+private fun MineCollapsedNavBar(
+    loggedIn: Boolean,
+    opacity: Float,
+    onOpenPersonalized: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onLoginClick: () -> Unit,
+    onCalendar: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(opacity)
+            .background(MineTheme.Surface)
+            .statusBarsPadding(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(MineToolbarHeight)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "我的",
+                color = MineTheme.LabelPrimary,
+                fontSize = MineTheme.HeadlineSize,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 8.dp),
+            )
+            TopIconButton(icon = MineIcons.Info, onClick = onOpenPersonalized)
+            TopIconButton(icon = MineIcons.Calendar, onClick = onCalendar)
+            TopIconButton(icon = MineIcons.Settings, onClick = onOpenSettings)
+            TopIconButton(
+                icon = if (loggedIn) MineIcons.Person else MineIcons.Login,
+                onClick = if (loggedIn) onOpenProfile else onLoginClick,
+            )
+        }
+        HorizontalDivider(thickness = 0.5.dp, color = MineTheme.Separator)
     }
 }
 

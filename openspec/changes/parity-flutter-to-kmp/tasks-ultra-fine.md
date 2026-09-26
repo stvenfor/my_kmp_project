@@ -388,7 +388,7 @@
 - [x] E.1.3.a 常用服务四宫格
 - [x] E.1.4.a 个人功能区
 - [x] E.1.5.a 菜单列表
-- [ ] E.1.6 滚动顶栏渐显（Flutter `_navFadeExtent=72`）
+- [x] E.1.6 滚动顶栏渐显（Flutter `_navFadeExtent=72`）
 
 ### 常用服务导航（`onQuickServiceTap`）
 - [x] E.1.7 `mall` → `/mall`

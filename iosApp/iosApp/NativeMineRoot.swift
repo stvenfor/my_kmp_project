@@ -14,6 +14,8 @@ struct MineRootView: View {
 
     @State private var selectedStoreId = "1"
     @State private var showSwitchStore = false
+    /// Flutter `MinePage._navFadeExtent` = 72.
+    @State private var navOpacity: Double = 0
 
     private let stores: [(String, String)] = [
         ("1", "[4S]北京沃德龙鼎吉利"),
@@ -66,16 +68,40 @@ struct MineRootView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                topChrome
-                profileCard
-                statsRow
-                quickServices
-                functionSection
-                menuSection
+        ZStack(alignment: .top) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    topChrome
+                    profileCard
+                    statsRow
+                    quickServices
+                    functionSection
+                    menuSection
+                }
+                .padding(16)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(
+                            key: MineScrollOffsetKey.self,
+                            value: -geo.frame(in: .named("mineScroll")).minY
+                        )
+                    }
+                )
             }
-            .padding(16)
+            .coordinateSpace(name: "mineScroll")
+            .onPreferenceChange(MineScrollOffsetKey.self) { y in
+                let next = min(1, max(0, y / 72))
+                if abs(next - navOpacity) >= 0.01 {
+                    navOpacity = next
+                }
+            }
+            .background(DesignTokens.canvasSoft2)
+
+            if navOpacity >= 0.05 {
+                collapsedNavBar
+                    .opacity(navOpacity)
+                    .allowsHitTesting(navOpacity >= 0.05)
+            }
         }
         .background(DesignTokens.canvasSoft2)
         .sheet(isPresented: $showSwitchStore) {
@@ -90,6 +116,31 @@ struct MineRootView: View {
             )
             .presentationDetents([.medium])
         }
+    }
+
+    /// Flutter `_MineCollapsedNavBar`.
+    private var collapsedNavBar: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                Text("我的", font: .system(size: 20, weight: .semibold), color: DesignTokens.ink)
+                    .padding(.leading, 16)
+                Spacer()
+                chromeIcon("info.circle") { onOpenPersonalized() }
+                chromeIcon("calendar") { onDeferred("签到日历") }
+                chromeIcon("gearshape") { onOpenSettings() }
+                chromeIcon(isLoggedIn ? "person.crop.circle" : "person.crop.circle.badge.plus") {
+                    if isLoggedIn {
+                        onDeferred("个人资料")
+                    } else {
+                        onLogin()
+                    }
+                }
+            }
+            .frame(height: 44)
+            .padding(.top, 0)
+            Divider().overlay(DesignTokens.hairline)
+        }
+        .background(DesignTokens.canvas)
     }
 
     private var topChrome: some View {
@@ -351,5 +402,13 @@ private struct SwitchStoreSheet: View {
             .padding(.bottom, 20)
         }
         .background(DesignTokens.canvasSoft2)
+    }
+}
+
+/// Tracks Mine tab scroll offset for Flutter-aligned collapsed nav fade.
+private struct MineScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
