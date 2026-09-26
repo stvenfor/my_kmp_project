@@ -383,9 +383,12 @@ export struct NativeHomeContent {
         .alignItems(HorizontalAlign.Start)
         .padding({ left: 16, right: 16, top: 16 })
 
-        // News
+        // News — Flutter HomeNewsList title + decorative「查看更多」
         Column({ space: 12 }) {
-          Text('行业动态').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Row() {
+            Text('行业动态').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
+            Text('查看更多').fontSize(13).fontColor(DesignTokens.link)
+          }.width('100%')
           Row({ space: 12 }) {
             Row().width(72).height(72).backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
             Column({ space: 6 }) {

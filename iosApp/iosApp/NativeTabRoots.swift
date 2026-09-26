@@ -470,7 +470,15 @@ struct HomeTabView: View {
 
     private var newsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("行业动态", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+            HStack {
+                Text("行业动态", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+                // Flutter HomeNewsList: decorative only — no onTap.
+                Text("查看更多", font: .system(size: 13, weight: .medium), color: DesignTokens.link)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(DesignTokens.link)
+            }
             HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(DesignTokens.canvasSoft2)
