@@ -90,6 +90,21 @@ interface ChatMsg {
   type: string; // text | image | voice | custom | time
 }
 
+/** Flutter MockPostRepository post shape for ArkTS CommunityPane. */
+interface CommunityFeedPost {
+  id: string;
+  userId: string;
+  nickname: string;
+  content: string;
+  publishAtMs: number;
+  source: string;
+  images: string[];
+  videoCoverUrl: string;
+  likeCount: number;
+  commentCount: number;
+  isLiked: boolean;
+}
+
 /**
  * ADR 0002: ArkTS owns splash / privacy / tab roots / Mine root / auth /
  * deferred secondary stubs. Compose hosts **Mine island only**.
@@ -118,15 +133,29 @@ struct Index {
   @State chatShowEmoji: boolean = false;
   @State chatShowMore: boolean = false;
   @State chatTick: number = 0; // bump to force UI refresh after async send/read
-  @State communityLiked: boolean = false;
+  @State communityPosts: CommunityFeedPost[] = [];
+  @State communityTick: number = 0;
   @State nativePane: string = '';
   @State featurePath: string = '';
   private islandController: ArkUIViewController | undefined = undefined;
   private pref: preferences.Preferences | undefined = undefined;
   private chatLocalSeq: number = 0;
   private chatSeeded: boolean = false;
+  private communitySeeded: boolean = false;
+  private communityFollowed: string[] = [];
 
-  private readonly communityAuthors: string[] = ['张三', '李四', '王五'];
+  private readonly communitySamples: string[] = [
+    '今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev',
+    '周末 hiking，天气太好了！#户外',
+    '刚读完一本好书，推荐 @李四 也看看。',
+    '分享一张随手拍～',
+    '项目上线啦，感谢团队！#Flutter开发 https://dart.dev',
+    '午餐打卡 @王五',
+    '学习 GetX 状态管理中…',
+  ];
+  private readonly communityNicknames: string[] = [
+    '张三', '李四', '王五', '赵六', '小明', '小红', '开发者', '产品经理',
+  ];
   private readonly mineFunctions: MineFunctionCard[] = [
     { title: '短信模板', subtitle: '一键发送 轻松快捷', value: '' },
     { title: '购车计算器', subtitle: '全款/贷款/保险全能算', value: '5830.00' },
@@ -157,6 +186,7 @@ struct Index {
     registerVideoInteropBuilders();
     registerWebInteropBuilders();
     this.ensureChatSeed();
+    this.ensureCommunitySeed();
     const ctx = getContext(this) as common.UIAbilityContext;
     preferences.getPreferences(ctx, { name: 'native_shell' }).then((p: preferences.Preferences) => {
       this.pref = p;
@@ -566,6 +596,107 @@ struct Index {
       }
     }
     return '';
+  }
+
+  /** Flutter MockPostRepository.seed — 35 posts, Random(42) shape. */
+  private ensureCommunitySeed(): void {
+    if (this.communitySeeded) {
+      return;
+    }
+    this.communitySeeded = true;
+    const now = Date.now();
+    // LCG seed 42 — deterministic enough for mock (not Dart-identical).
+    let seed = 42;
+    const nextInt = (bound: number): number => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed % bound;
+    };
+    const list: CommunityFeedPost[] = [];
+    for (let i = 0; i < 35; i++) {
+      const id = `post_${i}`;
+      const isVideo = i % 10 === 0;
+      const imgCount = isVideo ? 0 : (i % 9) + 1;
+      const images: string[] = [];
+      for (let j = 0; j < imgCount; j++) {
+        images.push(`https://picsum.photos/seed/${id}_${j}/400/400`);
+      }
+      list.push({
+        id: id,
+        userId: `user_${i % 8}`,
+        nickname: this.communityNicknames[i % this.communityNicknames.length],
+        content: this.communitySamples[i % this.communitySamples.length],
+        publishAtMs: now - (i * 17 + nextInt(30)) * 60 * 1000,
+        source: i % 2 === 0 ? '来自 iPhone' : '来自 Android',
+        images: images,
+        videoCoverUrl: isVideo ? `https://picsum.photos/seed/video_${i}/640/360` : '',
+        likeCount: nextInt(200),
+        commentCount: 2 + nextInt(8),
+        isLiked: i % 4 === 0,
+      });
+    }
+    this.communityPosts = list;
+  }
+
+  private communityFeed(): CommunityFeedPost[] {
+    this.ensureCommunitySeed();
+    let source = this.communityPosts.slice();
+    if (this.communityFilter === '热门') {
+      source.sort((a, b) => {
+        const ha = a.likeCount * 2 + a.commentCount;
+        const hb = b.likeCount * 2 + b.commentCount;
+        if (hb !== ha) {
+          return hb - ha;
+        }
+        return b.publishAtMs - a.publishAtMs;
+      });
+    } else if (this.communityFilter === '关注') {
+      source = source.filter((p: CommunityFeedPost) => this.communityFollowed.indexOf(p.userId) >= 0);
+    } else {
+      source.sort((a, b) => b.publishAtMs - a.publishAtMs);
+    }
+    return source.slice(0, 10);
+  }
+
+  private communityMeta(p: CommunityFeedPost): string {
+    const mins = Math.max(0, Math.floor((Date.now() - p.publishAtMs) / 60000));
+    let rel = '刚刚';
+    if (mins >= 1 && mins < 60) {
+      rel = `${mins}分钟前`;
+    } else if (mins < 60 * 24) {
+      rel = `${Math.floor(mins / 60)}小时前`;
+    } else if (mins < 60 * 48) {
+      rel = '昨天';
+    } else {
+      rel = `${Math.floor(mins / (60 * 24))}天前`;
+    }
+    return `${rel} · ${p.source}`;
+  }
+
+  private toggleCommunityLike(id: string): void {
+    const next: CommunityFeedPost[] = [];
+    for (let i = 0; i < this.communityPosts.length; i++) {
+      const p = this.communityPosts[i];
+      if (p.id === id) {
+        const liked = !p.isLiked;
+        next.push({
+          id: p.id,
+          userId: p.userId,
+          nickname: p.nickname,
+          content: p.content,
+          publishAtMs: p.publishAtMs,
+          source: p.source,
+          images: p.images,
+          videoCoverUrl: p.videoCoverUrl,
+          likeCount: Math.max(0, p.likeCount + (liked ? 1 : -1)),
+          commentCount: p.commentCount,
+          isLiked: liked,
+        });
+      } else {
+        next.push(p);
+      }
+    }
+    this.communityPosts = next;
+    this.communityTick = this.communityTick + 1;
   }
 
   /** kind 0 = Mine island, kind 1 = secondary RoutePath (set via SetOhosSecondaryRoute). */
@@ -1031,6 +1162,7 @@ struct Index {
 
   @Builder
   CommunityPane() {
+    Text(`${this.communityTick}`).height(0).opacity(0)
     Column() {
       Row() {
         Text('社区').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
@@ -1076,82 +1208,67 @@ struct Index {
         })
       }.padding({ top: 12, bottom: 12 }).width('100%')
 
-      List({ space: 12 }) {
-        ListItem() {
-          Column({ space: 8 }) {
-            Row() {
-              Text('测').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
-                .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
-              Column() {
-                Text('测试甲').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(this.communityFilter === '热门' ? '2小时前 · 热门' :
-                  (this.communityFilter === '关注' ? '刚刚 · 关注' : '7分钟前 · 来自 iPhone'))
-                  .fontSize(14).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
-              Text('⋯').fontColor(DesignTokens.body)
-            }.width('100%')
-            Text(this.communityFilter === '热门' ? '本周试驾排行榜出炉！#新车' :
-              (this.communityFilter === '关注' ? '刚发了保养心得，求交流。' :
-                '今天去了推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev'))
-              .fontSize(16).fontColor(DesignTokens.ink)
-            Flex({ wrap: FlexWrap.Wrap }) {
-              ForEach([0, 1, 2, 3, 4, 5, 6, 7, 8], (i: number) => {
-                Image(`https://picsum.photos/seed/sot_ohos_${i}/400/400`)
-                  .width('32%')
-                  .aspectRatio(1)
-                  .borderRadius(4)
-                  .objectFit(ImageFit.Cover)
-                  .margin({ right: '1%', bottom: 4 })
-                  .onClick(() => this.openDeferred('/community/image_preview'))
-              })
-            }.width('100%')
-            Row({ space: 24 }) {
-              Text(this.communityLiked ? '♥ 已赞 158' : '♡ 赞 158').fontSize(14)
-                .fontColor(this.communityLiked ? '#EE0000' : DesignTokens.body)
-                .onClick(() => { this.communityLiked = !this.communityLiked; })
-              Text('💬 6').fontSize(14).fontColor(DesignTokens.body)
-                .onClick(() => this.openDeferred('/community/comment'))
-              Text('↗ 分享').fontSize(14).fontColor(DesignTokens.body)
-            }.width('100%')
-          }
-          .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
-          .backgroundColor(DesignTokens.canvas).borderRadius(8)
-          .border({ width: 0.5, color: DesignTokens.hairline })
-        }
-        if (this.communityFilter !== '关注') {
-          ListItem() {
-            Column({ space: 8 }) {
-              Row() {
-                Text('测').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
-                  .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
-                Column() {
-                  Text('测试甲').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                  Text('42分钟前 · 来自 Android').fontSize(14).fontColor(DesignTokens.body)
-                }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
-              }.width('100%')
-              Text('周末 hiking，天气太好了！#户外').fontSize(16).fontColor(DesignTokens.ink)
-              Flex({ wrap: FlexWrap.Wrap }) {
-                ForEach([0, 1, 2, 3, 4, 5, 6, 7, 8], (i: number) => {
-                  Image(`https://picsum.photos/seed/sot_ohos_b_${i}/400/400`)
-                    .width('32%')
-                    .aspectRatio(1)
+      if (this.communityFeed().length === 0) {
+        Column() {
+          Blank()
+          Text(this.communityFilter === '关注' ? '还没有关注的人，去最新里看看吧' : '暂无动态')
+            .fontSize(15).fontColor(DesignTokens.body)
+          Blank()
+        }.width('100%').layoutWeight(1)
+      } else {
+        List({ space: 12 }) {
+          ForEach(this.communityFeed(), (post: CommunityFeedPost) => {
+            ListItem() {
+              Column({ space: 8 }) {
+                Row() {
+                  Text(post.nickname.substring(post.nickname.length - 1))
+                    .width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
+                    .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
+                  Column() {
+                    Text(post.nickname).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                    Text(this.communityMeta(post)).fontSize(14).fontColor(DesignTokens.body)
+                  }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
+                  Text('⋯').fontColor(DesignTokens.body)
+                }.width('100%')
+                Text(post.content).fontSize(16).fontColor(DesignTokens.ink)
+                if (post.videoCoverUrl.length > 0) {
+                  Image(post.videoCoverUrl)
+                    .width('100%')
+                    .aspectRatio(16 / 9)
                     .borderRadius(4)
                     .objectFit(ImageFit.Cover)
-                    .margin({ right: '1%', bottom: 4 })
-                })
-              }.width('100%')
-              Row({ space: 24 }) {
-                Text('♡ 赞 36').fontSize(14).fontColor(DesignTokens.body)
-                Text('💬 4').fontSize(14).fontColor(DesignTokens.body)
-                  .onClick(() => this.openDeferred('/community/comment'))
-              }.width('100%')
+                    .onClick(() => this.openDeferred('/community/image_preview'))
+                } else if (post.images.length > 0) {
+                  Flex({ wrap: FlexWrap.Wrap }) {
+                    ForEach(post.images.slice(0, 9), (url: string, i: number) => {
+                      Image(url)
+                        .width('32%')
+                        .aspectRatio(1)
+                        .borderRadius(4)
+                        .objectFit(ImageFit.Cover)
+                        .margin({ right: '1%', bottom: 4 })
+                        .onClick(() => this.openDeferred('/community/image_preview'))
+                    }, (url: string) => url)
+                  }.width('100%')
+                }
+                Row({ space: 24 }) {
+                  Text(post.isLiked ? `♥ 已赞 ${post.likeCount}` : `♡ 赞 ${post.likeCount}`)
+                    .fontSize(14)
+                    .fontColor(post.isLiked ? '#EE0000' : DesignTokens.body)
+                    .onClick(() => this.toggleCommunityLike(post.id))
+                  Text(`💬 ${post.commentCount}`).fontSize(14).fontColor(DesignTokens.body)
+                    .onClick(() => this.openDeferred('/community/comment'))
+                  Text('↗ 分享').fontSize(14).fontColor(DesignTokens.body)
+                }.width('100%')
+              }
+              .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
+              .backgroundColor(DesignTokens.canvas).borderRadius(8)
+              .border({ width: 0.5, color: DesignTokens.hairline })
             }
-            .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
-            .backgroundColor(DesignTokens.canvas).borderRadius(8)
-            .border({ width: 0.5, color: DesignTokens.hairline })
-          }
-        }
-      }.layoutWeight(1).padding({ left: 16, right: 16 })
+          }, (post: CommunityFeedPost) =>
+            `${post.id}_${post.isLiked}_${post.likeCount}_${this.communityFilter}_${this.communityTick}`)
+        }.layoutWeight(1).padding({ left: 16, right: 16 })
+      }
     }
     .width('100%')
     .height('100%')

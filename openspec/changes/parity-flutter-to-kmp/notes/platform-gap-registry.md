@@ -15,6 +15,7 @@ Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all
 | home secondaries | ready | ready | ready | Android Compose + iOS/OHOS NativeFeatureCatalog 全量二级；像素精修仍可迭代 | features/home | feature/home + NativeFeatureCatalog | pixel polish vs Flutter |
 | chat UI | partial | partial | partial | list/detail + InputPanel; Flutter MockIm parity seed/send/read | features/chat | feature/chat | pixel 6.6; Rong SDK later |
 | IM engine | partial | partial | partial | MockImEngine Flutter-aligned (seed 3 peers, 280ms send, 2s peer-read, markRead) on CMP+Android+iOS+OHOS | components/rongcloud_im | feature/chat/ImEngine.kt + native stores | vendor SDK later |
+| community feed | partial | partial | partial | MockPostRepository seed(35)/latest·hot·following/toggleLike on Android+iOS+OHOS; following empty until follow | features/community | MockCommunityEngine + native stores | HttpPostRepository live feed later |
 | community publish | partial | partial | partial | local form+validation→feed; Flutter publish also「开发中」; no image_picker | features/community | feature/community | image_picker + remote API |
 | media playback | partial | partial | stub | Android MediaPlayer；iOS AVPlayer audio；OHOS stub；video Surface TBD | features/video, music | feature/media createMediaPlayer | OHOS MediaKit；video surface |
 | WeChat/Alipay pay | stub | stub | stub | adapters null; flags false; UI shows unavailable (no fake Success) | features/pay, wys_login_share_pay | feature/commerce FlaggedPayGateway | real OpenSDK per target then 8.5 sandbox |

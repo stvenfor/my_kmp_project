@@ -930,31 +930,143 @@ struct ChatTabView: View {
     }
 }
 
-// MARK: - Community
+// MARK: - Community (Flutter MockPostRepository SoT)
+
+private struct CommunityPostModel: Identifiable {
+    let id: String
+    let userId: String
+    var nickname: String
+    var content: String
+    var publishAt: Date
+    var source: String
+    var images: [String]
+    var videoCoverUrl: String?
+    var likeCount: Int
+    var commentCount: Int
+    var isLiked: Bool
+    var isMine: Bool
+    var previewComments: [(String, String, String?)] // nickname, body, replyTo?
+}
+
+/// Flutter `MockPostRepository` — seed Random(42)/35 posts, tabs, toggleLike, follow.
+@MainActor
+private final class FlutterCommunityStore: ObservableObject {
+    @Published private(set) var posts: [CommunityPostModel] = []
+    private var followed = Set<String>()
+    private var seeded = false
+
+    private static let samples = [
+        "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev",
+        "周末 hiking，天气太好了！#户外",
+        "刚读完一本好书，推荐 @李四 也看看。",
+        "分享一张随手拍～",
+        "项目上线啦，感谢团队！#Flutter开发 https://dart.dev",
+        "午餐打卡 @王五",
+        "学习 GetX 状态管理中…",
+    ]
+    private static let nicknames = ["张三", "李四", "王五", "赵六", "小明", "小红", "开发者", "产品经理"]
+
+    init() { ensureSeed() }
+
+    private func ensureSeed() {
+        guard !seeded else { return }
+        seeded = true
+        let now = Date()
+        var rng = SeededGenerator(seed: 42)
+        var list: [CommunityPostModel] = []
+        for i in 0..<35 {
+            let id = "post_\(i)"
+            let isVideo = i % 10 == 0
+            let imgCount = isVideo ? 0 : (i % 9) + 1
+            let images = isVideo ? [] : (0..<imgCount).map { "https://picsum.photos/seed/\(id)_\($0)/400/400" }
+            let nicks = Self.nicknames
+            let preview: [(String, String, String?)] = [
+                (nicks[(i + 1) % nicks.count], "说得对！", nil),
+                (nicks[(i + 3) % nicks.count], "同感 +1", nicks[i % nicks.count]),
+            ]
+            list.append(CommunityPostModel(
+                id: id,
+                userId: "user_\(i % 8)",
+                nickname: nicks[i % nicks.count],
+                content: Self.samples[i % Self.samples.count],
+                publishAt: now.addingTimeInterval(-Double(i * 17 + Int.random(in: 0..<30, using: &rng)) * 60),
+                source: i % 2 == 0 ? "来自 iPhone" : "来自 Android",
+                images: images,
+                videoCoverUrl: isVideo ? "https://picsum.photos/seed/video_\(i)/640/360" : nil,
+                likeCount: Int.random(in: 0..<200, using: &rng),
+                commentCount: 2 + Int.random(in: 0..<8, using: &rng),
+                isLiked: i % 4 == 0,
+                isMine: i == 0,
+                previewComments: preview
+            ))
+        }
+        posts = list
+    }
+
+    func feed(tab: String) -> [CommunityPostModel] {
+        ensureSeed()
+        var source = posts
+        switch tab {
+        case "热门":
+            source.sort {
+                let ha = $0.likeCount * 2 + $0.commentCount
+                let hb = $1.likeCount * 2 + $1.commentCount
+                if ha != hb { return ha > hb }
+                return $0.publishAt > $1.publishAt
+            }
+        case "关注":
+            source = source.filter { followed.contains($0.userId) }
+        default:
+            source.sort { $0.publishAt > $1.publishAt }
+        }
+        return Array(source.prefix(10))
+    }
+
+    func toggleLike(_ id: String) {
+        guard let i = posts.firstIndex(where: { $0.id == id }) else { return }
+        var copy = posts
+        if copy[i].isLiked {
+            copy[i].isLiked = false
+            copy[i].likeCount = max(0, copy[i].likeCount - 1)
+        } else {
+            copy[i].isLiked = true
+            copy[i].likeCount += 1
+        }
+        posts = copy
+    }
+
+    func meta(_ p: CommunityPostModel) -> String {
+        "\(Self.formatTime(p.publishAt)) · \(p.source)"
+    }
+
+    static func formatTime(_ date: Date) -> String {
+        let mins = max(0, Int(Date().timeIntervalSince(date) / 60))
+        if mins < 1 { return "刚刚" }
+        if mins < 60 { return "\(mins)分钟前" }
+        if mins < 60 * 24 { return "\(mins / 60)小时前" }
+        if mins < 60 * 48 { return "昨天" }
+        let f = DateFormatter()
+        f.dateFormat = "M月d日"
+        return f.string(from: date)
+    }
+}
+
+/// Deterministic RNG matching Flutter `Random(42)` usage pattern (not bit-identical).
+private struct SeededGenerator: RandomNumberGenerator {
+    private var state: UInt64
+    init(seed: UInt64) { state = seed == 0 ? 0xDEADBEEF : seed }
+    mutating func next() -> UInt64 {
+        state = state &* 6364136223846793005 &+ 1
+        return state
+    }
+}
 
 struct CommunityTabView: View {
     var onDeferred: (String) -> Void = { _ in }
+    @StateObject private var store = FlutterCommunityStore()
     @State private var filter = "最新"
-    @State private var liked: Set<String> = []
 
-    private var feed: [(String, String, String, [String], Bool, String, String)] {
-        switch filter {
-        case "热门":
-            return [
-                ("测试甲", "2小时前 · 热门", "本周试驾排行榜出炉！#新车\n欢迎访问：https://flutter.dev", (0..<9).map { "https://picsum.photos/seed/sot_hot_\($0)/400/400" }, false, "1.2k", "86"),
-                ("测试甲", "昨天 · 热门", "周末自驾召集，评论报名 #户外", (0..<9).map { "https://picsum.photos/seed/sot_hot2_\($0)/400/400" }, false, "860", "42"),
-            ]
-        case "关注":
-            return [
-                ("测试甲", "刚刚 · 关注", "刚发了保养心得，求交流。", (0..<4).map { "https://picsum.photos/seed/sot_follow_\($0)/400/400" }, false, "12", "3"),
-            ]
-        default:
-            return [
-                ("测试甲", "7分钟前 · 来自 iPhone", "今天去了推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev", (0..<9).map { "https://picsum.photos/seed/sot_a_\($0)/400/400" }, false, "158", "6"),
-                ("测试甲", "42分钟前 · 来自 Android", "周末 hiking，天气太好了！#户外", (0..<9).map { "https://picsum.photos/seed/sot_b_\($0)/400/400" }, false, "36", "4"),
-            ]
-        }
-    }
+    private var feed: [CommunityPostModel] { store.feed(tab: filter) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -996,46 +1108,34 @@ struct CommunityTabView: View {
             }
             .padding(.vertical, 12)
 
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(Array(feed.enumerated()), id: \.offset) { _, post in
-                        communityCard(
-                            id: "\(filter)-\(post.0)-\(post.1)",
-                            name: post.0,
-                            meta: post.1,
-                            body: post.2,
-                            images: post.3,
-                            singleImage: post.4,
-                            likes: post.5,
-                            comments: post.6
-                        )
+            if feed.isEmpty {
+                Spacer()
+                Text(filter == "关注" ? "还没有关注的人，去最新里看看吧" : "暂无动态",
+                     font: .system(size: 15), color: DesignTokens.body)
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(feed) { post in
+                            communityCard(post)
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
             }
         }
         .background(DesignTokens.canvasSoft2)
     }
 
-    private func communityCard(
-        id: String,
-        name: String,
-        meta: String,
-        body: String,
-        images: [String],
-        singleImage: Bool,
-        likes: String,
-        comments: String
-    ) -> some View {
-        let isLiked = liked.contains(id)
-        return VStack(alignment: .leading, spacing: 10) {
+    private func communityCard(_ post: CommunityPostModel) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
                 Circle().fill(DesignTokens.hairline).frame(width: 44, height: 44)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(name, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                    Text(meta, font: .system(size: 14), color: DesignTokens.body)
+                    Text(post.nickname, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                    Text(store.meta(post), font: .system(size: 14), color: DesignTokens.body)
                 }
                 Spacer()
                 Menu {
@@ -1046,25 +1146,48 @@ struct CommunityTabView: View {
                         .frame(width: 44, height: 44)
                 }
             }
-            Text(body, font: .system(size: 16), color: DesignTokens.ink)
+            Text(post.content, font: .system(size: 16), color: DesignTokens.ink)
                 .lineSpacing(4)
-            communityImageGrid(images: images)
+            if let cover = post.videoCoverUrl {
+                communityThumb(cover)
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(16 / 9, contentMode: .fill)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .onTapGesture { onDeferred("/community/image_preview") }
+            } else if !post.images.isEmpty {
+                communityImageGrid(images: post.images)
+            }
             HStack(spacing: 24) {
                 Button {
-                    if isLiked { liked.remove(id) } else { liked.insert(id) }
+                    store.toggleLike(post.id)
                 } label: {
-                    Label(isLiked ? "已赞 \(likes)" : "赞 \(likes)", systemImage: isLiked ? "heart.fill" : "heart")
-                        .font(.system(size: 13))
-                        .foregroundStyle(isLiked ? Color.red : DesignTokens.body)
+                    Label(
+                        post.isLiked ? "已赞 \(post.likeCount)" : "赞 \(post.likeCount)",
+                        systemImage: post.isLiked ? "heart.fill" : "heart"
+                    )
+                    .font(.system(size: 13))
+                    .foregroundStyle(post.isLiked ? Color.red : DesignTokens.body)
                 }
                 Button {
                     onDeferred("/community/comment")
                 } label: {
-                    Label("评论 \(comments)", systemImage: "bubble.right")
+                    Label("评论 \(post.commentCount)", systemImage: "bubble.right")
                         .font(.system(size: 13))
                         .foregroundStyle(DesignTokens.body)
                 }
                 Spacer()
+            }
+            if !post.previewComments.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(post.previewComments.enumerated()), id: \.offset) { _, c in
+                        if let to = c.2 {
+                            Text("\(c.0) 回复 \(to)：\(c.1)", font: .system(size: 13), color: DesignTokens.body)
+                        } else {
+                            Text("\(c.0)：\(c.1)", font: .system(size: 13), color: DesignTokens.body)
+                        }
+                    }
+                }
             }
         }
         .padding(14)

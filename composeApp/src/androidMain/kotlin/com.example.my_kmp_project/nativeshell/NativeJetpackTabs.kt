@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,6 +55,7 @@ import com.example.my_kmp_project.feature.chat.ImEngine
 import com.example.my_kmp_project.feature.chat.MockImEngine
 import com.example.my_kmp_project.feature.community.CommunityPublishBus
 import com.example.my_kmp_project.feature.community.CommunityRoutes
+import com.example.my_kmp_project.feature.community.MockCommunityEngine
 import com.example.my_kmp_project.feature.content.ContentRoutes
 import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineHomeContent
@@ -62,7 +65,6 @@ import my_kmp_project.composeapp.generated.resources.community_avatar
 import my_kmp_project.composeapp.generated.resources.community_post_a
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.text.input.TextFieldValue
@@ -786,64 +788,24 @@ internal fun JetpackCommunityRoot(
     onPreviewImages: (List<String>, Int) -> Unit = { _, _ -> },
     onPlayVideo: (String) -> Unit = {},
 ) {
+    val engine = remember { MockCommunityEngine() }
     var filter by remember { mutableStateOf("最新") }
-    var like0 by remember { mutableStateOf(false to 0) }
-    var like1 by remember { mutableStateOf(false to 0) }
+    var revision by remember { mutableIntStateOf(0) }
     val published = remember { CommunityPublishBus.lastPublishedBody }
 
-    fun postsForFilter(): List<CommunityFeedPost> {
-        // Aligned to Flutter live SoT feed (HTTP posts on device: 测试甲 + 九宫格图).
-        val base = listOf(
-            CommunityFeedPost(
-                id = "post_0",
-                name = "测试甲",
-                meta = "19小时前 · 来自 iPhone",
-                body = "这么擦擦 8\n#Flutter开发",
-                videoCoverUrl = null,
-                imageUrls = List(9) { "https://picsum.photos/seed/sot_a_$it/400/400" },
-                likes = like0.second,
-                liked = like0.first,
-                comments = "0",
-                hotScore = 200,
-                thread = emptyList(),
-            ),
-            CommunityFeedPost(
-                id = "post_1",
-                name = "测试甲",
-                meta = "19小时前 · 来自 iPhone",
-                body = "好喜欢的好喜欢的好\n#纳指大涨超2%再创新高",
-                videoCoverUrl = null,
-                imageUrls = List(9) { "https://picsum.photos/seed/sot_b_$it/400/400" },
-                likes = like1.second,
-                liked = like1.first,
-                comments = "0",
-                hotScore = 90,
-                thread = emptyList(),
-            ),
-        )
-        val withPublished = if (published != null) {
-            listOf(
-                CommunityFeedPost(
-                    id = "post_new",
-                    name = "我",
-                    meta = "刚刚 · 来自 Android",
-                    body = published,
-                    videoCoverUrl = null,
-                    imageUrls = emptyList(),
-                    likes = 0,
-                    liked = false,
-                    comments = "0",
-                    hotScore = 999,
-                    thread = emptyList(),
-                ),
-            ) + base
-        } else base
-        return when (filter) {
-            "热门" -> withPublished.sortedByDescending { it.hotScore }
-            "关注" -> withPublished // Flutter live may be empty; keep feed visible for parity
-            else -> withPublished
-        }
+    LaunchedEffect(Unit) {
+        engine.observe { revision++ }
     }
+    LaunchedEffect(published) {
+        engine.ingestPublishedBody(published, source = "来自 Android")
+    }
+
+    val tabKey = when (filter) {
+        "热门" -> "hot"
+        "关注" -> "following"
+        else -> "latest"
+    }
+    val feed = remember(filter, revision) { engine.posts(tab = tabKey) }
 
     Column(
         Modifier
@@ -932,10 +894,12 @@ internal fun JetpackCommunityRoot(
                 }
             }
         }
-        val feed = postsForFilter()
         if (feed.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("暂无动态", color = DemoColors.TextSecondary)
+                Text(
+                    if (filter == "关注") "还没有关注的人，去最新里看看吧" else "暂无动态",
+                    color = DemoColors.TextSecondary,
+                )
             }
         } else {
             LazyColumn(
@@ -943,25 +907,29 @@ internal fun JetpackCommunityRoot(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(feed, key = { it.id }) { post ->
+                    val thread = post.previewComments.map { c ->
+                        if (c.replyToNickname != null) {
+                            CommunityThreadLine.Reply(c.nickname, c.replyToNickname, c.content)
+                        } else {
+                            CommunityThreadLine.Comment(c.nickname, c.content)
+                        }
+                    }
                     CommunityPostCard(
-                        name = post.name,
-                        meta = post.meta,
-                        body = post.body,
+                        name = post.nickname,
+                        meta = engine.metaLabel(post),
+                        body = post.content,
                         videoCoverUrl = post.videoCoverUrl,
-                        imageUrls = post.imageUrls,
+                        imageUrls = post.images,
                         postId = post.id,
-                        likes = post.likes.toString(),
-                        comments = post.comments,
-                        liked = post.liked,
-                        thread = post.thread,
+                        likes = post.likeCount.toString(),
+                        comments = post.commentCount.toString(),
+                        liked = post.isLiked,
+                        thread = thread,
                         onToggleLike = {
-                            when (post.id) {
-                                "post_0" -> like0 = if (like0.first) false to (like0.second - 1) else true to (like0.second + 1)
-                                "post_1" -> like1 = if (like1.first) false to (like1.second - 1) else true to (like1.second + 1)
-                            }
+                            engine.toggleLike(post.id, liked = !post.isLiked)
                         },
                         onPreviewImages = onPreviewImages,
-                        onPlayVideo = onPlayVideo,
+                        onPlayVideo = { onPlayVideo(post.videoUrl ?: it) },
                         onOpenConvention = { onOpen("社区公约") },
                         onOpenComment = { onOpen("评论") },
                     )
@@ -970,20 +938,6 @@ internal fun JetpackCommunityRoot(
         }
     }
 }
-
-private data class CommunityFeedPost(
-    val id: String,
-    val name: String,
-    val meta: String,
-    val body: String,
-    val videoCoverUrl: String?,
-    val imageUrls: List<String>,
-    val likes: Int,
-    val liked: Boolean,
-    val comments: String,
-    val hotScore: Int,
-    val thread: List<CommunityThreadLine>,
-)
 
 private sealed class CommunityThreadLine {
     data class Comment(val name: String, val body: String) : CommunityThreadLine()
