@@ -35,10 +35,20 @@ export struct NativeHomeContent {
     Row() {
       ForEach(this.homeFeatures.slice(start, start + 5), (label: string) => {
         Column({ space: 4 }) {
-          Image(this.featureRes(label)).width(70).height(70).objectFit(ImageFit.Contain)
-          Text(label).fontSize(11).fontColor(DesignTokens.ink).maxLines(1)
+          Image(this.featureRes(label))
+            .width(44)
+            .height(44)
+            .borderRadius(12)
+            .objectFit(ImageFit.Cover)
+          Text(label)
+            .fontSize(11)
+            .fontColor(DesignTokens.ink)
+            .maxLines(1)
+            .textAlign(TextAlign.Center)
+            .width('100%')
         }
         .layoutWeight(1)
+        .alignItems(HorizontalAlign.Center)
         .onClick(() => {
           if (label === '更多') this.onDeferred('全部服务');
           else if (label === '直播带货') this.onDeferred('直播');
@@ -62,12 +72,13 @@ export struct NativeHomeContent {
         Row() {
           Text(this.greeting())
             .fontSize(28)
-            .fontWeight(FontWeight.Medium)
+            .fontWeight(FontWeight.Bold)
             .fontColor(DesignTokens.ink)
+            .maxLines(1)
             .layoutWeight(1)
           Row({ space: 4 }) {
-            Text('🔔').fontSize(12)
-            Text('3条新消息').fontSize(12).fontColor(DesignTokens.link)
+            Text('🔔').fontSize(14).fontColor(DesignTokens.link)
+            Text('3条新消息').fontSize(12).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
           }
           .padding({ left: 12, right: 12, top: 6, bottom: 6 })
           .backgroundColor('#1A0070F3')
@@ -75,12 +86,12 @@ export struct NativeHomeContent {
           .onClick(() => this.onDeferred('消息'))
         }
         .width('100%')
-        .padding({ left: 16, right: 16, top: 48 })
+        .padding({ left: 16, right: 16, top: 16 })
 
         Row({ space: 12 }) {
           Row({ space: 8 }) {
-            Text('⌕').fontSize(18).fontColor(DesignTokens.body)
-            Text('搜索客户、订单、资讯').fontSize(15).fontColor(DesignTokens.body)
+            Text('⌕').fontSize(16).fontColor(DesignTokens.body)
+            Text('搜索客户、订单、资讯').fontSize(15).fontColor(DesignTokens.mute)
           }
           .layoutWeight(1)
           .height(44)
@@ -102,7 +113,7 @@ export struct NativeHomeContent {
             .onClick(() => this.onDeferred('扫一扫'))
         }
         .width('100%')
-        .padding({ left: 16, right: 16, top: 32 })
+        .padding({ left: 16, right: 16, top: 16 })
 
         Row({ space: 24 }) {
           ForEach(['首页', '视频', 'Club'], (label: string, index: number) => {
@@ -120,36 +131,37 @@ export struct NativeHomeContent {
               this.topTab = index;
             })
           })
+          Blank().layoutWeight(1)
         }
         .width('100%')
-        .padding({ left: 16, right: 16, top: 20 })
+        .padding({ left: 16, right: 16, top: 16 })
 
         if (this.topTab === 0) {
           Image($r('app.media.home_banner'))
             .width('100%')
-            .height(193)
-            .borderRadius(12)
+            .height(132)
+            .borderRadius(8)
             .objectFit(ImageFit.Cover)
-            .margin({ left: 24, right: 24, top: 31 })
+            .margin({ left: 16, right: 16, top: 16 })
             .onClick(() => this.onDeferred('朋友圈营销'))
 
-          Column({ space: 56 }) {
+          Column({ space: 8 }) {
             this.FeatureRow(0)
             this.FeatureRow(5)
           }
           .width('100%')
-          .padding({ left: 8, right: 8, top: 16, bottom: 16 })
+          .padding({ left: 4, right: 4, top: 8, bottom: 8 })
           .backgroundColor(DesignTokens.canvas)
           .borderRadius(8)
           .border({ width: 0.5, color: DesignTokens.hairline })
-          .margin({ left: 26, right: 26, top: 86 })
+          .margin({ left: 16, right: 16, top: 12 })
 
           Row({ space: 12 }) {
             this.QuickCard('新伙伴待确认', '3 位新成员等待审核')
             this.QuickCard('待跟进客户', '今日 5 位意向客户')
           }
           .width('100%')
-          .padding({ left: 16, right: 16, top: 48 })
+          .padding({ left: 16, right: 16, top: 12 })
 
           Column({ space: 8 }) {
             Text('[4S]北京沃德龙鼎吉利').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)

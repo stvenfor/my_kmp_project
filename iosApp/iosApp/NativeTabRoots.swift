@@ -7,28 +7,30 @@ struct NativeBottomBar: View {
     var onSelect: (MainTab) -> Void
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(MainTab.allCases) { tab in
-                let active = selected == tab
-                let tint = active ? DesignTokens.link : DesignTokens.body
-                Button {
-                    onSelect(tab)
-                } label: {
-                    VStack(spacing: 2) {
-                        Image(tabIcon(tab, active: active))
-                            .resizable()
-                            .renderingMode(.template)
-                            .foregroundStyle(tint)
-                            .frame(width: 22, height: 22)
-                        Text(tab.title, font: .system(size: 10, weight: active ? .semibold : .regular), color: tint)
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                ForEach(MainTab.allCases) { tab in
+                    let active = selected == tab
+                    let tint = active ? DesignTokens.link : DesignTokens.body
+                    Button {
+                        onSelect(tab)
+                    } label: {
+                        VStack(spacing: 2) {
+                            Image(tabIcon(tab, active: active))
+                                .resizable()
+                                .renderingMode(.template)
+                                .foregroundStyle(tint)
+                                .frame(width: 22, height: 22)
+                            Text(tab.title, font: .system(size: 10, weight: active ? .semibold : .regular), color: tint)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+            .frame(height: 49)
         }
-        .frame(height: 49)
         .background(DesignTokens.tabBar)
         .overlay(alignment: .top) {
             Rectangle().fill(DesignTokens.hairline).frame(height: 0.5)
@@ -70,12 +72,17 @@ struct HomeTabView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .top) {
-                    Text(greeting, font: .system(size: 28, weight: .semibold), color: DesignTokens.ink)
+                // Flutter HomeGreetingSection: top = safe + 16 + greeting padding 24 → use safeArea
+                HStack(alignment: .center) {
+                    Text(greeting, font: .system(size: 28, weight: .bold), color: DesignTokens.ink)
                         .tracking(-0.8)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     HStack(spacing: 4) {
-                        Text("🔔").font(.system(size: 12))
+                        Image(systemName: "bell")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(DesignTokens.link)
                         Text("3条新消息", font: .system(size: 12, weight: .medium), color: DesignTokens.link)
                     }
                     .padding(.horizontal, 12)
@@ -84,58 +91,72 @@ struct HomeTabView: View {
                     .onTapGesture { onDeferred("消息") }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 48)
+                .padding(.top, 8)
 
+                // Flutter HomeSearchBar
                 HStack(spacing: 12) {
                     HStack(spacing: 8) {
-                        Text("⌕", font: .system(size: 18), color: DesignTokens.body)
-                        Text("搜索客户、订单、资讯", font: .system(size: 15), color: DesignTokens.body)
-                        Spacer()
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(DesignTokens.body)
+                        Text("搜索客户、订单、资讯", font: .system(size: 15), color: DesignTokens.mute)
+                        Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 14)
                     .frame(height: 44)
                     .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                    .contentShape(Rectangle())
                     .onTapGesture { onDeferred("搜索") }
 
-                    Text("▣", font: .system(size: 18), color: DesignTokens.link)
+                    Image(systemName: "qrcode.viewfinder")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(DesignTokens.link)
                         .frame(width: 44, height: 44)
                         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
                         .onTapGesture { onDeferred("扫一扫") }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 32)
+                .padding(.top, 16)
 
+                // 首页 / 视频 / Club — 左对齐，三项全部可见
                 HStack(spacing: 24) {
                     ForEach(Array(["首页", "视频", "Club"].enumerated()), id: \.offset) { index, label in
                         VStack(spacing: 6) {
-                            Text(label, font: .system(size: topTab == index ? 16 : 15, weight: topTab == index ? .semibold : .regular), color: topTab == index ? DesignTokens.ink : DesignTokens.body)
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(topTab == index ? DesignTokens.link : .clear)
+                            Text(
+                                label,
+                                font: .system(size: topTab == index ? 16 : 15, weight: topTab == index ? .semibold : .regular),
+                                color: topTab == index ? DesignTokens.ink : DesignTokens.body
+                            )
+                            Capsule()
+                                .fill(topTab == index ? DesignTokens.link : Color.clear)
                                 .frame(width: 20, height: 3)
                         }
+                        .contentShape(Rectangle())
                         .onTapGesture { topTab = index }
                     }
-                    Spacer()
+                    Spacer(minLength: 0)
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 20)
+                .padding(.top, 16)
 
                 if topTab == 0 {
+                    // Flutter HomeBannerSection: h=132, margin 16
                     Image("home_banner")
                         .resizable()
                         .scaledToFill()
                         .frame(maxWidth: .infinity)
-                        .frame(height: 193)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .padding(.horizontal, 24)
-                        .padding(.top, 31)
+                        .frame(height: 132)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
                         .onTapGesture { onDeferred("朋友圈营销") }
 
+                    // Flutter HomeFeatureGrid: icon 44, row gap 8, margin 16/12
                     featureGrid
-                        .padding(.horizontal, 26)
-                        .padding(.top, 86)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
 
                     HStack(spacing: 12) {
                         ForEach(quickActions, id: \.0) { action in
@@ -151,7 +172,7 @@ struct HomeTabView: View {
                                 }
                                 Spacer(minLength: 0)
                             }
-                            .padding(14)
+                            .padding(12)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
                             .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
@@ -159,7 +180,7 @@ struct HomeTabView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 48)
+                    .padding(.top, 12)
 
                     storeCard
                     strategyRow
@@ -189,6 +210,7 @@ struct HomeTabView: View {
             }
             .padding(.bottom, 24)
         }
+        .safeAreaPadding(.top, 8)
         .background(DesignTokens.canvasSoft2)
     }
 
@@ -236,19 +258,24 @@ struct HomeTabView: View {
     }
 
     private var featureGrid: some View {
-        VStack(spacing: 56) {
+        // Flutter: iconSize=44, labelGap=4, fontSize=11, row gap=8, card padding 4/8
+        VStack(spacing: 8) {
             ForEach(0..<2, id: \.self) { row in
                 HStack(spacing: 0) {
                     ForEach(features[(row * 5)..<((row + 1) * 5)], id: \.self) { label in
                         VStack(spacing: 4) {
                             Image(featureAsset(label))
                                 .resizable()
-                                .scaledToFit()
-                                .frame(width: 70, height: 70)
+                                .scaledToFill()
+                                .frame(width: 44, height: 44)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             Text(label, font: .system(size: 11), color: DesignTokens.ink)
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                         .onTapGesture {
                             if label == "更多" { onDeferred("全部服务") }
                             else if label == "直播带货" { onDeferred("直播") }
@@ -258,8 +285,8 @@ struct HomeTabView: View {
                 }
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 16)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 8)
         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
     }
