@@ -42,16 +42,8 @@ internal fun AllServicesScreen(
 ) {
     ReportMainTabRoot(isRoot = false)
     var isEditing by remember { mutableStateOf(false) }
-    var favoriteIds by remember {
-        mutableStateOf(HomeMockData.favoriteServices.map { it.id }.toSet())
-    }
-    val favoriteItems = remember(favoriteIds) {
-        HomeMockData.favoriteServices.filter { it.id in favoriteIds } +
-            HomeMockData.catalogSections
-                .flatMap { it.items }
-                .filter { it.id in favoriteIds && it.id !in HomeMockData.favoriteServices.map { f -> f.id } }
-                .distinctBy { it.id }
-    }
+    var favoriteIds by remember { mutableStateOf(HomeFavoritesStore.snapshot()) }
+    val favoriteItems = remember(favoriteIds) { HomeFavoritesStore.favoriteItems() }
 
     Column(
         modifier = Modifier
@@ -72,14 +64,14 @@ internal fun AllServicesScreen(
                         title = "常用服务",
                         subtitle = "将按自定义顺序出现在首页",
                         showEditButton = true,
-                        items = favoriteItems.ifEmpty { HomeMockData.favoriteServices.take(3) },
+                        items = favoriteItems,
                     ),
                     isEditing = isEditing,
                     isFavoriteSection = true,
                     onEditTap = { isEditing = !isEditing },
                     onItemBadgeTap = { item ->
-                        if (isEditing && favoriteIds.size > 3) {
-                            favoriteIds = favoriteIds - item.id
+                        if (isEditing && HomeFavoritesStore.remove(item.id)) {
+                            favoriteIds = HomeFavoritesStore.snapshot()
                         }
                     },
                     onItemTap = { if (!isEditing) onOpen(it.label) },
@@ -92,8 +84,8 @@ internal fun AllServicesScreen(
                     isFavoriteSection = false,
                     favoriteIds = favoriteIds,
                     onItemBadgeTap = { item ->
-                        if (isEditing && favoriteIds.size < 8) {
-                            favoriteIds = favoriteIds + item.id
+                        if (isEditing && HomeFavoritesStore.add(item.id)) {
+                            favoriteIds = HomeFavoritesStore.snapshot()
                         }
                     },
                     onItemTap = { if (!isEditing) onOpen(it.label) },
