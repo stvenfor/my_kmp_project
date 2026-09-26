@@ -461,6 +461,7 @@ struct HomeTabView: View {
 
 struct ChatTabView: View {
     var onDeferred: (String) -> Void = { _ in }
+    var initialPeer: String? = nil
     private let peers: [(String, String, String, String?, Bool)] = [
         ("Mock好友1", "晚上一起吃饭吗？", "22:50", "2", true),
         ("Mock好友2", "你好", "22:45", nil, false),
@@ -492,6 +493,18 @@ struct ChatTabView: View {
             }
         }
         .background(DesignTokens.canvasSoft2)
+        .onAppear {
+            if let peer = initialPeer, !peer.isEmpty {
+                selectedPeer = peer
+                messages = ["你好，我是\(peer)", "方便聊一下车源吗？"]
+            }
+        }
+        .onChange(of: initialPeer) { _, peer in
+            if let peer, !peer.isEmpty {
+                selectedPeer = peer
+                messages = ["你好，我是\(peer)", "方便聊一下车源吗？"]
+            }
+        }
     }
 
     private var chatList: some View {

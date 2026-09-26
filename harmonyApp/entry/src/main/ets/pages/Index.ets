@@ -195,6 +195,32 @@ struct Index {
     this.showLogin = false;
   }
 
+  private peerFromChatDetail(raw: String): string {
+    const qIndex = raw.indexOf('?');
+    if (qIndex < 0) {
+      return 'Mock好友1';
+    }
+    const query = raw.substring(qIndex + 1);
+    const parts = query.split('&');
+    let peer = '';
+    for (let i = 0; i < parts.length; i++) {
+      const eq = parts[i].indexOf('=');
+      if (eq <= 0) {
+        continue;
+      }
+      const key = parts[i].substring(0, eq);
+      const value = decodeURIComponent(parts[i].substring(eq + 1).replace(/\+/g, ' '));
+      if (key === 'peerName' || key === 'name' || key === 'title') {
+        peer = value;
+        break;
+      }
+      if ((key === 'id' || key === 'peerId') && peer.length === 0) {
+        peer = value;
+      }
+    }
+    return peer.length > 0 ? peer : 'Mock好友1';
+  }
+
   /** kind 0 = Mine island, kind 1 = secondary RoutePath (set via SetOhosSecondaryRoute). */
   private openComposeHost(kind: number, routeCode: number) {
     const abi: string = deviceInfo.abiList;
@@ -250,6 +276,17 @@ struct Index {
       return;
     }
     if (path === '/chat' || title === '消息') {
+      this.tab = MainTab.Chat;
+      this.chatPeer = '';
+      if (!this.isLoggedIn) {
+        this.showLogin = true;
+      }
+      return;
+    }
+    if (path.indexOf('/chat/detail') === 0 || title.indexOf('/chat/detail') === 0) {
+      const raw = title.indexOf('/chat/detail') === 0 ? title : path;
+      this.chatPeer = this.peerFromChatDetail(raw);
+      this.chatMessages = [`你好，我是${this.chatPeer}`, '方便聊一下车源吗？'];
       this.tab = MainTab.Chat;
       if (!this.isLoggedIn) {
         this.showLogin = true;

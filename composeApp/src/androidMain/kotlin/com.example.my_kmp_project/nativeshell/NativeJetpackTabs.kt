@@ -378,6 +378,9 @@ private fun JetpackChatDetail(
     var draft by remember { mutableStateOf("") }
     var previewUrl by remember { mutableStateOf<String?>(null) }
     var sending by remember { mutableStateOf(false) }
+    var voiceMode by remember { mutableStateOf(false) }
+    var showEmoji by remember { mutableStateOf(false) }
+    var showMore by remember { mutableStateOf(false) }
 
     if (previewUrl != null) {
         ChatImagePreview(
@@ -445,65 +448,190 @@ private fun JetpackChatDetail(
                 }
             }
         }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(DemoColors.Background)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                "图",
-                color = DemoColors.Accent,
-                modifier = Modifier
-                    .clickable {
+        // Flutter InputPanel: voice ↔ keyboard, emoji, more (album/camera/file/location)
+        Column(Modifier.fillMaxWidth().background(DemoColors.PageBg)) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(DemoColors.Background)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    if (voiceMode) "⌨" else "🎤",
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .clickable {
+                            voiceMode = !voiceMode
+                            showEmoji = false
+                            showMore = false
+                        }
+                        .padding(4.dp),
+                )
+                if (voiceMode) {
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(DemoColors.Background)
+                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text("按住 说话", fontSize = 15.sp, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
+                    }
+                } else {
+                    BasicTextField(
+                        value = draft,
+                        onValueChange = { draft = it },
+                        textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(DemoColors.PageBg)
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        decorationBox = { inner ->
+                            if (draft.isEmpty()) {
+                                Text("输入消息…", color = DemoColors.Muted, fontSize = 15.sp)
+                            }
+                            inner()
+                        },
+                    )
+                }
+                Text(
+                    "☺",
+                    fontSize = 22.sp,
+                    color = if (showEmoji) DemoColors.Accent else DemoColors.TextSecondary,
+                    modifier = Modifier
+                        .clickable {
+                            showEmoji = !showEmoji
+                            showMore = false
+                            voiceMode = false
+                        }
+                        .padding(4.dp),
+                )
+                if (draft.trim().isEmpty()) {
+                    Text(
+                        "＋",
+                        fontSize = 28.sp,
+                        color = if (showMore) DemoColors.Accent else DemoColors.TextSecondary,
+                        modifier = Modifier
+                            .clickable {
+                                showMore = !showMore
+                                showEmoji = false
+                            }
+                            .padding(4.dp),
+                    )
+                } else {
+                    Text(
+                        if (sending) "…" else "发送",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(DemoColors.Accent)
+                            .clickable {
+                                val text = draft.trim()
+                                if (text.isEmpty() || sending) return@clickable
+                                sending = true
+                                val sent = engine.sendText(conversation.id, text)
+                                if (sent != null) {
+                                    draft = ""
+                                    epoch += 1
+                                } else {
+                                    showPlatformToast("发送失败，请重试")
+                                }
+                                sending = false
+                            }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                    )
+                }
+            }
+            if (showEmoji) {
+                val emojis = listOf(
+                    "😀", "😁", "😂", "🤣", "😊", "😍", "🥰", "😘",
+                    "👍", "🙏", "🔥", "🎉", "🚗", "🏠", "✅", "❤️",
+                )
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .background(DemoColors.Background)
+                        .padding(12.dp),
+                ) {
+                    emojis.chunked(8).forEach { row ->
+                        Row(
+                            Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                        ) {
+                            row.forEach { e ->
+                                Text(
+                                    e,
+                                    fontSize = 28.sp,
+                                    modifier = Modifier.clickable { draft += e },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            if (showMore) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(DemoColors.Background)
+                        .padding(vertical = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    ChatMoreAction("照片") {
                         engine.sendText(
                             conversation.id,
                             "[image]https://picsum.photos/seed/${conversation.id}/600",
                         )
                         epoch += 1
+                        showMore = false
                     }
-                    .padding(8.dp),
-            )
-            BasicTextField(
-                value = draft,
-                onValueChange = { draft = it },
-                textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(DemoColors.PageBg)
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
-                decorationBox = { inner ->
-                    if (draft.isEmpty()) {
-                        Text("发送消息…", color = DemoColors.Muted, fontSize = 15.sp)
+                    ChatMoreAction("拍摄") {
+                        engine.sendText(conversation.id, "[拍摄]")
+                        epoch += 1
+                        showMore = false
                     }
-                    inner()
-                },
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                if (sending) "…" else "发送",
-                color = DemoColors.Accent,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .clickable {
-                        val text = draft.trim()
-                        if (text.isEmpty() || sending) return@clickable
-                        sending = true
-                        val sent = engine.sendText(conversation.id, text)
-                        if (sent != null) {
-                            draft = ""
-                            epoch += 1
-                        } else {
-                            showPlatformToast("发送失败，请重试")
-                        }
-                        sending = false
+                    ChatMoreAction("文件") {
+                        engine.sendText(conversation.id, "[文件]")
+                        epoch += 1
+                        showMore = false
                     }
-                    .padding(8.dp),
-            )
+                    ChatMoreAction("位置") {
+                        engine.sendText(conversation.id, "[位置]")
+                        epoch += 1
+                        showMore = false
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun ChatMoreAction(title: String, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick),
+    ) {
+        Box(
+            Modifier
+                .size(52.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(DemoColors.PageBg),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(title.take(1), color = DemoColors.Accent, fontSize = 18.sp)
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(title, fontSize = 12.sp, color = DemoColors.TextSecondary)
     }
 }
 

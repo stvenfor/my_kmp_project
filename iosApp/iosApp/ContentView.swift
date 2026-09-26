@@ -68,6 +68,7 @@ struct ContentView: View {
     @State private var mineIslandRoute = "settings"
     @State private var showSecondary = false
     @State private var secondaryRoute = "/home/search"
+    @State private var chatPendingPeer: String? = nil
 
     var body: some View {
         Group {
@@ -122,11 +123,19 @@ struct ContentView: View {
     private func openOwnedRoute(_ routeOrLabel: String) {
         let key = routeOrLabel.trimmingCharacters(in: .whitespacesAndNewlines)
         let path = NativeRouteResolver.resolve(key)
+        if path.hasPrefix("/chat/detail") || key.hasPrefix("/chat/detail") {
+            let peer = chatPeerFromDeepLink(key.hasPrefix("/") ? key : path)
+            chatPendingPeer = peer
+            tab = .chat
+            if !isLoggedIn { showLogin = true }
+            return
+        }
         switch path {
         case "/", "/home", "/main":
             tab = .home
         case "/chat":
             tab = .chat
+            chatPendingPeer = nil
             if !isLoggedIn { showLogin = true }
         case "/community":
             tab = .community
@@ -151,6 +160,16 @@ struct ContentView: View {
         }
     }
 
+    private func chatPeerFromDeepLink(_ raw: String) -> String {
+        guard let url = URL(string: raw.hasPrefix("http") || raw.hasPrefix("myai") ? raw : "myai://host\(raw.hasPrefix("/") ? raw : "/\(raw)")"),
+              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else {
+            return "Mock好友1"
+        }
+        return items.first(where: { $0.name == "peerName" || $0.name == "name" || $0.name == "title" })?.value
+            ?? items.first(where: { $0.name == "id" })?.value
+            ?? "Mock好友1"
+    }
+
     private var mainShell: some View {
         VStack(spacing: 0) {
             Group {
@@ -159,7 +178,10 @@ struct ContentView: View {
                     HomeTabView(onDeferred: { openOwnedRoute($0) })
                 case .chat:
                     if isLoggedIn {
-                        ChatTabView(onDeferred: { openOwnedRoute($0) })
+                        ChatTabView(
+                            onDeferred: { openOwnedRoute($0) },
+                            initialPeer: chatPendingPeer
+                        )
                     } else {
                         AuthGateView { showLogin = true }
                     }
