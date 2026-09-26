@@ -81,9 +81,9 @@ internal object MineRoutes {
 
     fun fromLabel(label: String): String? = when (label.trim()) {
         "商城", "mall" -> Mall
-        "我的订单", "订单" -> MallOrders
+        "我的订单", "订单", "订单中心" -> MallOrders
         "我的钱包", "钱包" -> Wallet
-        "会员" -> Membership
+        "会员", "会员续费" -> Membership
         "我的课程", "课程" -> Classroom
         "短信模板" -> SmsTemplates
         "购车计算器", "计算器" -> Calculator
@@ -100,12 +100,12 @@ internal object MineRoutes {
         "设置" -> Settings
         "设置页" -> Settings
         "/mine/settings" -> Settings
-        "意见反馈" -> Feedback
+        "意见反馈", "帮助中心" -> Feedback
         "商务合作" -> Cooperation
         "提醒事项" -> Reminder
         "邀请好友" -> Invite
         "粉丝群" -> FanGroup
-        "电子名片", "好友" -> Invite
+        "电子名片", "好友", "切换门店" -> Invite
         else -> null
     }
 

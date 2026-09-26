@@ -84,10 +84,10 @@ internal object VideoRoutes {
     const val DubbingWorkDetail = "/video/dubbing/works/detail"
 
     fun fromLabel(label: String): String? = when (label.trim()) {
-        "视频", "视频中心", "Video", "视频号", "素材库" -> Hub
+        "视频", "视频中心", "Video", "视频号", "素材库", "视频列表" -> Hub
         "小视频", "短视频" -> Short
         "配音视频", "配音列表" -> DubbingVideos
-        "配音作品" -> DubbingWorks
+        "配音作品", "作品列表" -> DubbingWorks
         else -> null
     }
 }

@@ -81,7 +81,7 @@ internal object HomeRoutes {
         "搜索" -> Search
         "投资策略", "策略", "朋友圈营销", "朋友圈" -> Strategy
         "学习报告" -> LearningReport
-        "签到商城", "积分商城", "签到日历", "签到" -> CheckInMall
+        "签到商城", "积分商城", "签到日历", "签到", "营销活动" -> CheckInMall
         "配音", "配音首页" -> DubbingFeed
         "热榜", "热配榜" -> HotRankDetail
         "生活服务" -> LifeService

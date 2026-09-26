@@ -51,6 +51,8 @@ import com.example.my_kmp_project.feature.chat.ImConversation
 import com.example.my_kmp_project.feature.chat.ImEngine
 import com.example.my_kmp_project.feature.chat.MockImEngine
 import com.example.my_kmp_project.feature.community.CommunityPublishBus
+import com.example.my_kmp_project.feature.community.CommunityRoutes
+import com.example.my_kmp_project.feature.content.ContentRoutes
 import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineHomeContent
 import com.example.my_kmp_project.feature.mine.MineRoutes
@@ -1239,7 +1241,9 @@ internal fun JetpackMineRoot(
         onOpenPersonalized = onOpenPersonalized,
         snackbar = { label ->
             val routeable = MineRoutes.fromLabel(label) != null ||
-                HomeRoutes.fromLabel(label) != null
+                HomeRoutes.fromLabel(label) != null ||
+                ContentRoutes.fromLabel(label) != null ||
+                CommunityRoutes.fromLabel(label) != null
             if (routeable) onDeferred(label)
             else showPlatformToast(label)
         },
