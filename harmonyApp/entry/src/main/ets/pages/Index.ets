@@ -16,6 +16,17 @@ import { featurePageFor, FeatureRow, resolveNativePath } from './NativeFeatureCa
 
 const DOMAIN = 0x0000;
 
+interface MineFunctionCard {
+  title: string;
+  subtitle: string;
+  value: string;
+}
+
+interface MineMenuRow {
+  label: string;
+  badge: boolean;
+}
+
 /**
  * ADR 0002: ArkTS owns splash / privacy / tab roots / Mine root / auth /
  * deferred secondary stubs. Compose hosts **Mine island only**.
@@ -48,6 +59,26 @@ struct Index {
   private readonly chatSnippets: string[] = ['晚上一起吃饭吗？', '你好', '你好'];
   private readonly chatTimes: string[] = ['22:50', '22:45', '22:40'];
   private readonly communityAuthors: string[] = ['张三', '李四', '王五'];
+  private readonly mineFunctions: MineFunctionCard[] = [
+    { title: '短信模板', subtitle: '一键发送 轻松快捷', value: '' },
+    { title: '购车计算器', subtitle: '全款/贷款/保险全能算', value: '5830.00' },
+    { title: '二手车', subtitle: '置换/专卖/收车', value: '' },
+    { title: '收支', subtitle: '个人收支记录', value: '' },
+    { title: '小视频', subtitle: '用小视频秀车秀店', value: '' },
+    { title: '售后专区', subtitle: '售后维修保养记录', value: '' },
+    { title: '店铺收款码', subtitle: '常见问题 功能介绍', value: '' },
+    { title: '选买问答', subtitle: '在线解答客户问题', value: '' },
+    { title: '商家海报', subtitle: '置换/专卖/估价', value: '' },
+  ];
+  private readonly mineMenu: MineMenuRow[] = [
+    { label: '收货地址', badge: false },
+    { label: '商务合作', badge: false },
+    { label: '提醒事项', badge: false },
+    { label: '邀请好友', badge: false },
+    { label: '粉丝群', badge: true },
+    { label: '意见反馈', badge: false },
+    { label: '设置', badge: false },
+  ];
   private readonly communityBodies: string[] = [
     '今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发',
     '周末 hiking，天气太好了！#户外',
@@ -674,28 +705,75 @@ struct Index {
       Column({ space: 16 }) {
         Row() {
           Text('我的').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
-          Text('ⓘ').fontSize(18).fontColor(DesignTokens.link).margin({ right: 12 })
+          Text('ⓘ').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
             .onClick(() => this.openMineIsland(true))
-          Text('⚙').fontSize(18).fontColor(DesignTokens.link)
+          Text('📅').fontSize(16).margin({ right: 8 })
+            .onClick(() => this.openDeferred('签到日历'))
+          Text('⚙').fontSize(18).fontColor(DesignTokens.link).margin({ right: 8 })
             .onClick(() => this.openMineIsland(false))
+          Text(this.isLoggedIn ? '👤' : '＋')
+            .fontSize(16).fontColor(DesignTokens.link)
+            .onClick(() => {
+              if (this.isLoggedIn) {
+                this.openDeferred('个人资料');
+              } else {
+                this.showLogin = true;
+              }
+            })
         }.width('100%')
 
-        Column({ space: 8 }) {
-          Text(this.isLoggedIn ? this.loginDisplayName : '访客')
-            .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-          if (this.isLoggedIn) {
-            Text(this.isLoggedIn ? '销售经理' : '未登录').fontSize(12).fontColor(DesignTokens.link)
-            Text(this.isLoggedIn ? '[4S]北京大兴兴荣丰田汽车销售服务有限公司' : '登录后查看门店信息')
-              .fontSize(12).fontColor(DesignTokens.body)
-          } else {
-            Button('登录').backgroundColor(DesignTokens.link).onClick(() => {
-              this.showLogin = true;
-            })
+        Row({ space: 16 }) {
+          Column() {
+            Text('头')
+              .width(64).height(64)
+              .textAlign(TextAlign.Center)
+              .fontSize(22).fontColor(DesignTokens.link)
+              .backgroundColor('#1A0070F3')
+              .borderRadius(32)
           }
+          .onClick(() => {
+            if (this.isLoggedIn) {
+              this.openDeferred('个人资料');
+            } else {
+              this.showLogin = true;
+            }
+          })
+
+          Column({ space: 8 }) {
+            Row({ space: 8 }) {
+              Text(this.isLoggedIn ? (this.loginDisplayName || 'qa_user') : '访客')
+                .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(this.isLoggedIn ? '销售顾问' : '未登录')
+                .fontSize(11).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                .backgroundColor(DesignTokens.link)
+                .borderRadius(6)
+            }
+            Row({ space: 4 }) {
+              Text(this.isLoggedIn ? '[4S]北京沃德龙鼎吉利' : '登录后查看门店信息')
+                .fontSize(12).fontColor(DesignTokens.body).layoutWeight(1)
+              Text('▾').fontSize(10).fontColor(DesignTokens.body)
+            }.width('100%')
+            Row({ space: 16 }) {
+              Text('电子名片')
+                .fontSize(12).fontColor(DesignTokens.link)
+                .padding({ left: 10, right: 10, top: 6, bottom: 6 })
+                .backgroundColor('#140070F3')
+                .borderRadius(20)
+                .onClick(() => this.openDeferred('电子名片'))
+              Text(this.isLoggedIn ? '138****5172' : '— — —')
+                .fontSize(12).fontColor(DesignTokens.body)
+            }
+            if (!this.isLoggedIn) {
+              Button('登录').backgroundColor(DesignTokens.link).onClick(() => {
+                this.showLogin = true;
+              })
+            }
+          }.alignItems(HorizontalAlign.Start).layoutWeight(1)
         }
         .width('100%')
         .padding(16)
-        .alignItems(HorizontalAlign.Start)
+        .alignItems(VerticalAlign.Top)
         .backgroundColor(DesignTokens.canvas)
         .borderRadius(12)
 
@@ -711,34 +789,69 @@ struct Index {
         .borderRadius(12)
 
         Text('常用服务').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(['商城', '我的钱包', '我的课程', '我的订单'], (label: string) => {
+        Row() {
+          ForEach(['商城', '我的钱包', '我的订单'], (label: string) => {
             Column({ space: 6 }) {
               Text(label.substring(0, 1))
                 .width(44).height(44).textAlign(TextAlign.Center)
                 .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(12)
               Text(label).fontSize(11).fontColor(DesignTokens.ink)
-            }.width('25%').padding({ top: 8, bottom: 8 })
+            }.layoutWeight(1).padding({ top: 8, bottom: 8 })
             .onClick(() => this.openDeferred(label))
           })
+        }
+        .width('100%')
+        .padding(8)
+        .backgroundColor(DesignTokens.canvas)
+        .borderRadius(12)
+
+        Row() {
+          Text('个人功能').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
+          Text('长按拖动顺序').fontSize(12).fontColor(DesignTokens.body)
         }.width('100%')
+        Flex({ wrap: FlexWrap.Wrap }) {
+          ForEach(this.mineFunctions, (item: MineFunctionCard) => {
+            Column({ space: 4 }) {
+              Text(item.title.substring(0, 1))
+                .width(44).height(44).textAlign(TextAlign.Center)
+                .fontColor(DesignTokens.link).backgroundColor('#140070F3').borderRadius(12)
+              Blank().height(8)
+              Text(item.title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(item.subtitle).fontSize(11).fontColor(DesignTokens.body).maxLines(2)
+              if (item.value.length > 0) {
+                Text(item.value).fontSize(15).fontWeight(FontWeight.Bold).fontColor(DesignTokens.link)
+              }
+            }
+            .width('48%')
+            .padding(16)
+            .margin({ bottom: 12 })
+            .alignItems(HorizontalAlign.Start)
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(12)
+            .border({ width: 0.5, color: DesignTokens.hairline })
+            .onClick(() => this.openDeferred(item.title))
+          }, (item: MineFunctionCard) => item.title)
+        }.width('100%').justifyContent(FlexAlign.SpaceBetween)
 
         Column() {
-          ForEach(['商务合作', '提醒事项', '邀请好友', '粉丝群', '意见反馈', '设置'], (label: string) => {
+          ForEach(this.mineMenu, (item: MineMenuRow) => {
             Row() {
-              Text(label).fontSize(15).fontColor(DesignTokens.ink).layoutWeight(1)
+              Text(item.label).fontSize(15).fontColor(DesignTokens.ink).layoutWeight(1)
+              if (item.badge) {
+                Text('●').fontSize(8).fontColor(Color.Red).margin({ right: 8 })
+              }
               Text('›').fontColor(DesignTokens.mute)
             }
             .width('100%')
             .padding(16)
             .onClick(() => {
-              if (label === '设置') {
+              if (item.label === '设置') {
                 this.openMineIsland(false);
               } else {
-                this.openDeferred(label);
+                this.openDeferred(item.label);
               }
             })
-          })
+          }, (item: MineMenuRow) => item.label)
         }
         .width('100%')
         .backgroundColor(DesignTokens.canvas)

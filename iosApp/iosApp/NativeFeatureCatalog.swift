@@ -36,7 +36,7 @@ enum NativeRouteResolver {
         "直播带货": "/home/live_commerce", "直播": "/live",
         "Club": "/home/club",
         "二手车": "/home/used_car",
-        "台账": "/home/ledger", "公司数据": "/home/ledger",
+        "台账": "/home/ledger", "公司数据": "/home/ledger", "收支": "/home/ledger",
         "数据分析": "/home/data_analytics",
         "新伙伴待确认": "/home/todo/partner-pending",
         "待跟进客户": "/home/todo/follow-up-customers",
@@ -68,6 +68,9 @@ enum NativeRouteResolver {
         "邀请好友": "/friend",
         "粉丝群": "/video/short",
         "意见反馈": "/mine/feedback",
+        "收货地址": "/mine/addresses", "地址管理": "/mine/addresses", "地址": "/mine/addresses",
+        "个人资料": "/mine/profile", "资料": "/mine/profile",
+        "签到日历": "/home/check_in_mall", "签到": "/home/check_in_mall",
         "H5 调试": "/web", "内嵌网页": "/web",
         "音乐": "/music/list",
         "好友": "/friend", "通讯录": "/friend", "朋友": "/friend",
@@ -352,9 +355,14 @@ enum NativeFeatureCatalog {
         },
         "/mine/profile": {
             .init(id: "/mine/profile", title: "个人资料", subtitle: nil, rows: [
-                .init(id: "1", title: "昵称", detail: "沃德龙鼎", badge: nil),
-                .init(id: "2", title: "职位", detail: "销售经理", badge: nil),
+                .init(id: "1", title: "昵称", detail: "qa_user", badge: nil),
+                .init(id: "2", title: "职位", detail: "销售顾问", badge: nil),
             ], primaryAction: "保存")
+        },
+        "/mine/addresses": {
+            .init(id: "/mine/addresses", title: "收货地址", subtitle: nil, rows: [
+                .init(id: "1", title: "默认地址", detail: "北京市大兴区 · 兴荣丰田", badge: "默认"),
+            ], primaryAction: "添加地址")
         },
     ]
 }

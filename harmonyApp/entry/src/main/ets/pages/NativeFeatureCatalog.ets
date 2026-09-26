@@ -38,6 +38,7 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['二手车', '/home/used_car'],
   ['台账', '/home/ledger'],
   ['公司数据', '/home/ledger'],
+  ['收支', '/home/ledger'],
   ['数据分析', '/home/data_analytics'],
   ['新伙伴待确认', '/home/todo/partner-pending'],
   ['待跟进客户', '/home/todo/follow-up-customers'],
@@ -76,6 +77,13 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['邀请好友', '/friend'],
   ['粉丝群', '/video/short'],
   ['意见反馈', '/mine/feedback'],
+  ['收货地址', '/mine/addresses'],
+  ['地址管理', '/mine/addresses'],
+  ['地址', '/mine/addresses'],
+  ['个人资料', '/mine/profile'],
+  ['资料', '/mine/profile'],
+  ['签到日历', '/home/check_in_mall'],
+  ['签到', '/home/check_in_mall'],
   ['H5 调试', '/web'],
   ['内嵌网页', '/web'],
   ['音乐', '/music/list'],
@@ -341,6 +349,15 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
       return page(path, '意见反馈', '', [
         row('1', '反馈类型', '功能建议 / 体验问题 / 其它'),
       ], '提交反馈');
+    case '/mine/profile':
+      return page(path, '个人资料', '', [
+        row('1', '昵称', 'qa_user'),
+        row('2', '职位', '销售顾问'),
+      ], '保存');
+    case '/mine/addresses':
+      return page(path, '收货地址', '', [
+        row('1', '默认地址', '北京市大兴区 · 兴荣丰田', '默认'),
+      ], '添加地址');
     case '/home/search':
       return page(path, '搜索', '', [], '');
     case '/home/all_services':
