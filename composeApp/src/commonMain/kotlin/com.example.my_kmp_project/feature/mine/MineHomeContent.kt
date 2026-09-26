@@ -23,6 +23,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.offset
+import com.example.my_kmp_project.core.platform.showPlatformToast
 
 @Composable
 internal fun MineHomeContent(
@@ -45,7 +50,26 @@ internal fun MineHomeContent(
     onOpenPersonalized: () -> Unit,
     snackbar: (String) -> Unit,
 ) {
-    val profile = MineCatalog.profile(loggedIn, displayName)
+    val base = MineCatalog.profile(loggedIn, displayName)
+    var selectedStoreId by remember { mutableStateOf(MineStoreCatalog.defaultStoreId) }
+    var storeName by remember(loggedIn) {
+        mutableStateOf(if (loggedIn) MineStoreCatalog.resolveName(selectedStoreId) else base.storeName)
+    }
+    var showSwitchStore by remember { mutableStateOf(false) }
+    val profile = base.copy(storeName = if (loggedIn) storeName else base.storeName)
+
+    if (showSwitchStore && loggedIn) {
+        SwitchStoreDialog(
+            selectedId = selectedStoreId,
+            onDismiss = { showSwitchStore = false },
+            onPicked = { store ->
+                selectedStoreId = store.id
+                storeName = store.name
+                showSwitchStore = false
+                showPlatformToast("已切换到 ${store.name}")
+            },
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -64,7 +88,22 @@ internal fun MineHomeContent(
             onCalendar = { snackbar("签到日历") },
         )
         Spacer(modifier = Modifier.height(16.dp))
-        ProfileCard(profile = profile, loggedIn = loggedIn, snackbar = snackbar)
+        ProfileCard(
+            profile = profile,
+            loggedIn = loggedIn,
+            snackbar = snackbar,
+            onSwitchStore = {
+                if (loggedIn) {
+                    if (MineStoreCatalog.stores.isEmpty()) {
+                        showPlatformToast("暂无可切换店铺")
+                    } else {
+                        showSwitchStore = true
+                    }
+                } else {
+                    showPlatformToast("请先登录")
+                }
+            },
+        )
         Spacer(modifier = Modifier.height(16.dp))
         StatsBar(stats = profile.stats)
         Spacer(modifier = Modifier.height(8.dp))
@@ -166,6 +205,7 @@ private fun ProfileCard(
     profile: MineProfileUi,
     loggedIn: Boolean,
     snackbar: (String) -> Unit,
+    onSwitchStore: () -> Unit,
 ) {
     MineGroupedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
         Row(
@@ -195,9 +235,7 @@ private fun ProfileCard(
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        snackbar(if (loggedIn) "切换门店" else "请先登录")
-                    },
+                    modifier = Modifier.clickable(onClick = onSwitchStore),
                 ) {
                     Text(
                         text = profile.storeName,

@@ -105,7 +105,9 @@ internal object MineRoutes {
         "提醒事项" -> Reminder
         "邀请好友" -> Invite
         "粉丝群" -> FanGroup
-        "电子名片", "好友", "切换门店" -> Invite
+        "电子名片" -> Invite
+        "好友" -> null // friend list is ContentRoutes.Friend — not invite
+        "切换门店" -> null // SwitchStoreDialog on Mine root — never a route
         else -> null
     }
 
@@ -117,7 +119,7 @@ internal object MineRoutes {
         "/mine/business" -> Cooperation
         "/mine/reminders" -> Reminder
         "/mine/business_card" -> Invite
-        "/friend" -> Invite
+        // Do NOT map /friend → Invite (that caused 切换门店 / 通讯录 crashes & wrong pages).
         else -> route
     }
 }

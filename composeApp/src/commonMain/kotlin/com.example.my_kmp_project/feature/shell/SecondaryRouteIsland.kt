@@ -51,11 +51,12 @@ object SecondaryRouteResolver {
             "消息" -> return AppRoutePath.chat
             "电子名片" -> return MineRoutes.Invite
             "商务合作" -> return MineRoutes.Cooperation
-            "好友", "切换门店" -> return MineRoutes.Invite
+            "好友" -> return ContentRoutes.Friend
             "粉丝群" -> return MineRoutes.FanGroup
             "帮助中心" -> return MineRoutes.Feedback
             "订单中心" -> return MineRoutes.MallOrders
             "会员续费" -> return MineRoutes.Membership
+            "切换门店" -> return null // handled by MineHomeContent SwitchStoreDialog — never navigate
         }
         HomeRoutes.fromLabel(raw)?.let { return it }
         CommunityRoutes.fromLabel(raw)?.let { return it }

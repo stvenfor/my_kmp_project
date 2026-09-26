@@ -122,6 +122,10 @@ struct ContentView: View {
 
     private func openOwnedRoute(_ routeOrLabel: String) {
         let key = routeOrLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Flutter SwitchStoreDialog is Mine-root UI — never a secondary route.
+        if key == "切换门店" || key == "切换店铺" {
+            return
+        }
         let path = NativeRouteResolver.resolve(key)
         if path.hasPrefix("/chat/detail") || key.hasPrefix("/chat/detail") {
             let peer = chatPeerFromDeepLink(key.hasPrefix("/") ? key : path)

@@ -12,6 +12,14 @@ struct MineRootView: View {
     var onOpenPersonalized: () -> Void
     var onDeferred: (String) -> Void
 
+    @State private var selectedStoreId = "1"
+    @State private var showSwitchStore = false
+
+    private let stores: [(String, String)] = [
+        ("1", "[4S]北京沃德龙鼎吉利"),
+        ("2", "[4S]北京腾远吉利"),
+    ]
+
     /// Flutter `MineQuickServiceData` — mall / wallet / order only.
     private let services: [(String, String)] = [
         ("商城", "HOT"),
@@ -46,7 +54,8 @@ struct MineRootView: View {
     private var profileName: String { isLoggedIn ? displayName : "访客" }
     private var roleBadge: String { isLoggedIn ? "销售顾问" : "未登录" }
     private var storeName: String {
-        isLoggedIn ? "[4S]北京沃德龙鼎吉利" : "登录后查看门店信息"
+        if !isLoggedIn { return "登录后查看门店信息" }
+        return stores.first(where: { $0.0 == selectedStoreId })?.1 ?? stores[0].1
     }
     private var maskedPhone: String { isLoggedIn ? "138****5172" : "— — —" }
     private var stats: [(String, String)] {
@@ -70,6 +79,18 @@ struct MineRootView: View {
             .padding(16)
         }
         .background(DesignTokens.canvasSoft2)
+        .sheet(isPresented: $showSwitchStore) {
+            SwitchStoreSheet(
+                stores: stores,
+                selectedId: selectedStoreId,
+                onPick: { id in
+                    selectedStoreId = id
+                    showSwitchStore = false
+                },
+                onClose: { showSwitchStore = false }
+            )
+            .presentationDetents([.medium])
+        }
     }
 
     private var topChrome: some View {
@@ -132,7 +153,7 @@ struct MineRootView: View {
                         .foregroundStyle(DesignTokens.body)
                 }
                 .onTapGesture {
-                    if isLoggedIn { onDeferred("切换门店") }
+                    if isLoggedIn { showSwitchStore = true }
                     else { onLogin() }
                 }
 
@@ -265,5 +286,63 @@ struct MineRootView: View {
             }
         }
         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+/// Flutter `SwitchStoreDialog` — Mine root only; never opens /friend.
+private struct SwitchStoreSheet: View {
+    let stores: [(String, String)]
+    let selectedId: String
+    var onPick: (String) -> Void
+    var onClose: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text("切换店铺", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+                .padding(.top, 24)
+            Text(
+                stores.isEmpty ? "暂无可切换的店铺" : "可切换多个店铺查看数据",
+                font: .system(size: 13),
+                color: DesignTokens.body
+            )
+            .padding(.top, 8)
+            .padding(.bottom, 20)
+
+            VStack(spacing: 12) {
+                ForEach(stores, id: \.0) { store in
+                    let selected = store.0 == selectedId
+                    Button {
+                        if store.0 == selectedId { onClose() }
+                        else { onPick(store.0) }
+                    } label: {
+                        Text(store.1, font: .system(size: 15, weight: .medium),
+                             color: selected ? Color(red: 0x1B/255, green: 0x82/255, blue: 0xD2/255) : DesignTokens.ink)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(
+                                        selected
+                                            ? Color(red: 0x1B/255, green: 0x82/255, blue: 0xD2/255)
+                                            : DesignTokens.hairline,
+                                        lineWidth: 1
+                                    )
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 20)
+
+            Spacer(minLength: 16)
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .foregroundStyle(.white)
+                    .frame(width: 36, height: 36)
+                    .background(Color.black.opacity(0.35), in: Circle())
+            }
+            .padding(.bottom, 20)
+        }
+        .background(DesignTokens.canvasSoft2)
     }
 }

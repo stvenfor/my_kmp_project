@@ -1225,12 +1225,16 @@ internal fun JetpackMineRoot(
         onOpenSettings = onOpenSettings,
         onOpenPersonalized = onOpenPersonalized,
         snackbar = { label ->
-            val routeable = MineRoutes.fromLabel(label) != null ||
-                HomeRoutes.fromLabel(label) != null ||
-                ContentRoutes.fromLabel(label) != null ||
-                CommunityRoutes.fromLabel(label) != null
-            if (routeable) onDeferred(label)
-            else showPlatformToast(label)
+            if (label == "切换门店" || label == "切换店铺" || label == "请先登录") {
+                showPlatformToast(label)
+            } else {
+                val routeable = MineRoutes.fromLabel(label) != null ||
+                    HomeRoutes.fromLabel(label) != null ||
+                    ContentRoutes.fromLabel(label) != null ||
+                    CommunityRoutes.fromLabel(label) != null
+                if (routeable) onDeferred(label)
+                else showPlatformToast(label)
+            }
         },
     )
 }

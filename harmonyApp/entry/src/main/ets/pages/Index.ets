@@ -135,6 +135,8 @@ struct Index {
   @State chatTick: number = 0; // bump to force UI refresh after async send/read
   @State communityPosts: CommunityFeedPost[] = [];
   @State communityTick: number = 0;
+  @State showSwitchStore: boolean = false;
+  @State selectedStoreId: string = '1';
   @State nativePane: string = '';
   @State featurePath: string = '';
   private islandController: ArkUIViewController | undefined = undefined;
@@ -143,6 +145,10 @@ struct Index {
   private chatSeeded: boolean = false;
   private communitySeeded: boolean = false;
   private communityFollowed: string[] = [];
+  private readonly mineStores: string[][] = [
+    ['1', '[4S]北京沃德龙鼎吉利'],
+    ['2', '[4S]北京腾远吉利'],
+  ];
 
   private readonly communitySamples: string[] = [
     '今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev',
@@ -598,6 +604,61 @@ struct Index {
     return '';
   }
 
+  private mineStoreName(): string {
+    for (let i = 0; i < this.mineStores.length; i++) {
+      if (this.mineStores[i][0] === this.selectedStoreId) {
+        return this.mineStores[i][1];
+      }
+    }
+    return this.mineStores[0][1];
+  }
+
+  @Builder
+  SwitchStoreDialog() {
+    Column() {
+      Column() {
+        Text('切换店铺')
+          .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text(this.mineStores.length === 0 ? '暂无可切换的店铺' : '可切换多个店铺查看数据')
+          .fontSize(13).fontColor(DesignTokens.body).margin({ top: 8, bottom: 20 })
+        ForEach(this.mineStores, (store: string[]) => {
+          Text(store[1])
+            .fontSize(15).fontWeight(FontWeight.Medium)
+            .fontColor(store[0] === this.selectedStoreId ? '#1B82D2' : DesignTokens.ink)
+            .width('100%')
+            .textAlign(TextAlign.Center)
+            .padding({ top: 14, bottom: 14 })
+            .border({
+              width: 1,
+              color: store[0] === this.selectedStoreId ? '#1B82D2' : DesignTokens.hairline,
+              radius: 24,
+            })
+            .margin({ bottom: 12 })
+            .onClick(() => {
+              if (store[0] !== this.selectedStoreId) {
+                this.selectedStoreId = store[0];
+              }
+              this.showSwitchStore = false;
+            })
+        }, (store: string[]) => store[0])
+      }
+      .width('100%')
+      .padding({ left: 20, right: 20, top: 24, bottom: 20 })
+      .backgroundColor(DesignTokens.canvas)
+      .borderRadius(12)
+
+      Text('✕')
+        .fontSize(16).fontColor(Color.White)
+        .width(36).height(36).textAlign(TextAlign.Center)
+        .backgroundColor('#59000000')
+        .borderRadius(18)
+        .margin({ top: 20 })
+        .onClick(() => { this.showSwitchStore = false; })
+    }
+    .width('80%')
+    .alignItems(HorizontalAlign.Center)
+  }
+
   /** Flutter MockPostRepository.seed — 35 posts, Random(42) shape. */
   private ensureCommunitySeed(): void {
     if (this.communitySeeded) {
@@ -736,6 +797,13 @@ struct Index {
   }
 
   private openDeferred(title: string): void {
+    // Flutter SwitchStoreDialog is Mine-root UI — never a navigable route.
+    if (title === '切换门店' || title === '切换店铺') {
+      if (this.isLoggedIn) {
+        this.showSwitchStore = true;
+      }
+      return;
+    }
     const path = resolveNativePath(title);
     if (path === '/settings') {
       this.openMineIsland(false);
@@ -1326,10 +1394,18 @@ struct Index {
                 .borderRadius(6)
             }
             Row({ space: 4 }) {
-              Text(this.isLoggedIn ? '[4S]北京沃德龙鼎吉利' : '登录后查看门店信息')
+              Text(this.isLoggedIn ? this.mineStoreName() : '登录后查看门店信息')
                 .fontSize(12).fontColor(DesignTokens.body).layoutWeight(1)
               Text('▾').fontSize(10).fontColor(DesignTokens.body)
-            }.width('100%')
+            }
+            .width('100%')
+            .onClick(() => {
+              if (this.isLoggedIn) {
+                this.showSwitchStore = true;
+              } else {
+                this.showLogin = true;
+              }
+            })
             Row({ space: 16 }) {
               Text('电子名片')
                 .fontSize(12).fontColor(DesignTokens.link)
@@ -1784,6 +1860,25 @@ struct Index {
         })
       }
 
+      if (this.showSwitchStore) {
+        Column() {
+          Column()
+            .width('100%')
+            .height('100%')
+            .backgroundColor('#8C000000')
+            .onClick(() => { this.showSwitchStore = false; })
+          Column() {
+            this.SwitchStoreDialog()
+          }
+          .width('100%')
+          .height('100%')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+        }
+        .width('100%')
+        .height('100%')
+      }
+
       if (this.errorMessage.length > 0) {
         Text(this.errorMessage)
           .fontSize(12)
@@ -1811,6 +1906,10 @@ struct Index {
   }
 
   onBackPressed(): boolean {
+    if (this.showSwitchStore) {
+      this.showSwitchStore = false;
+      return true;
+    }
     if (this.showIsland && this.islandController) {
       return this.islandController.onBackPress();
     }
