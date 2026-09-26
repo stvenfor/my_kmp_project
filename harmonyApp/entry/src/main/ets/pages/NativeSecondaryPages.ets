@@ -1516,3 +1516,212 @@ export struct NativeClassroomPane {
     .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
+
+@Component
+export struct NativeUsedCarPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
+  private cars: string[][] = [
+    ['2019 凯美瑞 双擎', '12.8 万 · 4.2 万公里', '急售'],
+    ['2021 汉兰达', '22.5 万 · 3.1 万公里', ''],
+    ['2018 雷凌', '7.9 万 · 6.8 万公里', '新上'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('二手车').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+        Text('发布').fontSize(14).fontColor(DesignTokens.link).onClick(() => this.onOpen('/home/used_car/create'))
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.cars, (c: string[]) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Column().width(96).height(72).borderRadius(8).backgroundColor(DesignTokens.canvasSoft2)
+              Column({ space: 4 }) {
+                Text(c[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(c[1]).fontSize(13).fontColor(DesignTokens.body)
+                if (c[2].length > 0) {
+                  Text(c[2]).fontSize(11).fontColor(DesignTokens.link)
+                }
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+            }
+            .padding(12).margin({ bottom: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(12)
+            .onClick(() => this.onOpen('/home/used_car/detail'))
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeNewCarFollowPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
+  private rows: string[][] = [
+    ['陈先生 · 凯美瑞', '意向强 · 未回访 2 天', '紧急'],
+    ['周女士 · 汉兰达', '询价 · 今早留言', '跟进'],
+    ['刘总 · 塞那', '试驾预约 · 周六', '预约'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('新车跟进').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+        Text('新建').fontSize(14).fontColor(DesignTokens.link).onClick(() => this.onOpen('/home/new_car_follow/create'))
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.rows, (r: string[]) => {
+          ListItem() {
+            Row() {
+              Column({ space: 4 }) {
+                Text(r[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Text(r[2]).fontSize(11).fontColor(DesignTokens.link)
+                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                .backgroundColor('#1A0070F3').borderRadius(12)
+            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+            .onClick(() => this.onOpen('/home/new_car_follow/detail'))
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeClubPane {
+  onClose: () => void = () => {};
+  @State filter: number = 0;
+  private filters: string[] = ['最新', '嘉宾分享', '资料'];
+  private posts: string[][] = [
+    ['莫听官方', '06-24', '【官方纪要】本期聚焦 AI 算力与产业趋势，内容仅供合格投资者参考。', '【莫听Club第78期】聊聊AI最靓的仔.pdf'],
+    ['策略研究员', '06-20', '当星舰遇到算力：嘉宾分享回顾与延伸阅读。', ''],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('Club').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Scroll() {
+        Column({ space: 12 }) {
+          Row({ space: 12 }) {
+            Text('Club').fontSize(13).fontWeight(FontWeight.Bold).fontColor(Color.White)
+              .width(52).height(52).textAlign(TextAlign.Center).borderRadius(12).backgroundColor('#1C1C3A')
+            Column({ space: 4 }) {
+              Text('莫听Club').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text('动态 127 | 成员 1040').fontSize(12).fontColor(DesignTokens.body)
+            }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+            Text('+ 加入').fontSize(14).fontColor(Color.White)
+              .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+              .backgroundColor(DesignTokens.link).borderRadius(20)
+          }.padding(16).width('100%').backgroundColor(DesignTokens.canvas).borderRadius(12)
+          Row() {
+            ForEach(this.filters, (f: string, i: number) => {
+              Text(f)
+                .fontSize(14)
+                .fontWeight(i === this.filter ? FontWeight.Medium : FontWeight.Regular)
+                .fontColor(i === this.filter ? DesignTokens.link : DesignTokens.body)
+                .layoutWeight(1).textAlign(TextAlign.Center)
+                .padding({ top: 10, bottom: 10 })
+                .border({ width: { bottom: i === this.filter ? 2 : 0 }, color: DesignTokens.link })
+                .onClick(() => { this.filter = i; })
+            })
+          }.width('100%').backgroundColor(DesignTokens.canvas).borderRadius(12)
+          ForEach(this.posts, (p: string[]) => {
+            Column({ space: 10 }) {
+              Row({ space: 10 }) {
+                Column().width(40).height(40).borderRadius(20).backgroundColor(DesignTokens.canvasSoft2)
+                Column({ space: 2 }) {
+                  Text(p[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text(p[1]).fontSize(12).fontColor(DesignTokens.mute)
+                }.alignItems(HorizontalAlign.Start)
+              }
+              Text(p[2]).fontSize(15).fontColor(DesignTokens.ink)
+              if (p[3].length > 0) {
+                Text(`📄 ${p[3]}`).fontSize(13).fontColor(DesignTokens.body)
+                  .padding(12).width('100%').backgroundColor(DesignTokens.canvasSoft2).borderRadius(10)
+              }
+              Row({ space: 20 }) {
+                Text('分享').fontSize(13).fontColor(DesignTokens.body)
+                Text('评论').fontSize(13).fontColor(DesignTokens.body)
+                Text('点赞').fontSize(13).fontColor(DesignTokens.body)
+              }
+            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas).borderRadius(12)
+          })
+        }.padding(16).width('100%')
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeLifeServicePane {
+  onClose: () => void = () => {};
+  private items: string[] = ['代驾', '洗车', '道路救援', '充电桩', '年检代办', '保险续保'];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('生活服务').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Grid() {
+        ForEach(this.items, (item: string) => {
+          GridItem() {
+            Column({ space: 8 }) {
+              Text(item.substring(0, 1)).fontSize(16).fontColor(DesignTokens.link)
+                .width(48).height(48).textAlign(TextAlign.Center).borderRadius(24).backgroundColor('#1A0070F3')
+              Text(item).fontSize(13).fontColor(DesignTokens.ink)
+            }.padding({ top: 16, bottom: 16 }).width('100%').backgroundColor(DesignTokens.canvas).borderRadius(12)
+          }
+        })
+      }.columnsTemplate('1fr 1fr 1fr').columnsGap(12).rowsGap(12).padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeTodoListPane {
+  titleText: string = '待办';
+  rows: string[][] = [];
+  action: string = '';
+  onClose: () => void = () => {};
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text(this.titleText).fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.rows, (r: string[]) => {
+          ListItem() {
+            Row() {
+              Column({ space: 4 }) {
+                Text(r[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              if (r[2].length > 0) {
+                Text(r[2]).fontSize(11).fontColor(DesignTokens.link)
+                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                  .backgroundColor('#1A0070F3').borderRadius(12)
+              }
+            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+      if (this.action.length > 0) {
+        Button(this.action).backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
+      }
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}

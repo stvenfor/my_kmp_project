@@ -33,6 +33,11 @@ import {
   NativeCheckInMallPane,
   NativeMusicPane,
   NativeClassroomPane,
+  NativeUsedCarPane,
+  NativeNewCarFollowPane,
+  NativeClubPane,
+  NativeLifeServicePane,
+  NativeTodoListPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -346,6 +351,36 @@ struct Index {
     if (path === '/classroom/my_class') {
       this.nativePane = 'classroom';
       this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/used_car') {
+      this.nativePane = 'used_car';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/new_car_follow' || title === '新车成交' || title === '新车跟进') {
+      this.nativePane = 'new_car_follow';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/club' || title === 'Club') {
+      this.nativePane = 'club';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/life_service' || title === '生活服务') {
+      this.nativePane = 'life_service';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path.indexOf('/home/todo/') === 0) {
+      this.nativePane = 'todo';
+      this.featurePath = path;
       this.showStub = false;
       return;
     }
@@ -1212,6 +1247,43 @@ struct Index {
             this.nativePane = '';
             this.openDeferred(p);
           },
+        })
+      }
+
+      if (this.nativePane === 'used_car') {
+        NativeUsedCarPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
+      }
+
+      if (this.nativePane === 'new_car_follow') {
+        NativeNewCarFollowPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
+      }
+
+      if (this.nativePane === 'club') {
+        NativeClubPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'life_service') {
+        NativeLifeServicePane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'todo') {
+        NativeTodoListPane({
+          titleText: this.todoTitle(),
+          rows: this.todoRows(),
+          action: this.todoAction(),
+          onClose: (): void => { this.nativePane = ''; },
         })
       }
 

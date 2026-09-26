@@ -1412,6 +1412,240 @@ struct NativeClassroomPage: View {
     }
 }
 
+
+struct NativeUsedCarPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    private let cars: [(String, String, String)] = [
+        ("2019 凯美瑞 双擎", "12.8 万 · 4.2 万公里", "急售"),
+        ("2021 汉兰达", "22.5 万 · 3.1 万公里", ""),
+        ("2018 雷凌", "7.9 万 · 6.8 万公里", "新上"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link) }
+                Text("二手车", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+                Button("发布") { onOpen?("/home/used_car/create") }
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(DesignTokens.link)
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background(DesignTokens.canvas)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(Array(cars.enumerated()), id: \.offset) { _, c in
+                        HStack(spacing: 12) {
+                            RoundedRectangle(cornerRadius: 8).fill(DesignTokens.canvasSoft2).frame(width: 96, height: 72)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(c.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                Text(c.1, font: .system(size: 13), color: DesignTokens.body)
+                                if !c.2.isEmpty {
+                                    Text(c.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(12)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .onTapGesture { onOpen?("/home/used_car/detail") }
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeNewCarFollowPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    private let rows: [(String, String, String)] = [
+        ("陈先生 · 凯美瑞", "意向强 · 未回访 2 天", "紧急"),
+        ("周女士 · 汉兰达", "询价 · 今早留言", "跟进"),
+        ("刘总 · 塞那", "试驾预约 · 周六", "预约"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link) }
+                Text("新车跟进", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+                Button("新建") { onOpen?("/home/new_car_follow/create") }
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(DesignTokens.link)
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12).background(DesignTokens.canvas)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(r.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Text(r.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            Text(r.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                        }
+                        .padding(16).background(DesignTokens.canvas)
+                        .onTapGesture { onOpen?("/home/new_car_follow/detail") }
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeClubPage: View {
+    var onClose: () -> Void
+    @State private var filter = 0
+    private let filters = ["最新", "嘉宾分享", "资料"]
+    private let posts: [(String, String, String, String?)] = [
+        ("莫听官方", "06-24", "【官方纪要】本期聚焦 AI 算力与产业趋势，内容仅供合格投资者参考。", "【莫听Club第78期】聊聊AI最靓的仔.pdf"),
+        ("策略研究员", "06-20", "当星舰遇到算力：嘉宾分享回顾与延伸阅读。", nil),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "Club", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        RoundedRectangle(cornerRadius: 12).fill(Color(red: 0.11, green: 0.11, blue: 0.23))
+                            .frame(width: 52, height: 52)
+                            .overlay(Text("Club", font: .system(size: 13, weight: .bold), color: .white))
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("莫听Club", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                            Text("动态 127 | 成员 1040", font: .system(size: 12), color: DesignTokens.body)
+                        }
+                        Spacer()
+                        Text("+ 加入", font: .system(size: 14), color: .white)
+                            .padding(.horizontal, 16).padding(.vertical, 8)
+                            .background(DesignTokens.link, in: Capsule())
+                    }
+                    .padding(16)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+
+                    HStack(spacing: 0) {
+                        ForEach(Array(filters.enumerated()), id: \.offset) { i, f in
+                            Text(f, font: .system(size: 14, weight: i == filter ? .semibold : .regular),
+                                  color: i == filter ? DesignTokens.link : DesignTokens.body)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .overlay(alignment: .bottom) {
+                                    Rectangle().fill(i == filter ? DesignTokens.link : Color.clear).frame(height: 2)
+                                }
+                                .onTapGesture { filter = i }
+                        }
+                    }
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+
+                    ForEach(Array(posts.enumerated()), id: \.offset) { _, p in
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack(spacing: 10) {
+                                Circle().fill(DesignTokens.canvasSoft2).frame(width: 40, height: 40)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(p.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                    Text(p.1, font: .system(size: 12), color: DesignTokens.mute)
+                                }
+                            }
+                            Text(p.2, font: .system(size: 15), color: DesignTokens.ink)
+                            if let pdf = p.3 {
+                                HStack {
+                                    Text("📄")
+                                    Text(pdf, font: .system(size: 13), color: DesignTokens.body).lineLimit(1)
+                                }
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 10))
+                            }
+                            HStack(spacing: 20) {
+                                Text("分享", font: .system(size: 13), color: DesignTokens.body)
+                                Text("评论", font: .system(size: 13), color: DesignTokens.body)
+                                Text("点赞", font: .system(size: 13), color: DesignTokens.body)
+                            }
+                        }
+                        .padding(16)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeLifeServicePage: View {
+    var onClose: () -> Void
+    private let items = ["代驾", "洗车", "道路救援", "充电桩", "年检代办", "保险续保"]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "生活服务", onClose: onClose, dark: false)
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                ForEach(items, id: \.self) { item in
+                    VStack(spacing: 8) {
+                        Circle().fill(DesignTokens.link.opacity(0.12)).frame(width: 48, height: 48)
+                            .overlay(Text(String(item.prefix(1)), font: .system(size: 16, weight: .semibold), color: DesignTokens.link))
+                        Text(item, font: .system(size: 13), color: DesignTokens.ink)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
+            .padding(16)
+            Spacer()
+        }
+        .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+    }
+}
+
+struct NativeTodoListPage: View {
+    var title: String
+    var rows: [(String, String, String)]
+    var action: String?
+    var onClose: () -> Void
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: title, onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(r.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Text(r.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            if !r.2.isEmpty {
+                                Text(r.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                                    .padding(.horizontal, 8).padding(.vertical, 4)
+                                    .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                            }
+                        }
+                        .padding(16).background(DesignTokens.canvas)
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+                if let action {
+                    Button(action) {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                        .padding(.bottom, 24)
+                }
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {

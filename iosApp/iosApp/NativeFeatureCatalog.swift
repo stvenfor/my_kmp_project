@@ -447,6 +447,33 @@ struct NativeFeatureHost: View {
             NativeMusicPage(onClose: onClose)
         } else if path == "/classroom/my_class" {
             NativeClassroomPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/used_car" {
+            NativeUsedCarPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/new_car_follow" || pathOrLabel == "新车成交" || pathOrLabel == "新车跟进" {
+            NativeNewCarFollowPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/club" || pathOrLabel == "Club" {
+            NativeClubPage(onClose: onClose)
+        } else if path == "/home/life_service" || pathOrLabel == "生活服务" {
+            NativeLifeServicePage(onClose: onClose)
+        } else if path == "/home/todo/partner-pending" {
+            NativeTodoListPage(title: "新伙伴待确认", rows: [
+                ("赵倩 · 销售顾问", "待审核 · 昨天申请", "待审"),
+                ("孙浩 · 售后技师", "待审核 · 今天申请", "待审"),
+            ], action: "全部通过", onClose: onClose)
+        } else if path == "/home/todo/follow-up-customers" {
+            NativeTodoListPage(title: "待跟进客户", rows: [
+                ("陈先生", "意向凯美瑞 · 未回访 2 天", "紧急"),
+                ("周女士", "询价汉兰达 · 今早留言", ""),
+            ], action: "开始跟进", onClose: onClose)
+        } else if path == "/home/todo/after-sales-appointments" {
+            NativeTodoListPage(title: "售后预约", rows: [
+                ("10:30 · 保养", "京 A·88888 · 技师小刘", ""),
+                ("14:00 · 钣喷", "京 B·66666 · 技师老王", ""),
+            ], action: "新建预约", onClose: onClose)
+        } else if path == "/home/todo/order-pending-review" {
+            NativeTodoListPage(title: "订单待审核", rows: [
+                ("订单 #90821", "定金 ¥5000 · 待店长审", "待审"),
+            ], action: nil, onClose: onClose)
         } else {
             genericList
         }
