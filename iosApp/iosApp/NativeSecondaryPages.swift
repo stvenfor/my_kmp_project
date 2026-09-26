@@ -505,8 +505,10 @@ struct NativeCommunityPublishPage: View {
     @State private var content = ""
     @State private var mediaType = "none"
     @State private var topic = ""
-    @State private var showConvention = true
+    @State private var showConvention = false
     @State private var publishing = false
+
+    private static let conventionAckKey = "community_convention_ack_date"
 
     var body: some View {
         ZStack {
@@ -606,7 +608,11 @@ struct NativeCommunityPublishPage: View {
                     Text("社区公约", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
                     Text("请文明发言，禁止发布违法违规、广告引流等内容。", font: .system(size: 14), color: DesignTokens.body)
                         .multilineTextAlignment(.center)
-                    Button("我知道了") { showConvention = false }
+                    Button("我知道了") {
+                        let today = String(ISO8601DateFormatter().string(from: Date()).prefix(10))
+                        UserDefaults.standard.set(today, forKey: Self.conventionAckKey)
+                        showConvention = false
+                    }
                         .buttonStyle(.borderedProminent)
                         .tint(DesignTokens.link)
                 }
@@ -614,6 +620,12 @@ struct NativeCommunityPublishPage: View {
                 .frame(maxWidth: 320)
                 .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
             }
+        }
+        .onAppear {
+            // Flutter CommunityConventionDialog.maybeShow — once per local day.
+            let today = String(ISO8601DateFormatter().string(from: Date()).prefix(10))
+            let ack = UserDefaults.standard.string(forKey: Self.conventionAckKey)
+            showConvention = ack != today
         }
     }
 }

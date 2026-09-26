@@ -1835,7 +1835,14 @@ struct Index {
       }
 
       if (this.nativePane === 'community_publish') {
-        NativeCommunityPublishPane({ onClose: (): void => { this.nativePane = ''; } })
+        // Prefer Compose SecondaryRouteIsland (CommunityConventionDialog.maybeShow).
+        Column()
+          .width(0)
+          .height(0)
+          .onAppear(() => {
+            this.nativePane = '';
+            this.openSecondaryCompose('/community/publish');
+          })
       }
 
       if (this.nativePane === 'community_comment') {
