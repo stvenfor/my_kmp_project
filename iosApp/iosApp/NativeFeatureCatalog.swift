@@ -47,7 +47,8 @@ enum NativeRouteResolver {
         "售后预约": "/home/todo/after-sales-appointments",
         "订单待审核": "/home/todo/order-pending-review",
         "售后": "/home/after_sales", "售后专区": "/home/after_sales",
-        "新车跟进": "/home/new_car_follow", "新车成交": "/home/new_car_follow", "新车关注": "/home/new_car_follow",
+        "新车跟进": "/home/new_car_follow", "新车关注": "/home/new_car_follow",
+        // Flutter: 新车成交 → deal invoice demo (not NewCarFollow) — toast-only until host lands.
         "销售顾问": "/home/todo/follow-up-customers",
         "AI小石头": "/ai/stream", "AI 小石": "/ai/stream", "AI小石": "/ai/stream",
         "订单中心": "/mall/orders",

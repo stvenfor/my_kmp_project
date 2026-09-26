@@ -130,7 +130,7 @@ struct ContentView: View {
             "/mine/business_card", "/mine/invite", "/mine/business",
             "/mine/reminders", "/mine/reminder", "/mine/fan_group", "/mine/feedback",
         ]
-        if toastOnlyKeys.contains(key) {
+        if toastOnlyKeys.contains(key) || key == "新车成交" {
             let toast: String
             switch key {
             case "/mine/business_card": toast = "电子名片"
@@ -139,6 +139,7 @@ struct ContentView: View {
             case "/mine/reminders", "/mine/reminder": toast = "提醒事项"
             case "/mine/fan_group": toast = "粉丝群"
             case "/mine/feedback": toast = "意见反馈"
+            case "新车成交": toast = "新车成交"
             default: toast = key
             }
             toastText = toast
@@ -240,8 +241,8 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             NativeBottomBar(selected: tab) { next in
+                // Flutter MainPage: soft-auth keeps current tab; only present login.
                 if (next == .chat || next == .community) && !isLoggedIn {
-                    tab = next
                     showLogin = true
                 } else {
                     tab = next

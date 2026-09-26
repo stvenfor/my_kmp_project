@@ -48,7 +48,7 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['售后', '/home/after_sales'],
   ['售后专区', '/home/after_sales'],
   ['新车跟进', '/home/new_car_follow'],
-  ['新车成交', '/home/new_car_follow'],
+  // Flutter: 新车成交 → deal invoice demo — not NewCarFollow; toast via Index.openDeferred
   ['新车关注', '/home/new_car_follow'],
   ['销售顾问', '/home/todo/follow-up-customers'],
   ['AI小石头', '/ai/stream'],

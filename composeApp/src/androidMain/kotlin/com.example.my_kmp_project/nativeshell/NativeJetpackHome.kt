@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,7 @@ import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeFeatureItem
 import com.example.my_kmp_project.feature.home.HomeMockData
 import com.example.my_kmp_project.feature.home.HomeServiceAssets
+import com.example.my_kmp_project.feature.mine.SwitchStoreDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import my_kmp_project.composeapp.generated.resources.Res
@@ -60,14 +62,32 @@ import java.util.Calendar
 internal fun JetpackHomeRoot(
     onDeferred: (String) -> Unit,
     displayName: String? = null,
+    loggedIn: Boolean = false,
 ) {
     var metricTab by remember { mutableIntStateOf(0) } // Flutter HomeController default: 今日
     val greeting = remember(displayName) { flutterStyleGreeting(displayName) }
     var refreshing by remember { mutableStateOf(false) }
-    // Flutter SoT (live API): empty todoCards → HomeTodoCardStrip shrinks.
+    // Flutter SoT: empty todoCards → strip hidden. Mock has cards after first load.
     var showTodos by remember { mutableStateOf(false) }
+    var showSwitchStore by remember { mutableStateOf(false) }
+    var storeName by remember { mutableStateOf(HomeMockData.storeName) }
     val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
+    LaunchedEffect(Unit) {
+        delay(50)
+        showTodos = true
+    }
+
+    if (showSwitchStore && loggedIn) {
+        SwitchStoreDialog(
+            selectedId = "1",
+            onDismiss = { showSwitchStore = false },
+            onPicked = { store ->
+                storeName = store.name
+                showSwitchStore = false
+            },
+        )
+    }
 
     PullToRefreshBox(
         isRefreshing = refreshing,
@@ -169,7 +189,18 @@ internal fun JetpackHomeRoot(
             if (showTodos) {
                 item { JetpackTodoStrip(onDeferred) }
             }
-            item { JetpackStoreMetrics(metricTab, onDeferred) { metricTab = it } }
+            item {
+                JetpackStoreMetrics(
+                    selected = metricTab,
+                    storeName = storeName,
+                    onDeferred = onDeferred,
+                    onStoreTap = {
+                        if (loggedIn) showSwitchStore = true
+                        else onDeferred("请先登录")
+                    },
+                    onSelect = { metricTab = it },
+                )
+            }
             item { JetpackStrategyEntry(onDeferred) }
             item { JetpackServiceGrid(onDeferred) }
             item { JetpackContactList(onDeferred) }
@@ -266,7 +297,9 @@ private fun onFeatureTap(label: String, onDeferred: (String) -> Unit) {
 @Composable
 private fun JetpackStoreMetrics(
     selected: Int,
+    storeName: String,
     onDeferred: (String) -> Unit,
+    onStoreTap: () -> Unit,
     onSelect: (Int) -> Unit,
 ) {
     // Flutter HomeStoreMetricsCard + HomeController.metricTabs
@@ -315,7 +348,7 @@ private fun JetpackStoreMetrics(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
                     .background(DemoColors.PageBg)
-                    .clickable { onDeferred("门店") }
+                    .clickable(onClick = onStoreTap)
                     .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -330,7 +363,7 @@ private fun JetpackStoreMetrics(
                 }
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    HomeMockData.storeName,
+                    storeName,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = DemoColors.TextPrimary,

@@ -811,7 +811,7 @@ struct Index {
     // Flutter MineController toast-only / Mine-root dialogs — never navigable routes.
     const toastOnly: string[] = [
       '切换门店', '切换店铺', '电子名片', '商务合作', '提醒事项',
-      '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像',
+      '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像', '新车成交',
       '/mine/business_card', '/mine/invite', '/mine/business',
       '/mine/reminders', '/mine/reminder', '/mine/fan_group', '/mine/feedback',
     ];
@@ -1608,8 +1608,8 @@ struct Index {
     .height('100%')
     .justifyContent(FlexAlign.Center)
     .onClick(() => {
+      // Flutter MainPage: soft-auth keeps current tab; only present login.
       if ((id === MainTab.Chat || id === MainTab.Community) && !this.isLoggedIn) {
-        this.tab = id;
         this.showLogin = true;
         return;
       }

@@ -237,7 +237,7 @@ internal fun NativeAndroidMain() {
                 return
             }
             "电子名片", "商务合作", "提醒事项", "邀请好友", "粉丝群",
-            "意见反馈", "帮助中心", "头像" -> {
+            "意见反馈", "帮助中心", "头像", "新车成交", "请先登录" -> {
                 showPlatformToast(title)
                 return
             }
@@ -574,6 +574,7 @@ internal fun NativeAndroidMain() {
                                         MainTab.Home -> JetpackHomeRoot(
                                             onDeferred = { openDeferred(it) },
                                             displayName = authState.displayName,
+                                            loggedIn = authState.isLoggedIn,
                                         )
                                         MainTab.Chat -> JetpackChatRoot(
                                             onOpenContacts = { openDeferred("通讯录") },

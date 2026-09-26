@@ -201,10 +201,10 @@ internal fun JetpackContactList(onDeferred: (String) -> Unit) {
                 .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
         ) {
             HomeMockData.contacts.forEachIndexed { index, c ->
+                // Flutter HomeContactList: display-only — no onTap.
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clickable { onDeferred(c.title) }
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

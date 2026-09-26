@@ -95,8 +95,11 @@ internal object HomeRoutes {
         "售后预约" -> TodoAfterSales
         "订单待审核" -> TodoOrderReview
         "售后", "售后专区" -> AfterSales
-        "新车跟进", "新车成交", "新车关注" -> NewCarFollow
-        "门店" -> DataAnalytics
+        // Flutter: 新车成交 → DealInvoiceDemo; 新车跟进 → NewCarFollow (distinct).
+        "新车跟进", "新车关注" -> NewCarFollow
+        "新车成交" -> null // toast / deal-invoice demo — not NewCarFollow
+        // Flutter HomeController.onStoreTap → SwitchStoreDialog (Mine-root), not DataAnalytics.
+        "门店" -> null
         "话术库" -> Strategy
         else -> null
     }
