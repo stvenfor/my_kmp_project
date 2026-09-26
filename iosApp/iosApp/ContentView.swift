@@ -162,7 +162,7 @@ struct ContentView: View {
                     HomeTabView(onDeferred: { openOwnedRoute($0) })
                 case .chat:
                     if isLoggedIn {
-                        ChatTabView()
+                        ChatTabView(onDeferred: { openOwnedRoute($0) })
                     } else {
                         AuthGateView { showLogin = true }
                     }

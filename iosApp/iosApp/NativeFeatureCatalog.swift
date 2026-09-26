@@ -285,6 +285,17 @@ enum NativeFeatureCatalog {
                 .init(id: "1", title: "热门话题", detail: "#换车季 #保养日记", badge: nil),
             ], primaryAction: nil)
         },
+        "/community/comment": {
+            .init(id: "/community/comment", title: "评论", subtitle: "说说你的看法", rows: [
+                .init(id: "1", title: "李四", detail: "说得对！", badge: nil),
+                .init(id: "2", title: "赵六", detail: "同感 +1", badge: nil),
+            ], primaryAction: "发送评论")
+        },
+        "/community/image_preview": {
+            .init(id: "/community/image_preview", title: "图片预览", subtitle: nil, rows: [
+                .init(id: "1", title: "预览图", detail: "点击返回", badge: nil),
+            ], primaryAction: nil)
+        },
         "/scan": {
             .init(id: "/scan", title: "扫一扫", subtitle: "对准二维码完成核销 / 收款", rows: [
                 .init(id: "1", title: "对准二维码", detail: "用于门店收款码 / 活动核销", badge: nil),

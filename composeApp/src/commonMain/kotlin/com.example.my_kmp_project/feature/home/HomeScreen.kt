@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
 import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.core.design.ImmersiveCenterTopAppBar
 import com.example.my_kmp_project.core.router.AppRoute
 import com.example.my_kmp_project.core.router.LocalAppNavigator
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
@@ -85,22 +84,12 @@ private fun HomeRootContent(onNavigate: (String) -> Unit) {
     var metricTab by remember { mutableStateOf(0) }
     val metricTabs = listOf("今日", "昨日", "本月")
 
+    // Flutter HomePage: no center title bar — greeting is the hero header.
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        ImmersiveCenterTopAppBar(
-            title = {
-                Text(
-                    text = "首页",
-                    fontWeight = FontWeight.Bold,
-                    color = DemoColors.TextPrimary,
-                    fontSize = 18.sp,
-                )
-            },
-            containerColor = DemoColors.Toolbar,
-        )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp),

@@ -1,24 +1,51 @@
 import { DesignTokens } from './NativeShellShared';
 
+/**
+ * SoT: my_ai_project HomePage —
+ * greeting → search → banner → feature(9) → todo → store metrics →
+ * strategy → services → contacts → news → learning report.
+ * NO 首页/视频/Club segment (removed from Flutter).
+ */
 @Component
 export struct NativeHomeContent {
   onDeferred: (title: string) => void = (_t: string) => {};
-  @State topTab: number = 0;
   @State metricTab: number = 0;
 
   private homeFeatures: string[] = [
-    '销售顾问', '生活服务', '二手车', '新车关注', 'AI小石头',
-    '订单中心', '数据分析', '直播带货', '营销活动', '更多',
+    'H5 调试', '生活服务', '二手车', '新车成交', '新车跟进',
+    'AI小石头', 'Club', '直播带货', '更多',
+  ];
+
+  private quickActions: string[][] = [
+    ['新伙伴待确认', '3 位新成员等待审核', '去处理'],
+    ['待跟进客户', '今日 5 位意向客户', '去查看'],
+    ['订单待审核', '2 笔新车订单', '去处理'],
+    ['售后预约', '4 位客户今日到店', '去查看'],
+  ];
+
+  private services: string[][] = [
+    ['朋友圈', '热门'], ['视频号', ''], ['直播', '新品'], ['素材库', ''],
+    ['话术库', ''], ['培训', ''], ['竞品分析', ''], ['更多', ''],
+  ];
+
+  private metricSets: string[][][] = [
+    [['99', '意向客户'], ['2', '新车订单'], ['999.8', '成交额(万)'], ['15', '试驾预约']],
+    [['86', '意向客户'], ['1', '新车订单'], ['520.0', '成交额(万)'], ['12', '试驾预约']],
+    [['1280', '意向客户'], ['45', '新车订单'], ['8600.5', '成交额(万)'], ['320', '试驾预约']],
+  ];
+
+  private metricDetails: string[][] = [
+    ['8', '待交车'], ['3', '待回访'], ['12', '待跟进'],
   ];
 
   private featureRes(label: string): Resource {
-    if (label === '销售顾问') return $r('app.media.home_feature_sales');
+    if (label === 'H5 调试' || label === '销售顾问') return $r('app.media.home_feature_sales');
     if (label === '生活服务') return $r('app.media.home_feature_life');
     if (label === '二手车') return $r('app.media.home_feature_usedcar');
-    if (label === '新车关注') return $r('app.media.home_feature_newcar');
+    if (label === '新车成交' || label === '新车关注') return $r('app.media.home_feature_newcar');
+    if (label === '新车跟进' || label === '数据分析') return $r('app.media.home_feature_data');
     if (label === 'AI小石头') return $r('app.media.home_feature_ai_stone');
-    if (label === '订单中心') return $r('app.media.home_feature_order');
-    if (label === '数据分析') return $r('app.media.home_feature_data');
+    if (label === 'Club' || label === '订单中心') return $r('app.media.home_feature_order');
     if (label === '直播带货') return $r('app.media.home_feature_live');
     if (label === '营销活动') return $r('app.media.home_feature_market');
     return $r('app.media.home_feature_more');
@@ -30,45 +57,85 @@ export struct NativeHomeContent {
     return `${prefix}，沃德龙鼎`;
   }
 
+  private onFeatureTap(label: string) {
+    if (label === '更多') this.onDeferred('全部服务');
+    else if (label === '直播带货') this.onDeferred('直播带货');
+    else if (label === 'H5 调试') this.onDeferred('/web');
+    else this.onDeferred(label);
+  }
+
   @Builder
   FeatureRow(start: number) {
     Row() {
-      ForEach(this.homeFeatures.slice(start, start + 5), (label: string) => {
-        Column({ space: 4 }) {
-          Image(this.featureRes(label))
-            .width(44)
-            .height(44)
-            .borderRadius(12)
-            .objectFit(ImageFit.Cover)
-          Text(label)
-            .fontSize(11)
-            .fontColor(DesignTokens.ink)
-            .maxLines(1)
-            .textAlign(TextAlign.Center)
-            .width('100%')
-        }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Center)
-        .onClick(() => {
-          if (label === '更多') this.onDeferred('全部服务');
-          else if (label === '直播带货') this.onDeferred('直播');
-          else this.onDeferred(label);
+      ForEach(this.homeFeatures.slice(start, Math.min(start + 5, this.homeFeatures.length)),
+        (label: string) => {
+          Column({ space: 4 }) {
+            Image(this.featureRes(label))
+              .width(44)
+              .height(44)
+              .borderRadius(12)
+              .objectFit(ImageFit.Cover)
+            Text(label)
+              .fontSize(11)
+              .fontColor(DesignTokens.ink)
+              .maxLines(1)
+              .textAlign(TextAlign.Center)
+              .width('100%')
+          }
+          .layoutWeight(1)
+          .alignItems(HorizontalAlign.Center)
+          .padding({ top: 8, bottom: 8 })
+          .onClick(() => this.onFeatureTap(label))
         })
-      })
+      // pad to 5 columns when last row has fewer items
+      if (start + 5 > this.homeFeatures.length) {
+        Column().layoutWeight(1)
+      }
     }.width('100%')
   }
 
   @Builder
-  MetricCell(value: string, label: string) {
-    Column({ space: 2 }) {
-      Text(value).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-      Text(label).fontSize(11).fontColor(DesignTokens.body)
-    }.layoutWeight(1)
+  HubEntry(title: string, subtitle: string, route: string) {
+    Row({ space: 12 }) {
+      Text(title.substring(0, 1))
+        .width(44).height(44).textAlign(TextAlign.Center)
+        .fontColor(DesignTokens.link).fontSize(16).fontWeight(FontWeight.Medium)
+        .backgroundColor('#1A0070F3').borderRadius(12)
+      Column() {
+        Text(title).fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text(subtitle).fontSize(13).fontColor(DesignTokens.body).margin({ top: 2 })
+      }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+      Text('›').fontColor(DesignTokens.mute)
+    }
+    .width('100%')
+    .padding(16)
+    .margin({ left: 16, right: 16, top: 16 })
+    .backgroundColor(DesignTokens.canvas)
+    .borderRadius(8)
+    .border({ width: 0.5, color: DesignTokens.hairline })
+    .onClick(() => this.onDeferred(route))
+  }
+
+  @Builder
+  QuickCard(title: string, subtitle: string, action: string) {
+    Column({ space: 4 }) {
+      Text(title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).maxLines(1)
+      Text(subtitle).fontSize(12).fontColor(DesignTokens.body).maxLines(1)
+      Text(action).fontSize(13).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link).margin({ top: 4 })
+    }
+    .alignItems(HorizontalAlign.Start)
+    .layoutWeight(1)
+    .padding(14)
+    .backgroundColor(DesignTokens.canvas)
+    .borderRadius(8)
+    .border({ width: 0.5, color: DesignTokens.hairline })
+    .onClick(() => this.onDeferred(title))
   }
 
   build() {
     Scroll() {
       Column() {
+        // Greeting
         Row() {
           Text(this.greeting())
             .fontSize(28)
@@ -88,6 +155,7 @@ export struct NativeHomeContent {
         .width('100%')
         .padding({ left: 16, right: 16, top: 16 })
 
+        // Search
         Row({ space: 12 }) {
           Row({ space: 8 }) {
             Text('⌕').fontSize(16).fontColor(DesignTokens.body)
@@ -115,116 +183,191 @@ export struct NativeHomeContent {
         .width('100%')
         .padding({ left: 16, right: 16, top: 16 })
 
-        Row({ space: 24 }) {
-          ForEach(['首页', '视频', 'Club'], (label: string, index: number) => {
-            Column({ space: 6 }) {
-              Text(label)
-                .fontSize(this.topTab === index ? 16 : 15)
-                .fontWeight(this.topTab === index ? FontWeight.Medium : FontWeight.Regular)
-                .fontColor(this.topTab === index ? DesignTokens.ink : DesignTokens.body)
-              Row()
-                .width(20)
-                .height(3)
-                .borderRadius(2)
-                .backgroundColor(this.topTab === index ? DesignTokens.link : Color.Transparent)
-            }.onClick(() => {
-              this.topTab = index;
-            })
-          })
-          Blank().layoutWeight(1)
+        // Banner — asset already has title/CTA
+        Image($r('app.media.home_banner'))
+          .width('100%')
+          .height(132)
+          .objectFit(ImageFit.Cover)
+          .borderRadius(8)
+          .margin({ left: 16, right: 16, top: 16 })
+          .onClick(() => this.onDeferred('朋友圈营销'))
+
+        // Feature grid (9 items, 5-col)
+        Column() {
+          this.FeatureRow(0)
+          this.FeatureRow(5)
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 12 })
+
+        // Todo strip (2x2)
+        Column({ space: 10 }) {
+          Row({ space: 12 }) {
+            this.QuickCard(this.quickActions[0][0], this.quickActions[0][1], this.quickActions[0][2])
+            this.QuickCard(this.quickActions[1][0], this.quickActions[1][1], this.quickActions[1][2])
+          }.width('100%')
+          Row({ space: 12 }) {
+            this.QuickCard(this.quickActions[2][0], this.quickActions[2][1], this.quickActions[2][2])
+            this.QuickCard(this.quickActions[3][0], this.quickActions[3][1], this.quickActions[3][2])
+          }.width('100%')
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 12 })
+
+        // Store metrics
+        Column({ space: 12 }) {
+          Row() {
+            Text('公司数据').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
+            Text('查看更多').fontSize(13).fontColor(DesignTokens.link)
+          }.width('100%')
+
+          Column({ space: 14 }) {
+            Row({ space: 8 }) {
+              Text('店')
+                .width(28).height(28).textAlign(TextAlign.Center)
+                .fontSize(12).fontColor(DesignTokens.link)
+                .backgroundColor('#1F0070F3').borderRadius(8)
+              Text('[4S]北京沃德龙鼎吉利')
+                .fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                .maxLines(1).layoutWeight(1)
+              Text('∨').fontSize(12).fontColor(DesignTokens.body)
+            }
+            .width('100%')
+            .padding({ left: 10, right: 10, top: 8, bottom: 8 })
+            .backgroundColor(DesignTokens.canvasSoft2)
+            .borderRadius(10)
+
+            Row({ space: 16 }) {
+              ForEach(['今日', '昨日', '本月'], (t: string, index: number) => {
+                Text(t)
+                  .fontSize(14)
+                  .fontWeight(this.metricTab === index ? FontWeight.Medium : FontWeight.Regular)
+                  .fontColor(this.metricTab === index ? DesignTokens.link : DesignTokens.body)
+                  .onClick(() => { this.metricTab = index; })
+              })
+            }
+
+            Grid() {
+              ForEach(this.metricSets[this.metricTab], (m: string[]) => {
+                Column({ space: 4 }) {
+                  Text(m[0]).fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+                  Text(m[1]).fontSize(11).fontColor(DesignTokens.body)
+                }
+                .alignItems(HorizontalAlign.Start)
+                .padding(12)
+                .backgroundColor(DesignTokens.canvasSoft2)
+                .borderRadius(8)
+              })
+            }
+            .columnsTemplate('1fr 1fr')
+            .rowsGap(10)
+            .columnsGap(10)
+            .width('100%')
+
+            Divider().color(DesignTokens.hairline).strokeWidth(0.5)
+
+            Row({ space: 8 }) {
+              ForEach(this.metricDetails, (d: string[]) => {
+                Column({ space: 4 }) {
+                  Text(d[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text(d[1]).fontSize(11).fontColor(DesignTokens.body)
+                  Text('详情 >').fontSize(11).fontColor(DesignTokens.link)
+                }.layoutWeight(1)
+              })
+            }.width('100%')
+          }
+          .width('100%')
+          .padding(14)
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(8)
+          .border({ width: 0.5, color: DesignTokens.hairline })
         }
         .width('100%')
         .padding({ left: 16, right: 16, top: 16 })
 
-        if (this.topTab === 0) {
-          Image($r('app.media.home_banner'))
-            .width('100%')
-            .height(132)
-            .borderRadius(8)
-            .objectFit(ImageFit.Cover)
-            .margin({ left: 16, right: 16, top: 16 })
-            .onClick(() => this.onDeferred('朋友圈营销'))
+        this.HubEntry('投资策略', '资产九宫格 · 恐贪定投 · 趋势策略', '投资策略')
 
-          Column({ space: 8 }) {
-            this.FeatureRow(0)
-            this.FeatureRow(5)
-          }
-          .width('100%')
-          .padding({ left: 4, right: 4, top: 8, bottom: 8 })
-          .backgroundColor(DesignTokens.canvas)
-          .borderRadius(8)
-          .border({ width: 0.5, color: DesignTokens.hairline })
-          .margin({ left: 16, right: 16, top: 12 })
-
-          Row({ space: 12 }) {
-            this.QuickCard('新伙伴待确认', '3 位新成员等待审核')
-            this.QuickCard('待跟进客户', '今日 5 位意向客户')
-          }
-          .width('100%')
-          .padding({ left: 16, right: 16, top: 12 })
-
-          Column({ space: 8 }) {
-            Text('[4S]北京沃德龙鼎吉利').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            Row({ space: 8 }) {
-              ForEach(['今日', '昨日', '本月'], (t: string, index: number) => {
-                Text(t)
-                  .fontSize(12)
-                  .fontColor(this.metricTab === index ? DesignTokens.link : DesignTokens.body)
-                  .padding({ left: 10, right: 10, top: 6, bottom: 6 })
-                  .backgroundColor(this.metricTab === index ? '#1F0070F3' : Color.Transparent)
-                  .borderRadius(20)
-                  .onClick(() => { this.metricTab = index; })
+        // Services
+        Column({ space: 12 }) {
+          Text('营销服务').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Grid() {
+            ForEach(this.services, (item: string[]) => {
+              Column({ space: 6 }) {
+                Stack({ alignContent: Alignment.TopEnd }) {
+                  Text(item[0].substring(0, 1))
+                    .width(48).height(48).textAlign(TextAlign.Center)
+                    .fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+                    .backgroundColor('#1A0070F3').borderRadius(12)
+                  if (item[1].length > 0) {
+                    Text(item[1])
+                      .fontSize(9).fontColor(Color.White)
+                      .padding({ left: 4, right: 4, top: 1, bottom: 1 })
+                      .backgroundColor(Color.Red)
+                      .borderRadius(8)
+                      .offset({ x: 6, y: -4 })
+                  }
+                }
+                Text(item[0]).fontSize(11).fontColor(DesignTokens.ink).maxLines(1)
+              }
+              .onClick(() => {
+                if (item[0] === '更多') this.onDeferred('全部服务');
+                else if (item[0] === '直播') this.onDeferred('直播');
+                else this.onDeferred(item[0]);
               })
-            }
-            Row() {
-              this.MetricCell('99', '意向客户')
-              this.MetricCell('2', '新车订单')
-              this.MetricCell('999.8', '成交额(万)')
-              this.MetricCell('15', '试驾预约')
-            }.width('100%')
+            })
           }
+          .columnsTemplate('1fr 1fr 1fr 1fr')
+          .rowsGap(12)
+          .columnsGap(8)
           .width('100%')
-          .padding(16)
-          .margin({ left: 16, right: 16, top: 16 })
+          .padding(12)
           .backgroundColor(DesignTokens.canvas)
           .borderRadius(8)
           .border({ width: 0.5, color: DesignTokens.hairline })
-
-          Row() {
-            Text('投')
-              .fontSize(12)
-              .fontColor(Color.White)
-              .width(28)
-              .height(28)
-              .textAlign(TextAlign.Center)
-              .backgroundColor(DesignTokens.link)
-              .borderRadius(14)
-            Column() {
-              Text('投资策略').fontSize(15).fontColor(DesignTokens.ink)
-              Text('资产九宫格 · 恐贪定投 · 趋势策略').fontSize(12).fontColor(DesignTokens.body)
-            }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
-            Text('›').fontColor(DesignTokens.body)
-          }
-          .width('100%')
-          .padding(16)
-          .margin(16)
-          .backgroundColor(DesignTokens.canvas)
-          .borderRadius(8)
-          .border({ width: 0.5, color: DesignTokens.hairline })
-          .onClick(() => this.onDeferred('投资策略'))
-        } else if (this.topTab === 1) {
-          this.HomeSubFeed('小视频', [
-            ['新车到店 · 15s', '播放 2.1k · 赞 186'],
-            ['保养小贴士', '播放 980 · 赞 64'],
-            ['试驾花絮', '播放 1.4k · 赞 102'],
-          ], '拍一个', '/video/short')
-        } else {
-          this.HomeSubFeed('Club', [
-            ['周末自驾·密云水库', '报名 36 · 周六出发'],
-            ['店庆抽奖夜', '本周五 · 门店大厅'],
-            ['车友改装聚会', '下周日 · 报名中'],
-          ], '发布活动', 'Club')
         }
+        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .padding({ left: 16, right: 16, top: 16 })
+
+        // Contacts
+        Column({ space: 12 }) {
+          Text('联系人').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Column() {
+            this.ContactRow('销售顾问小王', '在线 · 专属顾问', '聊')
+            Divider().color(DesignTokens.hairline).strokeWidth(0.5)
+            this.ContactRow('售后服务热线', '400-800-8888', '拨')
+          }
+          .width('100%')
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(8)
+          .border({ width: 0.5, color: DesignTokens.hairline })
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .padding({ left: 16, right: 16, top: 16 })
+
+        // News
+        Column({ space: 12 }) {
+          Text('资讯').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Row({ space: 12 }) {
+            Row().width(72).height(72).backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
+            Column({ space: 6 }) {
+              Text('吉利银河 E8 获年度车型奖')
+                .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).maxLines(2)
+              Text('汽车之家 · 09-20').fontSize(12).fontColor(DesignTokens.body)
+            }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+          }
+          .width('100%')
+          .padding(14)
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(8)
+          .border({ width: 0.5, color: DesignTokens.hairline })
+        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Start)
+        .padding({ left: 16, right: 16, top: 16 })
+
+        this.HubEntry('学习报告', '今日高光 · 学习记录', '学习报告')
       }
       .width('100%')
       .padding({ bottom: 24 })
@@ -235,61 +378,22 @@ export struct NativeHomeContent {
   }
 
   @Builder
-  HomeSubFeed(title: string, items: string[][], actionTitle: string, openRoute: string) {
-    Column({ space: 12 }) {
-      Row() {
-        Text(title).fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
-        Text(actionTitle).fontSize(13).fontColor(DesignTokens.link)
-          .onClick(() => this.onDeferred(openRoute))
-      }.width('100%').padding({ left: 16, right: 16, top: 24 })
-
+  ContactRow(title: string, subtitle: string, trailing: string) {
+    Row({ space: 12 }) {
+      Text(title.substring(title.length - 1))
+        .width(44).height(44).textAlign(TextAlign.Center)
+        .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(22)
       Column() {
-        ForEach(items, (item: string[], index: number) => {
-          Row({ space: 12 }) {
-            Text(item[0].substring(0, 1))
-              .width(56).height(56).textAlign(TextAlign.Center)
-              .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(8)
-            Column() {
-              Text(item[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-              Text(item[1]).fontSize(12).fontColor(DesignTokens.body).margin({ top: 4 })
-            }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-          }
-          .padding(16).width('100%')
-          .onClick(() => this.onDeferred(openRoute))
-          if (index < items.length - 1) {
-            Divider().strokeWidth(0.5).color(DesignTokens.hairline)
-          }
-        })
-      }
-      .width('100%')
-      .margin({ left: 16, right: 16 })
-      .backgroundColor(DesignTokens.canvas)
-      .borderRadius(12)
-    }.width('100%')
-  }
-
-  @Builder
-  QuickCard(title: string, subtitle: string) {
-    Row({ space: 10 }) {
-      Text(title.substring(0, 1))
-        .fontSize(16)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(DesignTokens.link)
-        .width(40)
-        .height(40)
-        .textAlign(TextAlign.Center)
-        .backgroundColor(DesignTokens.canvasSoft2)
-        .borderRadius(10)
-      Column() {
-        Text(title).fontSize(13).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).maxLines(1)
-        Text(subtitle).fontSize(11).fontColor(DesignTokens.body).maxLines(1)
+        Text(title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text(subtitle).fontSize(12).fontColor(DesignTokens.body).margin({ top: 2 })
       }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+      Text(trailing)
+        .fontSize(13).fontColor(DesignTokens.link)
+        .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+        .backgroundColor('#1A0070F3')
+        .borderRadius(14)
     }
-    .layoutWeight(1)
+    .width('100%')
     .padding(14)
-    .backgroundColor(DesignTokens.canvas)
-    .borderRadius(8)
-    .border({ width: 0.5, color: DesignTokens.hairline })
-    .onClick(() => this.onDeferred(title))
   }
 }

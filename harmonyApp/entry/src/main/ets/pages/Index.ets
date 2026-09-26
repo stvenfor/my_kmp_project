@@ -37,6 +37,8 @@ struct Index {
   @State chatPeer: string = '';
   @State chatDraft: string = '';
   @State chatMessages: string[] = [];
+  @State chatSearchOpen: boolean = false;
+  @State chatSearchQuery: string = '';
   @State nativePane: string = '';
   @State featurePath: string = '';
   private islandController: ArkUIViewController | undefined = undefined;
@@ -488,10 +490,26 @@ struct Index {
       Column() {
         Row() {
           Text('消息').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
-          Text('⌕').fontSize(22).fontColor(DesignTokens.link).margin({ right: 16 })
+          Text(this.chatSearchOpen ? '✕' : '⌕')
+            .fontSize(20).fontColor(DesignTokens.link).margin({ right: 16 })
+            .onClick(() => {
+              this.chatSearchOpen = !this.chatSearchOpen;
+              if (!this.chatSearchOpen) {
+                this.chatSearchQuery = '';
+              }
+            })
           Text('✎').fontSize(20).fontColor(DesignTokens.link)
+            .onClick(() => this.openDeferred('/friend'))
         }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
 
+        if (this.chatSearchOpen) {
+          TextInput({ placeholder: '搜索会话名称或消息', text: this.chatSearchQuery })
+            .height(40)
+            .margin({ left: 16, right: 16, bottom: 8 })
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(10)
+            .onChange((v: string) => { this.chatSearchQuery = v; })
+        }
         Column() {
           ForEach(this.chatPeers, (name: string, index: number) => {
             Row({ space: 12 }) {
@@ -556,7 +574,7 @@ struct Index {
           .textAlign(TextAlign.Center)
           .backgroundColor(DesignTokens.link)
           .borderRadius(18)
-          .onClick(() => this.openDeferred('发布动态'))
+          .onClick(() => this.openDeferred('/community/publish'))
       }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
 
       Row({ space: 8 }) {
@@ -569,7 +587,7 @@ struct Index {
       .margin({ left: 16, right: 16 })
       .backgroundColor(DesignTokens.canvas)
       .borderRadius(10)
-      .onClick(() => this.openDeferred('社区搜索'))
+      .onClick(() => this.openDeferred('/community/search'))
 
       Row() {
         ForEach(['最新', '热门', '关注'], (item: string) => {
