@@ -163,11 +163,11 @@ struct ContentView: View {
     private func chatPeerFromDeepLink(_ raw: String) -> String {
         guard let url = URL(string: raw.hasPrefix("http") || raw.hasPrefix("myai") ? raw : "myai://host\(raw.hasPrefix("/") ? raw : "/\(raw)")"),
               let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else {
-            return "Mock好友1"
+            return "mock_peer_01"
         }
         return items.first(where: { $0.name == "peerName" || $0.name == "name" || $0.name == "title" })?.value
-            ?? items.first(where: { $0.name == "id" })?.value
-            ?? "Mock好友1"
+            ?? items.first(where: { $0.name == "id" || $0.name == "peerId" })?.value
+            ?? "mock_peer_01"
     }
 
     private var mainShell: some View {
