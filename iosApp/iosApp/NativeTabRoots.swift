@@ -143,21 +143,27 @@ struct HomeTabView: View {
                 }
             }
         }
-        .alert("每日签到", isPresented: $showCheckIn) {
-            Button("立即签到 · +10积分") {
-                let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
-                UserDefaults.standard.set(String(today), forKey: "check_in_dialog_ack_date")
-                toastText = "签到成功，+10积分"
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-                    if toastText == "签到成功，+10积分" { toastText = nil }
-                }
+        .overlay {
+            if showCheckIn {
+                DailyCheckInOverlay(
+                    todayReward: 10,
+                    streak: 3,
+                    onCheckIn: {
+                        let today = String(ISO8601DateFormatter().string(from: Date()).prefix(10))
+                        UserDefaults.standard.set(today, forKey: "check_in_dialog_ack_date")
+                        showCheckIn = false
+                        toastText = "签到成功，+10积分"
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                            if toastText == "签到成功，+10积分" { toastText = nil }
+                        }
+                    },
+                    onDismiss: {
+                        let today = String(ISO8601DateFormatter().string(from: Date()).prefix(10))
+                        UserDefaults.standard.set(today, forKey: "check_in_dialog_ack_date")
+                        showCheckIn = false
+                    }
+                )
             }
-            Button("稍后再说", role: .cancel) {
-                let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
-                UserDefaults.standard.set(String(today), forKey: "check_in_dialog_ack_date")
-            }
-        } message: {
-            Text("签到攒积分，可在签到页兑换好物\n已连续签到 3 天")
         }
         .overlay(alignment: .bottom) {
             if let toastText {
@@ -774,6 +780,99 @@ private final class FlutterChatStore: ObservableObject {
         case "sending": return "发送中"
         case "failed": return "发送失败"
         default: return m.readStatus == "read" ? "已读" : "送达"
+        }
+    }
+}
+
+
+/// Flutter `_DailyCheckInAlert` — blue hero + white body + close circle.
+private struct DailyCheckInOverlay: View {
+    var todayReward: Int
+    var streak: Int
+    var onCheckIn: () -> Void
+    var onDismiss: () -> Void
+    private let coinGold = Color(red: 0xF5/255, green: 0xA6/255, blue: 0x23/255)
+    private let streakInk = Color(red: 0xB7/255, green: 0x79/255, blue: 0x1F/255)
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.55).ignoresSafeArea().onTapGesture(perform: onDismiss)
+            VStack(spacing: 16) {
+                VStack(spacing: 0) {
+                    // Hero
+                    VStack(spacing: 16) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.18))
+                                .frame(width: 64, height: 64)
+                                .overlay(Circle().stroke(Color.white.opacity(0.35), lineWidth: 1.5))
+                            Image(systemName: "calendar")
+                                .font(.system(size: 28, weight: .medium))
+                                .foregroundStyle(.white)
+                        }
+                        Text("+\(todayReward)", font: .system(size: 40, weight: .heavy), color: coinGold)
+                            .tracking(-0.5)
+                        Text("今日可领积分", font: .system(size: 13), color: .white.opacity(0.9))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 28)
+                    .padding(.bottom, 24)
+                    .padding(.horizontal, 20)
+                    .background(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0x1A/255, green: 0x8C/255, blue: 1),
+                                DesignTokens.link,
+                                Color(red: 0, green: 0x50/255, blue: 0xC8/255),
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+
+                    VStack(spacing: 0) {
+                        Text("每日签到", font: .system(size: 18, weight: .bold), color: DesignTokens.ink)
+                        Text("签到攒积分，可在签到页兑换好物", font: .system(size: 13), color: DesignTokens.body)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 8)
+                        if streak > 0 {
+                            Text("已连续签到 \(streak) 天", font: .system(size: 12, weight: .semibold), color: streakInk)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(coinGold.opacity(0.12), in: Capsule())
+                                .padding(.top, 12)
+                        }
+                        Button(action: onCheckIn) {
+                            Text("立即签到 · +\(todayReward)积分", font: .system(size: 15, weight: .semibold), color: .white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 44)
+                                .background(DesignTokens.link, in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 20)
+                        Button("稍后再说", action: onDismiss)
+                            .font(.system(size: 13))
+                            .foregroundStyle(DesignTokens.mute)
+                            .padding(.top, 10)
+                            .padding(.bottom, 4)
+                    }
+                    .padding(20)
+                    .frame(maxWidth: .infinity)
+                    .background(DesignTokens.canvas)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: DesignTokens.link.opacity(0.18), radius: 24, y: 12)
+                .padding(.horizontal, 36)
+
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 36, height: 36)
+                        .background(Color.white.opacity(0.22), in: Circle())
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 }

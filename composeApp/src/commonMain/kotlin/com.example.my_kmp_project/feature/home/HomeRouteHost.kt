@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -770,15 +772,34 @@ private fun ClubContentBody(title: String, onBack: () -> Unit) {
 
 @Composable
 private fun CheckInMallScreen(onBack: () -> Unit) {
-    // Flutter 签到商城：蓝顶栏积分区 + 连签卡 + 成长任务 + 积分换礼
-    val headerBlue = Color(0xFF2F6BFF)
-    var points by remember { mutableStateOf(0) }
-    var streak by remember { mutableStateOf(1) }
+    // Flutter CheckInMallPage layout: blue chrome (nav+notice+stats) → check-in card →
+    // 成长任务 → 积分换礼. Mock fills until PointsApi is wired.
+    val headerBlue = DemoColors.Accent
+    val coinGold = Color(0xFFF5A623)
+    var points by remember { mutableStateOf(1280) }
+    var streak by remember { mutableStateOf(3) }
     var checkedToday by remember { mutableStateOf(false) }
     var remind by remember { mutableStateOf(false) }
-    val dayLabels = listOf("19", "20", "21", "22", "23", "24", "今天")
+    var checkingIn by remember { mutableStateOf(false) }
+    // Flutter CheckInDayView week strip — signed / today / future
+    data class DayCell(val label: String, val reward: Int, val signed: Boolean, val isToday: Boolean)
+    val calendar = listOf(
+        DayCell("19", 5, true, false),
+        DayCell("20", 5, true, false),
+        DayCell("21", 5, true, false),
+        DayCell("22", 5, false, false),
+        DayCell("23", 5, false, false),
+        DayCell("24", 5, false, false),
+        DayCell("今天", 10, false, true),
+    )
+    data class TaskRow(val title: String, val points: Int, val action: String)
+    val tasks = listOf(
+        TaskRow("每日登录", 5, "领取"),
+        TaskRow("发一条动态", 10, "去完成"),
+        TaskRow("商城下单", 20, "去完成"),
+    )
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
+    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         Column(
             Modifier
                 .fillMaxWidth()
@@ -788,7 +809,8 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .height(44.dp)
+                    .padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -797,7 +819,7 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                     fontSize = 28.sp,
                     modifier = Modifier
                         .clickable(onClick = onBack)
-                        .padding(8.dp),
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
                 )
                 Text(
                     "签到商城",
@@ -809,91 +831,146 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                 )
                 Spacer(Modifier.width(44.dp))
             }
-            Text(
-                "温馨提示：本页面只保留近3个月内的积分记录",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 12.sp,
-                modifier = Modifier
+            Row(
+                Modifier
                     .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color.White.copy(alpha = 0.15f))
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
-            )
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFF3A8EE6))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("🔊", fontSize = 14.sp)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "温馨提示：本页面只保留近3个月内的积分记录",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                )
+            }
+            Spacer(Modifier.height(16.dp))
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 16.dp),
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("我的积分", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
-                    Text("$points", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                    Text("我的积分", color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
+                    Spacer(Modifier.height(4.dp))
+                    Text("$points", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("连续签到", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
-                    Text("$streak 天", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+                Column(Modifier.weight(1f)) {
+                    Text("连续签到", color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text("$streak", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "天",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(bottom = 6.dp),
+                        )
+                    }
                 }
             }
         }
         Column(
             Modifier
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+                .padding(top = 0.dp, bottom = 24.dp),
         ) {
+            Spacer(Modifier.height(16.dp))
+            // Check-in card
             Column(
                 Modifier
+                    .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color.White)
-                    .padding(14.dp),
+                    .padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("连签可得更多积分", fontWeight = FontWeight.SemiBold)
-                        Text("已连续签到 $streak 天", fontSize = 13.sp, color = DemoColors.TextSecondary)
+                        Text(
+                            "连签可得更多积分",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            color = DemoColors.TextPrimary,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Row {
+                            Text("已连续签到 ", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Text("$streak", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = headerBlue)
+                            Text(" 天", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        }
                     }
                     Text(
-                        if (checkedToday) "已签到" else "立即签到",
-                        color = Color.White,
+                        when {
+                            checkedToday -> "已签到"
+                            checkingIn -> "签到中…"
+                            else -> "立即签到"
+                        },
+                        color = if (checkedToday) DemoColors.Muted else Color.White,
                         fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (checkedToday) DemoColors.Muted else headerBlue)
-                            .clickable(enabled = !checkedToday) {
+                            .background(if (checkedToday) Color(0xFFF5F6F8) else headerBlue)
+                            .clickable(enabled = !checkedToday && !checkingIn) {
+                                checkingIn = true
                                 checkedToday = true
-                                points += 5
-                                showPlatformToast("签到成功 +5")
+                                points += 10
+                                streak += 1
+                                checkingIn = false
+                                showPlatformToast("签到成功，+10积分")
                             }
-                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    dayLabels.forEachIndexed { i, label ->
-                        val today = i == dayLabels.lastIndex
+                Spacer(Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth()) {
+                    calendar.forEach { day ->
+                        val bg = when {
+                            day.signed -> headerBlue
+                            day.isToday -> coinGold
+                            else -> Color(0xFFF5F6F8)
+                        }
+                        val fg = when {
+                            day.signed || day.isToday -> Color.White
+                            else -> DemoColors.TextSecondary
+                        }
                         Column(
-                            Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (today) Color(0xFFFFB020) else Color(0xFFF2F3F7))
-                                .padding(vertical = 8.dp),
+                            Modifier.weight(1f).padding(horizontal = 2.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(bg),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                Text("+${day.reward}", color = fg, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Text("›", color = fg.copy(alpha = 0.8f), fontSize = 10.sp)
+                            }
+                            Spacer(Modifier.height(4.dp))
                             Text(
-                                label,
+                                if (day.signed) "已签" else day.label,
                                 fontSize = 11.sp,
-                                color = if (today) Color.White else DemoColors.TextSecondary,
-                            )
-                            Text(
-                                "+5",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (today) Color.White else DemoColors.TextPrimary,
+                                color = if (day.signed) headerBlue else DemoColors.TextSecondary,
+                                maxLines = 1,
                             )
                         }
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -902,31 +979,46 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                     Text("断签或者签完需重新开始", fontSize = 12.sp, color = DemoColors.Muted)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("签到提醒", fontSize = 12.sp, color = DemoColors.TextSecondary)
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(8.dp))
                         Box(
                             Modifier
-                                .width(40.dp)
-                                .height(22.dp)
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(if (remind) headerBlue else Color(0xFFD0D3D8))
-                                .clickable { remind = !remind },
-                        )
+                                .width(44.dp)
+                                .height(24.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (remind) headerBlue else DemoColors.Muted.copy(alpha = 0.3f))
+                                .clickable { remind = !remind }
+                                .padding(2.dp),
+                            contentAlignment = if (remind) Alignment.CenterEnd else Alignment.CenterStart,
+                        ) {
+                            Box(
+                                Modifier
+                                    .size(20.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.White),
+                            )
+                        }
                     }
                 }
             }
-            Text("成长任务", fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "成长任务",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = DemoColors.TextPrimary,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
             Column(
                 Modifier
+                    .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color.White),
             ) {
-                listOf(
-                    Triple("每日登录", "+5积分", "领取"),
-                    Triple("发一条动态", "+10积分", "去完成"),
-                    Triple("商城下单", "+20积分", "去完成"),
-                ).forEachIndexed { idx, (title, pts, action) ->
-                    if (idx > 0) HorizontalDivider(color = DemoColors.Divider)
+                tasks.forEachIndexed { idx, task ->
+                    if (idx > 0) HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -934,35 +1026,52 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.weight(1f)) {
-                            Text(title, fontWeight = FontWeight.Medium)
-                            Text(pts, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Text(task.title, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text("+${task.points}积分", fontSize = 12.sp, color = DemoColors.TextSecondary)
                         }
                         Text(
-                            action,
+                            task.action,
                             color = headerBlue,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(headerBlue.copy(alpha = 0.1f))
-                                .clickable { showPlatformToast(action) }
+                                .clickable {
+                                    when (task.action) {
+                                        "领取" -> {
+                                            points += task.points
+                                            showPlatformToast("领取成功，+${task.points}积分")
+                                        }
+                                        "去完成" -> showPlatformToast("去完成：${task.title}")
+                                        else -> showPlatformToast(task.action)
+                                    }
+                                }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         )
                     }
                 }
             }
-            Text("积分换礼", fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
-            Box(
+
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "积分换礼",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = DemoColors.TextPrimary,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(12.dp))
+            Column(
                 Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White),
-                contentAlignment = Alignment.Center,
+                    .padding(vertical = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("礼", fontSize = 40.sp, color = DemoColors.Muted)
+                Text("🎁", fontSize = 64.sp, color = DemoColors.Muted.copy(alpha = 0.3f))
+                Spacer(Modifier.height(16.dp))
+                Text("暂无积分商品", fontSize = 14.sp, color = DemoColors.Muted)
             }
-            Spacer(Modifier.height(16.dp))
         }
     }
 }

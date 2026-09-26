@@ -48,6 +48,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.feature.home.DailyCheckInDialog
 import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeFeatureItem
 import com.example.my_kmp_project.feature.home.HomeMockData
@@ -108,75 +109,23 @@ internal fun JetpackHomeRoot(
     }
 
     if (showCheckIn && loggedIn) {
-        Dialog(
-            onDismissRequest = {
+        DailyCheckInDialog(
+            todayReward = 10,
+            streak = 3,
+            onCheckIn = {
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                context.getSharedPreferences("home_check_in", 0)
+                    .edit().putString("check_in_dialog_ack_date", today).apply()
+                showPlatformToast("签到成功，+10积分")
+                showCheckIn = false
+            },
+            onDismiss = {
                 val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                 context.getSharedPreferences("home_check_in", 0)
                     .edit().putString("check_in_dialog_ack_date", today).apply()
                 showCheckIn = false
             },
-            properties = DialogProperties(usePlatformDefaultWidth = false),
-        ) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 40.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .padding(horizontal = 22.dp, vertical = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text("每日签到", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = DemoColors.TextPrimary)
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "签到攒积分，可在签到页兑换好物",
-                    fontSize = 13.sp,
-                    color = DemoColors.TextSecondary,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    "已连续签到 3 天",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = DemoColors.TextPrimary,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(20.dp))
-                Text(
-                    "立即签到 · +10积分",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DemoColors.Accent)
-                        .clickable {
-                            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-                            context.getSharedPreferences("home_check_in", 0)
-                                .edit().putString("check_in_dialog_ack_date", today).apply()
-                            showPlatformToast("签到成功，+10积分")
-                            showCheckIn = false
-                        }
-                        .padding(vertical = 12.dp),
-                )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    "稍后再说",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .clickable {
-                            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-                            context.getSharedPreferences("home_check_in", 0)
-                                .edit().putString("check_in_dialog_ack_date", today).apply()
-                            showCheckIn = false
-                        }
-                        .padding(8.dp),
-                )
-            }
-        }
+        )
     }
 
     PullToRefreshBox(

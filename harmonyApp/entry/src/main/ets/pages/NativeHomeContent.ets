@@ -490,44 +490,94 @@ export struct NativeHomeContent {
       }
 
       if (this.showCheckIn && this.isLoggedIn) {
+        // Flutter `_DailyCheckInAlert`: hero gradient + white body + close circle.
         Column() {
           Column()
             .width('100%')
             .height('100%')
             .backgroundColor('#8C000000')
             .onClick(() => { this.ackCheckInDialog(); })
-          Column({ space: 12 }) {
-            Text('每日签到')
-              .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            Text('签到攒积分，可在签到页兑换好物')
-              .fontSize(13).fontColor(DesignTokens.body)
-              .textAlign(TextAlign.Center)
-            Text('已连续签到 3 天')
-              .fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            Button('立即签到 · +10积分')
-              .backgroundColor(DesignTokens.link)
-              .onClick(() => {
-                promptAction.showToast({ message: '签到成功，+10积分' });
-                this.ackCheckInDialog();
+          Column({ space: 16 }) {
+            Column() {
+              Column({ space: 16 }) {
+                Text('📅')
+                  .fontSize(28)
+                  .width(64).height(64)
+                  .textAlign(TextAlign.Center)
+                  .backgroundColor('#2EFFFFFF')
+                  .border({ width: 1.5, color: '#59FFFFFF' })
+                  .borderRadius(32)
+                Text('+10')
+                  .fontSize(40)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#FFF5A623')
+                Text('今日可领积分')
+                  .fontSize(13)
+                  .fontColor('#E6FFFFFF')
+              }
+              .width('100%')
+              .padding({ top: 28, bottom: 24, left: 20, right: 20 })
+              .alignItems(HorizontalAlign.Center)
+              .linearGradient({
+                angle: 135,
+                colors: [['#FF1A8CFF', 0], ['#FF0070F3', 0.5], ['#FF0050C8', 1]],
               })
-            Text('稍后再说')
-              .fontSize(14).fontColor(DesignTokens.body)
+
+              Column({ space: 0 }) {
+                Text('每日签到')
+                  .fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+                Text('签到攒积分，可在签到页兑换好物')
+                  .fontSize(13).fontColor(DesignTokens.body)
+                  .textAlign(TextAlign.Center)
+                  .margin({ top: 8 })
+                Text('已连续签到 3 天')
+                  .fontSize(12).fontWeight(FontWeight.Medium).fontColor('#FFB7791F')
+                  .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                  .backgroundColor('#1FF5A623')
+                  .borderRadius(20)
+                  .margin({ top: 12 })
+                Button('立即签到 · +10积分')
+                  .width('100%')
+                  .height(44)
+                  .borderRadius(22)
+                  .backgroundColor(DesignTokens.link)
+                  .margin({ top: 20 })
+                  .onClick(() => {
+                    promptAction.showToast({ message: '签到成功，+10积分' });
+                    this.ackCheckInDialog();
+                  })
+                Text('稍后再说')
+                  .fontSize(13).fontColor(DesignTokens.mute)
+                  .margin({ top: 10 })
+                  .onClick(() => { this.ackCheckInDialog(); })
+              }
+              .width('100%')
+              .padding(20)
+              .alignItems(HorizontalAlign.Center)
+              .backgroundColor(Color.White)
+            }
+            .width('84%')
+            .borderRadius(16)
+            .clip(true)
+            .backgroundColor(Color.White)
+
+            Text('✕')
+              .fontSize(16).fontColor(Color.White)
+              .width(36).height(36)
+              .textAlign(TextAlign.Center)
+              .backgroundColor('#38FFFFFF')
+              .borderRadius(18)
               .onClick(() => { this.ackCheckInDialog(); })
           }
-          .width('80%')
-          .padding(22)
-          .backgroundColor(Color.White)
-          .borderRadius(16)
+          .width('100%')
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
         }
         .width('100%')
         .height('100%')
         .justifyContent(FlexAlign.Center)
         .alignItems(HorizontalAlign.Center)
       }
-    }
-    .width('100%')
-    .height('100%')
-  }
 
   @Builder
   ContactRow(title: string, subtitle: string, trailing: string) {
