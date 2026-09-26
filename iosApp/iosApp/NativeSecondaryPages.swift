@@ -500,6 +500,124 @@ struct NativeCommunitySearchPage: View {
     }
 }
 
+struct NativeCommunityPublishPage: View {
+    var onClose: () -> Void
+    @State private var content = ""
+    @State private var mediaType = "none"
+    @State private var topic = ""
+    @State private var showConvention = true
+    @State private var publishing = false
+
+    var body: some View {
+        ZStack {
+            VStack(spacing: 0) {
+                HStack {
+                    Button {
+                        onClose()
+                    } label: {
+                        Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link)
+                    }
+                    Spacer()
+                    Button {
+                        guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !publishing else { return }
+                        publishing = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            publishing = false
+                            onClose()
+                        }
+                    } label: {
+                        Text("发布", font: .system(size: 14, weight: .semibold), color: .white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                    ? DesignTokens.link.opacity(0.4)
+                                    : Color(red: 0x16/255, green: 0x77/255, blue: 1),
+                                in: Capsule()
+                            )
+                    }
+                }
+                .padding(16)
+                .background(DesignTokens.canvas)
+
+                TextEditor(text: $content)
+                    .frame(minHeight: 160)
+                    .padding(.horizontal, 16)
+                    .overlay(alignment: .topLeading) {
+                        if content.isEmpty {
+                            Text("记录一下吧", font: .system(size: 16), color: DesignTokens.mute)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 8)
+                        }
+                    }
+
+                HStack(spacing: 8) {
+                    ForEach([("无媒体", "none"), ("图片", "image"), ("视频", "video")], id: \.0) { item in
+                        Text(item.0, font: .system(size: 13), color: mediaType == item.1 ? DesignTokens.link : DesignTokens.body)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                mediaType == item.1 ? DesignTokens.link.opacity(0.1) : DesignTokens.canvasSoft2,
+                                in: Capsule()
+                            )
+                            .onTapGesture { mediaType = item.1 }
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                if mediaType == "image" {
+                    Text("+ 添加图片", font: .system(size: 14), color: DesignTokens.link)
+                        .frame(width: 96, height: 96)
+                        .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                        .padding(.leading, 16)
+                        .padding(.top, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if mediaType == "video" {
+                    Text("+ 添加视频", font: .system(size: 14), color: DesignTokens.link)
+                        .frame(width: 160, height: 96)
+                        .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                        .padding(.leading, 16)
+                        .padding(.top, 12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Button {
+                    topic = topic.isEmpty ? "换车季" : ""
+                } label: {
+                    Text(topic.isEmpty ? "+ 添加话题" : "#\(topic)", font: .system(size: 14), color: DesignTokens.link)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(DesignTokens.link.opacity(0.1), in: Capsule())
+                }
+                .padding(.leading, 16)
+                .padding(.top, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Spacer()
+            }
+            .background(DesignTokens.canvas.ignoresSafeArea())
+
+            if showConvention {
+                Color.black.opacity(0.5).ignoresSafeArea()
+                VStack(spacing: 12) {
+                    Text("社区公约", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+                    Text("请文明发言，禁止发布违法违规、广告引流等内容。", font: .system(size: 14), color: DesignTokens.body)
+                        .multilineTextAlignment(.center)
+                    Button("我知道了") { showConvention = false }
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                }
+                .padding(24)
+                .frame(maxWidth: 320)
+                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+            }
+        }
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {

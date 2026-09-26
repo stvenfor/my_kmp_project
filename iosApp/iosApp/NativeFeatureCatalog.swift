@@ -389,6 +389,8 @@ struct NativeFeatureHost: View {
             NativeFriendPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/community/search" {
             NativeCommunitySearchPage(onClose: onClose)
+        } else if path == "/community/publish" {
+            NativeCommunityPublishPage(onClose: onClose)
         } else {
             genericList
         }

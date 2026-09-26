@@ -13,6 +13,15 @@ import { HuaweiQuickLoginPane } from '../auth/HuaweiQuickLoginPane';
 import { AuthSession, sharedSessionStore } from '../auth/SessionStore';
 import { PENDING_DEEP_LINK_KEY } from '../entryability/EntryAbility';
 import { featurePageFor, FeatureRow, resolveNativePath } from './NativeFeatureCatalog';
+import {
+  NativeSearchPane,
+  NativeAllServicesPane,
+  NativeLearningReportPane,
+  NativePurchaseCalculatorPane,
+  NativeFriendPane,
+  NativeCommunitySearchPane,
+  NativeCommunityPublishPane,
+} from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
 
@@ -222,6 +231,36 @@ struct Index {
       this.showStub = false;
       return;
     }
+    if (path === '/home/learning_report' || title === '学习报告') {
+      this.nativePane = 'learning_report';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/purchase_calculator' || title === '购车计算器') {
+      this.nativePane = 'purchase_calculator';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/friend') {
+      this.nativePane = 'friend';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/community/search') {
+      this.nativePane = 'community_search';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/community/publish') {
+      this.nativePane = 'community_publish';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
     this.featurePath = path;
     this.nativePane = 'feature';
     this.showStub = false;
@@ -341,122 +380,6 @@ struct Index {
           .margin(16)
           .width('90%')
       }
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
-  }
-
-  @Builder
-  NativeSearchPane() {
-    Column() {
-      Row({ space: 12 }) {
-        Text('返回').fontSize(16).fontColor(DesignTokens.link).onClick(() => { this.nativePane = ''; })
-        Row({ space: 8 }) {
-          Text('⌕').fontSize(16).fontColor(DesignTokens.body)
-          Text('搜索客户、订单、资讯').fontSize(15).fontColor(DesignTokens.body)
-        }
-        .layoutWeight(1)
-        .height(40)
-        .padding({ left: 12, right: 12 })
-        .backgroundColor(DesignTokens.canvasSoft2)
-        .borderRadius(8)
-        Text('搜索').fontSize(16).fontColor(DesignTokens.link)
-      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
-
-      Scroll() {
-        Column({ space: 16 }) {
-          Text('搜索历史').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-          Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(['极限文字一排两个显示', '极限文字超出九个字...', '宫崎骏宫...'], (t: string) => {
-              Text(t).fontSize(13).fontColor(DesignTokens.ink)
-                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .margin({ right: 8, bottom: 8 })
-                .backgroundColor(DesignTokens.hairline)
-                .borderRadius(16)
-            })
-          }.width('100%')
-          Text('搜索发现').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-          Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(['罗振宇2026跨年演讲', '极限文字超出九个字...', '小猪佩奇全...'], (t: string) => {
-              Text(t).fontSize(13).fontColor(DesignTokens.ink)
-                .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-                .margin({ right: 8, bottom: 8 })
-                .backgroundColor(DesignTokens.hairline)
-                .borderRadius(16)
-            })
-          }.width('100%')
-          Text('热配榜').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-          Column() {
-            ForEach(['穿条纹睡衣的男孩', '蛮荒故事', '爱冒险的朵拉', '小王子', '寻梦环游记', '飞屋环游记'],
-              (title: string, index: number) => {
-                Row({ space: 12 }) {
-                  Text(`${index + 1}`).fontSize(16).fontWeight(FontWeight.Bold)
-                    .fontColor(index < 3 ? '#EE0000' : DesignTokens.body).width(24)
-                  Text(title.substring(0, 1)).width(40).height(40).textAlign(TextAlign.Center)
-                    .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(6)
-                  Text(title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
-                }.padding(12).width('100%')
-                if (index < 5) {
-                  Divider().strokeWidth(0.5).color(DesignTokens.hairline)
-                }
-              })
-          }
-          .width('100%')
-          .backgroundColor(DesignTokens.canvas)
-          .borderRadius(12)
-        }.padding(16).width('100%')
-      }.layoutWeight(1).width('100%')
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
-  }
-
-  @Builder
-  NativeAllServicesPane() {
-    Column() {
-      Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => { this.nativePane = ''; })
-        Text('全部服务').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
-      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
-
-      Scroll() {
-        Column({ space: 16 }) {
-          Text('常用服务').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-          Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(['销售顾问', '生活服务', '二手车', '新车关注', 'AI小石头', '订单中心', '数据分析', '直播带货'],
-              (label: string) => {
-                Column({ space: 6 }) {
-                  Text(label.substring(0, 1))
-                    .width(48).height(48).textAlign(TextAlign.Center)
-                    .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(24)
-                  Text(label).fontSize(12).fontColor(DesignTokens.ink)
-                }.width('25%').padding({ top: 8, bottom: 8 })
-                .onClick(() => {
-                  this.nativePane = '';
-                  this.openDeferred(label);
-                })
-              })
-          }.width('100%').padding(12).backgroundColor(DesignTokens.canvas).borderRadius(12)
-
-          Text('车商工具').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-          Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(['购车计算器', '短信模板', '店铺收款码', '商家海报'], (label: string) => {
-              Column({ space: 6 }) {
-                Text(label.substring(0, 1))
-                  .width(48).height(48).textAlign(TextAlign.Center)
-                  .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(24)
-                Text(label).fontSize(12).fontColor(DesignTokens.ink)
-              }.width('25%').padding({ top: 8, bottom: 8 })
-              .onClick(() => {
-                this.nativePane = '';
-                this.openDeferred(label);
-              })
-            })
-          }.width('100%').padding(12).backgroundColor(DesignTokens.canvas).borderRadius(12)
-        }.padding(16).width('100%')
-      }.layoutWeight(1).width('100%')
     }
     .width('100%')
     .height('100%')
@@ -980,11 +903,43 @@ struct Index {
 
 
       if (this.nativePane === 'search') {
-        this.NativeSearchPane()
+        NativeSearchPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'all_services') {
-        this.NativeAllServicesPane()
+        NativeAllServicesPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (label: string): void => {
+            this.nativePane = '';
+            this.openDeferred(label);
+          },
+        })
+      }
+
+      if (this.nativePane === 'learning_report') {
+        NativeLearningReportPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'purchase_calculator') {
+        NativePurchaseCalculatorPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'friend') {
+        NativeFriendPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpenChat: (): void => {
+            this.nativePane = '';
+            this.tab = MainTab.Chat;
+          },
+        })
+      }
+
+      if (this.nativePane === 'community_search') {
+        NativeCommunitySearchPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'community_publish') {
+        NativeCommunityPublishPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {
