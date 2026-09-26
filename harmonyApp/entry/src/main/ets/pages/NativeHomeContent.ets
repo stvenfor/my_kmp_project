@@ -348,9 +348,10 @@ export struct NativeHomeContent {
                 Text(item[0]).fontSize(11).fontColor(DesignTokens.ink).maxLines(1)
               }
               .onClick(() => {
-                if (item[0] === '更多') this.onDeferred('全部服务');
-                else if (item[0] === '直播') this.onDeferred('直播');
-                else this.onDeferred(item[0]);
+                // Flutter HomeServiceGrid: only「更多」→ AllServices.
+                if (item[0] === '更多') {
+                  this.onDeferred('全部服务');
+                }
               })
             })
           }
@@ -369,7 +370,7 @@ export struct NativeHomeContent {
 
         // Contacts
         Column({ space: 12 }) {
-          Text('联系人').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Text('联系汽车之家').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
           Column() {
             this.ContactRow('销售顾问小王', '在线 · 专属顾问', '聊')
             Divider().color(DesignTokens.hairline).strokeWidth(0.5)

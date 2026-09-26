@@ -135,11 +135,8 @@ private fun HomeRootContent(onNavigate: (String) -> Unit) {
             item {
                 ServiceGridSection(
                     onService = { label ->
-                        when (label) {
-                            "更多" -> onNavigate("services")
-                            "直播" -> onNavigate("live")
-                            else -> Unit
-                        }
+                        // Flutter HomeServiceGrid: only「更多」opens AllServices.
+                        if (label == "更多") onNavigate("services")
                     },
                 )
             }
@@ -583,7 +580,7 @@ private fun ContactsSection() {
             .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp)),
     ) {
         Text(
-            text = "联系与咨询",
+            text = "联系汽车之家",
             color = DemoColors.TextPrimary,
             fontWeight = FontWeight.SemiBold,
             fontSize = 17.sp,

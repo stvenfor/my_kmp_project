@@ -138,11 +138,8 @@ internal fun JetpackServiceGrid(onDeferred: (String) -> Unit) {
                             Modifier
                                 .weight(1f)
                                 .clickable {
-                                    when (item.label) {
-                                        "更多" -> onDeferred("全部服务")
-                                        "直播" -> onDeferred("直播带货")
-                                        else -> onDeferred(item.label)
-                                    }
+                                    // Flutter HomeServiceGrid: only「更多」navigates (to AllServices).
+                                    if (item.label == "更多") onDeferred("全部服务")
                                 }
                                 .padding(vertical = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,

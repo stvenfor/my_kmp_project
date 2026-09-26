@@ -422,9 +422,8 @@ struct HomeTabView: View {
                             .lineLimit(1)
                     }
                     .onTapGesture {
+                        // Flutter HomeServiceGrid: only「更多」→ AllServices.
                         if item.0 == "更多" { onDeferred("全部服务") }
-                        else if item.0 == "直播" { onDeferred("直播") }
-                        else { onDeferred(item.0) }
                     }
                 }
             }
@@ -438,7 +437,7 @@ struct HomeTabView: View {
 
     private var contactsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("联系人", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+            Text("联系汽车之家", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
             VStack(spacing: 0) {
                 contactRow(title: "销售顾问小王", subtitle: "在线 · 专属顾问", trailing: "聊")
                 Divider().overlay(DesignTokens.hairline)
