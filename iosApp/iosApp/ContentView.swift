@@ -65,6 +65,12 @@ struct ContentView: View {
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
     @State private var deferredStub: DeferredStubItem? = nil
+    @State private var nativeSecondary: NativeSecondaryKind? = nil
+
+    private enum NativeSecondaryKind: String, Identifiable {
+        case search, allServices
+        var id: String { rawValue }
+    }
 
     var body: some View {
         Group {
@@ -143,6 +149,10 @@ struct ContentView: View {
         case "/mine/about", "about", "关于":
             mineIslandRoute = "about"
             showMineIsland = true
+        case "/home/search", "搜索", "search":
+            nativeSecondary = .search
+        case "/home/all_services", "全部服务", "更多":
+            nativeSecondary = .allServices
         default:
             deferredStub = DeferredStubItem(title: displayTitle(for: key), route: key)
         }
@@ -220,6 +230,20 @@ struct ContentView: View {
         .fullScreenCover(item: $deferredStub) { item in
             NativeDeferredStubView(title: item.title, route: item.route) {
                 deferredStub = nil
+            }
+        }
+        .fullScreenCover(item: $nativeSecondary) { kind in
+            switch kind {
+            case .search:
+                NativeSearchPage { nativeSecondary = nil }
+            case .allServices:
+                NativeAllServicesPage(
+                    onClose: { nativeSecondary = nil },
+                    onOpen: { label in
+                        nativeSecondary = nil
+                        openOwnedRoute(label)
+                    }
+                )
             }
         }
     }
