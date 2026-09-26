@@ -1,39 +1,34 @@
 # Acceptance report
 
-Status: **三端 RoutePath UI Pass（能力级 SDK 仍见 registry）** — 2026-09-26.
+Status: **ADR 0002 所有权纠偏进行中** — 2026-09-26.
 
-> 本轮已完成 **Android + iOS Simulator + Harmony ParityPhone** 的 in-scope RoutePath UI 证据；**不等于**微信/支付/推送等厂商 SDK 全绿。
+> **硬规则（ADR 0002）**
+> - iOS 产品壳 / Tab 根 / 一期后置入口 = **SwiftUI**
+> - Harmony 产品壳 / Tab 根 / 一期后置入口 = **ArkTS**
+> - Compose 岛 **仅** Mine 二级（settings / personalized / about / membership）
+> - 禁止把 Home/Chat/Community/Web/Friend 等塞进 `SecondaryRouteIsland` 冒充三端齐
 
-## Passed（证据路径）
+## 当前产品面
 
 | 面 | Android | iOS | OHOS |
 |---|---|---|---|
-| Shell 首页壳 | `shell/Android/` | `shell/iOS/main.kmp.png` | `shell/OHOS/main.kmp.png` |
-| Home 搜索/二手车等 | `home/Android/` | `home/iOS/` | `home/OHOS/` |
-| Mine / Settings | `mine/Android/` | `mine/iOS/` | `mine/OHOS/` |
-| Mall / Wallet | `commerce/Android/` | `commerce/iOS/` | `commerce/OHOS/` |
-| Chat / Community | `chat|community/Android/` | `*/iOS/` | `*/OHOS/` |
-| Friend / Live / Classroom / AI | 各 `*/Android/` | 各 `*/iOS/` | 各 `*/OHOS/` |
-| Media short / music | `media/Android/` | `media/iOS/` | `media/OHOS/`（player stub） |
-| Web offline | `web/Android/` | `web/iOS/` | OHOS **Partial**（未接入 Compose WebView） |
-| Deeplink | Android/iOS | `bridges/iOS/` | `bridges/OHOS/deeplink_friend.kmp.png` |
+| Splash / Privacy / Tab shell | Jetpack | SwiftUI | ArkTS |
+| Home / Chat / Community / Mine **根** | Jetpack | SwiftUI | ArkTS |
+| Chat 详情发送 | Jetpack | SwiftUI | ArkTS |
+| Mine 设置岛 | CMP island | CMP island | CMP island |
+| Home 二级 / 商城 / 视频等 | Jetpack 已实现 | **SwiftUI 一期 stub** | **ArkTS 一期 stub** |
+| 厂商 SDK | stub/missing | stub/missing | stub/missing |
 
-接线：`SecondaryRouteIsland` + iOS `SecondaryRouteViewController` + OHOS `SetOhosSecondaryRoute` + **EntryAbility `want.uri`→AppStorage→Index**；壳层 `onDeferred` 已接到真实 RoutePath。
+## 纠偏相对上一轮
 
-## 仍为 registry incomplete（诚实）
+上一轮用 Compose `SecondaryRouteIsland` 在 iOS/OHOS 打开二级路径 —— **违反 ADR 0002**。已改回：
 
-| 能力 | 状态 |
-|---|---|
-| WeChat 登录 / 微信支付 / 支付宝 | 三端 `missing`/`stub` |
-| Push 厂商 SDK | 三端 `missing` |
-| OHOS Compose WebView | `partial`/`missing`（屏显诚实文案） |
-| iOS/OHOS 真视频 Surface | `partial`/`stub` |
-| image_picker / token refresh | `missing` |
-| AI SSE / 真 IM / 直播推流 | mock 对齐 Flutter mock |
+- iOS：`onDeferred` → `NativeDeferredStubView`（SwiftUI）；Tab 深链切页；Mine 仍 `MineIslandViewController`
+- OHOS：`openDeferred` → ArkTS stub；不再 `SetOhosSecondaryRoute` 拉全量 Compose；Mine 仍 `openMineIsland`
 
 ## Sign-off
 
-| role | date | 1A UI 三端 | 2A 厂商 SDK |
-|---|---|---|---|
-| engineering | 2026-09-26 | Pass（证据） | Fail — 见 registry |
-| product |  |  | 待签 |
+| role | date | ADR 0002 所有权 | 二级页原生补齐 | 厂商 SDK |
+|---|---|---|---|---|
+| engineering | 2026-09-26 | Pass（壳/根） | In progress（stub→原生） | Fail — registry |
+| product |  |  |  | 待签 |

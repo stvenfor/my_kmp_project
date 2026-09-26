@@ -54,8 +54,8 @@ enum MainTab: Int, CaseIterable, Identifiable {
     }
 }
 
-/// ADR 0002: SwiftUI owns splash / privacy / tab roots / Mine root / auth.
-/// Compose hosts Mine island + secondary RoutePath screens (shared with Android).
+/// ADR 0002: SwiftUI owns splash / privacy / tab roots / Mine root / auth /
+/// deferred secondary stubs. Compose hosts **Mine island only**.
 struct ContentView: View {
     @State private var phase: AppPhase = .splash
     @State private var privacyAccepted = UserDefaults.standard.bool(forKey: "privacy_accepted")
@@ -64,7 +64,7 @@ struct ContentView: View {
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
-    @State private var secondaryRoute: String? = nil
+    @State private var deferredStub: DeferredStubItem? = nil
 
     var body: some View {
         Group {
@@ -88,30 +88,71 @@ struct ContentView: View {
         }
         .ignoresSafeArea(.keyboard)
         .onOpenURL { url in
-            openDeepLink(url.absoluteString)
+            handleDeepLinkOrLabel(url.absoluteString)
         }
         .onAppear {
             if let pending = UserDefaults.standard.string(forKey: "pending_deeplink") {
                 UserDefaults.standard.removeObject(forKey: "pending_deeplink")
-                openDeepLink(pending)
+                handleDeepLinkOrLabel(pending)
             }
-            // Launch arg: -route /home/search
             let args = ProcessInfo.processInfo.arguments
             if let idx = args.firstIndex(of: "-route"), idx + 1 < args.count {
-                secondaryRoute = args[idx + 1]
+                handleDeepLinkOrLabel(args[idx + 1])
             }
         }
     }
 
-    private func openDeepLink(_ uri: String) {
-        if let route = MainViewControllerKt.AcceptDeepLinkFromIos(uri: uri) {
-            secondaryRoute = route
-            return
+    /// Route ownership (ADR 0002):
+    /// - main tabs → switch SwiftUI tab
+    /// - Mine island routes → Compose MineIsland
+    /// - everything else → native SwiftUI stub (一期后置)
+    private func handleDeepLinkOrLabel(_ raw: String) {
+        let route: String
+        if let parsed = MainViewControllerKt.AcceptDeepLinkFromIos(uri: raw) {
+            route = parsed
+        } else if let url = URL(string: raw), !url.path.isEmpty {
+            route = url.path.hasPrefix("/") ? url.path : "/\(url.path)"
+        } else {
+            route = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        // Fallback: treat path after scheme as route
-        if let url = URL(string: uri), !url.path.isEmpty {
-            secondaryRoute = url.path.hasPrefix("/") ? url.path : "/\(url.path)"
+        openOwnedRoute(route)
+    }
+
+    private func openOwnedRoute(_ routeOrLabel: String) {
+        let key = routeOrLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch key {
+        case "/", "/home", "/main", "首页":
+            tab = .home
+        case "/chat", "消息", "聊天":
+            tab = .chat
+            if !isLoggedIn { showLogin = true }
+        case "/community", "社区":
+            tab = .community
+            if !isLoggedIn { showLogin = true }
+        case "/mine", "我的":
+            tab = .mine
+        case "/settings", "设置", "settings":
+            mineIslandRoute = "settings"
+            showMineIsland = true
+        case "/mine/personalized_settings", "个性化", "personalized":
+            mineIslandRoute = "personalized"
+            showMineIsland = true
+        case "/pay/membership", "membership", "会员":
+            mineIslandRoute = "membership"
+            showMineIsland = true
+        case "/mine/about", "about", "关于":
+            mineIslandRoute = "about"
+            showMineIsland = true
+        default:
+            deferredStub = DeferredStubItem(title: displayTitle(for: key), route: key)
         }
+    }
+
+    private func displayTitle(for routeOrLabel: String) -> String {
+        if routeOrLabel.hasPrefix("/") {
+            return routeOrLabel.split(separator: "/").last.map(String.init) ?? routeOrLabel
+        }
+        return routeOrLabel
     }
 
     private var mainShell: some View {
@@ -119,7 +160,7 @@ struct ContentView: View {
             Group {
                 switch tab {
                 case .home:
-                    HomeTabView(onDeferred: { secondaryRoute = $0 })
+                    HomeTabView(onDeferred: { openOwnedRoute($0) })
                 case .chat:
                     if isLoggedIn {
                         ChatTabView()
@@ -128,7 +169,7 @@ struct ContentView: View {
                     }
                 case .community:
                     if isLoggedIn {
-                        CommunityTabView()
+                        CommunityTabView(onDeferred: { openOwnedRoute($0) })
                     } else {
                         AuthGateView { showLogin = true }
                     }
@@ -145,7 +186,7 @@ struct ContentView: View {
                             mineIslandRoute = "personalized"
                             showMineIsland = true
                         },
-                        onDeferred: { secondaryRoute = $0 }
+                        onDeferred: { openOwnedRoute($0) }
                     )
                 }
             }
@@ -176,19 +217,49 @@ struct ContentView: View {
             MineIslandHost(route: mineIslandRoute)
                 .ignoresSafeArea(.all)
         }
-        .fullScreenCover(item: Binding(
-            get: { secondaryRoute.map { SecondaryRouteItem(route: $0) } },
-            set: { secondaryRoute = $0?.route }
-        )) { item in
-            SecondaryRouteHost(routeOrLabel: item.route)
-                .ignoresSafeArea(.all)
+        .fullScreenCover(item: $deferredStub) { item in
+            NativeDeferredStubView(title: item.title, route: item.route) {
+                deferredStub = nil
+            }
         }
     }
 }
 
-private struct SecondaryRouteItem: Identifiable {
+private struct DeferredStubItem: Identifiable {
+    let title: String
     let route: String
     var id: String { route }
+}
+
+/// Phase-1 deferred feature — native SwiftUI placeholder (ADR 0002).
+private struct NativeDeferredStubView: View {
+    var title: String
+    var route: String
+    var onClose: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: DesignTokens.spacingLg) {
+                Text(title, font: .title2.weight(.semibold), color: DesignTokens.ink)
+                Text("一期后置 · SwiftUI 原生占位", color: DesignTokens.body)
+                    .multilineTextAlignment(.center)
+                Text(route, font: .system(size: 12, design: .monospaced), color: DesignTokens.mute)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                Button("返回", action: onClose)
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("关闭", action: onClose)
+                }
+            }
+        }
+    }
 }
 
 private struct SplashView: View {
@@ -253,20 +324,12 @@ private struct NativeLoginView: View {
     }
 }
 
-// MARK: - Compose hosts (island / secondary RoutePath)
+// MARK: - Compose host (Mine island only — ADR 0002)
 
 private struct MineIslandHost: UIViewControllerRepresentable {
     var route: String
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MineIslandViewController(route: route)
-    }
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
-}
-
-private struct SecondaryRouteHost: UIViewControllerRepresentable {
-    var routeOrLabel: String
-    func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.SecondaryRouteViewController(routeOrLabel: routeOrLabel)
     }
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }

@@ -69,6 +69,7 @@ struct MineRootView: View {
                         .frame(maxWidth: .infinity, minHeight: 140, alignment: .leading)
                         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                        .onTapGesture { onDeferred(item.0) }
                     }
                 }
                 VStack(spacing: 0) {

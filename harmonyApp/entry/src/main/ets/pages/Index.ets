@@ -16,8 +16,8 @@ import { PENDING_DEEP_LINK_KEY } from '../entryability/EntryAbility';
 const DOMAIN = 0x0000;
 
 /**
- * ADR 0002: ArkTS owns splash / privacy / tab roots / Mine root / auth.
- * Compose is only pushed for Mine secondary island; deferred entries use ArkTS stubs.
+ * ADR 0002: ArkTS owns splash / privacy / tab roots / Mine root / auth /
+ * deferred secondary stubs. Compose hosts **Mine island only**.
  */
 @Entry
 @Component
@@ -33,6 +33,9 @@ struct Index {
   @State stubTitle: string = '';
   @State showStub: boolean = false;
   @State loginDisplayName: string = '访客';
+  @State chatPeer: string = '';
+  @State chatDraft: string = '';
+  @State chatMessages: string[] = [];
   private islandController: ArkUIViewController | undefined = undefined;
   private pref: preferences.Preferences | undefined = undefined;
 
@@ -140,35 +143,42 @@ struct Index {
   }
 
   private openDeferred(title: string): void {
-    const abi: string = deviceInfo.abiList;
-    if (libentry === undefined) {
-      this.errorMessage = `libentry.so failed (abi=${abi})`;
+    const key = title.trim();
+    // ADR 0002: Mine secondary → Compose island only
+    if (key === '设置' || key === '/settings' || key === 'settings') {
+      this.openMineIsland(false);
       return;
     }
-    const setRoute = libentry.SetOhosSecondaryRoute;
-    if (setRoute !== undefined) {
-      setRoute(title);
-    } else {
-      const setHost = libentry.SetOhosHost;
-      if (setHost !== undefined) {
-        setHost(1, 0);
+    if (key === '个性化' || key === '/mine/personalized_settings' || key === 'personalized') {
+      this.openMineIsland(true);
+      return;
+    }
+    if (key === '/chat' || key === '消息' || key === '聊天') {
+      this.tab = MainTab.Chat;
+      if (!this.isLoggedIn) {
+        this.showLogin = true;
       }
-    }
-    const createController = libentry.MainArkUIViewController;
-    if (createController === undefined) {
-      this.errorMessage = 'MainArkUIViewController missing';
       return;
     }
-    try {
-      this.islandController = createController();
-      this.showIsland = true;
-      this.showStub = false;
-    } catch (error) {
-      this.errorMessage = String(error);
-      this.stubTitle = title;
-      this.showStub = true;
-      hilog.error(DOMAIN, 'Compose', 'secondary create failed %{public}s', String(error));
+    if (key === '/community' || key === '社区') {
+      this.tab = MainTab.Community;
+      if (!this.isLoggedIn) {
+        this.showLogin = true;
+      }
+      return;
     }
+    if (key === '/home' || key === '首页' || key === '/main') {
+      this.tab = MainTab.Home;
+      return;
+    }
+    if (key === '/mine' || key === '我的') {
+      this.tab = MainTab.Mine;
+      return;
+    }
+    // All other features: ArkTS native stub (一期后置)
+    this.stubTitle = key.length > 0 ? key : '未命名入口';
+    this.showStub = true;
+    this.showIsland = false;
   }
 
 
@@ -236,53 +246,114 @@ struct Index {
 
   @Builder
   ChatPane() {
-    Column() {
-      Row() {
-        Text('消息').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
-        Text('⌕').fontSize(22).fontColor(DesignTokens.link).margin({ right: 16 })
-        Text('✎').fontSize(20).fontColor(DesignTokens.link)
-      }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
-
+    if (this.chatPeer.length > 0) {
       Column() {
-        ForEach(this.chatPeers, (name: string, index: number) => {
-          Row({ space: 12 }) {
-            Text(name.substring(name.length - 1))
-              .width(48)
-              .height(48)
-              .textAlign(TextAlign.Center)
-              .fontColor(DesignTokens.link)
-              .backgroundColor('#260070F3')
-              .borderRadius(24)
-            Column() {
-              Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-              Text(this.chatSnippets[index]).fontSize(13).fontColor(DesignTokens.body).maxLines(1)
-            }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-            Column() {
-              Text(this.chatTimes[index]).fontSize(11).fontColor(DesignTokens.body)
-              if (index === 0) {
-                Text('2')
-                  .fontSize(11)
-                  .fontColor(Color.White)
-                  .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-                  .backgroundColor('#EE0000')
-                  .borderRadius(10)
-                  .margin({ top: 6 })
-              }
+        Row() {
+          Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => {
+            this.chatPeer = '';
+            this.chatMessages = [];
+            this.chatDraft = '';
+          })
+          Text(this.chatPeer).fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+        List({ space: 12 }) {
+          ForEach(this.chatMessages, (body: string, index: number) => {
+            ListItem() {
+              Row() {
+                if (index % 2 === 1) {
+                  Blank().layoutWeight(1)
+                }
+                Text(body)
+                  .fontSize(15)
+                  .fontColor(index % 2 === 1 ? Color.White : DesignTokens.ink)
+                  .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+                  .backgroundColor(index % 2 === 1 ? DesignTokens.link : DesignTokens.canvas)
+                  .borderRadius(12)
+                if (index % 2 === 0) {
+                  Blank().layoutWeight(1)
+                }
+              }.width('100%')
             }
-          }.padding(16).width('100%')
-          if (index < this.chatPeers.length - 1) {
-            Divider().strokeWidth(0.5).color(DesignTokens.hairline)
-          }
-        })
+          })
+        }.layoutWeight(1).padding(16).width('100%')
+
+        Row({ space: 8 }) {
+          TextInput({ placeholder: '输入消息…', text: this.chatDraft })
+            .layoutWeight(1)
+            .height(40)
+            .onChange((v: string) => { this.chatDraft = v; })
+          Button('发送')
+            .backgroundColor(DesignTokens.link)
+            .onClick(() => {
+              const t = this.chatDraft.trim();
+              if (t.length === 0) {
+                return;
+              }
+              this.chatMessages = this.chatMessages.concat([t]);
+              this.chatDraft = '';
+            })
+        }.padding(12).width('100%').backgroundColor(DesignTokens.canvasSoft2)
       }
       .width('100%')
-      .margin({ left: 16, right: 16 })
-      .backgroundColor(DesignTokens.canvas)
-      .borderRadius(12)
+      .height('100%')
+      .backgroundColor(DesignTokens.canvasSoft2)
+    } else {
+      Column() {
+        Row() {
+          Text('消息').fontSize(32).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink).layoutWeight(1)
+          Text('⌕').fontSize(22).fontColor(DesignTokens.link).margin({ right: 16 })
+          Text('✎').fontSize(20).fontColor(DesignTokens.link)
+        }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
+
+        Column() {
+          ForEach(this.chatPeers, (name: string, index: number) => {
+            Row({ space: 12 }) {
+              Text(name.substring(name.length - 1))
+                .width(48)
+                .height(48)
+                .textAlign(TextAlign.Center)
+                .fontColor(DesignTokens.link)
+                .backgroundColor('#260070F3')
+                .borderRadius(24)
+              Column() {
+                Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(this.chatSnippets[index]).fontSize(13).fontColor(DesignTokens.body).maxLines(1)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Column() {
+                Text(this.chatTimes[index]).fontSize(11).fontColor(DesignTokens.body)
+                if (index === 0) {
+                  Text('2')
+                    .fontSize(11)
+                    .fontColor(Color.White)
+                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                    .backgroundColor('#EE0000')
+                    .borderRadius(10)
+                    .margin({ top: 6 })
+                }
+              }
+            }
+            .padding(16)
+            .width('100%')
+            .onClick(() => {
+              this.chatPeer = name;
+              this.chatMessages = ['你好，在吗？', this.chatSnippets[index]];
+              this.chatDraft = '';
+            })
+            if (index < this.chatPeers.length - 1) {
+              Divider().strokeWidth(0.5).color(DesignTokens.hairline)
+            }
+          })
+        }
+        .width('100%')
+        .margin({ left: 16, right: 16 })
+        .backgroundColor(DesignTokens.canvas)
+        .borderRadius(12)
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor(DesignTokens.canvasSoft2)
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
   }
 
   @Builder
@@ -299,6 +370,7 @@ struct Index {
           .textAlign(TextAlign.Center)
           .backgroundColor(DesignTokens.link)
           .borderRadius(18)
+          .onClick(() => this.openDeferred('发布动态'))
       }.padding({ left: 16, right: 16, top: 8, bottom: 8 }).width('100%')
 
       Row({ space: 8 }) {
@@ -311,6 +383,7 @@ struct Index {
       .margin({ left: 16, right: 16 })
       .backgroundColor(DesignTokens.canvas)
       .borderRadius(10)
+      .onClick(() => this.openDeferred('社区搜索'))
 
       Row() {
         ForEach(['最新', '热门', '关注'], (item: string) => {
@@ -585,11 +658,18 @@ struct Index {
 
       if (this.showStub) {
         Column({ space: 16 }) {
-          Text(this.stubTitle).fontSize(22).fontColor(DesignTokens.ink)
-          Text('一期后置 · 原生占位').fontColor(DesignTokens.body)
-          Button('返回').onClick(() => {
-            this.showStub = false;
-          })
+          Text(this.stubTitle).fontSize(22).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Text('一期后置 · ArkTS 原生占位').fontSize(15).fontColor(DesignTokens.body)
+          Text('ADR 0002：非 Mine 二级不进 Compose 岛')
+            .fontSize(12)
+            .fontColor(DesignTokens.mute)
+            .textAlign(TextAlign.Center)
+            .padding({ left: 24, right: 24 })
+          Button('返回')
+            .backgroundColor(DesignTokens.link)
+            .onClick(() => {
+              this.showStub = false;
+            })
         }
         .width('100%')
         .height('100%')

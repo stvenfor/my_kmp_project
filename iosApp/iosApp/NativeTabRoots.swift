@@ -286,8 +286,22 @@ struct ChatTabView: View {
         ("Mock好友2", "你好", "22:45", nil, false),
         ("Mock好友3", "你好", "22:40", nil, true),
     ]
+    @State private var selectedPeer: String? = nil
+    @State private var draft = ""
+    @State private var messages: [String] = []
 
     var body: some View {
+        VStack(spacing: 0) {
+            if let peer = selectedPeer {
+                chatDetail(peer: peer)
+            } else {
+                chatList
+            }
+        }
+        .background(DesignTokens.canvasSoft2)
+    }
+
+    private var chatList: some View {
         VStack(spacing: 0) {
             HStack {
                 Text("消息", font: .system(size: 32, weight: .bold), color: DesignTokens.ink)
@@ -329,6 +343,12 @@ struct ChatTabView: View {
                         }
                     }
                     .padding(16)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedPeer = peer.0
+                        messages = ["你好，在吗？", peer.1]
+                        draft = ""
+                    }
                     if index != peers.count - 1 {
                         Divider().overlay(DesignTokens.hairline)
                     }
@@ -338,13 +358,70 @@ struct ChatTabView: View {
             .padding(.horizontal, 16)
             Spacer()
         }
-        .background(DesignTokens.canvasSoft2)
+    }
+
+    private func chatDetail(peer: String) -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button {
+                    selectedPeer = nil
+                } label: {
+                    Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link)
+                }
+                Text(peer, font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(DesignTokens.canvas)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(DesignTokens.hairline).frame(height: 0.5)
+            }
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(Array(messages.enumerated()), id: \.offset) { index, body in
+                        let isSelf = index % 2 == 1
+                        HStack {
+                            if isSelf { Spacer(minLength: 48) }
+                            Text(body, font: .system(size: 15), color: isSelf ? .white : DesignTokens.ink)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(
+                                    isSelf ? DesignTokens.link : DesignTokens.canvas,
+                                    in: RoundedRectangle(cornerRadius: 12)
+                                )
+                            if !isSelf { Spacer(minLength: 48) }
+                        }
+                    }
+                }
+                .padding(16)
+            }
+
+            HStack(spacing: 8) {
+                TextField("输入消息…", text: $draft)
+                    .padding(.horizontal, 12)
+                    .frame(height: 40)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                Button("发送") {
+                    let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !text.isEmpty else { return }
+                    messages.append(text)
+                    draft = ""
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(DesignTokens.link)
+            }
+            .padding(12)
+            .background(DesignTokens.canvasSoft2)
+        }
     }
 }
 
 // MARK: - Community
 
 struct CommunityTabView: View {
+    var onDeferred: (String) -> Void = { _ in }
     @State private var filter = "最新"
 
     var body: some View {
@@ -355,6 +432,7 @@ struct CommunityTabView: View {
                 Text("+", font: .system(size: 22, weight: .bold), color: .white)
                     .frame(width: 36, height: 36)
                     .background(DesignTokens.link, in: Circle())
+                    .onTapGesture { onDeferred("发布动态") }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -368,6 +446,7 @@ struct CommunityTabView: View {
             .frame(height: 40)
             .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
             .padding(.horizontal, 16)
+            .onTapGesture { onDeferred("社区搜索") }
 
             HStack {
                 ForEach(["最新", "热门", "关注"], id: \.self) { item in

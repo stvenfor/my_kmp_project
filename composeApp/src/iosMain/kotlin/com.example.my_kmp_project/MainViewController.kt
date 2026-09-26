@@ -20,6 +20,9 @@ fun MainViewController() = run {
 /**
  * Mine Compose Island host for SwiftUI (ADR 0002 Mine Island Hosting).
  * [route]: settings | personalized | about | membership
+ *
+ * Secondary RoutePath Compose host remains for Android / reference only —
+ * iOS/OHOS shells must NOT open it for product navigation (native stubs instead).
  */
 fun MineIslandViewController(route: String = "settings"): UIViewController {
     platformNetworkBootstrap()
