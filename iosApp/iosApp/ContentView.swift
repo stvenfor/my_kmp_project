@@ -200,7 +200,7 @@ struct ContentView: View {
             }
         }
         .background(DesignTokens.canvasSoft2)
-        .sheet(isPresented: $showLogin) {
+        .fullScreenCover(isPresented: $showLogin) {
             NativeLoginView(
                 onSuccess: {
                     isLoggedIn = true
@@ -261,34 +261,13 @@ private struct AuthGateView: View {
     var body: some View {
         VStack(spacing: DesignTokens.spacingMd) {
             Text("请先登录", font: .title3, color: DesignTokens.ink)
+            Text("登录后可使用聊天与社区", font: .system(size: 14), color: DesignTokens.body)
             Button("去登录", action: onLogin)
                 .buttonStyle(.borderedProminent)
                 .tint(DesignTokens.link)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-    }
-}
-
-private struct NativeLoginView: View {
-    var onSuccess: () -> Void
-    var onCancel: () -> Void
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: DesignTokens.spacingLg) {
-                Text("登录", font: .title.weight(.semibold), color: DesignTokens.ink)
-                Text("演示登录（共享会话后续接线）", color: DesignTokens.body)
-                Button("登录", action: onSuccess)
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.link)
-            }
-            .padding()
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭", action: onCancel)
-                }
-            }
-        }
     }
 }
 

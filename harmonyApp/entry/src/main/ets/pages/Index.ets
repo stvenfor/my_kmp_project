@@ -9,7 +9,7 @@ import { registerWebInteropBuilders } from '../ComposeWebInterops';
 
 import { DesignTokens, AppPhase, MainTab } from './NativeShellShared';
 import { NativeHomeContent } from './NativeHomeContent';
-import { HuaweiQuickLoginPane } from '../auth/HuaweiQuickLoginPane';
+import { NativeLoginPane } from '../auth/NativeLoginPane';
 import { AuthSession, sharedSessionStore } from '../auth/SessionStore';
 import { PENDING_DEEP_LINK_KEY } from '../entryability/EntryAbility';
 import { featurePageFor, FeatureRow, resolveNativePath } from './NativeFeatureCatalog';
@@ -1375,7 +1375,7 @@ struct Index {
       }
 
       if (this.showLogin) {
-        HuaweiQuickLoginPane({
+        NativeLoginPane({
           onSuccess: (session: AuthSession) => {
             this.applySession(session);
           },
