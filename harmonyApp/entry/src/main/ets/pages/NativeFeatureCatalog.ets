@@ -322,6 +322,10 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('1', '产品知识班', '未交作业 2'),
         row('2', '配音作业', '待批改 1'),
       ], '进入课堂');
+    case '/classroom/homework':
+      return page(path, '作业详情', '待提交', [
+        row('1', '产品知识测验', '截止今晚 22:00', '待交'),
+      ], '去完成');
     case '/music/list':
       return page(path, '音乐', '播放列表', [
         row('1', 'Night Drive', '3:28'),

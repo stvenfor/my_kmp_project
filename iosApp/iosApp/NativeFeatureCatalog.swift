@@ -298,6 +298,11 @@ enum NativeFeatureCatalog {
                 .init(id: "2", title: "配音作业", detail: "待批改 1", badge: nil),
             ], primaryAction: "进入课堂")
         },
+        "/classroom/homework": {
+            .init(id: "/classroom/homework", title: "作业详情", subtitle: "待提交", rows: [
+                .init(id: "1", title: "产品知识测验", detail: "截止今晚 22:00", badge: "待交"),
+            ], primaryAction: "去完成")
+        },
         "/music/list": {
             .init(id: "/music/list", title: "音乐", subtitle: "播放列表", rows: [
                 .init(id: "1", title: "Night Drive", detail: "3:28", badge: nil),
@@ -434,6 +439,14 @@ struct NativeFeatureHost: View {
             NativeAiStreamPage(onClose: onClose)
         } else if path == "/scan" {
             NativeScanPage(onClose: onClose)
+        } else if path == "/home/strategy" {
+            NativeStrategyPage(onClose: onClose)
+        } else if path == "/home/check_in_mall" {
+            NativeCheckInMallPage(onClose: onClose)
+        } else if path == "/music/list" {
+            NativeMusicPage(onClose: onClose)
+        } else if path == "/classroom/my_class" {
+            NativeClassroomPage(onClose: onClose, onOpen: onOpen)
         } else {
             genericList
         }

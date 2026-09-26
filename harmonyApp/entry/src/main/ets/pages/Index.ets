@@ -29,6 +29,10 @@ import {
   NativeLivePane,
   NativeAiStreamPane,
   NativeScanPane,
+  NativeStrategyPane,
+  NativeCheckInMallPane,
+  NativeMusicPane,
+  NativeClassroomPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -317,6 +321,30 @@ struct Index {
     }
     if (path === '/scan') {
       this.nativePane = 'scan';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/strategy') {
+      this.nativePane = 'strategy';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/check_in_mall') {
+      this.nativePane = 'check_in_mall';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/music/list') {
+      this.nativePane = 'music';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/classroom/my_class') {
+      this.nativePane = 'classroom';
       this.featurePath = '';
       this.showStub = false;
       return;
@@ -1163,6 +1191,28 @@ struct Index {
 
       if (this.nativePane === 'scan') {
         NativeScanPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'strategy') {
+        NativeStrategyPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'check_in_mall') {
+        NativeCheckInMallPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'music') {
+        NativeMusicPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'classroom') {
+        NativeClassroomPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {

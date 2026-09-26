@@ -1289,3 +1289,230 @@ export struct NativeScanPane {
     .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
+
+@Component
+export struct NativeStrategyPane {
+  onClose: () => void = () => {};
+  private scripts: string[][] = [
+    ['周末到店礼', '适合朋友圈 · 已用 128 次', '推荐'],
+    ['置换补贴海报', '适合群发 · 已用 56 次', ''],
+    ['新车到店速递', '适合视频号 · 已用 34 次', ''],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('投资策略').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List() {
+        ForEach(this.scripts, (s: string[]) => {
+          ListItem() {
+            Column({ space: 8 }) {
+              Row() {
+                Text(s[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Blank().layoutWeight(1)
+                if (s[2].length > 0) {
+                  Text(s[2]).fontSize(11).fontColor(DesignTokens.link)
+                    .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                    .backgroundColor('#1A0070F3').borderRadius(12)
+                }
+              }.width('100%')
+              Text(s[1]).fontSize(13).fontColor(DesignTokens.body)
+              Text('周末到店看新车，置换补贴进行中，欢迎预约试驾～')
+                .fontSize(14).fontColor(DesignTokens.ink)
+                .padding(12).width('100%')
+                .backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
+              Button('一键发圈').backgroundColor(DesignTokens.link).width('100%')
+            }
+            .padding(16)
+            .margin({ bottom: 12 })
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(12)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeCheckInMallPane {
+  onClose: () => void = () => {};
+  @State points: number = 0;
+  @State checkedToday: boolean = false;
+  @State streak: number = 1;
+  private days: string[] = ['19', '20', '21', '22', '23', '24', '今天'];
+  private gifts: string[][] = [
+    ['洗车券 ×1', '200 积分'],
+    ['香氛挂件', '500 积分'],
+    ['定制马克杯', '800 积分'],
+  ];
+
+  build() {
+    Column() {
+      Column({ space: 12 }) {
+        Row() {
+          Text('‹').fontSize(22).fontColor(Color.White).onClick(() => this.onClose())
+          Text('签到商城').fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White)
+          Blank().layoutWeight(1)
+        }.width('100%')
+        Row() {
+          Column({ space: 4 }) {
+            Text('我的积分').fontSize(13).fontColor('#D9FFFFFF')
+            Text(`${this.points}`).fontSize(32).fontWeight(FontWeight.Bold).fontColor(Color.White)
+          }.alignItems(HorizontalAlign.Start)
+          Blank().layoutWeight(1)
+          Text(this.checkedToday ? '已签到' : '立即签到')
+            .fontSize(14).fontWeight(FontWeight.Medium).fontColor('#2F6BFF')
+            .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+            .backgroundColor(Color.White).borderRadius(20)
+            .onClick(() => {
+              if (this.checkedToday) {
+                return;
+              }
+              this.checkedToday = true;
+              this.points += 10;
+              this.streak += 1;
+            })
+        }.width('100%')
+        Row() {
+          ForEach(this.days, (d: string, i: number) => {
+            Column({ space: 6 }) {
+              Column()
+                .width(28).height(28).borderRadius(14)
+                .backgroundColor((i < this.streak || (i === this.days.length - 1 && this.checkedToday))
+                  ? Color.White : '#40FFFFFF')
+              Text(d).fontSize(11).fontColor('#E6FFFFFF')
+            }.layoutWeight(1).alignItems(HorizontalAlign.Center)
+          })
+        }.width('100%')
+      }
+      .padding(16)
+      .width('100%')
+      .backgroundColor('#2F6BFF')
+
+      List() {
+        ListItem() {
+          Text('积分换礼').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+            .padding({ bottom: 8 })
+        }
+        ForEach(this.gifts, (g: string[]) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Column().width(56).height(56).borderRadius(8).backgroundColor(DesignTokens.canvasSoft2)
+              Column({ space: 4 }) {
+                Text(g[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(g[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Text('兑换').fontSize(13).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+                .backgroundColor(DesignTokens.link).borderRadius(16)
+            }
+            .padding(12)
+            .margin({ bottom: 12 })
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(12)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeMusicPane {
+  onClose: () => void = () => {};
+  @State playing: string = '';
+  private tracks: string[][] = [
+    ['Night Drive', '3:28'],
+    ['Showroom BGM', '2:51'],
+    ['Weekend Cruise', '4:02'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('音乐').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List() {
+        ForEach(this.tracks, (t: string[]) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Text(this.playing === t[0] ? '❚❚' : '▶')
+                .fontSize(18).fontColor(DesignTokens.link)
+                .width(28).height(28).textAlign(TextAlign.Center)
+              Column({ space: 4 }) {
+                Text(t[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(t[1]).fontSize(12).fontColor(DesignTokens.mute)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              if (this.playing === t[0]) {
+                Text('播放中').fontSize(12).fontColor(DesignTokens.link)
+              }
+            }
+            .padding(16)
+            .width('100%')
+            .backgroundColor(DesignTokens.canvas)
+            .onClick(() => {
+              this.playing = this.playing === t[0] ? '' : t[0];
+            })
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeClassroomPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
+  private classes: string[][] = [
+    ['产品知识班', '未交作业 2'],
+    ['配音作业', '待批改 1'],
+    ['销售话术营', '进行中'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('我的课程').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List() {
+        ForEach(this.classes, (c: string[]) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Text('书')
+                .fontSize(14).fontColor(DesignTokens.link)
+                .width(48).height(48).textAlign(TextAlign.Center)
+                .backgroundColor('#1A0070F3').borderRadius(10)
+              Column({ space: 4 }) {
+                Text(c[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(c[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Text('›').fontSize(20).fontColor(DesignTokens.mute)
+            }
+            .padding(16)
+            .margin({ bottom: 12 })
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(12)
+            .onClick(() => this.onOpen('/classroom/homework'))
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}

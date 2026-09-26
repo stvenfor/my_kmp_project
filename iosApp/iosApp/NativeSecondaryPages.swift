@@ -1218,6 +1218,200 @@ struct NativeScanPage: View {
     }
 }
 
+
+struct NativeStrategyPage: View {
+    var onClose: () -> Void
+    private let scripts: [(String, String, String?)] = [
+        ("周末到店礼", "适合朋友圈 · 已用 128 次", "推荐"),
+        ("置换补贴海报", "适合群发 · 已用 56 次", nil),
+        ("新车到店速递", "适合视频号 · 已用 34 次", nil),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "投资策略", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(Array(scripts.enumerated()), id: \.offset) { _, s in
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text(s.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Spacer()
+                                if let badge = s.2 {
+                                    Text(badge, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                                        .padding(.horizontal, 8).padding(.vertical, 4)
+                                        .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                                }
+                            }
+                            Text(s.1, font: .system(size: 13), color: DesignTokens.body)
+                            Text("周末到店看新车，置换补贴进行中，欢迎预约试驾～", font: .system(size: 14), color: DesignTokens.ink)
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                            Button("一键发圈") {}
+                                .buttonStyle(.borderedProminent)
+                                .tint(DesignTokens.link)
+                        }
+                        .padding(16)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeCheckInMallPage: View {
+    var onClose: () -> Void
+    @State private var points = 0
+    @State private var checkedToday = false
+    @State private var streak = 1
+    private let days = ["19", "20", "21", "22", "23", "24", "今天"]
+    private let gifts: [(String, String)] = [("洗车券 ×1", "200 积分"), ("香氛挂件", "500 积分"), ("定制马克杯", "800 积分")]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 12) {
+                HStack {
+                    Button { onClose() } label: {
+                        Image(systemName: "chevron.left").foregroundStyle(.white)
+                    }
+                    Text("签到商城", font: .system(size: 17, weight: .semibold), color: .white)
+                    Spacer()
+                }
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("我的积分", font: .system(size: 13), color: .white.opacity(0.85))
+                        Text("\(points)", font: .system(size: 32, weight: .bold), color: .white)
+                    }
+                    Spacer()
+                    Button(checkedToday ? "已签到" : "立即签到") {
+                        guard !checkedToday else { return }
+                        checkedToday = true
+                        points += 10
+                        streak += 1
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(red: 0.18, green: 0.42, blue: 1))
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(Color.white, in: Capsule())
+                }
+                HStack {
+                    ForEach(Array(days.enumerated()), id: \.offset) { i, d in
+                        VStack(spacing: 6) {
+                            Circle()
+                                .fill(i < streak || (i == days.count - 1 && checkedToday) ? Color.white : Color.white.opacity(0.25))
+                                .frame(width: 28, height: 28)
+                            Text(d, font: .system(size: 11), color: .white.opacity(0.9))
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .padding(16)
+            .background(Color(red: 0.18, green: 0.42, blue: 1).ignoresSafeArea(edges: .top))
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("积分换礼", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
+                    ForEach(Array(gifts.enumerated()), id: \.offset) { _, g in
+                        HStack {
+                            RoundedRectangle(cornerRadius: 8).fill(DesignTokens.canvasSoft2).frame(width: 56, height: 56)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(g.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                                Text(g.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            Text("兑换", font: .system(size: 13, weight: .semibold), color: .white)
+                                .padding(.horizontal, 12).padding(.vertical, 8)
+                                .background(DesignTokens.link, in: Capsule())
+                        }
+                        .padding(12)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeMusicPage: View {
+    var onClose: () -> Void
+    @State private var playing: String? = nil
+    private let tracks = [("Night Drive", "3:28"), ("Showroom BGM", "2:51"), ("Weekend Cruise", "4:02")]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "音乐", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(tracks.enumerated()), id: \.offset) { _, t in
+                        HStack {
+                            Image(systemName: playing == t.0 ? "pause.circle.fill" : "play.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(DesignTokens.link)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(t.0, font: .system(size: 16, weight: .medium), color: DesignTokens.ink)
+                                Text(t.1, font: .system(size: 12), color: DesignTokens.mute)
+                            }
+                            Spacer()
+                            if playing == t.0 {
+                                Text("播放中", font: .system(size: 12), color: DesignTokens.link)
+                            }
+                        }
+                        .padding(16)
+                        .background(DesignTokens.canvas)
+                        .onTapGesture { playing = playing == t.0 ? nil : t.0 }
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeClassroomPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    private let classes: [(String, String)] = [
+        ("产品知识班", "未交作业 2"),
+        ("配音作业", "待批改 1"),
+        ("销售话术营", "进行中"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "我的课程", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(Array(classes.enumerated()), id: \.offset) { _, c in
+                        HStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(DesignTokens.link.opacity(0.12))
+                                .frame(width: 48, height: 48)
+                                .overlay(Image(systemName: "book.fill").foregroundStyle(DesignTokens.link))
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(c.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Text(c.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").foregroundStyle(DesignTokens.mute)
+                        }
+                        .padding(16)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .onTapGesture { onOpen?("/classroom/homework") }
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {
