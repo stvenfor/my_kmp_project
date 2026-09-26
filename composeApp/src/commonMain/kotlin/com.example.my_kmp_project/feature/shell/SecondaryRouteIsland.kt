@@ -42,21 +42,41 @@ object SecondaryRouteResolver {
     fun resolve(titleOrPath: String): String? {
         val raw = titleOrPath.trim()
         if (raw.isEmpty()) return null
-        if (raw.startsWith("/")) return MineRoutes.canonicalize(raw)
+        // Flutter MineController toast-only paths — never open secondary island.
+        val toastOnlyPaths = setOf(
+            "/mine/business_card",
+            "/mine/invite",
+            "/mine/business",
+            "/mine/reminders",
+            "/mine/reminder",
+            "/mine/fan_group",
+            "/mine/feedback",
+        )
+        if (raw.startsWith("/")) {
+            val canon = MineRoutes.canonicalize(raw)
+            if (canon in toastOnlyPaths) return null
+            return canon
+        }
         if (raw.startsWith("http://") || raw.startsWith("https://")) return AppRoutePath.web
         when (raw) {
             "全部服务", "更多" -> return AppRoutePath.homeAllServices
             "扫一扫" -> return "/scan"
             "H5 调试", "内嵌网页" -> return AppRoutePath.web
             "消息" -> return AppRoutePath.chat
-            "电子名片" -> return MineRoutes.Invite
-            "商务合作" -> return MineRoutes.Cooperation
+            "电子名片" -> return null // Flutter: toast only — never Invite
+            "商务合作" -> return null // Flutter MineController: toast only
             "好友" -> return ContentRoutes.Friend
-            "粉丝群" -> return MineRoutes.FanGroup
-            "帮助中心" -> return MineRoutes.Feedback
+            "粉丝群" -> return null // Flutter: toast only
+            "帮助中心" -> return null // Flutter feedback: toast only
+            "意见反馈" -> return null
+            "提醒事项" -> return null
+            "邀请好友" -> return null // Flutter: toast only (not Invite screen)
             "订单中心" -> return MineRoutes.MallOrders
             "会员续费" -> return MineRoutes.Membership
-            "切换门店" -> return null // handled by MineHomeContent SwitchStoreDialog — never navigate
+            "切换门店", "切换店铺" -> return null // SwitchStoreDialog on Mine root
+            "个人资料" -> return null // Flutter profile icon — separate; toast/stub on shells
+            "头像" -> return null
+            "请先登录" -> return null
         }
         HomeRoutes.fromLabel(raw)?.let { return it }
         CommunityRoutes.fromLabel(raw)?.let { return it }

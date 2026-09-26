@@ -59,9 +59,8 @@ struct MineRootView: View {
     }
     private var maskedPhone: String { isLoggedIn ? "138****5172" : "— — —" }
     private var stats: [(String, String)] {
-        let values = isLoggedIn
-            ? ["1028", "28", "2059", "9366"]
-            : ["0", "0", "0", "0"]
+        // Flutter MineController: logged-in stats stay guest zeros until API fills.
+        let values = ["0", "0", "0", "0"]
         let labels = ["加入天数", "员工数", "店铺天数", "累计客户"]
         return zip(values, labels).map { ($0, $1) }
     }
@@ -267,8 +266,16 @@ struct MineRootView: View {
                     Divider().overlay(DesignTokens.hairline).padding(.leading, 52)
                 }
                 Button {
-                    if item.0 == "设置" { onOpenSettings() }
-                    else { onDeferred(item.0) }
+                    // Flutter MineController: most menu rows are toast-only.
+                    switch item.0 {
+                    case "设置": onOpenSettings()
+                    case "收货地址": onDeferred("收货地址")
+                    case "商务合作", "提醒事项", "邀请好友", "粉丝群", "意见反馈":
+                        // toast via deferred no-op host — ContentView must toast these
+                        onDeferred(item.0)
+                    default:
+                        onDeferred(item.0)
+                    }
                 } label: {
                     HStack {
                         Text(item.0, color: DesignTokens.ink)

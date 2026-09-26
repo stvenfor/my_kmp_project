@@ -100,14 +100,15 @@ internal object MineRoutes {
         "设置" -> Settings
         "设置页" -> Settings
         "/mine/settings" -> Settings
-        "意见反馈", "帮助中心" -> Feedback
-        "商务合作" -> Cooperation
-        "提醒事项" -> Reminder
-        "邀请好友" -> Invite
-        "粉丝群" -> FanGroup
-        "电子名片" -> Invite
-        "好友" -> null // friend list is ContentRoutes.Friend — not invite
-        "切换门店" -> null // SwitchStoreDialog on Mine root — never a route
+        // Flutter MineController: these are toast-only — do NOT open Invite/fake screens.
+        "意见反馈", "帮助中心" -> null
+        "商务合作" -> null
+        "提醒事项" -> null
+        "邀请好友" -> null
+        "粉丝群" -> null
+        "电子名片" -> null
+        "好友" -> null // friend list is ContentRoutes.Friend
+        "切换门店" -> null // SwitchStoreDialog on Mine root
         else -> null
     }
 
@@ -118,8 +119,7 @@ internal object MineRoutes {
         "/mine/qa" -> BuyQa
         "/mine/business" -> Cooperation
         "/mine/reminders" -> Reminder
-        "/mine/business_card" -> Invite
-        // Do NOT map /friend → Invite (that caused 切换门店 / 通讯录 crashes & wrong pages).
+        // Do NOT map business_card / friend → Invite (crash + wrong page).
         else -> route
     }
 }

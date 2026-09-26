@@ -230,10 +230,17 @@ internal fun NativeAndroidMain() {
     }
 
     fun openDeferred(title: String) {
-        // Flutter SwitchStoreDialog is Mine-root UI — never a navigable route.
-        if (title == "切换门店" || title == "切换店铺") {
-            showPlatformToast("请在「我的」页头点击门店名称切换")
-            return
+        // Flutter MineController toast-only — never navigable secondary routes.
+        when (title) {
+            "切换门店", "切换店铺" -> {
+                showPlatformToast("请在「我的」页头点击门店名称切换")
+                return
+            }
+            "电子名片", "商务合作", "提醒事项", "邀请好友", "粉丝群",
+            "意见反馈", "帮助中心", "头像" -> {
+                showPlatformToast(title)
+                return
+            }
         }
         val homeMapped = HomeRoutes.fromLabel(title)
         val communityMapped = CommunityRoutes.fromLabel(title)

@@ -70,11 +70,8 @@ enum NativeRouteResolver {
         "店铺收款码": "/mine/store_qr",
         "选买问答": "/mine/qa",
         "商家海报": "/mine/poster",
-        "商务合作": "/mine/business",
-        "提醒事项": "/mine/reminders",
-        "邀请好友": "/mine/invite",
-        "粉丝群": "/mine/fan_group",
-        "意见反馈": "/mine/feedback", "帮助中心": "/mine/feedback",
+        // Flutter MineController toast-only — do NOT map:
+        // 商务门店/电子名片/商务合作/提醒事项/邀请好友/粉丝群/意见反馈/帮助中心
         "收货地址": "/mine/addresses", "地址管理": "/mine/addresses", "地址": "/mine/addresses",
         "个人资料": "/mine/profile", "资料": "/mine/profile",
         "签到日历": "/home/check_in_mall", "签到": "/home/check_in_mall",
@@ -83,10 +80,9 @@ enum NativeRouteResolver {
         "好友": "/friend", "通讯录": "/friend", "朋友": "/friend",
         "首页": "/home", "聊天": "/chat", "社区": "/community", "我的": "/mine",
         "设置": "/settings", "个性化": "/mine/personalized_settings",
-        "会员": "/pay/membership", "会员续费": "/pay/membership", "电子名片": "/mine/business_card",
+        "会员": "/pay/membership", "会员续费": "/pay/membership",
         "关于": "/mine/about",
         "门店": "/home/data_analytics",
-        "订单中心": "/mall/orders",
         "视频列表": "/video", "作品列表": "/video/dubbing/works",
     ]
 }

@@ -69,6 +69,7 @@ struct ContentView: View {
     @State private var showSecondary = false
     @State private var secondaryRoute = "/home/search"
     @State private var chatPendingPeer: String? = nil
+    @State private var toastText: String? = nil
 
     var body: some View {
         Group {
@@ -122,8 +123,28 @@ struct ContentView: View {
 
     private func openOwnedRoute(_ routeOrLabel: String) {
         let key = routeOrLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Flutter SwitchStoreDialog is Mine-root UI — never a secondary route.
-        if key == "切换门店" || key == "切换店铺" {
+        // Flutter MineController toast-only labels — never open secondary Compose.
+        let toastOnlyKeys: Set<String> = [
+            "切换门店", "切换店铺", "电子名片", "商务合作", "提醒事项",
+            "邀请好友", "粉丝群", "意见反馈", "帮助中心", "头像",
+            "/mine/business_card", "/mine/invite", "/mine/business",
+            "/mine/reminders", "/mine/reminder", "/mine/fan_group", "/mine/feedback",
+        ]
+        if toastOnlyKeys.contains(key) {
+            let toast: String
+            switch key {
+            case "/mine/business_card": toast = "电子名片"
+            case "/mine/invite": toast = "邀请好友"
+            case "/mine/business": toast = "商务合作"
+            case "/mine/reminders", "/mine/reminder": toast = "提醒事项"
+            case "/mine/fan_group": toast = "粉丝群"
+            case "/mine/feedback": toast = "意见反馈"
+            default: toast = key
+            }
+            toastText = toast
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+                if toastText == toast { toastText = nil }
+            }
             return
         }
         let path = NativeRouteResolver.resolve(key)
@@ -228,6 +249,18 @@ struct ContentView: View {
             }
         }
         .background(DesignTokens.canvasSoft2)
+        .overlay(alignment: .bottom) {
+            if let toastText {
+                Text(toastText)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 88)
+                    .transition(.opacity)
+            }
+        }
         .fullScreenCover(isPresented: $showLogin) {
             NativeLoginView(
                 onSuccess: {

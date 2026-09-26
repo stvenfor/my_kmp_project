@@ -3,6 +3,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
+import { promptAction } from '@kit.ArkUI';
 import libentry from 'libentry.so';
 import { registerVideoInteropBuilders } from '../ComposeVideoInterops';
 import { registerWebInteropBuilders } from '../ComposeWebInterops';
@@ -103,6 +104,8 @@ interface CommunityFeedPost {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
+  /** [nickname, content, replyToNickname?] — Flutter previewComments. */
+  previewComments: string[][];
 }
 
 /**
@@ -693,6 +696,14 @@ struct Index {
         likeCount: nextInt(200),
         commentCount: 2 + nextInt(8),
         isLiked: i % 4 === 0,
+        previewComments: [
+          [this.communityNicknames[(i + 1) % this.communityNicknames.length], '说得对！', ''],
+          [
+            this.communityNicknames[(i + 3) % this.communityNicknames.length],
+            '同感 +1',
+            this.communityNicknames[i % this.communityNicknames.length],
+          ],
+        ],
       });
     }
     this.communityPosts = list;
@@ -797,11 +808,23 @@ struct Index {
   }
 
   private openDeferred(title: string): void {
-    // Flutter SwitchStoreDialog is Mine-root UI — never a navigable route.
-    if (title === '切换门店' || title === '切换店铺') {
-      if (this.isLoggedIn) {
-        this.showSwitchStore = true;
+    // Flutter MineController toast-only / Mine-root dialogs — never navigable routes.
+    const toastOnly: string[] = [
+      '切换门店', '切换店铺', '电子名片', '商务合作', '提醒事项',
+      '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像',
+      '/mine/business_card', '/mine/invite', '/mine/business',
+      '/mine/reminders', '/mine/reminder', '/mine/fan_group', '/mine/feedback',
+    ];
+    if (toastOnly.indexOf(title) >= 0) {
+      if (title === '切换门店' || title === '切换店铺') {
+        if (this.isLoggedIn) {
+          this.showSwitchStore = true;
+        } else {
+          promptAction.showToast({ message: '请先登录', duration: 2000 });
+        }
+        return;
       }
+      promptAction.showToast({ message: title, duration: 2000 });
       return;
     }
     const path = resolveNativePath(title);
@@ -1328,6 +1351,24 @@ struct Index {
                     .onClick(() => this.openDeferred('/community/comment'))
                   Text('↗ 分享').fontSize(14).fontColor(DesignTokens.body)
                 }.width('100%')
+                if (post.previewComments.length > 0) {
+                  Column({ space: 4 }) {
+                    ForEach(post.previewComments, (c: string[]) => {
+                      if (c[2] !== undefined && c[2].length > 0) {
+                        Text(`${c[0]} 回复 ${c[2]}：${c[1]}`)
+                          .fontSize(13).fontColor(DesignTokens.body)
+                      } else {
+                        Text(`${c[0]}：${c[1]}`)
+                          .fontSize(13).fontColor(DesignTokens.body)
+                      }
+                    }, (c: string[], idx: number) => `${post.id}_pc_${idx}`)
+                  }
+                  .width('100%')
+                  .padding({ left: 10, right: 10, top: 8, bottom: 8 })
+                  .backgroundColor(DesignTokens.canvasSoft2)
+                  .borderRadius(6)
+                  .alignItems(HorizontalAlign.Start)
+                }
               }
               .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
               .backgroundColor(DesignTokens.canvas).borderRadius(8)
@@ -1430,10 +1471,10 @@ struct Index {
         .borderRadius(12)
 
         Row() {
-          this.MetricCell(this.isLoggedIn ? '1028' : '0', '加入天数')
-          this.MetricCell(this.isLoggedIn ? '28' : '0', '员工数')
-          this.MetricCell(this.isLoggedIn ? '2059' : '0', '店铺天数')
-          this.MetricCell(this.isLoggedIn ? '9366' : '0', '累计客户')
+          this.MetricCell('0', '加入天数')
+          this.MetricCell('0', '员工数')
+          this.MetricCell('0', '店铺天数')
+          this.MetricCell('0', '累计客户')
         }
         .width('100%')
         .padding(12)

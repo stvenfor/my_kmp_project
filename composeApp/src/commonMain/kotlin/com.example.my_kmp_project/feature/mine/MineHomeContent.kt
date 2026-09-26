@@ -92,6 +92,7 @@ internal fun MineHomeContent(
             profile = profile,
             loggedIn = loggedIn,
             snackbar = snackbar,
+            onLoginClick = onLoginClick,
             onSwitchStore = {
                 if (loggedIn) {
                     if (MineStoreCatalog.stores.isEmpty()) {
@@ -205,6 +206,7 @@ private fun ProfileCard(
     profile: MineProfileUi,
     loggedIn: Boolean,
     snackbar: (String) -> Unit,
+    onLoginClick: () -> Unit,
     onSwitchStore: () -> Unit,
 ) {
     MineGroupedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -213,7 +215,11 @@ private fun ProfileCard(
             verticalAlignment = Alignment.Top,
         ) {
             Box(modifier = Modifier.clickable {
-                snackbar(if (loggedIn) "头像" else "请先登录")
+                if (loggedIn) {
+                    snackbar("头像") // Flutter: pickAndUpload — gap until MediaPicker
+                } else {
+                    onLoginClick()
+                }
             }) {
                 MineAvatarPlaceholder()
             }
@@ -278,6 +284,8 @@ private fun ProfileCard(
                             fontSize = 12.sp,
                         )
                     }
+                    // Flutter onElectronicCardTap: toast only
+                    // clickable above already snackbar("电子名片")
                     Text(
                         text = profile.maskedPhone,
                         color = MineTheme.LabelSecondary,
