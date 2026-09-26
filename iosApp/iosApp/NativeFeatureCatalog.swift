@@ -286,7 +286,7 @@ enum NativeFeatureCatalog {
             ], primaryAction: nil)
         },
         "/scan": {
-            .init(id: "/scan", title: "扫一扫", subtitle: "相机权限 · 原生占位可用", rows: [
+            .init(id: "/scan", title: "扫一扫", subtitle: "对准二维码完成核销 / 收款", rows: [
                 .init(id: "1", title: "对准二维码", detail: "用于门店收款码 / 活动核销", badge: nil),
             ], primaryAction: "打开相机")
         },

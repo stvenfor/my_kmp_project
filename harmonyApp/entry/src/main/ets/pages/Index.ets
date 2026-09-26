@@ -854,27 +854,6 @@ struct Index {
         this.NativeFeaturePane()
       }
 
-      if (this.showStub) {
-        Column({ space: 16 }) {
-          Text(this.stubTitle).fontSize(22).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-          Text('一期后置 · ArkTS 原生占位').fontSize(15).fontColor(DesignTokens.body)
-          Text('ADR 0002：非 Mine 二级不进 Compose 岛')
-            .fontSize(12)
-            .fontColor(DesignTokens.mute)
-            .textAlign(TextAlign.Center)
-            .padding({ left: 24, right: 24 })
-          Button('返回')
-            .backgroundColor(DesignTokens.link)
-            .onClick(() => {
-              this.showStub = false;
-            })
-        }
-        .width('100%')
-        .height('100%')
-        .justifyContent(FlexAlign.Center)
-        .backgroundColor(DesignTokens.canvasSoft2)
-      }
-
       if (this.showLogin) {
         HuaweiQuickLoginPane({
           onSuccess: (session: AuthSession) => {

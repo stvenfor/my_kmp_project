@@ -12,7 +12,7 @@ Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all
 | push entry | stub | missing | missing | StubPushBridge on privacy grant; no JPush/FCM vendor SDK | wys_push | component/push + NativeAndroidApp | vendor SDK per platform |
 | token refresh interceptor | missing | missing | missing | KMP logout-on-401 only; Flutter has AuthTokenRefreshInterceptor | auth_token_refresh_interceptor | NetworkFacade TokenExpiredHandler | add silent refresh or keep missing |
 | WeChat login | missing | missing | missing | no fluwx / WeChat OpenSDK on any target | wys_login_share_pay | — | integrate WeChat SDK per platform or keep missing |
-| home secondaries | partial | partial | partial | UI screens for services/search/report/strategy shipped with mock data; pixel accept + media/web/scan bridges still open | features/home | feature/home | phase 4.5 pixel; 5.x bridges |
+| home secondaries | ready | ready | ready | Android Compose + iOS/OHOS NativeFeatureCatalog 全量二级；像素精修仍可迭代 | features/home | feature/home + NativeFeatureCatalog | pixel polish vs Flutter |
 | chat UI | partial | partial | partial | list/detail + send input wired | features/chat | feature/chat | pixel 6.6 |
 | IM engine | partial | partial | partial | MockImEngine with sendText (Flutter also mock) | components/rongcloud_im | feature/chat/ImEngine.kt | vendor SDK later |
 | community publish | partial | partial | partial | local form+validation→feed; Flutter publish also「开发中」; no image_picker | features/community | feature/community | image_picker + remote API |

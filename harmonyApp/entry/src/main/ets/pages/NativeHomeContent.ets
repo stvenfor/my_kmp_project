@@ -118,8 +118,6 @@ export struct NativeHomeContent {
                 .backgroundColor(this.topTab === index ? DesignTokens.link : Color.Transparent)
             }.onClick(() => {
               this.topTab = index;
-              if (index === 1) this.onDeferred('/video/short');
-              else if (index === 2) this.onDeferred('Club');
             })
           })
         }
@@ -202,12 +200,18 @@ export struct NativeHomeContent {
           .borderRadius(8)
           .border({ width: 0.5, color: DesignTokens.hairline })
           .onClick(() => this.onDeferred('投资策略'))
+        } else if (this.topTab === 1) {
+          this.HomeSubFeed('小视频', [
+            ['新车到店 · 15s', '播放 2.1k · 赞 186'],
+            ['保养小贴士', '播放 980 · 赞 64'],
+            ['试驾花絮', '播放 1.4k · 赞 102'],
+          ], '拍一个', '/video/short')
         } else {
-          Text(this.topTab === 1 ? '视频 Tab · 一期后置' : 'Club Tab · 一期后置')
-            .fontColor(DesignTokens.body)
-            .width('100%')
-            .textAlign(TextAlign.Center)
-            .margin({ top: 48 })
+          this.HomeSubFeed('Club', [
+            ['周末自驾·密云水库', '报名 36 · 周六出发'],
+            ['店庆抽奖夜', '本周五 · 门店大厅'],
+            ['车友改装聚会', '下周日 · 报名中'],
+          ], '发布活动', 'Club')
         }
       }
       .width('100%')
@@ -216,6 +220,40 @@ export struct NativeHomeContent {
     .width('100%')
     .height('100%')
     .backgroundColor(DesignTokens.canvasSoft2)
+  }
+
+  @Builder
+  HomeSubFeed(title: string, items: string[][], actionTitle: string, openRoute: string) {
+    Column({ space: 12 }) {
+      Row() {
+        Text(title).fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
+        Text(actionTitle).fontSize(13).fontColor(DesignTokens.link)
+          .onClick(() => this.onDeferred(openRoute))
+      }.width('100%').padding({ left: 16, right: 16, top: 24 })
+
+      Column() {
+        ForEach(items, (item: string[], index: number) => {
+          Row({ space: 12 }) {
+            Text(item[0].substring(0, 1))
+              .width(56).height(56).textAlign(TextAlign.Center)
+              .fontColor(DesignTokens.link).backgroundColor('#1A0070F3').borderRadius(8)
+            Column() {
+              Text(item[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(item[1]).fontSize(12).fontColor(DesignTokens.body).margin({ top: 4 })
+            }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+          }
+          .padding(16).width('100%')
+          .onClick(() => this.onDeferred(openRoute))
+          if (index < items.length - 1) {
+            Divider().strokeWidth(0.5).color(DesignTokens.hairline)
+          }
+        })
+      }
+      .width('100%')
+      .margin({ left: 16, right: 16 })
+      .backgroundColor(DesignTokens.canvas)
+      .borderRadius(12)
+    }.width('100%')
   }
 
   @Builder

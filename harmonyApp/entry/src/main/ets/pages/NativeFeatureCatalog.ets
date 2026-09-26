@@ -298,7 +298,7 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('1', '热门话题', '#换车季 #保养日记'),
       ], '');
     case '/scan':
-      return page(path, '扫一扫', '相机权限 · 原生可用', [
+      return page(path, '扫一扫', '对准二维码完成核销 / 收款', [
         row('1', '对准二维码', '用于门店收款码 / 活动核销'),
       ], '打开相机');
     case '/web':

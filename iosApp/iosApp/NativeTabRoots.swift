@@ -115,11 +115,7 @@ struct HomeTabView: View {
                                 .fill(topTab == index ? DesignTokens.link : .clear)
                                 .frame(width: 20, height: 3)
                         }
-                        .onTapGesture {
-                            topTab = index
-                            if index == 1 { onDeferred("/video/short") }
-                            else if index == 2 { onDeferred("Club") }
-                        }
+                        .onTapGesture { topTab = index }
                     }
                     Spacer()
                 }
@@ -167,15 +163,76 @@ struct HomeTabView: View {
 
                     storeCard
                     strategyRow
+                } else if topTab == 1 {
+                    homeSubFeed(
+                        title: "小视频",
+                        items: [
+                            ("新车到店 · 15s", "播放 2.1k · 赞 186"),
+                            ("保养小贴士", "播放 980 · 赞 64"),
+                            ("试驾花絮", "播放 1.4k · 赞 102"),
+                        ],
+                        actionTitle: "拍一个",
+                        openRoute: "/video/short"
+                    )
                 } else {
-                    Text(topTab == 1 ? "视频 Tab · 一期后置" : "Club Tab · 一期后置", color: DesignTokens.body)
-                        .frame(maxWidth: .infinity)
-                        .padding(48)
+                    homeSubFeed(
+                        title: "Club",
+                        items: [
+                            ("周末自驾·密云水库", "报名 36 · 周六出发"),
+                            ("店庆抽奖夜", "本周五 · 门店大厅"),
+                            ("车友改装聚会", "下周日 · 报名中"),
+                        ],
+                        actionTitle: "发布活动",
+                        openRoute: "Club"
+                    )
                 }
             }
             .padding(.bottom, 24)
         }
         .background(DesignTokens.canvasSoft2)
+    }
+
+    private func homeSubFeed(
+        title: String,
+        items: [(String, String)],
+        actionTitle: String,
+        openRoute: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(title, font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+                Button(actionTitle) { onDeferred(openRoute) }
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(DesignTokens.link)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 24)
+
+            VStack(spacing: 0) {
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    HStack {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(DesignTokens.link.opacity(0.12))
+                            .frame(width: 56, height: 56)
+                            .overlay(Text(String(item.0.prefix(1))).foregroundStyle(DesignTokens.link))
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                            Text(item.1, font: .system(size: 12), color: DesignTokens.body)
+                        }
+                        Spacer()
+                    }
+                    .padding(16)
+                    .contentShape(Rectangle())
+                    .onTapGesture { onDeferred(openRoute) }
+                    if index != items.count - 1 {
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+            }
+            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 16)
+        }
     }
 
     private var featureGrid: some View {
