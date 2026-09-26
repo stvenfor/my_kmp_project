@@ -39,9 +39,13 @@ struct NativeBottomBar: View {
 
     private func tabIcon(_ tab: MainTab, active: Bool) -> String {
         switch tab {
-        case .home, .chat:
+        case .home:
             return active ? "main_tab_home_selected" : "main_tab_home_unselected"
-        case .community, .mine:
+        case .chat:
+            return active ? "main_tab_chat_selected" : "main_tab_chat_unselected"
+        case .community:
+            return active ? "main_tab_community_selected" : "main_tab_community_unselected"
+        case .mine:
             return active ? "main_tab_me_selected" : "main_tab_me_unselected"
         }
     }

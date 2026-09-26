@@ -757,8 +757,14 @@ struct Index {
 
   private tabIcon(id: MainTab): Resource {
     const active = this.tab === id;
-    if (id === MainTab.Home || id === MainTab.Chat) {
+    if (id === MainTab.Home) {
       return active ? $r('app.media.main_tab_home_selected') : $r('app.media.main_tab_home_unselected');
+    }
+    if (id === MainTab.Chat) {
+      return active ? $r('app.media.main_tab_chat_selected') : $r('app.media.main_tab_chat_unselected');
+    }
+    if (id === MainTab.Community) {
+      return active ? $r('app.media.main_tab_community_selected') : $r('app.media.main_tab_community_unselected');
     }
     return active ? $r('app.media.main_tab_me_selected') : $r('app.media.main_tab_me_unselected');
   }
