@@ -4,10 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,22 +22,48 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.loadString
+import com.example.my_kmp_project.core.platform.saveString
 
 private val EyeProtectionOptions = listOf("关闭", "开启", "跟随系统")
+
+/** Flutter `PersonalizedSettingsController` SpUtils key prefix. */
+private const val PrefsPrefix = "personalized_settings."
+
+private fun loadBool(key: String, default: Boolean): Boolean =
+    when (loadString("$PrefsPrefix$key")) {
+        "true" -> true
+        "false" -> false
+        else -> default
+    }
+
+private fun persistBool(key: String, value: Boolean) {
+    saveString("$PrefsPrefix$key", if (value) "true" else "false")
+}
 
 @Composable
 internal fun MinePersonalizedSettingsScreen(
     onBack: () -> Unit,
     snackbar: (String) -> Unit,
 ) {
-    var eyeProtection by remember { mutableStateOf("关闭") }
-    var teachingMode by remember { mutableStateOf(false) }
-    var contentRecommendation by remember { mutableStateOf(true) }
-    var adRecommendation by remember { mutableStateOf(true) }
-    var oralScoring by remember { mutableStateOf(true) }
-    var cellularVideoReminder by remember { mutableStateOf(false) }
-    var uploadStatusMonitor by remember { mutableStateOf(false) }
+    var eyeProtection by remember {
+        mutableStateOf(loadString("${PrefsPrefix}eye_protection_mode") ?: "关闭")
+    }
+    var teachingMode by remember { mutableStateOf(loadBool("teaching_mode", false)) }
+    var contentRecommendation by remember {
+        mutableStateOf(loadBool("content_recommendation", true))
+    }
+    var adRecommendation by remember { mutableStateOf(loadBool("ad_recommendation", true)) }
+    var oralScoring by remember { mutableStateOf(loadBool("oral_scoring", true)) }
+    var cellularVideoReminder by remember {
+        mutableStateOf(loadBool("cellular_video_reminder", false))
+    }
+    var uploadStatusMonitor by remember {
+        mutableStateOf(loadBool("upload_status_monitor", false))
+    }
     var eyePickerOpen by remember { mutableStateOf(false) }
+
+    fun help(title: String) = snackbar("$title：功能说明开发中")
 
     Column(
         modifier = Modifier
@@ -66,6 +90,8 @@ internal fun MinePersonalizedSettingsScreen(
                 MineNavRow(
                     title = "护眼模式",
                     trailingText = eyeProtection,
+                    showHelp = true,
+                    onHelp = { help("护眼模式") },
                     onClick = { eyePickerOpen = !eyePickerOpen },
                 )
                 if (eyePickerOpen) {
@@ -76,6 +102,7 @@ internal fun MinePersonalizedSettingsScreen(
                                 .fillMaxWidth()
                                 .clickable {
                                     eyeProtection = option
+                                    saveString("${PrefsPrefix}eye_protection_mode", option)
                                     eyePickerOpen = false
                                 }
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
@@ -101,9 +128,12 @@ internal fun MinePersonalizedSettingsScreen(
                 MineSwitchRow(
                     title = "教学模式",
                     showHelp = true,
-                    onHelp = { snackbar("教学模式：功能说明开发中") },
+                    onHelp = { help("教学模式") },
                     checked = teachingMode,
-                    onCheckedChange = { teachingMode = it },
+                    onCheckedChange = {
+                        teachingMode = it
+                        persistBool("teaching_mode", it)
+                    },
                 )
             }
 
@@ -112,44 +142,52 @@ internal fun MinePersonalizedSettingsScreen(
                 MineSwitchRow(
                     title = "个性化内容推荐",
                     showHelp = true,
-                    onHelp = { snackbar("个性化内容推荐：功能说明开发中") },
+                    onHelp = { help("个性化内容推荐") },
                     checked = contentRecommendation,
-                    onCheckedChange = { contentRecommendation = it },
+                    onCheckedChange = {
+                        contentRecommendation = it
+                        persistBool("content_recommendation", it)
+                    },
                 )
                 MineInsetDivider()
                 MineSwitchRow(
                     title = "个性化广告推荐",
                     showHelp = true,
-                    onHelp = { snackbar("个性化广告推荐：功能说明开发中") },
+                    onHelp = { help("个性化广告推荐") },
                     checked = adRecommendation,
-                    onCheckedChange = { adRecommendation = it },
+                    onCheckedChange = {
+                        adRecommendation = it
+                        persistBool("ad_recommendation", it)
+                    },
                 )
                 MineInsetDivider()
                 MineSwitchRow(
                     title = "口语评分",
                     checked = oralScoring,
-                    onCheckedChange = { oralScoring = it },
+                    onCheckedChange = {
+                        oralScoring = it
+                        persistBool("oral_scoring", it)
+                    },
                 )
                 MineInsetDivider()
                 MineSwitchRow(
                     title = "2/3/4/5G 流量播放视频时提醒我",
                     checked = cellularVideoReminder,
-                    onCheckedChange = { cellularVideoReminder = it },
+                    onCheckedChange = {
+                        cellularVideoReminder = it
+                        persistBool("cellular_video_reminder", it)
+                    },
                 )
                 MineInsetDivider()
                 MineSwitchRow(
                     title = "作品上传状态监控",
                     checked = uploadStatusMonitor,
-                    onCheckedChange = { uploadStatusMonitor = it },
+                    onCheckedChange = {
+                        uploadStatusMonitor = it
+                        persistBool("upload_status_monitor", it)
+                    },
                 )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "偏好为会话内状态；持久化可在后续任务接入平台 KV。",
-                color = DemoColors.Muted,
-                fontSize = 12.sp,
-            )
         }
     }
 }

@@ -422,7 +422,7 @@
 
 ## E.3 `/mine/personalized_settings`
 - [x] E.3.1.a UI（岛内）
-- [~] E.3.2 开关持久化（岛内已有部分）
+- [x] E.3.2 开关持久化（对齐 Flutter SpUtils `personalized_settings.*`）
 - [ ] E.3.1.i / E.3.1.h
 
 ## E.4 `/mine/addresses` + `/mine/addresses/edit`

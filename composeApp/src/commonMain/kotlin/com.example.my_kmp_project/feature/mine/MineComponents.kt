@@ -68,6 +68,8 @@ internal fun MineNavRow(
     trailingText: String? = null,
     showChevron: Boolean = true,
     showBadge: Boolean = false,
+    showHelp: Boolean = false,
+    onHelp: (() -> Unit)? = null,
     destructive: Boolean = false,
     onClick: (() -> Unit)?,
 ) {
@@ -80,7 +82,21 @@ internal fun MineNavRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, color = titleColor, fontSize = 15.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = title, color = titleColor, fontSize = 15.sp)
+                if (showHelp && onHelp != null) {
+                    Text(
+                        text = "?",
+                        color = DemoColors.Muted,
+                        fontSize = 13.sp,
+                        modifier = Modifier
+                            .padding(start = 6.dp)
+                            .clip(CircleShape)
+                            .clickable(onClick = onHelp)
+                            .padding(4.dp),
+                    )
+                }
+            }
             if (subtitle != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(

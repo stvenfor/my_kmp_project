@@ -5,11 +5,18 @@ import kotlin.time.ExperimentalTime
 
 /** OHOS: process-memory until Preferences cinterop lands (Flutter SpUtils parity on Android/iOS). */
 private val ohosStringLists = mutableMapOf<String, List<String>>()
+private val ohosStrings = mutableMapOf<String, String>()
 
 internal actual fun loadStringList(key: String): List<String>? = ohosStringLists[key]
 
 internal actual fun saveStringList(key: String, values: List<String>) {
     ohosStringLists[key] = values.toList()
+}
+
+internal actual fun loadString(key: String): String? = ohosStrings[key]
+
+internal actual fun saveString(key: String, value: String) {
+    ohosStrings[key] = value
 }
 
 @OptIn(ExperimentalTime::class)

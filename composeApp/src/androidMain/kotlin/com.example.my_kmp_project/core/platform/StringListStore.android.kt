@@ -18,5 +18,18 @@ internal actual fun saveStringList(key: String, values: List<String>) {
     prefs.edit().putString(key, values.joinToString("\u001f")).apply()
 }
 
+internal actual fun loadString(key: String): String? {
+    val ctx = AndroidAccountContext.applicationContext ?: return null
+    val prefs = ctx.getSharedPreferences("home_favorites", Context.MODE_PRIVATE)
+    if (!prefs.contains(key)) return null
+    return prefs.getString(key, null)
+}
+
+internal actual fun saveString(key: String, value: String) {
+    val ctx = AndroidAccountContext.applicationContext ?: return
+    val prefs = ctx.getSharedPreferences("home_favorites", Context.MODE_PRIVATE)
+    prefs.edit().putString(key, value).apply()
+}
+
 internal actual fun platformTodayYmd(): String =
     java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
