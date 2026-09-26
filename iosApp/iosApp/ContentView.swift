@@ -64,12 +64,11 @@ struct ContentView: View {
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
-    @State private var deferredStub: DeferredStubItem? = nil
-    @State private var nativeSecondary: NativeSecondaryKind? = nil
+    @State private var nativeFeature: NativeFeatureItem? = nil
 
-    private enum NativeSecondaryKind: String, Identifiable {
-        case search, allServices
-        var id: String { rawValue }
+    private struct NativeFeatureItem: Identifiable {
+        let route: String
+        var id: String { route }
     }
 
     var body: some View {
@@ -111,7 +110,7 @@ struct ContentView: View {
     /// Route ownership (ADR 0002):
     /// - main tabs → switch SwiftUI tab
     /// - Mine island routes → Compose MineIsland
-    /// - everything else → native SwiftUI stub (一期后置)
+    /// - everything else → native SwiftUI feature pages
     private func handleDeepLinkOrLabel(_ raw: String) {
         let route: String
         if let parsed = MainViewControllerKt.AcceptDeepLinkFromIos(uri: raw) {
@@ -126,43 +125,33 @@ struct ContentView: View {
 
     private func openOwnedRoute(_ routeOrLabel: String) {
         let key = routeOrLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        switch key {
-        case "/", "/home", "/main", "首页":
+        let path = NativeRouteResolver.resolve(key)
+        switch path {
+        case "/", "/home", "/main":
             tab = .home
-        case "/chat", "消息", "聊天":
+        case "/chat":
             tab = .chat
             if !isLoggedIn { showLogin = true }
-        case "/community", "社区":
+        case "/community":
             tab = .community
             if !isLoggedIn { showLogin = true }
-        case "/mine", "我的":
+        case "/mine":
             tab = .mine
-        case "/settings", "设置", "settings":
+        case "/settings":
             mineIslandRoute = "settings"
             showMineIsland = true
-        case "/mine/personalized_settings", "个性化", "personalized":
+        case "/mine/personalized_settings":
             mineIslandRoute = "personalized"
             showMineIsland = true
-        case "/pay/membership", "membership", "会员":
+        case "/pay/membership":
             mineIslandRoute = "membership"
             showMineIsland = true
-        case "/mine/about", "about", "关于":
+        case "/mine/about":
             mineIslandRoute = "about"
             showMineIsland = true
-        case "/home/search", "搜索", "search":
-            nativeSecondary = .search
-        case "/home/all_services", "全部服务", "更多":
-            nativeSecondary = .allServices
         default:
-            deferredStub = DeferredStubItem(title: displayTitle(for: key), route: key)
+            nativeFeature = NativeFeatureItem(route: path)
         }
-    }
-
-    private func displayTitle(for routeOrLabel: String) -> String {
-        if routeOrLabel.hasPrefix("/") {
-            return routeOrLabel.split(separator: "/").last.map(String.init) ?? routeOrLabel
-        }
-        return routeOrLabel
     }
 
     private var mainShell: some View {
@@ -227,61 +216,16 @@ struct ContentView: View {
             MineIslandHost(route: mineIslandRoute)
                 .ignoresSafeArea(.all)
         }
-        .fullScreenCover(item: $deferredStub) { item in
-            NativeDeferredStubView(title: item.title, route: item.route) {
-                deferredStub = nil
-            }
-        }
-        .fullScreenCover(item: $nativeSecondary) { kind in
-            switch kind {
-            case .search:
-                NativeSearchPage { nativeSecondary = nil }
-            case .allServices:
-                NativeAllServicesPage(
-                    onClose: { nativeSecondary = nil },
-                    onOpen: { label in
-                        nativeSecondary = nil
-                        openOwnedRoute(label)
-                    }
-                )
-            }
-        }
-    }
-}
-
-private struct DeferredStubItem: Identifiable {
-    let title: String
-    let route: String
-    var id: String { route }
-}
-
-/// Phase-1 deferred feature — native SwiftUI placeholder (ADR 0002).
-private struct NativeDeferredStubView: View {
-    var title: String
-    var route: String
-    var onClose: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            VStack(spacing: DesignTokens.spacingLg) {
-                Text(title, font: .title2.weight(.semibold), color: DesignTokens.ink)
-                Text("一期后置 · SwiftUI 原生占位", color: DesignTokens.body)
-                    .multilineTextAlignment(.center)
-                Text(route, font: .system(size: 12, design: .monospaced), color: DesignTokens.mute)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                Button("返回", action: onClose)
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.link)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("关闭", action: onClose)
+        .fullScreenCover(item: $nativeFeature) { item in
+            NativeFeatureHost(
+                pathOrLabel: item.route,
+                onClose: { nativeFeature = nil },
+                onOpen: { next in
+                    nativeFeature = nil
+                    openOwnedRoute(next)
                 }
-            }
+            )
+            .ignoresSafeArea(.keyboard)
         }
     }
 }

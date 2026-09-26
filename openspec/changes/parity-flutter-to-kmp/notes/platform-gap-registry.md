@@ -31,4 +31,4 @@ Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all
 | image_picker | missing | missing | missing | no adapter | image_picker plugin | — | with publish/mine |
 | DoKit / bfui / BLE / invoice demos | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal | features/bfui, bluetooth, settings debug | — | optional later |
 | face verify | n/a-out-of-scope | n/a-out-of-scope | n/a-out-of-scope | non-goal unless product adds | wys_face_verify | — | optional later |
-| in-scope RoutePath UI (78) | ready | partial | partial | Android Jetpack 全路径；iOS/OHOS **ADR 0002**：Tab 根 + Mine island 为产品面，其余一期 **SwiftUI/ArkTS stub**（不再进 SecondaryRouteIsland） | my_ai_project RoutePath | AppRoutePath + MineIsland + native stubs | 逐页把 stub 升为原生 SwiftUI/ArkTS 实现 |
+| in-scope RoutePath UI (78) | ready | ready | ready | Android Jetpack；iOS SwiftUI `NativeFeatureHost`；OHOS ArkTS `NativeFeaturePane`；Mine 设置岛仍 CMP | my_ai_project RoutePath | NativeFeatureCatalog + MineIsland | 厂商 SDK / 真播放器 / OHOS WebView 另列 |

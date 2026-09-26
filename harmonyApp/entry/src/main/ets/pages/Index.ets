@@ -12,6 +12,7 @@ import { NativeHomeContent } from './NativeHomeContent';
 import { HuaweiQuickLoginPane } from '../auth/HuaweiQuickLoginPane';
 import { AuthSession, sharedSessionStore } from '../auth/SessionStore';
 import { PENDING_DEEP_LINK_KEY } from '../entryability/EntryAbility';
+import { featurePageFor, FeatureRow, resolveNativePath } from './NativeFeatureCatalog';
 
 const DOMAIN = 0x0000;
 
@@ -37,6 +38,7 @@ struct Index {
   @State chatDraft: string = '';
   @State chatMessages: string[] = [];
   @State nativePane: string = '';
+  @State featurePath: string = '';
   private islandController: ArkUIViewController | undefined = undefined;
   private pref: preferences.Preferences | undefined = undefined;
 
@@ -144,52 +146,52 @@ struct Index {
   }
 
   private openDeferred(title: string): void {
-    const key = title.trim();
-    // ADR 0002: Mine secondary → Compose island only
-    if (key === '设置' || key === '/settings' || key === 'settings') {
+    const path = resolveNativePath(title);
+    if (path === '/settings') {
       this.openMineIsland(false);
       return;
     }
-    if (key === '个性化' || key === '/mine/personalized_settings' || key === 'personalized') {
+    if (path === '/mine/personalized_settings') {
       this.openMineIsland(true);
       return;
     }
-    if (key === '/chat' || key === '消息' || key === '聊天') {
+    if (path === '/chat') {
       this.tab = MainTab.Chat;
       if (!this.isLoggedIn) {
         this.showLogin = true;
       }
       return;
     }
-    if (key === '/community' || key === '社区') {
+    if (path === '/community') {
       this.tab = MainTab.Community;
       if (!this.isLoggedIn) {
         this.showLogin = true;
       }
       return;
     }
-    if (key === '/home' || key === '首页' || key === '/main') {
+    if (path === '/home' || path === '/main') {
       this.tab = MainTab.Home;
       return;
     }
-    if (key === '/mine' || key === '我的') {
+    if (path === '/mine') {
       this.tab = MainTab.Mine;
       return;
     }
-    if (key === '/home/search' || key === '搜索' || key === 'search') {
+    if (path === '/home/search') {
       this.nativePane = 'search';
+      this.featurePath = '';
       this.showStub = false;
       return;
     }
-    if (key === '/home/all_services' || key === '全部服务' || key === '更多') {
+    if (path === '/home/all_services') {
       this.nativePane = 'all_services';
+      this.featurePath = '';
       this.showStub = false;
       return;
     }
-    // All other features: ArkTS native stub (一期后置)
-    this.nativePane = '';
-    this.stubTitle = key.length > 0 ? key : '未命名入口';
-    this.showStub = true;
+    this.featurePath = path;
+    this.nativePane = 'feature';
+    this.showStub = false;
     this.showIsland = false;
   }
 
@@ -254,6 +256,62 @@ struct Index {
       Text(value).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
       Text(label).fontSize(11).fontColor(DesignTokens.mute)
     }.layoutWeight(1)
+  }
+
+  @Builder
+  NativeFeaturePane() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => {
+          this.nativePane = '';
+          this.featurePath = '';
+        })
+        Column() {
+          Text(featurePageFor(this.featurePath).title)
+            .fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          if (featurePageFor(this.featurePath).subtitle.length > 0) {
+            Text(featurePageFor(this.featurePath).subtitle)
+              .fontSize(12).fontColor(DesignTokens.body)
+          }
+        }.alignItems(HorizontalAlign.Start).margin({ left: 8 })
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List() {
+        ForEach(featurePageFor(this.featurePath).rows, (item: FeatureRow) => {
+          ListItem() {
+            Row() {
+              Column() {
+                Text(item.title).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(item.detail).fontSize(13).fontColor(DesignTokens.body).margin({ top: 4 })
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              if (item.badge.length > 0) {
+                Text(item.badge)
+                  .fontSize(11)
+                  .fontColor(DesignTokens.link)
+                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                  .backgroundColor('#1A0070F3')
+                  .borderRadius(10)
+              }
+            }.padding(16).width('100%')
+          }
+        })
+      }
+      .layoutWeight(1)
+      .width('100%')
+      .margin({ left: 16, right: 16, top: 12 })
+      .backgroundColor(DesignTokens.canvas)
+      .borderRadius(12)
+
+      if (featurePageFor(this.featurePath).primaryAction.length > 0) {
+        Button(featurePageFor(this.featurePath).primaryAction)
+          .backgroundColor(DesignTokens.link)
+          .margin(16)
+          .width('90%')
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
   }
 
   @Builder
@@ -790,6 +848,10 @@ struct Index {
 
       if (this.nativePane === 'all_services') {
         this.NativeAllServicesPane()
+      }
+
+      if (this.nativePane === 'feature' && this.featurePath.length > 0) {
+        this.NativeFeaturePane()
       }
 
       if (this.showStub) {

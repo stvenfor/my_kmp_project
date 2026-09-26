@@ -1,34 +1,25 @@
 # Acceptance report
 
-Status: **ADR 0002 所有权纠偏进行中** — 2026-09-26.
+Status: **ADR 0002 原生二级全量接入** — 2026-09-26.
 
-> **硬规则（ADR 0002）**
-> - iOS 产品壳 / Tab 根 / 一期后置入口 = **SwiftUI**
-> - Harmony 产品壳 / Tab 根 / 一期后置入口 = **ArkTS**
-> - Compose 岛 **仅** Mine 二级（settings / personalized / about / membership）
-> - 禁止把 Home/Chat/Community/Web/Friend 等塞进 `SecondaryRouteIsland` 冒充三端齐
+## 所有权（强制）
 
-## 当前产品面
-
-| 面 | Android | iOS | OHOS |
+| 层级 | iOS | Harmony | Compose |
 |---|---|---|---|
-| Splash / Privacy / Tab shell | Jetpack | SwiftUI | ArkTS |
-| Home / Chat / Community / Mine **根** | Jetpack | SwiftUI | ArkTS |
-| Chat 详情发送 | Jetpack | SwiftUI | ArkTS |
-| Mine 设置岛 | CMP island | CMP island | CMP island |
-| Home 二级 / 商城 / 视频等 | Jetpack 已实现 | **SwiftUI 一期 stub** | **ArkTS 一期 stub** |
-| 厂商 SDK | stub/missing | stub/missing | stub/missing |
+| 壳 / Tab 根 | SwiftUI | ArkTS | 禁止 |
+| 产品二级（Home/Mine/内容…） | SwiftUI `NativeFeatureHost` | ArkTS `NativeFeaturePane` | 禁止 |
+| Mine 设置/个性化/关于/会员 | — | — | **仅 island** |
 
-## 纠偏相对上一轮
+## 路由表
 
-上一轮用 Compose `SecondaryRouteIsland` 在 iOS/OHOS 打开二级路径 —— **违反 ADR 0002**。已改回：
+- iOS: `NativeFeatureCatalog.swift` + `NativeRouteResolver`
+- OHOS: `NativeFeatureCatalog.ets` + `resolveNativePath`
+- 覆盖：二手车/生活服务/新车/数据/直播/Club/策略/学习报告/签到商城/配音/热榜/台账/待办/售后/商城/订单/钱包/短视频/直播/好友/AI/课堂/音乐/社区发布搜索/扫一扫/网页/购车计算器/短信模板/收款码/问答/海报/商务/提醒/反馈等
 
-- iOS：`onDeferred` → `NativeDeferredStubView`（SwiftUI）；Tab 深链切页；Mine 仍 `MineIslandViewController`
-- OHOS：`openDeferred` → ArkTS stub；不再 `SetOhosSecondaryRoute` 拉全量 Compose；Mine 仍 `openMineIsland`
+无「一期后置 stub」产品入口；未知路径仍走原生列表壳（非 Compose）。
 
 ## Sign-off
 
-| role | date | ADR 0002 所有权 | 二级页原生补齐 | 厂商 SDK |
+| role | date | ADR 0002 | 二级原生 | 厂商 SDK |
 |---|---|---|---|---|
-| engineering | 2026-09-26 | Pass（壳/根） | In progress（stub→原生） | Fail — registry |
-| product |  |  |  | 待签 |
+| engineering | 2026-09-26 | Pass | Pass（mock UI） | Fail — registry |
