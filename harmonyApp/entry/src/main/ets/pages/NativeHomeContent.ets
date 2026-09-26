@@ -16,6 +16,7 @@ export struct NativeHomeContent {
   @State storeName: string = '[4S]北京沃德龙鼎吉利';
   @State showSwitchStore: boolean = false;
   @State selectedStoreId: string = '1';
+  @State showCheckIn: boolean = false;
   private readonly stores: string[][] = [
     ['1', '[4S]北京沃德龙鼎吉利'],
     ['2', '[4S]北京腾远吉利'],
@@ -66,6 +67,22 @@ export struct NativeHomeContent {
     const prefix = hour < 12 ? '早上好' : (hour < 18 ? '下午好' : '晚上好');
     const name = (this.displayName || '').trim();
     return `${prefix}，${name.length > 0 ? name : '访客'}`;
+  }
+
+  private todayLocal(): string {
+    const n = new Date();
+    const y = n.getFullYear().toString();
+    const m = (n.getMonth() + 1).toString().padStart(2, '0');
+    const d = n.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  aboutToAppear(): void {
+    if (!this.isLoggedIn || this.showCheckIn) {
+      return;
+    }
+    // Flutter DailyCheckInDialog.maybeShow — mock once per Home enter when logged in.
+    this.showCheckIn = true;
   }
 
   private onFeatureTap(label: string) {
@@ -442,6 +459,36 @@ export struct NativeHomeContent {
         .width('100%')
         .height('100%')
         .justifyContent(FlexAlign.End)
+      }
+
+      if (this.showCheckIn && this.isLoggedIn) {
+        Column() {
+          Column()
+            .width('100%')
+            .height('100%')
+            .backgroundColor('#8C000000')
+            .onClick(() => { this.showCheckIn = false; })
+          Column({ space: 12 }) {
+            Text('每日签到')
+              .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Text('连续签到 3 天 · 今日可领 +10 积分')
+              .fontSize(13).fontColor(DesignTokens.body)
+            Button('立即签到')
+              .backgroundColor(DesignTokens.link)
+              .onClick(() => { this.showCheckIn = false; })
+            Text('稍后再说')
+              .fontSize(14).fontColor(DesignTokens.body)
+              .onClick(() => { this.showCheckIn = false; })
+          }
+          .width('80%')
+          .padding(22)
+          .backgroundColor(Color.White)
+          .borderRadius(16)
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
       }
     }
     .width('100%')

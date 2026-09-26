@@ -38,12 +38,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeFeatureItem
 import com.example.my_kmp_project.feature.home.HomeMockData
@@ -54,7 +58,10 @@ import kotlinx.coroutines.launch
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.home_banner_sot
 import org.jetbrains.compose.resources.painterResource
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 /** Jetpack Home root — layout aligned to Flutter `HomePage` dashboard. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,11 +78,22 @@ internal fun JetpackHomeRoot(
     var showTodos by remember { mutableStateOf(false) }
     var showSwitchStore by remember { mutableStateOf(false) }
     var storeName by remember { mutableStateOf(HomeMockData.storeName) }
+    var showCheckIn by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
     LaunchedEffect(Unit) {
         delay(50)
         showTodos = true
+    }
+    LaunchedEffect(loggedIn) {
+        if (!loggedIn) return@LaunchedEffect
+        delay(400)
+        val prefs = context.getSharedPreferences("home_check_in", 0)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        val ack = prefs.getString("check_in_dialog_ack_date", null)
+        // Flutter: skip if already checked-in today — mock assumes not checked in.
+        if (ack != today) showCheckIn = true
     }
 
     if (showSwitchStore && loggedIn) {
@@ -87,6 +105,70 @@ internal fun JetpackHomeRoot(
                 showSwitchStore = false
             },
         )
+    }
+
+    if (showCheckIn && loggedIn) {
+        Dialog(
+            onDismissRequest = {
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                context.getSharedPreferences("home_check_in", 0)
+                    .edit().putString("check_in_dialog_ack_date", today).apply()
+                showCheckIn = false
+            },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 40.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 22.dp, vertical = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("每日签到", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = DemoColors.TextPrimary)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "连续签到 3 天 · 今日可领 +10 积分",
+                    fontSize = 13.sp,
+                    color = DemoColors.TextSecondary,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    "立即签到",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DemoColors.Accent)
+                        .clickable {
+                            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                            context.getSharedPreferences("home_check_in", 0)
+                                .edit().putString("check_in_dialog_ack_date", today).apply()
+                            showPlatformToast("签到成功，+10 积分")
+                            showCheckIn = false
+                        }
+                        .padding(vertical = 12.dp),
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "稍后再说",
+                    color = DemoColors.TextSecondary,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .clickable {
+                            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                            context.getSharedPreferences("home_check_in", 0)
+                                .edit().putString("check_in_dialog_ack_date", today).apply()
+                            showCheckIn = false
+                        }
+                        .padding(8.dp),
+                )
+            }
+        }
     }
 
     PullToRefreshBox(

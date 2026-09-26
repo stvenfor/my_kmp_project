@@ -65,6 +65,7 @@ struct HomeTabView: View {
     @State private var showSwitchStore = false
     @State private var storeName = "[4S]北京沃德龙鼎吉利"
     @State private var selectedStoreId = "1"
+    @State private var showCheckIn = false
     private let stores: [(String, String)] = [
         ("1", "[4S]北京沃德龙鼎吉利"),
         ("2", "[4S]北京腾远吉利"),
@@ -130,6 +131,28 @@ struct HomeTabView: View {
                 onClose: { showSwitchStore = false }
             )
             .presentationDetents([.height(320)])
+        }
+        .onAppear {
+            guard isLoggedIn else { return }
+            let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
+            let ack = UserDefaults.standard.string(forKey: "check_in_dialog_ack_date")
+            if ack != String(today) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    showCheckIn = true
+                }
+            }
+        }
+        .alert("每日签到", isPresented: $showCheckIn) {
+            Button("立即签到") {
+                let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
+                UserDefaults.standard.set(String(today), forKey: "check_in_dialog_ack_date")
+            }
+            Button("稍后再说", role: .cancel) {
+                let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
+                UserDefaults.standard.set(String(today), forKey: "check_in_dialog_ack_date")
+            }
+        } message: {
+            Text("连续签到 3 天 · 今日可领 +10 积分")
         }
     }
 
