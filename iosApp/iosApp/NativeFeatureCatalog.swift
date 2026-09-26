@@ -428,6 +428,12 @@ struct NativeFeatureHost: View {
             NativeWalletPage(onClose: onClose)
         } else if path == "/video/short" {
             NativeShortVideoPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/live" || path == "/home/live_commerce" {
+            NativeLivePage(onClose: onClose)
+        } else if path == "/ai/stream" {
+            NativeAiStreamPage(onClose: onClose)
+        } else if path == "/scan" {
+            NativeScanPage(onClose: onClose)
         } else {
             genericList
         }

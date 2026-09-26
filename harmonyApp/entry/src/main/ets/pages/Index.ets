@@ -26,6 +26,9 @@ import {
   NativeMallPane,
   NativeWalletPane,
   NativeShortVideoPane,
+  NativeLivePane,
+  NativeAiStreamPane,
+  NativeScanPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -296,6 +299,24 @@ struct Index {
     }
     if (path === '/video/short') {
       this.nativePane = 'short_video';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/live' || path === '/home/live_commerce' || title === '直播' || title === '直播带货') {
+      this.nativePane = 'live';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/ai/stream') {
+      this.nativePane = 'ai_stream';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/scan') {
+      this.nativePane = 'scan';
       this.featurePath = '';
       this.showStub = false;
       return;
@@ -1130,6 +1151,18 @@ struct Index {
             this.openDeferred(p);
           },
         })
+      }
+
+      if (this.nativePane === 'live') {
+        NativeLivePane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'ai_stream') {
+        NativeAiStreamPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'scan') {
+        NativeScanPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {

@@ -1053,3 +1053,239 @@ export struct NativeShortVideoPane {
     .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
+@Component
+export struct NativeLivePane {
+  onClose: () => void = () => {};
+  @State roomId: string = '';
+  private rooms: string[][] = [
+    ['1', '沃德龙鼎直播间', '在线 326 · 讲解新车', '直播中'],
+    ['2', '售后讲堂', '预约 88 · 明天 19:00', '预约'],
+    ['3', '二手车清库', '回放 · 观看 8.6k', '回放'],
+  ];
+
+  build() {
+    Stack() {
+      if (this.roomId.length > 0) {
+        Column() {
+          Row() {
+            Text('‹').fontSize(22).fontColor(Color.White).onClick(() => { this.roomId = ''; })
+            Text(this.roomTitle())
+              .fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            Blank().layoutWeight(1)
+            Text(this.roomBadge())
+              .fontSize(12).fontColor(Color.White)
+              .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+              .backgroundColor('#CCE02020')
+              .borderRadius(12)
+          }.padding(16).width('100%')
+          Blank().layoutWeight(1)
+          Text(this.roomTitle())
+            .fontSize(20).fontWeight(FontWeight.Medium).fontColor(Color.White)
+          Text('直播画面（mock）').fontSize(14).fontColor('#B3FFFFFF').margin({ top: 8 })
+          Blank().layoutWeight(1)
+          Text('进入直播间 · 推流通道见 gap registry')
+            .fontSize(12).fontColor('#80FFFFFF')
+            .margin({ bottom: 32 })
+        }
+        .width('100%')
+        .height('100%')
+        .alignItems(HorizontalAlign.Center)
+        .backgroundColor(Color.Black)
+      } else {
+        Column() {
+          Row() {
+            Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+            Text('直播').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Blank().layoutWeight(1)
+          }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+          Text('点选进入房间入口 · 推流/实时通道见 gap registry')
+            .fontSize(13).fontColor(DesignTokens.body)
+            .padding({ left: 16, right: 16, top: 12 })
+            .width('100%')
+
+          List() {
+            ForEach(this.rooms, (room: string[]) => {
+              ListItem() {
+                Row() {
+                  Column({ space: 4 }) {
+                    Text(room[1]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                    Text(room[2]).fontSize(13).fontColor(DesignTokens.body)
+                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                  Text(room[3])
+                    .fontSize(11).fontColor(DesignTokens.link)
+                    .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                    .backgroundColor('#1A0070F3')
+                    .borderRadius(12)
+                }
+                .padding(16)
+                .width('100%')
+                .backgroundColor(DesignTokens.canvas)
+                .onClick(() => { this.roomId = room[0]; })
+              }
+            })
+          }.layoutWeight(1).width('100%').padding(16)
+        }
+        .width('100%')
+        .height('100%')
+        .backgroundColor(DesignTokens.canvasSoft2)
+      }
+    }
+    .width('100%')
+    .height('100%')
+  }
+
+  private roomTitle(): string {
+    const room = this.rooms.find((r: string[]) => r[0] === this.roomId);
+    return room !== undefined ? room[1] : '直播间';
+  }
+
+  private roomBadge(): string {
+    const room = this.rooms.find((r: string[]) => r[0] === this.roomId);
+    return room !== undefined ? room[3] : '';
+  }
+}
+
+@Component
+export struct NativeAiStreamPane {
+  onClose: () => void = () => {};
+  @State input: string = '';
+  @State streaming: boolean = false;
+  @State bubbles: string[][] = [
+    ['assistant', '你好，我是小石头。有什么想问的？'],
+  ];
+  private chips: string[] = ['今日学习建议', '语法纠错', '口语话题'];
+
+  private send(prompt: string): void {
+    const q = prompt.trim();
+    if (q.length === 0 || this.streaming) {
+      return;
+    }
+    this.bubbles = [...this.bubbles, ['user', q]];
+    this.input = '';
+    this.streaming = true;
+    const reply = `关于「${q}」：建议每天跟读 15 分钟，并记录生词。（mock 流）`;
+    setTimeout(() => {
+      this.bubbles = [...this.bubbles, ['assistant', reply]];
+      this.streaming = false;
+    }, 350);
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('AI 小石头').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List() {
+        ForEach(this.bubbles, (b: string[], i: number) => {
+          ListItem() {
+            Row() {
+              if (b[0] === 'user') {
+                Blank().layoutWeight(1)
+              }
+              Text(b[1])
+                .fontSize(15)
+                .fontColor(b[0] === 'user' ? Color.White : DesignTokens.ink)
+                .padding(12)
+                .backgroundColor(b[0] === 'user' ? DesignTokens.link : DesignTokens.canvas)
+                .borderRadius(12)
+                .constraintSize({ maxWidth: '75%' })
+              if (b[0] === 'assistant') {
+                Blank().layoutWeight(1)
+              }
+            }.padding({ left: 16, right: 16, top: 6, bottom: 6 }).width('100%')
+          }
+        }, (b: string[], i: number) => `${i}_${b[0]}`)
+      }.layoutWeight(1).width('100%').backgroundColor(DesignTokens.canvasSoft2)
+
+      Scroll().scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off) {
+        Row({ space: 8 }) {
+          ForEach(this.chips, (chip: string) => {
+            Text(chip)
+              .fontSize(13).fontColor(DesignTokens.link)
+              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+              .backgroundColor('#1A0070F3')
+              .borderRadius(16)
+              .onClick(() => this.send(chip))
+          })
+        }.padding({ left: 16, right: 16, top: 8, bottom: 8 })
+      }.width('100%')
+
+      Row({ space: 10 }) {
+        TextInput({ placeholder: '问问小石头…', text: this.input })
+          .layoutWeight(1).height(40)
+          .backgroundColor(DesignTokens.canvas).borderRadius(20)
+          .padding({ left: 12, right: 12 })
+          .onChange((v: string) => { this.input = v; })
+        if (this.streaming) {
+          Text('停止').fontSize(14).fontColor(DesignTokens.link)
+            .onClick(() => { this.streaming = false; })
+        } else {
+          Text('发送')
+            .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+            .backgroundColor(DesignTokens.link).borderRadius(20)
+            .onClick(() => this.send(this.input))
+        }
+      }.padding(12).width('100%').backgroundColor(DesignTokens.canvas)
+    }
+    .width('100%')
+    .height('100%')
+  }
+}
+
+@Component
+export struct NativeScanPane {
+  onClose: () => void = () => {};
+  @State result: string = '';
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('扫一扫').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      if (this.result.length > 0) {
+        Column({ space: 12 }) {
+          Text('扫码结果').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Text(this.result).fontSize(15).fontColor(DesignTokens.link)
+          Button('继续扫码')
+            .backgroundColor(DesignTokens.link)
+            .onClick(() => { this.result = ''; })
+        }
+        .alignItems(HorizontalAlign.Start)
+        .padding(16)
+        .width('100%')
+        Blank().layoutWeight(1)
+      } else {
+        Column({ space: 24 }) {
+          Blank().layoutWeight(1)
+          Text('将二维码放入框内')
+            .fontSize(13).fontColor('#CCFFFFFF')
+            .width(220).height(220)
+            .textAlign(TextAlign.Center)
+            .border({ width: 2, color: DesignTokens.link })
+            .borderRadius(12)
+          Text('用于门店收款码 / 活动核销').fontSize(13).fontColor('#99FFFFFF')
+          Button('模拟扫码成功')
+            .backgroundColor(DesignTokens.link)
+            .onClick(() => { this.result = 'myai://mall/orders?id=A1024'; })
+          Blank().layoutWeight(1)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Center)
+        .backgroundColor(Color.Black)
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
+  }
+}

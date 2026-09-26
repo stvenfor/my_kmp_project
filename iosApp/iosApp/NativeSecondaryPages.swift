@@ -1012,6 +1012,212 @@ struct NativeShortVideoPage: View {
     }
 }
 
+struct NativeLivePage: View {
+    var onClose: () -> Void
+    @State private var roomId: String? = nil
+    private let rooms: [(String, String, String, String)] = [
+        ("1", "沃德龙鼎直播间", "在线 326 · 讲解新车", "直播中"),
+        ("2", "售后讲堂", "预约 88 · 明天 19:00", "预约"),
+        ("3", "二手车清库", "回放 · 观看 8.6k", "回放"),
+    ]
+
+    var body: some View {
+        if let id = roomId, let room = rooms.first(where: { $0.0 == id }) {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                VStack {
+                    Spacer()
+                    Text(room.1, font: .system(size: 20, weight: .semibold), color: .white)
+                    Text("直播画面（mock）", font: .system(size: 14), color: .white.opacity(0.7))
+                        .padding(.top, 8)
+                    Spacer()
+                    Text("进入直播间 · 推流通道见 gap registry", font: .system(size: 12), color: .white.opacity(0.5))
+                        .padding(.bottom, 32)
+                }
+                VStack {
+                    HStack {
+                        Button {
+                            roomId = nil
+                        } label: {
+                            Image(systemName: "chevron.left").foregroundStyle(.white)
+                        }
+                        Text(room.1, font: .system(size: 17, weight: .semibold), color: .white)
+                        Spacer()
+                        Text(room.3, font: .system(size: 12, weight: .medium), color: .white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.red.opacity(0.8), in: Capsule())
+                    }
+                    .padding(16)
+                    Spacer()
+                }
+            }
+        } else {
+            VStack(spacing: 0) {
+                navBar(title: "直播", onClose: onClose, dark: false)
+                Text("点选进入房间入口 · 推流/实时通道见 gap registry", font: .system(size: 13), color: DesignTokens.body)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(rooms, id: \.0) { room in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(room.1, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                    Text(room.2, font: .system(size: 13), color: DesignTokens.body)
+                                }
+                                Spacer()
+                                Text(room.3, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                            }
+                            .padding(16)
+                            .background(DesignTokens.canvas)
+                            .onTapGesture { roomId = room.0 }
+                            Divider().overlay(DesignTokens.hairline)
+                        }
+                    }
+                    .padding(16)
+                }
+                .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            }
+        }
+    }
+}
+
+struct NativeAiStreamPage: View {
+    var onClose: () -> Void
+    @State private var input = ""
+    @State private var streaming = false
+    @State private var bubbles: [(String, String)] = [
+        ("assistant", "你好，我是小石头。有什么想问的？"),
+    ]
+    private let chips = ["今日学习建议", "语法纠错", "口语话题"]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "AI 小石头", onClose: onClose, dark: false)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 12) {
+                        ForEach(Array(bubbles.enumerated()), id: \.offset) { i, b in
+                            HStack {
+                                if b.0 == "user" { Spacer(minLength: 48) }
+                                Text(b.1, font: .system(size: 15), color: b.0 == "user" ? .white : DesignTokens.ink)
+                                    .padding(12)
+                                    .background(
+                                        b.0 == "user" ? DesignTokens.link : DesignTokens.canvas,
+                                        in: RoundedRectangle(cornerRadius: 12)
+                                    )
+                                if b.0 == "assistant" { Spacer(minLength: 48) }
+                            }
+                            .id(i)
+                        }
+                    }
+                    .padding(16)
+                }
+                .onChange(of: bubbles.count) { _, _ in
+                    if let last = bubbles.indices.last {
+                        withAnimation { proxy.scrollTo(last, anchor: .bottom) }
+                    }
+                }
+            }
+            .background(DesignTokens.canvasSoft2)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(chips, id: \.self) { chip in
+                        Text(chip, font: .system(size: 13), color: DesignTokens.link)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(DesignTokens.link.opacity(0.1), in: Capsule())
+                            .onTapGesture { send(chip) }
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+            }
+
+            HStack(spacing: 10) {
+                TextField("问问小石头…", text: $input)
+                    .padding(.horizontal, 12)
+                    .frame(height: 40)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 20))
+                if streaming {
+                    Button("停止") { streaming = false }
+                        .foregroundStyle(DesignTokens.link)
+                } else {
+                    Button("发送") { send(input) }
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(DesignTokens.link, in: Capsule())
+                }
+            }
+            .padding(12)
+            .background(DesignTokens.canvas)
+        }
+    }
+
+    private func send(_ prompt: String) {
+        let q = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty, !streaming else { return }
+        bubbles.append(("user", q))
+        input = ""
+        streaming = true
+        let reply = "关于「\(q)」：建议每天跟读 15 分钟，并记录生词。（mock 流）"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            bubbles.append(("assistant", reply))
+            streaming = false
+        }
+    }
+}
+
+struct NativeScanPage: View {
+    var onClose: () -> Void
+    @State private var result: String? = nil
+
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "扫一扫", onClose: onClose, dark: false)
+            if let result {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("扫码结果", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                    Text(result, font: .system(size: 15), color: DesignTokens.link)
+                    Button("继续扫码") { self.result = nil }
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                Spacer()
+            } else {
+                ZStack {
+                    Color.black.ignoresSafeArea(edges: .bottom)
+                    VStack(spacing: 24) {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(DesignTokens.link, lineWidth: 2)
+                            .frame(width: 220, height: 220)
+                            .overlay(
+                                Text("将二维码放入框内", font: .system(size: 13), color: .white.opacity(0.8))
+                            )
+                        Text("用于门店收款码 / 活动核销", font: .system(size: 13), color: .white.opacity(0.6))
+                        Button("模拟扫码成功") {
+                            result = "myai://mall/orders?id=A1024"
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                    }
+                }
+            }
+        }
+        .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {
