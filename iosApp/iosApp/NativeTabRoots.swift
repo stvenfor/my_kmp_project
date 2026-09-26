@@ -143,7 +143,7 @@ struct HomeTabView: View {
             }
         }
         .alert("每日签到", isPresented: $showCheckIn) {
-            Button("立即签到") {
+            Button("立即签到 · +10积分") {
                 let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
                 UserDefaults.standard.set(String(today), forKey: "check_in_dialog_ack_date")
             }
@@ -152,7 +152,7 @@ struct HomeTabView: View {
                 UserDefaults.standard.set(String(today), forKey: "check_in_dialog_ack_date")
             }
         } message: {
-            Text("连续签到 3 天 · 今日可领 +10 积分")
+            Text("签到攒积分，可在签到页兑换好物\n已连续签到 3 天")
         }
     }
 

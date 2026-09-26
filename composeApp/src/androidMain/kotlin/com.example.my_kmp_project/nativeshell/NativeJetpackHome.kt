@@ -129,14 +129,22 @@ internal fun JetpackHomeRoot(
                 Text("每日签到", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = DemoColors.TextPrimary)
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "连续签到 3 天 · 今日可领 +10 积分",
+                    "签到攒积分，可在签到页兑换好物",
                     fontSize = 13.sp,
                     color = DemoColors.TextSecondary,
                     textAlign = TextAlign.Center,
                 )
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "已连续签到 3 天",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = DemoColors.TextPrimary,
+                    textAlign = TextAlign.Center,
+                )
                 Spacer(Modifier.height(20.dp))
                 Text(
-                    "立即签到",
+                    "立即签到 · +10积分",
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center,
@@ -148,7 +156,7 @@ internal fun JetpackHomeRoot(
                             val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
                             context.getSharedPreferences("home_check_in", 0)
                                 .edit().putString("check_in_dialog_ack_date", today).apply()
-                            showPlatformToast("签到成功，+10 积分")
+                            showPlatformToast("签到成功，+10积分")
                             showCheckIn = false
                         }
                         .padding(vertical = 12.dp),
