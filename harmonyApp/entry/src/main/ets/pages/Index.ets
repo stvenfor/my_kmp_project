@@ -920,6 +920,30 @@ struct Index {
     if (route === '/home/data_analytics' || route.indexOf('/home/data_analytics/') === 0) {
       return true;
     }
+    if (route === '/home/ledger' || route.indexOf('/home/ledger/') === 0) {
+      return true;
+    }
+    if (route === '/home/after_sales' || route.indexOf('/home/after_sales/') === 0) {
+      return true;
+    }
+    if (route === '/home/check_in_mall') {
+      return true;
+    }
+    if (route === '/mall' || route.indexOf('/mall/') === 0) {
+      return true;
+    }
+    if (route === '/wallet') {
+      return true;
+    }
+    if (route === '/mine/addresses' || route.indexOf('/mine/addresses/') === 0) {
+      return true;
+    }
+    if (route === '/mine/profile') {
+      return true;
+    }
+    if (route === '/video/short') {
+      return true;
+    }
     if (route === '/ai/stream') {
       return true;
     }

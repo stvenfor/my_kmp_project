@@ -115,7 +115,7 @@ internal fun NativeAndroidMain() {
     var pendingRouteAfterLogin by remember { mutableStateOf<String?>(null) }
     val authState by softAuth.uiState.collectAsState()
 
-    /** Flutter *Navigation.open() soft-auth gates. */
+    /** Flutter MineController / *Navigation.open() soft-auth gates. */
     fun requiresLoginForRoute(route: String): Boolean =
         route == MineRoutes.DealInvoiceDemo ||
             route == MineRoutes.DealInvoiceUpload ||
@@ -125,6 +125,18 @@ internal fun NativeAndroidMain() {
             route.startsWith("${HomeRoutes.NewCarFollow}/") ||
             route == HomeRoutes.DataAnalytics ||
             route.startsWith("${HomeRoutes.DataAnalytics}/") ||
+            route == HomeRoutes.Ledger ||
+            route.startsWith("${HomeRoutes.Ledger}/") ||
+            route == HomeRoutes.AfterSales ||
+            route.startsWith("${HomeRoutes.AfterSales}/") ||
+            route == HomeRoutes.CheckInMall ||
+            route == MineRoutes.Mall ||
+            route.startsWith("${MineRoutes.Mall}/") ||
+            route == MineRoutes.Wallet ||
+            route == MineRoutes.Addresses ||
+            route.startsWith("${MineRoutes.Addresses}/") ||
+            route == MineRoutes.Profile ||
+            route == MineRoutes.ShortVideo ||
             route == "/ai/stream"
 
     fun selectTab(next: MainTab) {

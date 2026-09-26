@@ -203,6 +203,14 @@ struct ContentView: View {
         if route == "/home/used_car" || route.hasPrefix("/home/used_car/") { return true }
         if route == "/home/new_car_follow" || route.hasPrefix("/home/new_car_follow/") { return true }
         if route == "/home/data_analytics" || route.hasPrefix("/home/data_analytics/") { return true }
+        if route == "/home/ledger" || route.hasPrefix("/home/ledger/") { return true }
+        if route == "/home/after_sales" || route.hasPrefix("/home/after_sales/") { return true }
+        if route == "/home/check_in_mall" { return true }
+        if route == "/mall" || route.hasPrefix("/mall/") { return true }
+        if route == "/wallet" { return true }
+        if route == "/mine/addresses" || route.hasPrefix("/mine/addresses/") { return true }
+        if route == "/mine/profile" { return true }
+        if route == "/video/short" { return true }
         if route == "/ai/stream" { return true }
         return false
     }
