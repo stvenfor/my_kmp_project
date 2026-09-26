@@ -411,7 +411,6 @@ private fun JetpackStoreMetrics(
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 color = DemoColors.Accent,
-                modifier = Modifier.clickable { onDeferred("公司数据") },
             )
             Text("›", fontSize = 16.sp, color = DemoColors.Accent)
         }

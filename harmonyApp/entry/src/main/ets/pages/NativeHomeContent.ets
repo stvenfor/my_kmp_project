@@ -249,7 +249,6 @@ export struct NativeHomeContent {
           Row() {
             Text('公司数据').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
             Text('查看更多').fontSize(13).fontColor(DesignTokens.link)
-              .onClick(() => this.onDeferred('公司数据'))
           }.width('100%')
 
           Column({ space: 14 }) {
@@ -387,7 +386,7 @@ export struct NativeHomeContent {
 
         // News
         Column({ space: 12 }) {
-          Text('资讯').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          Text('行业动态').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
           Row({ space: 12 }) {
             Row().width(72).height(72).backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
             Column({ space: 6 }) {

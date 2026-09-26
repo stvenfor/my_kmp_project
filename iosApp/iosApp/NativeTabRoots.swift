@@ -471,7 +471,7 @@ struct HomeTabView: View {
 
     private var newsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("资讯", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+            Text("行业动态", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
             HStack(spacing: 12) {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(DesignTokens.canvasSoft2)

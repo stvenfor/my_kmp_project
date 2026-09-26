@@ -648,7 +648,7 @@ private fun NewsSection() {
             .padding(top = 16.dp),
     ) {
         Text(
-            text = "行业资讯",
+            text = "行业动态",
             color = DemoColors.TextPrimary,
             fontWeight = FontWeight.SemiBold,
             fontSize = 17.sp,
