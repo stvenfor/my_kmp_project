@@ -213,7 +213,6 @@ internal fun JetpackHomeRoot(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
                             .background(DemoColors.Accent.copy(alpha = 0.1f))
-                            .clickable { onDeferred("消息") }
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     ) {
                         Text(

@@ -72,6 +72,8 @@ internal object MineRoutes {
     const val Poster = "/mine/poster"
     const val Settings = "/settings"
     const val SettingsLegacy = "/mine/settings"
+    const val DealInvoiceDemo = "/settings/deal_invoice_demo"
+    const val DealInvoiceUpload = "/settings/deal_invoice/upload"
     const val PersonalizedSettings = "/mine/personalized_settings"
     const val Feedback = "/mine/feedback"
     const val Cooperation = "/mine/cooperation"
@@ -100,6 +102,7 @@ internal object MineRoutes {
         "设置" -> Settings
         "设置页" -> Settings
         "/mine/settings" -> Settings
+        "新车成交" -> DealInvoiceDemo
         // Flutter MineController: these are toast-only — do NOT open Invite/fake screens.
         "意见反馈", "帮助中心" -> null
         "商务合作" -> null
@@ -170,6 +173,12 @@ internal fun MineRouteHost(
             onBack = onBack,
             snackbar = { showPlatformToast(it) },
         )
+        route == MineRoutes.DealInvoiceDemo -> DealInvoiceDemoScreen(
+            onBack = onBack,
+            onUpload = { onNavigate(MineRoutes.DealInvoiceUpload) },
+            onOpenDetail = { onNavigate(MineRoutes.DealInvoiceUpload) },
+        )
+        route == MineRoutes.DealInvoiceUpload -> DealInvoiceUploadScreen(onBack = onBack)
         route == MineRoutes.Feedback -> FeedbackScreen(onBack = onBack)
         route == MineRoutes.Cooperation -> CooperationScreen(onBack = onBack)
         route == MineRoutes.Reminder -> ReminderScreen(onBack = onBack)

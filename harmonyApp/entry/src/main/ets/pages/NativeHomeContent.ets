@@ -179,7 +179,6 @@ export struct NativeHomeContent {
           .padding({ left: 12, right: 12, top: 6, bottom: 6 })
           .backgroundColor('#1A0070F3')
           .borderRadius(20)
-          .onClick(() => this.onDeferred('消息'))
         }
         .width('100%')
         .padding({ left: 16, right: 16, top: 16 })

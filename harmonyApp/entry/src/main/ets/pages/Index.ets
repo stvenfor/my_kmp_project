@@ -121,6 +121,7 @@ struct Index {
   @State isLoggedIn: boolean = false;
   @State showLogin: boolean = false;
   @State pendingTabAfterLogin: number = -1;
+  @State pendingRouteAfterLogin: string = '';
   @State showIsland: boolean = false;
   @State communityFilter: string = '最新';
   @State errorMessage: string = '';
@@ -259,6 +260,11 @@ struct Index {
     if (this.pendingTabAfterLogin >= 0) {
       this.tab = this.pendingTabAfterLogin;
       this.pendingTabAfterLogin = -1;
+    }
+    if (this.pendingRouteAfterLogin.length > 0) {
+      const route = this.pendingRouteAfterLogin;
+      this.pendingRouteAfterLogin = '';
+      this.openSecondaryCompose(route);
     }
   }
 
@@ -816,7 +822,7 @@ struct Index {
     // Flutter MineController toast-only / Mine-root dialogs — never navigable routes.
     const toastOnly: string[] = [
       '切换门店', '切换店铺', '电子名片', '商务合作', '提醒事项',
-      '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像', '新车成交', '请先登录',
+      '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像', '请先登录',
       '/mine/business_card', '/mine/invite', '/mine/business',
       '/mine/reminders', '/mine/reminder', '/mine/fan_group', '/mine/feedback',
     ];
@@ -830,6 +836,16 @@ struct Index {
         return;
       }
       promptAction.showToast({ message: title, duration: 2000 });
+      return;
+    }
+    // Flutter DealInvoiceNavigation: login then open demo.
+    if (title === '新车成交' || title === '/settings/deal_invoice_demo') {
+      if (!this.isLoggedIn) {
+        this.pendingRouteAfterLogin = '/settings/deal_invoice_demo';
+        this.showLogin = true;
+        return;
+      }
+      this.openSecondaryCompose('/settings/deal_invoice_demo');
       return;
     }
     const path = resolveNativePath(title);
@@ -1907,6 +1923,7 @@ struct Index {
           onCancel: () => {
             this.showLogin = false;
             this.pendingTabAfterLogin = -1;
+            this.pendingRouteAfterLogin = '';
             this.tab = MainTab.Home;
           },
         })

@@ -71,6 +71,7 @@ struct ContentView: View {
     @State private var chatPendingPeer: String? = nil
     @State private var toastText: String? = nil
     @State private var pendingTabAfterLogin: MainTab? = nil
+    @State private var pendingRouteAfterLogin: String? = nil
 
     var body: some View {
         Group {
@@ -131,7 +132,7 @@ struct ContentView: View {
             "/mine/business_card", "/mine/invite", "/mine/business",
             "/mine/reminders", "/mine/reminder", "/mine/fan_group", "/mine/feedback",
         ]
-        if toastOnlyKeys.contains(key) || key == "新车成交" || key == "请先登录" {
+        if toastOnlyKeys.contains(key) || key == "请先登录" {
             let toast: String
             switch key {
             case "/mine/business_card": toast = "电子名片"
@@ -140,7 +141,6 @@ struct ContentView: View {
             case "/mine/reminders", "/mine/reminder": toast = "提醒事项"
             case "/mine/fan_group": toast = "粉丝群"
             case "/mine/feedback": toast = "意见反馈"
-            case "新车成交": toast = "新车成交"
             case "请先登录": toast = "请先登录"
             default: toast = key
             }
@@ -148,6 +148,17 @@ struct ContentView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
                 if toastText == toast { toastText = nil }
             }
+            return
+        }
+        // Flutter DealInvoiceNavigation: require login, then open demo.
+        if key == "新车成交" || key == "/settings/deal_invoice_demo" {
+            if !isLoggedIn {
+                pendingRouteAfterLogin = "/settings/deal_invoice_demo"
+                showLogin = true
+                return
+            }
+            secondaryRoute = "/settings/deal_invoice_demo"
+            showSecondary = true
             return
         }
         let path = NativeRouteResolver.resolve(key)
@@ -279,10 +290,16 @@ struct ContentView: View {
                         tab = pending
                         pendingTabAfterLogin = nil
                     }
+                    if let route = pendingRouteAfterLogin {
+                        pendingRouteAfterLogin = nil
+                        secondaryRoute = route
+                        showSecondary = true
+                    }
                 },
                 onCancel: {
                     showLogin = false
                     pendingTabAfterLogin = nil
+                    pendingRouteAfterLogin = nil
                     tab = .home
                 }
             )

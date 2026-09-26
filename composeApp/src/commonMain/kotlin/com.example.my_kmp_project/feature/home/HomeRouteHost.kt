@@ -46,6 +46,7 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import com.example.my_kmp_project.feature.mine.MineRoutes
 
 /** Flutter `RoutePath` home secondaries — string keys used by Native shell overlay. */
 internal object HomeRoutes {
@@ -97,7 +98,7 @@ internal object HomeRoutes {
         "售后", "售后专区" -> AfterSales
         // Flutter: 新车成交 → DealInvoiceDemo; 新车跟进 → NewCarFollow (distinct).
         "新车跟进", "新车关注" -> NewCarFollow
-        "新车成交" -> null // toast / deal-invoice demo — not NewCarFollow
+        "新车成交" -> MineRoutes.DealInvoiceDemo
         // Flutter HomeController.onStoreTap → SwitchStoreDialog (Mine-root), not DataAnalytics.
         "门店" -> null
         "话术库" -> Strategy

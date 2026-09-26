@@ -112,6 +112,7 @@ internal fun NativeAndroidMain() {
     var bottomBarVisible by remember { mutableStateOf(true) }
     var chatPendingDetail by remember { mutableStateOf<ChatDetailDeepLinkArgs?>(null) }
     var chatMissingDetail by remember { mutableStateOf(false) }
+    var pendingRouteAfterLogin by remember { mutableStateOf<String?>(null) }
     val authState by softAuth.uiState.collectAsState()
 
     fun selectTab(next: MainTab) {
@@ -132,6 +133,28 @@ internal fun NativeAndroidMain() {
         keptTabs = keptTabs + resume
         authOverlay = AuthOverlay.None
         bottomBarVisible = true
+        val pending = pendingRouteAfterLogin
+        pendingRouteAfterLogin = null
+        if (pending != null) {
+            when {
+                pending.startsWith("/settings/deal_invoice") ||
+                    pending.startsWith("/mine") ||
+                    pending.startsWith("/mall") ||
+                    pending.startsWith("/wallet") ||
+                    pending.startsWith("/pay") -> {
+                    mineRoute = pending
+                    mineRouteStack = listOf(pending)
+                    overlay = ShellOverlay.MineRoute
+                    bottomBarVisible = false
+                }
+                pending.startsWith("/home/") -> {
+                    homeRoute = pending
+                    homeRouteStack = listOf(pending)
+                    overlay = ShellOverlay.HomeRoute
+                    bottomBarVisible = false
+                }
+            }
+        }
     }
 
     fun openHomeRoute(route: String) {
@@ -237,7 +260,7 @@ internal fun NativeAndroidMain() {
                 return
             }
             "电子名片", "商务合作", "提醒事项", "邀请好友", "粉丝群",
-            "意见反馈", "帮助中心", "头像", "新车成交", "请先登录" -> {
+            "意见反馈", "帮助中心", "头像", "请先登录" -> {
                 showPlatformToast(title)
                 return
             }
@@ -284,11 +307,37 @@ internal fun NativeAndroidMain() {
                     mineMapped == MineRoutes.ShortVideo
                 ) {
                     openContentRoute(mineMapped)
+                } else if (
+                    mineMapped == MineRoutes.DealInvoiceDemo ||
+                    mineMapped == MineRoutes.DealInvoiceUpload
+                ) {
+                    if (!authState.isLoggedIn) {
+                        pendingRouteAfterLogin = mineMapped
+                        authOverlay = AuthOverlay.Login
+                        bottomBarVisible = false
+                    } else {
+                        openMineRoute(mineMapped)
+                    }
                 } else {
                     openMineRoute(mineMapped)
                 }
             }
-            homeMapped != null -> openHomeRoute(homeMapped)
+            homeMapped != null -> {
+                if (
+                    homeMapped == MineRoutes.DealInvoiceDemo ||
+                    homeMapped == MineRoutes.DealInvoiceUpload
+                ) {
+                    if (!authState.isLoggedIn) {
+                        pendingRouteAfterLogin = homeMapped
+                        authOverlay = AuthOverlay.Login
+                        bottomBarVisible = false
+                    } else {
+                        openMineRoute(homeMapped)
+                    }
+                } else {
+                    openHomeRoute(homeMapped)
+                }
+            }
             communityMapped != null -> openCommunityRoute(communityMapped)
             contentMapped != null -> openContentRoute(contentMapped)
             else -> {
@@ -525,6 +574,7 @@ internal fun NativeAndroidMain() {
                 onOpenRegister = { authOverlay = AuthOverlay.Register },
                 onBack = {
                     softAuth.dismissGate()
+                    pendingRouteAfterLogin = null
                     authOverlay = AuthOverlay.None
                     tab = MainTab.Home
                     bottomBarVisible = true

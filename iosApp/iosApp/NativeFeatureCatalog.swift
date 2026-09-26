@@ -48,7 +48,7 @@ enum NativeRouteResolver {
         "订单待审核": "/home/todo/order-pending-review",
         "售后": "/home/after_sales", "售后专区": "/home/after_sales",
         "新车跟进": "/home/new_car_follow", "新车关注": "/home/new_car_follow",
-        // Flutter: 新车成交 → deal invoice demo (not NewCarFollow) — toast-only until host lands.
+        "新车成交": "/settings/deal_invoice_demo",
         "销售顾问": "/home/todo/follow-up-customers",
         "AI小石头": "/ai/stream", "AI 小石": "/ai/stream", "AI小石": "/ai/stream",
         "订单中心": "/mall/orders",
@@ -453,7 +453,7 @@ struct NativeFeatureHost: View {
             NativeClassroomPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/used_car" {
             NativeUsedCarPage(onClose: onClose, onOpen: onOpen)
-        } else if path == "/home/new_car_follow" || pathOrLabel == "新车成交" || pathOrLabel == "新车跟进" {
+        } else if path == "/home/new_car_follow" || pathOrLabel == "新车跟进" || pathOrLabel == "新车关注" {
             NativeNewCarFollowPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/club" || pathOrLabel == "Club" {
             NativeClubPage(onClose: onClose)
