@@ -152,13 +152,7 @@ struct ContentView: View {
         }
         // Flutter DealInvoiceNavigation: require login, then open demo.
         if key == "新车成交" || key == "/settings/deal_invoice_demo" {
-            if !isLoggedIn {
-                pendingRouteAfterLogin = "/settings/deal_invoice_demo"
-                showLogin = true
-                return
-            }
-            secondaryRoute = "/settings/deal_invoice_demo"
-            showSecondary = true
+            openSecondaryWithSoftAuth("/settings/deal_invoice_demo")
             return
         }
         let path = NativeRouteResolver.resolve(key)
@@ -194,9 +188,33 @@ struct ContentView: View {
             mineIslandRoute = "about"
             showMineIsland = true
         default:
-            secondaryRoute = path.isEmpty ? key : path
-            showSecondary = true
+            let target = path.isEmpty ? key : path
+            if Self.requiresLogin(for: target) {
+                openSecondaryWithSoftAuth(target)
+            } else {
+                secondaryRoute = target
+                showSecondary = true
+            }
         }
+    }
+
+    private static func requiresLogin(for route: String) -> Bool {
+        if route == "/settings/deal_invoice_demo" || route.hasPrefix("/settings/deal_invoice") { return true }
+        if route == "/home/used_car" || route.hasPrefix("/home/used_car/") { return true }
+        if route == "/home/new_car_follow" || route.hasPrefix("/home/new_car_follow/") { return true }
+        if route == "/home/data_analytics" || route.hasPrefix("/home/data_analytics/") { return true }
+        if route == "/ai/stream" { return true }
+        return false
+    }
+
+    private func openSecondaryWithSoftAuth(_ route: String) {
+        if !isLoggedIn {
+            pendingRouteAfterLogin = route
+            showLogin = true
+            return
+        }
+        secondaryRoute = route
+        showSecondary = true
     }
 
     private func chatPeerFromDeepLink(_ raw: String) -> String {

@@ -840,12 +840,7 @@ struct Index {
     }
     // Flutter DealInvoiceNavigation: login then open demo.
     if (title === '新车成交' || title === '/settings/deal_invoice_demo') {
-      if (!this.isLoggedIn) {
-        this.pendingRouteAfterLogin = '/settings/deal_invoice_demo';
-        this.showLogin = true;
-        return;
-      }
-      this.openSecondaryCompose('/settings/deal_invoice_demo');
+      this.openSecondaryWithSoftAuth('/settings/deal_invoice_demo');
       return;
     }
     const path = resolveNativePath(title);
@@ -904,7 +899,40 @@ struct Index {
     this.nativePane = '';
     this.featurePath = '';
     this.showStub = false;
-    this.openSecondaryCompose(path.length > 0 ? path : title);
+    const target = path.length > 0 ? path : title;
+    if (this.requiresLoginForRoute(target)) {
+      this.openSecondaryWithSoftAuth(target);
+    } else {
+      this.openSecondaryCompose(target);
+    }
+  }
+
+  private requiresLoginForRoute(route: string): boolean {
+    if (route === '/settings/deal_invoice_demo' || route.indexOf('/settings/deal_invoice') === 0) {
+      return true;
+    }
+    if (route === '/home/used_car' || route.indexOf('/home/used_car/') === 0) {
+      return true;
+    }
+    if (route === '/home/new_car_follow' || route.indexOf('/home/new_car_follow/') === 0) {
+      return true;
+    }
+    if (route === '/home/data_analytics' || route.indexOf('/home/data_analytics/') === 0) {
+      return true;
+    }
+    if (route === '/ai/stream') {
+      return true;
+    }
+    return false;
+  }
+
+  private openSecondaryWithSoftAuth(route: string): void {
+    if (!this.isLoggedIn) {
+      this.pendingRouteAfterLogin = route;
+      this.showLogin = true;
+      return;
+    }
+    this.openSecondaryCompose(route);
   }
 
 

@@ -115,6 +115,18 @@ internal fun NativeAndroidMain() {
     var pendingRouteAfterLogin by remember { mutableStateOf<String?>(null) }
     val authState by softAuth.uiState.collectAsState()
 
+    /** Flutter *Navigation.open() soft-auth gates. */
+    fun requiresLoginForRoute(route: String): Boolean =
+        route == MineRoutes.DealInvoiceDemo ||
+            route == MineRoutes.DealInvoiceUpload ||
+            route == HomeRoutes.UsedCar ||
+            route.startsWith("${HomeRoutes.UsedCar}/") ||
+            route == HomeRoutes.NewCarFollow ||
+            route.startsWith("${HomeRoutes.NewCarFollow}/") ||
+            route == HomeRoutes.DataAnalytics ||
+            route.startsWith("${HomeRoutes.DataAnalytics}/") ||
+            route == "/ai/stream"
+
     fun selectTab(next: MainTab) {
         if (softAuth.trySelectTab(next)) {
             tab = next
@@ -124,36 +136,6 @@ internal fun NativeAndroidMain() {
         } else {
             authOverlay = AuthOverlay.Login
             bottomBarVisible = false
-        }
-    }
-
-    fun afterAuthSuccess() {
-        val resume = softAuth.onLoginSucceeded()
-        tab = resume
-        keptTabs = keptTabs + resume
-        authOverlay = AuthOverlay.None
-        bottomBarVisible = true
-        val pending = pendingRouteAfterLogin
-        pendingRouteAfterLogin = null
-        if (pending != null) {
-            when {
-                pending.startsWith("/settings/deal_invoice") ||
-                    pending.startsWith("/mine") ||
-                    pending.startsWith("/mall") ||
-                    pending.startsWith("/wallet") ||
-                    pending.startsWith("/pay") -> {
-                    mineRoute = pending
-                    mineRouteStack = listOf(pending)
-                    overlay = ShellOverlay.MineRoute
-                    bottomBarVisible = false
-                }
-                pending.startsWith("/home/") -> {
-                    homeRoute = pending
-                    homeRouteStack = listOf(pending)
-                    overlay = ShellOverlay.HomeRoute
-                    bottomBarVisible = false
-                }
-            }
         }
     }
 
@@ -252,6 +234,49 @@ internal fun NativeAndroidMain() {
         }
     }
 
+    fun openPendingRoute(route: String) {
+        when {
+            route.startsWith("/settings/deal_invoice") ||
+                route.startsWith("/mine") ||
+                route.startsWith("/mall") ||
+                route.startsWith("/wallet") ||
+                route.startsWith("/pay") ||
+                route == "/settings" -> openMineRoute(route)
+            route.startsWith("/home/") -> openHomeRoute(route)
+            route.startsWith("/community/") -> openCommunityRoute(route)
+            route.startsWith("/ai") ||
+                route.startsWith("/video") ||
+                route.startsWith("/classroom") ||
+                route.startsWith("/live") ||
+                route.startsWith("/friend") ||
+                route.startsWith("/music") ||
+                route.startsWith("/media") -> openContentRoute(route)
+        }
+    }
+
+    fun openWithSoftAuth(route: String, open: (String) -> Unit) {
+        if (requiresLoginForRoute(route) && !authState.isLoggedIn) {
+            pendingRouteAfterLogin = route
+            authOverlay = AuthOverlay.Login
+            bottomBarVisible = false
+        } else {
+            open(route)
+        }
+    }
+
+    fun afterAuthSuccess() {
+        val resume = softAuth.onLoginSucceeded()
+        tab = resume
+        keptTabs = keptTabs + resume
+        authOverlay = AuthOverlay.None
+        bottomBarVisible = true
+        val pending = pendingRouteAfterLogin
+        pendingRouteAfterLogin = null
+        if (pending != null) {
+            openPendingRoute(pending)
+        }
+    }
+
     fun openDeferred(title: String) {
         // Flutter MineController toast-only — never navigable secondary routes.
         when (title) {
@@ -295,31 +320,17 @@ internal fun NativeAndroidMain() {
                 bottomBarVisible = false
             }
             mineMapped != null -> {
-                if (
+                when {
                     mineMapped == HomeRoutes.UsedCar ||
-                    mineMapped == HomeRoutes.CheckInMall ||
-                    mineMapped == HomeRoutes.Ledger ||
-                    mineMapped == HomeRoutes.AfterSales
-                ) {
-                    openHomeRoute(mineMapped)
-                } else if (
+                        mineMapped == HomeRoutes.CheckInMall ||
+                        mineMapped == HomeRoutes.Ledger ||
+                        mineMapped == HomeRoutes.AfterSales ||
+                        mineMapped == HomeRoutes.DataAnalytics ->
+                        openWithSoftAuth(mineMapped) { openHomeRoute(it) }
                     mineMapped == MineRoutes.Classroom ||
-                    mineMapped == MineRoutes.ShortVideo
-                ) {
-                    openContentRoute(mineMapped)
-                } else if (
-                    mineMapped == MineRoutes.DealInvoiceDemo ||
-                    mineMapped == MineRoutes.DealInvoiceUpload
-                ) {
-                    if (!authState.isLoggedIn) {
-                        pendingRouteAfterLogin = mineMapped
-                        authOverlay = AuthOverlay.Login
-                        bottomBarVisible = false
-                    } else {
-                        openMineRoute(mineMapped)
-                    }
-                } else {
-                    openMineRoute(mineMapped)
+                        mineMapped == MineRoutes.ShortVideo ->
+                        openWithSoftAuth(mineMapped) { openContentRoute(it) }
+                    else -> openWithSoftAuth(mineMapped) { openMineRoute(it) }
                 }
             }
             homeMapped != null -> {
@@ -327,19 +338,13 @@ internal fun NativeAndroidMain() {
                     homeMapped == MineRoutes.DealInvoiceDemo ||
                     homeMapped == MineRoutes.DealInvoiceUpload
                 ) {
-                    if (!authState.isLoggedIn) {
-                        pendingRouteAfterLogin = homeMapped
-                        authOverlay = AuthOverlay.Login
-                        bottomBarVisible = false
-                    } else {
-                        openMineRoute(homeMapped)
-                    }
+                    openWithSoftAuth(homeMapped) { openMineRoute(it) }
                 } else {
-                    openHomeRoute(homeMapped)
+                    openWithSoftAuth(homeMapped) { openHomeRoute(it) }
                 }
             }
             communityMapped != null -> openCommunityRoute(communityMapped)
-            contentMapped != null -> openContentRoute(contentMapped)
+            contentMapped != null -> openWithSoftAuth(contentMapped) { openContentRoute(it) }
             else -> {
                 // Out-of-scope / unmapped label only — never for in-scope RoutePath.
                 deferredTitle = title
