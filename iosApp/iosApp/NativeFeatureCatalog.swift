@@ -474,6 +474,12 @@ struct NativeFeatureHost: View {
             NativeTodoListPage(title: "订单待审核", rows: [
                 ("订单 #90821", "定金 ¥5000 · 待店长审", "待审"),
             ], action: nil, onClose: onClose)
+        } else if path == "/web" {
+            NativeWebPage(onClose: onClose)
+        } else if path == "/home/after_sales" {
+            NativeAfterSalesPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/ledger" {
+            NativeLedgerPage(onClose: onClose)
         } else {
             genericList
         }

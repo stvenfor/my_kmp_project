@@ -38,6 +38,9 @@ import {
   NativeClubPane,
   NativeLifeServicePane,
   NativeTodoListPane,
+  NativeWebPane,
+  NativeAfterSalesPane,
+  NativeLedgerPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -381,6 +384,24 @@ struct Index {
     if (path.indexOf('/home/todo/') === 0) {
       this.nativePane = 'todo';
       this.featurePath = path;
+      this.showStub = false;
+      return;
+    }
+    if (path === '/web') {
+      this.nativePane = 'web';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/after_sales') {
+      this.nativePane = 'after_sales';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/home/ledger') {
+      this.nativePane = 'ledger';
+      this.featurePath = '';
       this.showStub = false;
       return;
     }
@@ -1285,6 +1306,24 @@ struct Index {
           action: this.todoAction(),
           onClose: (): void => { this.nativePane = ''; },
         })
+      }
+
+      if (this.nativePane === 'web') {
+        NativeWebPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'after_sales') {
+        NativeAfterSalesPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
+      }
+
+      if (this.nativePane === 'ledger') {
+        NativeLedgerPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {

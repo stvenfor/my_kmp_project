@@ -1725,3 +1725,95 @@ export struct NativeTodoListPane {
     }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
+
+@Component
+export struct NativeWebPane {
+  onClose: () => void = () => {};
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('网页').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Column({ space: 12 }) {
+        Text('离线 fixture').fontSize(20).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('无网络也可显示的固定页面，对齐 Flutter InAppWeb 离线兜底。')
+          .fontSize(15).fontColor(DesignTokens.body)
+        Text('myai://web?fixture=offline').fontSize(13).fontColor(DesignTokens.link)
+          .padding(12).width('100%').backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
+      }.padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvas)
+  }
+}
+
+@Component
+export struct NativeAfterSalesPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
+  private rows: string[][] = [
+    ['京 A·12345 · 小保养', '完成 · 2026-09-20', '完成'],
+    ['京 C·54321 · 四轮定位', '进行中', '进行中'],
+    ['京 B·99887 · 钣喷', '待进厂 · 明天 09:00', '预约'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('售后专区').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+        Text('新建工单').fontSize(14).fontColor(DesignTokens.link).onClick(() => this.onOpen('/home/after_sales/create'))
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.rows, (r: string[]) => {
+          ListItem() {
+            Row() {
+              Column({ space: 4 }) {
+                Text(r[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Text(r[2]).fontSize(11).fontColor(DesignTokens.link)
+                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+                .backgroundColor('#1A0070F3').borderRadius(12)
+            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+            .onClick(() => this.onOpen('/home/after_sales/detail'))
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeLedgerPane {
+  onClose: () => void = () => {};
+  private metrics: string[][] = [
+    ['9 月销售额', '¥ 2,860,000'],
+    ['毛利率', '18.6%'],
+    ['库存周转', '42 天'],
+    ['售后产值', '¥ 486,000'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('台账').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Grid() {
+        ForEach(this.metrics, (m: string[]) => {
+          GridItem() {
+            Column({ space: 8 }) {
+              Text(m[0]).fontSize(13).fontColor(DesignTokens.body)
+              Text(m[1]).fontSize(20).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.alignItems(HorizontalAlign.Start).padding(16).width('100%')
+            .backgroundColor(DesignTokens.canvas).borderRadius(12)
+          }
+        })
+      }.columnsTemplate('1fr 1fr').columnsGap(12).rowsGap(12).padding(16).width('100%')
+      Blank().layoutWeight(1)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}

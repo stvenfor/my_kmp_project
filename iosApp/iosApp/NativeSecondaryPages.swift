@@ -1646,6 +1646,101 @@ struct NativeTodoListPage: View {
     }
 }
 
+
+struct NativeWebPage: View {
+    var onClose: () -> Void
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "网页", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("离线 fixture", font: .system(size: 20, weight: .semibold), color: DesignTokens.ink)
+                    Text("无网络也可显示的固定页面，对齐 Flutter InAppWeb 离线兜底。", font: .system(size: 15), color: DesignTokens.body)
+                    Text("myai://web?fixture=offline", font: .system(size: 13), color: DesignTokens.link)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvas.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeAfterSalesPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    private let rows: [(String, String, String)] = [
+        ("京 A·12345 · 小保养", "完成 · 2026-09-20", "完成"),
+        ("京 C·54321 · 四轮定位", "进行中", "进行中"),
+        ("京 B·99887 · 钣喷", "待进厂 · 明天 09:00", "预约"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link) }
+                Text("售后专区", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+                Button("新建工单") { onOpen?("/home/after_sales/create") }
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(DesignTokens.link)
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12).background(DesignTokens.canvas)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(r.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Text(r.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            Text(r.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                        }
+                        .padding(16).background(DesignTokens.canvas)
+                        .onTapGesture { onOpen?("/home/after_sales/detail") }
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeLedgerPage: View {
+    var onClose: () -> Void
+    private let metrics: [(String, String)] = [
+        ("9 月销售额", "¥ 2,860,000"),
+        ("毛利率", "18.6%"),
+        ("库存周转", "42 天"),
+        ("售后产值", "¥ 486,000"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "台账", onClose: onClose, dark: false)
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(Array(metrics.enumerated()), id: \.offset) { _, m in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(m.0, font: .system(size: 13), color: DesignTokens.body)
+                            Text(m.1, font: .system(size: 20, weight: .semibold), color: DesignTokens.ink)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {
