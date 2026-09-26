@@ -438,9 +438,9 @@ struct HomeTabView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("联系汽车之家", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
             VStack(spacing: 0) {
-                contactRow(title: "销售顾问小王", subtitle: "在线 · 专属顾问", trailing: "聊")
+                contactRow(title: "销售顾问小王", subtitle: "在线 · 专属顾问", trailingSystemName: "bubble.left")
                 Divider().overlay(DesignTokens.hairline)
-                contactRow(title: "售后服务热线", subtitle: "400-800-8888", trailing: "拨")
+                contactRow(title: "售后服务热线", subtitle: "400-800-8888", trailingSystemName: "phone")
             }
             .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
@@ -449,7 +449,7 @@ struct HomeTabView: View {
         .padding(.top, 16)
     }
 
-    private func contactRow(title: String, subtitle: String, trailing: String) -> some View {
+    private func contactRow(title: String, subtitle: String, trailingSystemName: String) -> some View {
         HStack(spacing: 12) {
             Circle()
                 .fill(DesignTokens.link.opacity(0.15))
@@ -460,10 +460,10 @@ struct HomeTabView: View {
                 Text(subtitle, font: .system(size: 12), color: DesignTokens.body)
             }
             Spacer()
-            Text(trailing, font: .system(size: 13, weight: .medium), color: DesignTokens.link)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(DesignTokens.link.opacity(0.1), in: Capsule())
+            // Flutter: Icons.chat_bubble_outline / phone_outlined — no text capsule.
+            Image(systemName: trailingSystemName)
+                .font(.system(size: 18))
+                .foregroundStyle(DesignTokens.link)
         }
         .padding(14)
     }

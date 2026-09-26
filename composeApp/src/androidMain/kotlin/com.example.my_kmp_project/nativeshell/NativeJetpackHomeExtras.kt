@@ -224,10 +224,11 @@ internal fun JetpackContactList(onDeferred: (String) -> Unit) {
                         Text(c.title, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
                         Text(c.subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
                     }
+                    // Flutter HomeContactList: chat_bubble_outline / phone_outlined icons.
                     Text(
-                        if (c.trailing == "phone") "拨打" else "聊",
+                        if (c.trailing == "phone") "☎" else "💬",
                         color = DemoColors.Accent,
-                        fontSize = 13.sp,
+                        fontSize = 18.sp,
                     )
                 }
                 if (index < HomeMockData.contacts.lastIndex) {

@@ -370,9 +370,9 @@ export struct NativeHomeContent {
         Column({ space: 12 }) {
           Text('联系汽车之家').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
           Column() {
-            this.ContactRow('销售顾问小王', '在线 · 专属顾问', '聊')
+            this.ContactRow('销售顾问小王', '在线 · 专属顾问', '💬')
             Divider().color(DesignTokens.hairline).strokeWidth(0.5)
-            this.ContactRow('售后服务热线', '400-800-8888', '拨')
+            this.ContactRow('售后服务热线', '400-800-8888', '☎')
           }
           .width('100%')
           .backgroundColor(DesignTokens.canvas)
@@ -506,11 +506,8 @@ export struct NativeHomeContent {
         Text(title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Text(subtitle).fontSize(12).fontColor(DesignTokens.body).margin({ top: 2 })
       }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-      Text(trailing)
-        .fontSize(13).fontColor(DesignTokens.link)
-        .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-        .backgroundColor('#1A0070F3')
-        .borderRadius(14)
+      // Flutter: chat_bubble / phone icons — no text capsule.
+      Text(trailing).fontSize(18).fontColor(DesignTokens.link)
     }
     .width('100%')
     .padding(14)
