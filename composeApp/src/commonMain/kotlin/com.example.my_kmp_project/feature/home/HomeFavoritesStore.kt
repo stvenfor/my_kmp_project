@@ -1,19 +1,47 @@
 package com.example.my_kmp_project.feature.home
 
+import com.example.my_kmp_project.core.platform.loadStringList
+import com.example.my_kmp_project.core.platform.saveStringList
+
 /**
- * In-memory favorite services for AllServices ↔ Home feature strip.
- * Flutter persists via controller; this keeps session-level edit until KV lands.
+ * Favorite services for AllServices — Flutter `AllServicesRepository`
+ * key `home_favorite_service_ids_v2` (min 3 / max 8).
  */
 internal object HomeFavoritesStore {
     const val MinFavorites = 3
     const val MaxFavorites = 8
+    private const val PrefKey = "home_favorite_service_ids_v2"
 
-    private val defaultIds: Set<String> =
-        HomeMockData.favoriteServices.map { it.id }.toSet()
+    private val defaultIds: List<String> =
+        HomeMockData.favoriteServices.map { it.id }
 
-    private var ids: Set<String> = defaultIds
+    private var ids: LinkedHashSet<String> = LinkedHashSet(loadOrDefault())
 
-    fun snapshot(): Set<String> = ids
+    private fun loadOrDefault(): List<String> {
+        val stored = loadStringList(PrefKey) ?: return defaultIds
+        return normalize(stored)
+    }
+
+    private fun normalize(raw: List<String>): List<String> {
+        val all = (HomeMockData.favoriteServices + HomeMockData.catalogSections.flatMap { it.items })
+            .associateBy { it.id }
+        var next = raw.filter { it in all }.distinct()
+        if (next.size > MaxFavorites) next = next.take(MaxFavorites)
+        if (next.size < MinFavorites) {
+            for (candidate in defaultIds) {
+                if (next.size >= MinFavorites) break
+                if (candidate !in next) next = next + candidate
+            }
+        }
+        if (next.size < MinFavorites) next = defaultIds.take(MinFavorites)
+        return next
+    }
+
+    private fun persist() {
+        saveStringList(PrefKey, ids.toList())
+    }
+
+    fun snapshot(): Set<String> = ids.toSet()
 
     fun canRemove(): Boolean = ids.size > MinFavorites
 
@@ -21,13 +49,15 @@ internal object HomeFavoritesStore {
 
     fun remove(id: String): Boolean {
         if (!canRemove() || id !in ids) return false
-        ids = ids - id
+        ids.remove(id)
+        persist()
         return true
     }
 
     fun add(id: String): Boolean {
         if (!canAdd() || id in ids) return false
-        ids = ids + id
+        ids.add(id)
+        persist()
         return true
     }
 
