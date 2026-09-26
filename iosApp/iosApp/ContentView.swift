@@ -61,15 +61,13 @@ struct ContentView: View {
     @State private var privacyAccepted = UserDefaults.standard.bool(forKey: "privacy_accepted")
     @State private var tab: MainTab = MainTab.fromLaunchArguments()
     @State private var isLoggedIn = ProcessInfo.processInfo.arguments.contains("-loggedIn")
+        || MainViewControllerKt.AuthIsLoggedIn()
+    @State private var loginDisplayName = MainViewControllerKt.AuthDisplayName()
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
-    @State private var nativeFeature: NativeFeatureItem? = nil
-
-    private struct NativeFeatureItem: Identifiable {
-        let route: String
-        var id: String { route }
-    }
+    @State private var showSecondary = false
+    @State private var secondaryRoute = "/home/search"
 
     var body: some View {
         Group {
@@ -107,10 +105,8 @@ struct ContentView: View {
         }
     }
 
-    /// Route ownership (ADR 0002):
-    /// - main tabs → switch SwiftUI tab
-    /// - Mine island routes → Compose MineIsland
-    /// - everything else → native SwiftUI feature pages
+    /// Route ownership: tab roots native; Mine island Compose; all other product
+    /// routes → Compose SecondaryRouteIsland (Flutter-aligned commonMain hosts).
     private func handleDeepLinkOrLabel(_ raw: String) {
         let route: String
         if let parsed = MainViewControllerKt.AcceptDeepLinkFromIos(uri: raw) {
@@ -150,7 +146,8 @@ struct ContentView: View {
             mineIslandRoute = "about"
             showMineIsland = true
         default:
-            nativeFeature = NativeFeatureItem(route: path)
+            secondaryRoute = path.isEmpty ? key : path
+            showSecondary = true
         }
     }
 
@@ -175,8 +172,13 @@ struct ContentView: View {
                 case .mine:
                     MineRootView(
                         isLoggedIn: isLoggedIn,
+                        displayName: loginDisplayName,
                         onLogin: { showLogin = true },
-                        onLogout: { isLoggedIn = false },
+                        onLogout: {
+                            MainViewControllerKt.AuthLogout()
+                            isLoggedIn = false
+                            loginDisplayName = "访客"
+                        },
                         onOpenSettings: {
                             mineIslandRoute = "settings"
                             showMineIsland = true
@@ -204,6 +206,7 @@ struct ContentView: View {
             NativeLoginView(
                 onSuccess: {
                     isLoggedIn = true
+                    loginDisplayName = MainViewControllerKt.AuthDisplayName()
                     showLogin = false
                 },
                 onCancel: {
@@ -216,16 +219,9 @@ struct ContentView: View {
             MineIslandHost(route: mineIslandRoute)
                 .ignoresSafeArea(.all)
         }
-        .fullScreenCover(item: $nativeFeature) { item in
-            NativeFeatureHost(
-                pathOrLabel: item.route,
-                onClose: { nativeFeature = nil },
-                onOpen: { next in
-                    nativeFeature = nil
-                    openOwnedRoute(next)
-                }
-            )
-            .ignoresSafeArea(.keyboard)
+        .fullScreenCover(isPresented: $showSecondary) {
+            SecondaryRouteHost(route: secondaryRoute)
+                .ignoresSafeArea(.all)
         }
     }
 }
@@ -277,6 +273,15 @@ private struct MineIslandHost: UIViewControllerRepresentable {
     var route: String
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MineIslandViewController(route: route)
+    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+
+/// Flutter-aligned secondary product UI (Home/Mine/Content/Community RouteHosts).
+private struct SecondaryRouteHost: UIViewControllerRepresentable {
+    var route: String
+    func makeUIViewController(context: Context) -> UIViewController {
+        MainViewControllerKt.SecondaryRouteViewController(routeOrLabel: route)
     }
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }

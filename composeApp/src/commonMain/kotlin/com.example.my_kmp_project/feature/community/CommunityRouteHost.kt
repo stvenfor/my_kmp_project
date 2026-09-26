@@ -56,12 +56,14 @@ internal object CommunityRoutes {
     const val ImagePreview = "/community/image_preview"
     const val VideoPlay = "/community/video_play"
     const val TopicSelect = "/community/topic_select"
+    const val Comment = "/community/comment"
 
     fun fromLabel(label: String): String? = when (label.trim()) {
         "发布动态", "社区发布" -> Publish
         "社区搜索" -> Search
         "社区公约" -> Convention
         "话题选择" -> TopicSelect
+        "评论", "社区评论" -> Comment
         else -> null
     }
 }
@@ -110,11 +112,16 @@ internal fun CommunityRouteHost(
             coverUrl = videoUrl ?: "https://picsum.photos/seed/video_0/640/360",
             onBack = onBack,
         )
+        CommunityRoutes.Comment -> CommunityCommentScreen(onBack = onBack)
         else -> {
-            ReportMainTabRoot(isRoot = false)
-            Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-                MineTopBar(title = "社区", onBack = onBack)
-                Text("未知路由 $route", modifier = Modifier.padding(16.dp))
+            if (route.startsWith("/community/comment")) {
+                CommunityCommentScreen(onBack = onBack)
+            } else {
+                ReportMainTabRoot(isRoot = false)
+                Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+                    MineTopBar(title = "社区", onBack = onBack)
+                    Text("未知路由 $route", modifier = Modifier.padding(16.dp))
+                }
             }
         }
     }
@@ -376,5 +383,89 @@ private fun CommunityVideoPlayScreen(coverUrl: String, onBack: () -> Unit) {
             color = Color.White.copy(alpha = 0.7f),
             modifier = Modifier.padding(16.dp),
         )
+    }
+}
+
+@Composable
+private fun CommunityCommentScreen(onBack: () -> Unit) {
+    ReportMainTabRoot(isRoot = false)
+    var draft by remember { mutableStateOf("") }
+    var comments by remember {
+        mutableStateOf(
+            listOf(
+                "李四" to "说得对！周末一起去门店看看",
+                "赵六" to "同感 +1，双擎确实省油",
+                "客服小助手" to "欢迎到店试驾，预约通道已开放",
+            ),
+        )
+    }
+    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        MineTopBar(title = "评论 ${comments.size}", onBack = onBack)
+        LazyColumn(
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(comments) { (name, body) ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(DemoColors.Accent.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            name.take(1),
+                            color = DemoColors.Accent,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp,
+                        )
+                    }
+                    Column {
+                        Text(name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = DemoColors.TextPrimary)
+                        Text(body, fontSize = 14.sp, color = DemoColors.TextSecondary)
+                    }
+                }
+            }
+        }
+        HorizontalDivider(color = DemoColors.Divider)
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            BasicTextField(
+                value = draft,
+                onValueChange = { draft = it },
+                textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(DemoColors.Background)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                decorationBox = { inner ->
+                    if (draft.isEmpty()) {
+                        Text("说说你的看法", color = DemoColors.TextSecondary, fontSize = 15.sp)
+                    }
+                    inner()
+                },
+            )
+            TextButton(
+                onClick = {
+                    val text = draft.trim()
+                    if (text.isEmpty()) {
+                        showPlatformToast("请输入评论")
+                    } else {
+                        comments = listOf("我" to text) + comments
+                        draft = ""
+                        showPlatformToast("评论成功")
+                    }
+                },
+            ) { Text("发送", color = DemoColors.Accent) }
+        }
     }
 }

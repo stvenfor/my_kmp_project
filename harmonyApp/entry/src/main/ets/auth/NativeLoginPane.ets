@@ -1,6 +1,13 @@
 import { promptAction } from '@kit.ArkUI';
 import { AuthSession, sharedSessionStore } from './SessionStore';
 import { HuaweiQuickLoginPane } from './HuaweiQuickLoginPane';
+import {
+  loginWithOtp,
+  loginWithPassword,
+  registerWithEmail,
+  sendPhoneOtp,
+} from './AuthApiClient';
+import libentry from 'libentry.so';
 
 /**
  * Flutter LoginPage SoT — 邮箱/短信分段 + 协议 + 主按钮 + 微信占位 + 页脚。
@@ -14,6 +21,7 @@ export struct NativeLoginPane {
   @State mode: number = 0; // 0 email 1 phone
   @State email: string = '';
   @State password: string = '';
+  @State confirm: string = '';
   @State phone: string = '13400000000';
   @State otp: string = '';
   @State agreed: boolean = true;
@@ -35,22 +43,38 @@ export struct NativeLoginPane {
     return '晚上好，欢迎使用i车商';
   }
 
-  private mockSession(): AuthSession {
-    const deviceId = sharedSessionStore.deviceId();
-    return {
-      token: `mock_${Date.now()}`,
-      refreshToken: `refresh_${Date.now()}`,
-      sessionId: `sess_${Date.now()}`,
-      userId: 'qa_user',
-      userName: 'qa_user',
-      phone: this.phone.length === 11 ? this.phone : '13400000000',
-      deviceId,
-    };
+  private syncKotlinSession(session: AuthSession): void {
+    try {
+      if (libentry !== undefined && libentry.ApplyAuthSession !== undefined) {
+        libentry.ApplyAuthSession(
+          session.token,
+          session.userId,
+          session.userName,
+          session.phone ?? '',
+        );
+      }
+    } catch (_e) {
+      // Compose host may not be loaded yet — ArkTS session still valid for shell.
+    }
+  }
+
+  private finishSuccess(session: AuthSession): void {
+    sharedSessionStore.save(session);
+    this.syncKotlinSession(session);
+    try {
+      promptAction.showToast({ message: '登录成功', duration: 1500 });
+    } catch (_e) {
+      // ignore
+    }
+    this.onSuccess(session);
   }
 
   private canSubmit(): boolean {
     if (!this.agreed || this.loading) {
       return false;
+    }
+    if (this.showRegister) {
+      return this.email.indexOf('@') >= 0 && this.password.length >= 6 && this.password === this.confirm;
     }
     if (this.mode === 0) {
       return this.email.indexOf('@') >= 0 && this.password.length >= 6;
@@ -68,17 +92,24 @@ export struct NativeLoginPane {
     }
     this.loading = true;
     this.error = '';
-    setTimeout(() => {
-      this.loading = false;
-      const session = this.mockSession();
-      sharedSessionStore.save(session);
+    const run = async () => {
       try {
-        promptAction.showToast({ message: '登录成功', duration: 1500 });
-      } catch (_e) {
-        // ignore
+        let session: AuthSession;
+        if (this.showRegister) {
+          session = await registerWithEmail(this.email, this.password);
+        } else if (this.mode === 0) {
+          session = await loginWithPassword(this.email, this.password);
+        } else {
+          session = await loginWithOtp(this.phone, this.otp);
+        }
+        this.loading = false;
+        this.finishSuccess(session);
+      } catch (e) {
+        this.loading = false;
+        this.error = e instanceof Error ? e.message : String(e);
       }
-      this.onSuccess(session);
-    }, 350);
+    };
+    run();
   }
 
   private sendOtp(): void {
@@ -91,17 +122,24 @@ export struct NativeLoginPane {
       return;
     }
     this.error = '';
-    this.otpCooldown = 60;
-    this.otpHint = '验证码已发送';
-    this.otp = '123456';
-    const tick = setInterval(() => {
-      if (this.otpCooldown <= 1) {
-        clearInterval(tick);
-        this.otpCooldown = 0;
-      } else {
-        this.otpCooldown -= 1;
-      }
-    }, 1000);
+    this.loading = true;
+    sendPhoneOtp(this.phone).then(() => {
+      this.loading = false;
+      this.otpCooldown = 60;
+      this.otpHint = '验证码已发送';
+      const tick = setInterval(() => {
+        if (this.otpCooldown <= 1) {
+          clearInterval(tick);
+          this.otpCooldown = 0;
+        } else {
+          this.otpCooldown -= 1;
+        }
+      }, 1000);
+    }).catch((e: Error) => {
+      this.loading = false;
+      this.otpCooldown = 0;
+      this.error = e.message ?? String(e);
+    });
   }
 
   @Builder
@@ -300,13 +338,13 @@ export struct NativeLoginPane {
           Text('注册后即可使用全部功能').fontSize(15).fontColor('#993C3C43')
           this.field('邮箱', this.email, (v: string) => { this.email = v; })
           this.field('密码', this.password, (v: string) => { this.password = v; }, true)
-          this.field('确认密码', this.password, (v: string) => { this.password = v; }, true)
-          Text('注册')
+          this.field('确认密码', this.confirm, (v: string) => { this.confirm = v; }, true)
+          Text(this.loading ? '注册中…' : '注册')
             .fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White)
             .width('100%').height(52)
             .textAlign(TextAlign.Center)
             .margin({ top: 16 })
-            .backgroundColor('#007AFF')
+            .backgroundColor(this.canSubmit() ? '#007AFF' : '#C7C7CC')
             .borderRadius(14)
             .onClick(() => this.submit())
         }

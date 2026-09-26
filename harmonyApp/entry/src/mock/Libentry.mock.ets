@@ -5,6 +5,7 @@ const NativeMock = {
   MainArkUIViewController: (): ArkUIViewController | undefined => undefined,
   SetOhosHost: (_kind: number, _routeCode: number): void => {},
   SetOhosSecondaryRoute: (_route: string): void => {},
+  ApplyAuthSession: (_token: string, _userId: string, _displayName: string, _phone: string): void => {},
   AudioOnPageHide: (): void => {},
 };
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import ComposeApp
 
 /// Flutter `LoginPage` / `RegisterPage` SoT — ADR 0002 native auth (not demo stub).
 enum AuthTokens {
@@ -306,10 +307,20 @@ struct NativeLoginView: View {
             return
         }
         error = nil
-        otpCooldown = 60
-        otpHint = "验证码已发送"
-        // Flutter mock / Go OTP bypass — demo code
-        otp = "123456"
+        loading = true
+        MainViewControllerKt.AuthSendPhoneOtp(
+            phone: phone,
+            onSuccess: {
+                loading = false
+                otpCooldown = 60
+                otpHint = "验证码已发送"
+            },
+            onError: { msg in
+                loading = false
+                otpCooldown = 0
+                error = msg
+            }
+        )
     }
 
     private func submit() {
@@ -319,22 +330,33 @@ struct NativeLoginView: View {
         }
         loading = true
         error = nil
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            loading = false
-            switch mode {
-            case .email:
-                if email.contains("@"), password.count >= 6 {
+        switch mode {
+        case .email:
+            MainViewControllerKt.AuthLoginWithPassword(
+                account: email,
+                password: password,
+                onSuccess: {
+                    loading = false
                     onSuccess()
-                } else {
-                    error = "邮箱或密码不正确"
+                },
+                onError: { msg in
+                    loading = false
+                    error = msg
                 }
-            case .phone:
-                if phone.count == 11, otp.count >= 4 {
+            )
+        case .phone:
+            MainViewControllerKt.AuthLoginWithOtp(
+                phone: phone,
+                code: otp,
+                onSuccess: {
+                    loading = false
                     onSuccess()
-                } else {
-                    error = "验证码不正确"
+                },
+                onError: { msg in
+                    loading = false
+                    error = msg
                 }
-            }
+            )
         }
     }
 }
@@ -400,12 +422,23 @@ struct NativeRegisterView: View {
                             HStack(spacing: 12) {
                                 field("验证码", $otp, .numberPad)
                                 Button(otpCooldown > 0 ? "\(otpCooldown)s" : "获取验证码") {
+                                    guard agreedPrivacy else { error = "请先阅读并同意隐私条款"; return }
                                     guard phone.count == 11 else { error = "请输入有效的手机号"; return }
-                                    otpCooldown = 60
-                                    otp = "123456"
+                                    loading = true
+                                    MainViewControllerKt.AuthSendPhoneOtp(
+                                        phone: phone,
+                                        onSuccess: {
+                                            loading = false
+                                            otpCooldown = 60
+                                        },
+                                        onError: { msg in
+                                            loading = false
+                                            error = msg
+                                        }
+                                    )
                                 }
                                 .foregroundStyle(AuthTokens.accent)
-                                .disabled(otpCooldown > 0)
+                                .disabled(otpCooldown > 0 || loading)
                             }
                             field("设置密码", $password, .default, true)
                         }
@@ -417,10 +450,40 @@ struct NativeRegisterView: View {
                     }
 
                     Button {
+                        guard agreedPrivacy else {
+                            error = "请先阅读并同意隐私条款"
+                            return
+                        }
                         loading = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                            loading = false
-                            onSuccess()
+                        error = nil
+                        switch mode {
+                        case .email:
+                            MainViewControllerKt.AuthRegister(
+                                email: email,
+                                password: password,
+                                displayName: "",
+                                onSuccess: {
+                                    loading = false
+                                    onSuccess()
+                                },
+                                onError: { msg in
+                                    loading = false
+                                    error = msg
+                                }
+                            )
+                        case .phone:
+                            MainViewControllerKt.AuthRegisterWithPhone(
+                                phone: phone,
+                                code: otp,
+                                onSuccess: {
+                                    loading = false
+                                    onSuccess()
+                                },
+                                onError: { msg in
+                                    loading = false
+                                    error = msg
+                                }
+                            )
                         }
                     } label: {
                         Text("注册")

@@ -105,7 +105,20 @@ internal object MineRoutes {
         "提醒事项" -> Reminder
         "邀请好友" -> Invite
         "粉丝群" -> FanGroup
+        "电子名片" -> "/mine/business_card"
         else -> null
+    }
+
+    /** Normalize shell catalog aliases → canonical MineRoutes paths. */
+    fun canonicalize(route: String): String = when (route) {
+        "/mine/sms_template" -> SmsTemplates
+        "/mine/store_qr" -> ShopQr
+        "/mine/qa" -> BuyQa
+        "/mine/business" -> Cooperation
+        "/mine/reminders" -> Reminder
+        "/mine/business_card" -> Invite
+        "/friend" -> Invite
+        else -> route
     }
 }
 
@@ -115,6 +128,7 @@ internal fun MineRouteHost(
     onBack: () -> Unit,
     onNavigate: (String) -> Unit = {},
 ) {
+    val route = MineRoutes.canonicalize(route)
     when {
         route.startsWith("/classroom") -> ClassroomRouteHost(route, onBack, onNavigate)
         route.startsWith("/video") -> VideoRouteHost(route, onBack, onNavigate)

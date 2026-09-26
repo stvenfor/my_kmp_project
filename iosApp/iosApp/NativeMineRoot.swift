@@ -5,6 +5,7 @@ import SwiftUI
 
 struct MineRootView: View {
     var isLoggedIn: Bool
+    var displayName: String = "qa_user"
     var onLogin: () -> Void
     var onLogout: () -> Void // retained for ContentView; logout lives in Settings island
     var onOpenSettings: () -> Void
@@ -42,7 +43,7 @@ struct MineRootView: View {
         ("设置", false),
     ]
 
-    private var displayName: String { isLoggedIn ? "qa_user" : "访客" }
+    private var profileName: String { isLoggedIn ? displayName : "访客" }
     private var roleBadge: String { isLoggedIn ? "销售顾问" : "未登录" }
     private var storeName: String {
         isLoggedIn ? "[4S]北京沃德龙鼎吉利" : "登录后查看门店信息"
@@ -115,7 +116,7 @@ struct MineRootView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
-                    Text(displayName, font: .system(size: 20, weight: .semibold), color: DesignTokens.ink)
+                    Text(profileName, font: .system(size: 20, weight: .semibold), color: DesignTokens.ink)
                         .lineLimit(1)
                     Text(roleBadge, font: .system(size: 11, weight: .semibold), color: .white)
                         .padding(.horizontal, 8)

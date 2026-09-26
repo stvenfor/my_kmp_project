@@ -224,6 +224,13 @@ struct Index {
     this.openComposeHost(0, personalized ? 1 : 0);
   }
 
+  private openSecondaryCompose(route: string): void {
+    if (libentry !== undefined && libentry.SetOhosSecondaryRoute !== undefined) {
+      libentry.SetOhosSecondaryRoute(route);
+    }
+    this.openComposeHost(1, 0);
+  }
+
   private openDeferred(title: string): void {
     const path = resolveNativePath(title);
     if (path === '/settings') {
@@ -234,7 +241,15 @@ struct Index {
       this.openMineIsland(true);
       return;
     }
-    if (path === '/chat') {
+    if (path === '/pay/membership') {
+      this.openComposeHost(0, 2);
+      return;
+    }
+    if (path === '/mine/about') {
+      this.openComposeHost(0, 0);
+      return;
+    }
+    if (path === '/chat' || title === '消息') {
       this.tab = MainTab.Chat;
       if (!this.isLoggedIn) {
         this.showLogin = true;
@@ -256,250 +271,11 @@ struct Index {
       this.tab = MainTab.Mine;
       return;
     }
-    if (path === '/home/search') {
-      this.nativePane = 'search';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/all_services') {
-      this.nativePane = 'all_services';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/learning_report' || title === '学习报告') {
-      this.nativePane = 'learning_report';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/purchase_calculator' || title === '购车计算器') {
-      this.nativePane = 'purchase_calculator';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/friend') {
-      this.nativePane = 'friend';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/community/search') {
-      this.nativePane = 'community_search';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/community/publish') {
-      this.nativePane = 'community_publish';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/community/comment') {
-      this.nativePane = 'community_comment';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/community/image_preview') {
-      this.nativePane = 'community_image_preview';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mall') {
-      this.nativePane = 'mall';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/wallet') {
-      this.nativePane = 'wallet';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/video/short') {
-      this.nativePane = 'short_video';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/live' || path === '/home/live_commerce' || title === '直播' || title === '直播带货') {
-      this.nativePane = 'live';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/ai/stream') {
-      this.nativePane = 'ai_stream';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/scan') {
-      this.nativePane = 'scan';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/strategy') {
-      this.nativePane = 'strategy';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/check_in_mall') {
-      this.nativePane = 'check_in_mall';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/music/list') {
-      this.nativePane = 'music';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/classroom/my_class') {
-      this.nativePane = 'classroom';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/used_car') {
-      this.nativePane = 'used_car';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/new_car_follow' || title === '新车成交' || title === '新车跟进') {
-      this.nativePane = 'new_car_follow';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/club' || title === 'Club') {
-      this.nativePane = 'club';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/life_service' || title === '生活服务') {
-      this.nativePane = 'life_service';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path.indexOf('/home/todo/') === 0) {
-      this.nativePane = 'todo';
-      this.featurePath = path;
-      this.showStub = false;
-      return;
-    }
-    if (path === '/web') {
-      this.nativePane = 'web';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/after_sales') {
-      this.nativePane = 'after_sales';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/ledger') {
-      this.nativePane = 'ledger';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/sms_template') {
-      this.nativePane = 'sms_template';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/store_qr') {
-      this.nativePane = 'store_qr';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/qa') {
-      this.nativePane = 'qa';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/poster') {
-      this.nativePane = 'poster';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/business') {
-      this.nativePane = 'business';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/reminders') {
-      this.nativePane = 'reminders';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/feedback') {
-      this.nativePane = 'feedback';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/profile') {
-      this.nativePane = 'profile';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/addresses') {
-      this.nativePane = 'addresses';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/dubbing_feed') {
-      this.nativePane = 'dubbing';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/hot_rank_detail') {
-      this.nativePane = 'hot_rank';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/home/data_analytics') {
-      this.nativePane = 'data_analytics';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    if (path === '/mine/business_card' || title === '电子名片') {
-      this.nativePane = 'business_card';
-      this.featurePath = '';
-      this.showStub = false;
-      return;
-    }
-    this.featurePath = path;
-    this.nativePane = 'feature';
+    // Flutter-aligned secondary UI via Compose SecondaryRouteIsland (commonMain hosts).
+    this.nativePane = '';
+    this.featurePath = '';
     this.showStub = false;
-    this.showIsland = false;
+    this.openSecondaryCompose(path.length > 0 ? path : title);
   }
 
 
@@ -867,69 +643,34 @@ struct Index {
       }.padding({ top: 12, bottom: 12 }).width('100%')
 
       List({ space: 12 }) {
-        if (this.communityFilter === '热门') {
-          ListItem() {
-            Column({ space: 8 }) {
-              Row() {
-                Text('热').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
-                  .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
-                Column() {
-                  Text('热门作者').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                  Text('2小时前 · 热门').fontSize(14).fontColor(DesignTokens.body)
-                }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
-              }.width('100%')
-              Text('本周试驾排行榜出炉！#新车').fontSize(16).fontColor(DesignTokens.ink)
-              Image($r('app.media.community_post_video')).width('62%').aspectRatio(858 / 570).borderRadius(6).objectFit(ImageFit.Cover)
-              Row({ space: 24 }) {
-                Text(this.communityLiked ? '♥ 已赞 1.2k' : '♡ 赞 1.2k').fontSize(14)
-                  .fontColor(this.communityLiked ? '#EE0000' : DesignTokens.body)
-                  .onClick(() => { this.communityLiked = !this.communityLiked; })
-                Text('💬 86').fontSize(14).fontColor(DesignTokens.body)
-                  .onClick(() => this.openDeferred('/community/comment'))
-              }.width('100%')
-            }
-            .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
-            .backgroundColor(DesignTokens.canvas).borderRadius(8)
-            .border({ width: 0.5, color: DesignTokens.hairline })
-          }
-        } else if (this.communityFilter === '关注') {
-          ListItem() {
-            Column({ space: 8 }) {
-              Row() {
-                Text('张').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
-                  .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
-                Column() {
-                  Text('张三').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                  Text('刚刚 · 关注').fontSize(14).fontColor(DesignTokens.body)
-                }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
-              }.width('100%')
-              Text('刚发了保养心得，求交流。').fontSize(16).fontColor(DesignTokens.ink)
-              Image($r('app.media.community_post_a')).width('62%').aspectRatio(858 / 570).borderRadius(6).objectFit(ImageFit.Cover)
-            }
-            .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
-            .backgroundColor(DesignTokens.canvas).borderRadius(8)
-            .border({ width: 0.5, color: DesignTokens.hairline })
-          }
-        } else {
         ListItem() {
           Column({ space: 8 }) {
             Row() {
-              Text('张').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
+              Text('测').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
                 .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
               Column() {
-                Text('张三').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text('7分钟前 · 来自 iPhone').fontSize(14).fontColor(DesignTokens.body)
+                Text('测试甲').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(this.communityFilter === '热门' ? '2小时前 · 热门' :
+                  (this.communityFilter === '关注' ? '刚刚 · 关注' : '7分钟前 · 来自 iPhone'))
+                  .fontSize(14).fontColor(DesignTokens.body)
               }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
               Text('⋯').fontColor(DesignTokens.body)
             }.width('100%')
-            Text('今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev')
+            Text(this.communityFilter === '热门' ? '本周试驾排行榜出炉！#新车' :
+              (this.communityFilter === '关注' ? '刚发了保养心得，求交流。' :
+                '今天去了推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev'))
               .fontSize(16).fontColor(DesignTokens.ink)
-            Image($r('app.media.community_post_video'))
-              .width('62%')
-              .aspectRatio(858 / 570)
-              .borderRadius(6)
-              .objectFit(ImageFit.Cover)
-              .onClick(() => this.openDeferred('/community/image_preview'))
+            Flex({ wrap: FlexWrap.Wrap }) {
+              ForEach([0, 1, 2, 3, 4, 5, 6, 7, 8], (i: number) => {
+                Image(`https://picsum.photos/seed/sot_ohos_${i}/400/400`)
+                  .width('32%')
+                  .aspectRatio(1)
+                  .borderRadius(4)
+                  .objectFit(ImageFit.Cover)
+                  .margin({ right: '1%', bottom: 4 })
+                  .onClick(() => this.openDeferred('/community/image_preview'))
+              })
+            }.width('100%')
             Row({ space: 24 }) {
               Text(this.communityLiked ? '♥ 已赞 158' : '♡ 赞 158').fontSize(14)
                 .fontColor(this.communityLiked ? '#EE0000' : DesignTokens.body)
@@ -938,36 +679,43 @@ struct Index {
                 .onClick(() => this.openDeferred('/community/comment'))
               Text('↗ 分享').fontSize(14).fontColor(DesignTokens.body)
             }.width('100%')
-            Column({ space: 4 }) {
-              Text('李四：说得对！').fontSize(14).fontWeight(FontWeight.Medium).fontColor('#576B95')
-              Text('赵六 回复 张三：同感 +1').fontSize(14).fontWeight(FontWeight.Medium).fontColor('#576B95')
-            }.width('100%').padding(10).backgroundColor('#80F5F5F5').borderRadius(4)
           }
           .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
           .backgroundColor(DesignTokens.canvas).borderRadius(8)
           .border({ width: 0.5, color: DesignTokens.hairline })
         }
-        ListItem() {
-          Column({ space: 8 }) {
-            Row() {
-              Text('李').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
-                .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
-              Column() {
-                Text('李四').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text('42分钟前 · 来自 Android').fontSize(14).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
-              Text('⋯').fontColor(DesignTokens.body)
-            }.width('100%')
-            Text('周末 hiking，天气太好了！#户外').fontSize(16).fontColor(DesignTokens.ink)
-            Row({ space: 4 }) {
-              Image($r('app.media.community_post_a')).layoutWeight(1).aspectRatio(678 / 518).borderRadius(6).objectFit(ImageFit.Cover)
-              Image($r('app.media.community_post_b')).layoutWeight(1).aspectRatio(678 / 518).borderRadius(6).objectFit(ImageFit.Cover)
-            }.width('100%')
+        if (this.communityFilter !== '关注') {
+          ListItem() {
+            Column({ space: 8 }) {
+              Row() {
+                Text('测').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
+                  .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
+                Column() {
+                  Text('测试甲').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text('42分钟前 · 来自 Android').fontSize(14).fontColor(DesignTokens.body)
+                }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
+              }.width('100%')
+              Text('周末 hiking，天气太好了！#户外').fontSize(16).fontColor(DesignTokens.ink)
+              Flex({ wrap: FlexWrap.Wrap }) {
+                ForEach([0, 1, 2, 3, 4, 5, 6, 7, 8], (i: number) => {
+                  Image(`https://picsum.photos/seed/sot_ohos_b_${i}/400/400`)
+                    .width('32%')
+                    .aspectRatio(1)
+                    .borderRadius(4)
+                    .objectFit(ImageFit.Cover)
+                    .margin({ right: '1%', bottom: 4 })
+                })
+              }.width('100%')
+              Row({ space: 24 }) {
+                Text('♡ 赞 36').fontSize(14).fontColor(DesignTokens.body)
+                Text('💬 4').fontSize(14).fontColor(DesignTokens.body)
+                  .onClick(() => this.openDeferred('/community/comment'))
+              }.width('100%')
+            }
+            .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
+            .backgroundColor(DesignTokens.canvas).borderRadius(8)
+            .border({ width: 0.5, color: DesignTokens.hairline })
           }
-          .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
-          .backgroundColor(DesignTokens.canvas).borderRadius(8)
-          .border({ width: 0.5, color: DesignTokens.hairline })
-        }
         }
       }.layoutWeight(1).padding({ left: 16, right: 16 })
     }

@@ -42,13 +42,15 @@ object SecondaryRouteResolver {
     fun resolve(titleOrPath: String): String? {
         val raw = titleOrPath.trim()
         if (raw.isEmpty()) return null
-        if (raw.startsWith("/")) return raw
+        if (raw.startsWith("/")) return MineRoutes.canonicalize(raw)
         if (raw.startsWith("http://") || raw.startsWith("https://")) return AppRoutePath.web
         when (raw) {
             "全部服务", "更多" -> return AppRoutePath.homeAllServices
             "扫一扫" -> return "/scan"
             "H5 调试", "内嵌网页" -> return AppRoutePath.web
             "消息" -> return AppRoutePath.chat
+            "电子名片" -> return MineRoutes.Invite
+            "商务合作" -> return MineRoutes.Cooperation
         }
         HomeRoutes.fromLabel(raw)?.let { return it }
         CommunityRoutes.fromLabel(raw)?.let { return it }

@@ -41,6 +41,7 @@ static napi_value AudioOnPageHide(napi_env env, napi_callback_info info) {
 
 extern "C" void KnSetOhosHost(int kind, int routeCode);
 extern "C" void KnSetOhosSecondaryRoute(void* routePtr);
+extern "C" void KnApplyAuthSession(void* tokenPtr, void* userIdPtr, void* displayNamePtr, void* phonePtr);
 
 static napi_value NapiSetOhosHost(napi_env env, napi_callback_info info) {
     size_t argc = 2;
@@ -77,6 +78,34 @@ static napi_value NapiSetOhosSecondaryRoute(napi_env env, napi_callback_info inf
     return nullptr;
 }
 
+static char* ReadUtf8Arg(napi_env env, napi_value value) {
+    if (value == nullptr) {
+        return nullptr;
+    }
+    size_t len = 0;
+    napi_get_value_string_utf8(env, value, nullptr, 0, &len);
+    char* buf = new char[len + 1];
+    napi_get_value_string_utf8(env, value, buf, len + 1, &len);
+    buf[len] = '\0';
+    return buf;
+}
+
+static napi_value NapiApplyAuthSession(napi_env env, napi_callback_info info) {
+    size_t argc = 4;
+    napi_value args[4] = {nullptr, nullptr, nullptr, nullptr};
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
+    char* token = argc >= 1 ? ReadUtf8Arg(env, args[0]) : nullptr;
+    char* userId = argc >= 2 ? ReadUtf8Arg(env, args[1]) : nullptr;
+    char* displayName = argc >= 3 ? ReadUtf8Arg(env, args[2]) : nullptr;
+    char* phone = argc >= 4 ? ReadUtf8Arg(env, args[3]) : nullptr;
+    KnApplyAuthSession(token, userId, displayName, phone);
+    delete[] token;
+    delete[] userId;
+    delete[] displayName;
+    delete[] phone;
+    return nullptr;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports) {
     OH_LOG_INFO(LOG_APP, "libentry Init: register exports then Compose ArkUI bootstrap");
@@ -85,6 +114,7 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"MainArkUIViewController", nullptr, NapiMainArkUIViewController, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"SetOhosHost", nullptr, NapiSetOhosHost, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"SetOhosSecondaryRoute", nullptr, NapiSetOhosSecondaryRoute, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"ApplyAuthSession", nullptr, NapiApplyAuthSession, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AudioOnPageHide", nullptr, AudioOnPageHide, nullptr, nullptr, nullptr, napi_default, nullptr},
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);

@@ -239,6 +239,17 @@ internal fun NativeAndroidMain() {
                 overlay = ShellOverlay.AllServices
                 bottomBarVisible = false
             }
+            title == "消息" -> {
+                val target = MainTab.Chat
+                if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
+                    AuthGate.rememberPending(target)
+                    authOverlay = AuthOverlay.Login
+                    bottomBarVisible = false
+                } else {
+                    tab = target
+                    keptTabs = keptTabs + target
+                }
+            }
             title == "扫一扫" -> {
                 overlay = ShellOverlay.Scan
                 bottomBarVisible = false

@@ -802,6 +802,7 @@ internal fun JetpackCommunityRoot(
                         onPreviewImages = onPreviewImages,
                         onPlayVideo = onPlayVideo,
                         onOpenConvention = { onOpen("社区公约") },
+                        onOpenComment = { onOpen("评论") },
                     )
                 }
             }
@@ -844,6 +845,7 @@ private fun CommunityPostCard(
     onPreviewImages: (List<String>, Int) -> Unit = { _, _ -> },
     onPlayVideo: (String) -> Unit = {},
     onOpenConvention: () -> Unit = {},
+    onOpenComment: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val gridUrls = remember(postId, imageUrls) { nineGridUrls(postId, imageUrls) }
@@ -927,7 +929,7 @@ private fun CommunityPostCard(
                 icon = if (liked) "♥" else "♡",
                 onClick = onToggleLike,
             )
-            CommunityAction(label = commentLabel, tint = DemoColors.TextSecondary, icon = "💬")
+            CommunityAction(label = commentLabel, tint = DemoColors.TextSecondary, icon = "💬", onClick = onOpenComment)
             CommunityAction(label = "分享", tint = DemoColors.TextSecondary, icon = "↗")
         }
         if (thread.isNotEmpty()) {

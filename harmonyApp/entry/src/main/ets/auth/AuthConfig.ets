@@ -1,7 +1,11 @@
-/** BFF 基址：与 my_kmp_project `.env.lan` / LanHost 对齐，换机时改此处。 */
-export const BFF_BASE_URL: string = 'http://172.16.0.43:8080';
+/** BFF 基址：与 my_kmp_project LanHost.fallback 对齐，换机时改此处 / 跑 sync-lan-ip。 */
+export const BFF_BASE_URL: string = 'http://192.168.0.102:8080';
 
 export const HUAWEI_LOGIN_PATH: string = '/api/v1/user/huawei/login';
+export const LOGIN_PATH: string = '/api/v1/user/login';
+export const REGISTER_PATH: string = '/api/v1/user/register';
+export const SEND_PHONE_OTP_PATH: string = '/api/v1/user/phone/otp/send';
+export const VERIFY_PHONE_OTP_PATH: string = '/api/v1/user/phone/otp/verify';
 
 /** 华为账号用户认证协议（官方要求可跳转）。 */
 export const HUAWEI_USER_AUTH_PROTOCOL: string =

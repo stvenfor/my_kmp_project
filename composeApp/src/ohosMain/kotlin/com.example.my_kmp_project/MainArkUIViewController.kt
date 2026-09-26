@@ -92,6 +92,29 @@ fun KnSetOhosSecondaryRoute(routePtr: kotlinx.cinterop.CPointer<kotlinx.cinterop
     OhosComposeHostRequest.secondaryRoute = route
 }
 
+/**
+ * Sync ArkTS [AuthSession] into shared [AccountFacade] so Mine island / secondary
+ * Compose hosts see the same login as the native shell.
+ */
+@OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
+@CName("KnApplyAuthSession")
+fun KnApplyAuthSession(
+    tokenPtr: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?,
+    userIdPtr: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?,
+    displayNamePtr: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?,
+    phonePtr: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?,
+) {
+    val token = tokenPtr?.toKString().orEmpty()
+    if (token.isBlank()) return
+    com.example.my_kmp_project.core.network.platformNetworkBootstrap()
+    com.example.my_kmp_project.feature.auth.AuthBridge.applySession(
+        token = token,
+        userId = userIdPtr?.toKString().orEmpty(),
+        displayName = displayNamePtr?.toKString().orEmpty().ifBlank { "用户" },
+        phone = phonePtr?.toKString()?.takeIf { it.isNotBlank() },
+    )
+}
+
 @OptIn(ExperimentalNativeApi::class)
 @CName("KnAudioOnPageHide")
 fun KnAudioOnPageHide() = Unit

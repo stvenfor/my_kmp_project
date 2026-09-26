@@ -750,17 +750,17 @@ struct CommunityTabView: View {
         switch filter {
         case "热门":
             return [
-                ("热门作者", "2小时前 · 热门", "本周试驾排行榜出炉！#新车\n欢迎访问：https://flutter.dev", ["community_post_video"], true, "1.2k", "86"),
-                ("车友会", "昨天 · 热门", "周末自驾召集，评论报名 #户外", ["community_post_a", "community_post_b"], false, "860", "42"),
+                ("测试甲", "2小时前 · 热门", "本周试驾排行榜出炉！#新车\n欢迎访问：https://flutter.dev", (0..<9).map { "https://picsum.photos/seed/sot_hot_\($0)/400/400" }, false, "1.2k", "86"),
+                ("测试甲", "昨天 · 热门", "周末自驾召集，评论报名 #户外", (0..<9).map { "https://picsum.photos/seed/sot_hot2_\($0)/400/400" }, false, "860", "42"),
             ]
         case "关注":
             return [
-                ("张三", "刚刚 · 关注", "刚发了保养心得，求交流。", ["community_post_a"], true, "12", "3"),
+                ("测试甲", "刚刚 · 关注", "刚发了保养心得，求交流。", (0..<4).map { "https://picsum.photos/seed/sot_follow_\($0)/400/400" }, false, "12", "3"),
             ]
         default:
             return [
-                ("张三", "7分钟前 · 来自 iPhone", "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev", ["community_post_video"], true, "158", "6"),
-                ("李四", "42分钟前 · 来自 Android", "周末 hiking，天气太好了！#户外", ["community_post_a", "community_post_b"], false, "36", "4"),
+                ("测试甲", "7分钟前 · 来自 iPhone", "今天去了推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev", (0..<9).map { "https://picsum.photos/seed/sot_a_\($0)/400/400" }, false, "158", "6"),
+                ("测试甲", "42分钟前 · 来自 Android", "周末 hiking，天气太好了！#户外", (0..<9).map { "https://picsum.photos/seed/sot_b_\($0)/400/400" }, false, "36", "4"),
             ]
         }
     }
@@ -857,26 +857,7 @@ struct CommunityTabView: View {
             }
             Text(body, font: .system(size: 16), color: DesignTokens.ink)
                 .lineSpacing(4)
-            if singleImage, let first = images.first {
-                Image(first).resizable().scaledToFill()
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(858 / 570, contentMode: .fit)
-                    .frame(maxWidth: UIScreen.main.bounds.width * 0.62, alignment: .leading)
-                    .clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .onTapGesture { onDeferred("/community/image_preview") }
-            } else {
-                HStack(spacing: 4) {
-                    ForEach(images, id: \.self) { name in
-                        Image(name).resizable().scaledToFill()
-                            .aspectRatio(678 / 518, contentMode: .fill)
-                            .frame(maxWidth: .infinity)
-                            .clipped()
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .onTapGesture { onDeferred("/community/image_preview") }
-                    }
-                }
-            }
+            communityImageGrid(images: images)
             HStack(spacing: 24) {
                 Button {
                     if isLiked { liked.remove(id) } else { liked.insert(id) }
@@ -898,5 +879,36 @@ struct CommunityTabView: View {
         .padding(14)
         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline, lineWidth: 0.5))
+    }
+
+    @ViewBuilder
+    private func communityImageGrid(images: [String]) -> some View {
+        let cells = Array(images.prefix(9))
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: min(3, max(1, cells.count)))
+        LazyVGrid(columns: columns, spacing: 4) {
+            ForEach(Array(cells.enumerated()), id: \.offset) { _, src in
+                communityThumb(src)
+                    .aspectRatio(1, contentMode: .fill)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .onTapGesture { onDeferred("/community/image_preview") }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func communityThumb(_ src: String) -> some View {
+        if src.hasPrefix("http"), let url = URL(string: src) {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    DesignTokens.hairline
+                }
+            }
+        } else {
+            Image(src).resizable().scaledToFill()
+        }
     }
 }

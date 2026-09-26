@@ -9,6 +9,7 @@ import {
 } from './AuthConfig';
 import { loginWithHuaweiCode } from './AuthApiClient';
 import { AuthSession, sharedSessionStore } from './SessionStore';
+import libentry from 'libentry.so';
 
 const LOG_TAG = 'HuaweiQuickLogin';
 const DOMAIN = 0x0000;
@@ -155,6 +156,18 @@ export struct HuaweiQuickLoginPane {
       const deviceId = sharedSessionStore.deviceId();
       const session = await loginWithHuaweiCode(authCode, deviceId);
       sharedSessionStore.save(session);
+      try {
+        if (libentry !== undefined && libentry.ApplyAuthSession !== undefined) {
+          libentry.ApplyAuthSession(
+            session.token,
+            session.userId,
+            session.userName,
+            session.phone ?? '',
+          );
+        }
+      } catch (_e) {
+        // ignore
+      }
       this.tip = '';
       this.onSuccess(session);
       try {

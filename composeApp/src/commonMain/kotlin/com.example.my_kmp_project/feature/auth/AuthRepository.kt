@@ -14,7 +14,7 @@ import kotlinx.serialization.json.put
  * Posts real request shapes via [NetworkFacade]; maps failures to Flutter Chinese copy.
  * Does not short-circuit to local demo success.
  */
-internal object AuthRepository {
+object AuthRepository {
 
     suspend fun loginWithPassword(account: String, password: String): Result<Unit> {
         val user = account.trim()
