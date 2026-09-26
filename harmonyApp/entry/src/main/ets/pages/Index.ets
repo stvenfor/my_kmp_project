@@ -811,7 +811,7 @@ struct Index {
     // Flutter MineController toast-only / Mine-root dialogs — never navigable routes.
     const toastOnly: string[] = [
       '切换门店', '切换店铺', '电子名片', '商务合作', '提醒事项',
-      '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像', '新车成交',
+      '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像', '新车成交', '请先登录',
       '/mine/business_card', '/mine/invite', '/mine/business',
       '/mine/reminders', '/mine/reminder', '/mine/fan_group', '/mine/feedback',
     ];
@@ -1561,7 +1561,11 @@ struct Index {
   @Builder
   TabContent() {
     if (this.tab === MainTab.Home) {
-      NativeHomeContent({ onDeferred: (t: string): void => { this.openDeferred(t); } })
+      NativeHomeContent({
+        onDeferred: (t: string): void => { this.openDeferred(t); },
+        displayName: this.loginDisplayName,
+        isLoggedIn: this.isLoggedIn,
+      })
     } else if (this.tab === MainTab.Chat) {
       if (this.isLoggedIn) {
         this.ChatPane()

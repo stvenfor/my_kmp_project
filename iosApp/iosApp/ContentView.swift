@@ -130,7 +130,7 @@ struct ContentView: View {
             "/mine/business_card", "/mine/invite", "/mine/business",
             "/mine/reminders", "/mine/reminder", "/mine/fan_group", "/mine/feedback",
         ]
-        if toastOnlyKeys.contains(key) || key == "新车成交" {
+        if toastOnlyKeys.contains(key) || key == "新车成交" || key == "请先登录" {
             let toast: String
             switch key {
             case "/mine/business_card": toast = "电子名片"
@@ -140,6 +140,7 @@ struct ContentView: View {
             case "/mine/fan_group": toast = "粉丝群"
             case "/mine/feedback": toast = "意见反馈"
             case "新车成交": toast = "新车成交"
+            case "请先登录": toast = "请先登录"
             default: toast = key
             }
             toastText = toast
@@ -201,7 +202,11 @@ struct ContentView: View {
             Group {
                 switch tab {
                 case .home:
-                    HomeTabView(onDeferred: { openOwnedRoute($0) })
+                    HomeTabView(
+                        onDeferred: { openOwnedRoute($0) },
+                        displayName: loginDisplayName,
+                        isLoggedIn: isLoggedIn
+                    )
                 case .chat:
                     if isLoggedIn {
                         ChatTabView(

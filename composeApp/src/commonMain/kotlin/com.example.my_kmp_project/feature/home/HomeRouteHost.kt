@@ -1951,23 +1951,100 @@ private fun AfterSalesListScreen(
 
 @Composable
 private fun PartnerPendingScreen(onBack: () -> Unit) {
-    // Flutter PartnerPendingPage + _TodoForbiddenPanel (403 / 非店管)
-    TodoForbiddenScreen(title = "新伙伴待确认", onBack = onBack)
+    TodoListScreen(
+        title = "新伙伴待确认",
+        subtitle = "3 位新成员",
+        rows = listOf(
+            Triple("赵倩 · 销售顾问", "待审核 · 昨天申请", "待审"),
+            Triple("孙浩 · 售后技师", "待审核 · 今天申请", "待审"),
+        ),
+        onBack = onBack,
+    )
 }
 
 @Composable
 private fun FollowUpCustomersScreen(onBack: () -> Unit) {
-    TodoForbiddenScreen(title = "待跟进客户", onBack = onBack)
+    TodoListScreen(
+        title = "待跟进客户",
+        subtitle = "今日 5 位意向",
+        rows = listOf(
+            Triple("陈先生", "意向凯美瑞 · 未回访 2 天", "紧急"),
+            Triple("周女士", "询价汉兰达 · 今早留言", null),
+        ),
+        onBack = onBack,
+    )
 }
 
 @Composable
 private fun AfterSalesAppointmentsScreen(onBack: () -> Unit) {
-    TodoForbiddenScreen(title = "售后预约", onBack = onBack)
+    TodoListScreen(
+        title = "售后预约",
+        subtitle = "今日工位",
+        rows = listOf(
+            Triple("10:30 · 保养", "京 A·88888 · 技师小刘", null),
+            Triple("14:00 · 钣喷", "京 B·66666 · 技师老王", null),
+        ),
+        onBack = onBack,
+    )
 }
 
 @Composable
 private fun StoreReviewOrdersScreen(onBack: () -> Unit) {
-    TodoForbiddenScreen(title = "订单待审核", onBack = onBack)
+    TodoListScreen(
+        title = "订单待审核",
+        subtitle = "门店订单",
+        rows = listOf(
+            Triple("订单 #90821", "定金 ¥5000 · 待店长审", "待审"),
+        ),
+        onBack = onBack,
+    )
+}
+
+@Composable
+private fun TodoListScreen(
+    title: String,
+    subtitle: String,
+    rows: List<Triple<String, String, String?>>,
+    onBack: () -> Unit,
+) {
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        MineTopBar(title = title, onBack = onBack, containerColor = DemoColors.PageBg)
+        Text(
+            subtitle,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = DemoColors.TextSecondary,
+            fontSize = 13.sp,
+        )
+        rows.forEach { row ->
+            Row(
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(row.first, fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
+                    Spacer(Modifier.height(4.dp))
+                    Text(row.second, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                }
+                row.third?.let { badge ->
+                    Text(
+                        badge,
+                        fontSize = 11.sp,
+                        color = DemoColors.Accent,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(DemoColors.Accent.copy(alpha = 0.1f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable

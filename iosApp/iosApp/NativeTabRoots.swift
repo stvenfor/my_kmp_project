@@ -58,7 +58,17 @@ struct NativeBottomBar: View {
 
 struct HomeTabView: View {
     var onDeferred: (String) -> Void
+    var displayName: String = "访客"
+    var isLoggedIn: Bool = false
     @State private var metricTab = 0
+    @State private var showTodos = true
+    @State private var showSwitchStore = false
+    @State private var storeName = "[4S]北京沃德龙鼎吉利"
+    @State private var selectedStoreId = "1"
+    private let stores: [(String, String)] = [
+        ("1", "[4S]北京沃德龙鼎吉利"),
+        ("2", "[4S]北京腾远吉利"),
+    ]
 
     /// Flutter `HomeRepository.loadDashboard` features (max 9, last = 更多).
     private let features = [
@@ -85,7 +95,8 @@ struct HomeTabView: View {
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         let prefix = hour < 12 ? "早上好" : (hour < 18 ? "下午好" : "晚上好")
-        return "\(prefix)，沃德龙鼎"
+        let name = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return "\(prefix)，\(name.isEmpty ? "访客" : name)"
     }
 
     var body: some View {
@@ -95,7 +106,7 @@ struct HomeTabView: View {
                 searchRow
                 banner
                 featureGrid
-                todoStrip
+                if showTodos { todoStrip }
                 storeMetrics
                 hubEntry(title: "投资策略", subtitle: "资产九宫格 · 恐贪定投 · 趋势策略", route: "投资策略")
                 serviceGrid
@@ -107,6 +118,19 @@ struct HomeTabView: View {
         }
         .safeAreaPadding(.top, 8)
         .background(DesignTokens.canvasSoft2)
+        .sheet(isPresented: $showSwitchStore) {
+            HomeSwitchStoreSheet(
+                stores: stores,
+                selectedId: selectedStoreId,
+                onPick: { id in
+                    selectedStoreId = id
+                    storeName = stores.first(where: { $0.0 == id })?.1 ?? storeName
+                    showSwitchStore = false
+                },
+                onClose: { showSwitchStore = false }
+            )
+            .presentationDetents([.height(320)])
+        }
     }
 
     private var greetingRow: some View {
@@ -267,7 +291,7 @@ struct HomeTabView: View {
                         .foregroundStyle(DesignTokens.link)
                         .frame(width: 28, height: 28)
                         .background(DesignTokens.link.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
-                    Text("[4S]北京沃德龙鼎吉利", font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
+                    Text(storeName, font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
                         .lineLimit(1)
                     Spacer()
                     Image(systemName: "chevron.down")
@@ -277,9 +301,14 @@ struct HomeTabView: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
                 .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 10))
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if isLoggedIn { showSwitchStore = true }
+                    else { onDeferred("请先登录") }
+                }
 
                 HStack(spacing: 16) {
-                    ForEach(Array(["今日", "昨日", "本月"].enumerated()), id: \.offset) { index, label in
+                    ForEach(Array(["今日", "昨日", "近30天"].enumerated()), id: \.offset) { index, label in
                         Text(
                             label,
                             font: .system(size: 14, weight: metricTab == index ? .semibold : .regular),
@@ -453,6 +482,57 @@ struct HomeTabView: View {
         case "直播带货": return "home_feature_live"
         case "营销活动": return "home_feature_market"
         default: return "home_feature_more"
+        }
+    }
+}
+
+/// Flutter SwitchStoreDialog — Home metrics store row.
+private struct HomeSwitchStoreSheet: View {
+    let stores: [(String, String)]
+    let selectedId: String
+    var onPick: (String) -> Void
+    var onClose: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Text("切换店铺", font: .system(size: 18, weight: .semibold), color: DesignTokens.ink)
+                .padding(.top, 24)
+            Text("可切换多个店铺查看数据", font: .system(size: 13), color: DesignTokens.body)
+                .padding(.top, 8)
+                .padding(.bottom, 20)
+            VStack(spacing: 12) {
+                ForEach(stores, id: \.0) { store in
+                    let selected = store.0 == selectedId
+                    Button {
+                        if store.0 == selectedId { onClose() }
+                        else { onPick(store.0) }
+                    } label: {
+                        Text(
+                            store.1,
+                            font: .system(size: 15, weight: .medium),
+                            color: selected
+                                ? Color(red: 0x1B/255, green: 0x82/255, blue: 0xD2/255)
+                                : DesignTokens.ink
+                        )
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(
+                                    selected
+                                        ? Color(red: 0x1B/255, green: 0x82/255, blue: 0xD2/255)
+                                        : DesignTokens.hairline,
+                                    lineWidth: 1
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 20)
+            Spacer(minLength: 16)
+            Button("取消", action: onClose)
+                .padding(.bottom, 24)
         }
     }
 }

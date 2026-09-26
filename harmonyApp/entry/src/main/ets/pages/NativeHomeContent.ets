@@ -9,7 +9,17 @@ import { DesignTokens } from './NativeShellShared';
 @Component
 export struct NativeHomeContent {
   onDeferred: (title: string) => void = (_t: string) => {};
+  displayName: string = '访客';
+  isLoggedIn: boolean = false;
   @State metricTab: number = 0;
+  @State showTodos: boolean = true;
+  @State storeName: string = '[4S]北京沃德龙鼎吉利';
+  @State showSwitchStore: boolean = false;
+  @State selectedStoreId: string = '1';
+  private readonly stores: string[][] = [
+    ['1', '[4S]北京沃德龙鼎吉利'],
+    ['2', '[4S]北京腾远吉利'],
+  ];
 
   private homeFeatures: string[] = [
     'H5 调试', '生活服务', '二手车', '新车成交', '新车跟进',
@@ -54,7 +64,8 @@ export struct NativeHomeContent {
   private greeting(): string {
     const hour = new Date().getHours();
     const prefix = hour < 12 ? '早上好' : (hour < 18 ? '下午好' : '晚上好');
-    return `${prefix}，沃德龙鼎`;
+    const name = (this.displayName || '').trim();
+    return `${prefix}，${name.length > 0 ? name : '访客'}`;
   }
 
   private onFeatureTap(label: string) {
@@ -133,7 +144,8 @@ export struct NativeHomeContent {
   }
 
   build() {
-    Scroll() {
+    Stack() {
+      Scroll() {
       Column() {
         // Greeting
         Row() {
@@ -201,24 +213,27 @@ export struct NativeHomeContent {
         .padding({ left: 16, right: 16, top: 12 })
 
         // Todo strip (2x2)
-        Column({ space: 10 }) {
-          Row({ space: 12 }) {
-            this.QuickCard(this.quickActions[0][0], this.quickActions[0][1], this.quickActions[0][2])
-            this.QuickCard(this.quickActions[1][0], this.quickActions[1][1], this.quickActions[1][2])
-          }.width('100%')
-          Row({ space: 12 }) {
-            this.QuickCard(this.quickActions[2][0], this.quickActions[2][1], this.quickActions[2][2])
-            this.QuickCard(this.quickActions[3][0], this.quickActions[3][1], this.quickActions[3][2])
-          }.width('100%')
+        if (this.showTodos) {
+          Column({ space: 10 }) {
+            Row({ space: 12 }) {
+              this.QuickCard(this.quickActions[0][0], this.quickActions[0][1], this.quickActions[0][2])
+              this.QuickCard(this.quickActions[1][0], this.quickActions[1][1], this.quickActions[1][2])
+            }.width('100%')
+            Row({ space: 12 }) {
+              this.QuickCard(this.quickActions[2][0], this.quickActions[2][1], this.quickActions[2][2])
+              this.QuickCard(this.quickActions[3][0], this.quickActions[3][1], this.quickActions[3][2])
+            }.width('100%')
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 12 })
         }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 12 })
 
         // Store metrics
         Column({ space: 12 }) {
           Row() {
             Text('公司数据').fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
             Text('查看更多').fontSize(13).fontColor(DesignTokens.link)
+              .onClick(() => this.onDeferred('公司数据'))
           }.width('100%')
 
           Column({ space: 14 }) {
@@ -227,7 +242,7 @@ export struct NativeHomeContent {
                 .width(28).height(28).textAlign(TextAlign.Center)
                 .fontSize(12).fontColor(DesignTokens.link)
                 .backgroundColor('#1F0070F3').borderRadius(8)
-              Text('[4S]北京沃德龙鼎吉利')
+              Text(this.storeName)
                 .fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
                 .maxLines(1).layoutWeight(1)
               Text('∨').fontSize(12).fontColor(DesignTokens.body)
@@ -236,9 +251,16 @@ export struct NativeHomeContent {
             .padding({ left: 10, right: 10, top: 8, bottom: 8 })
             .backgroundColor(DesignTokens.canvasSoft2)
             .borderRadius(10)
+            .onClick(() => {
+              if (this.isLoggedIn) {
+                this.showSwitchStore = true;
+              } else {
+                this.onDeferred('请先登录');
+              }
+            })
 
             Row({ space: 16 }) {
-              ForEach(['今日', '昨日', '本月'], (t: string, index: number) => {
+              ForEach(['今日', '昨日', '近30天'], (t: string, index: number) => {
                 Text(t)
                   .fontSize(14)
                   .fontWeight(this.metricTab === index ? FontWeight.Medium : FontWeight.Regular)
@@ -375,6 +397,55 @@ export struct NativeHomeContent {
     .width('100%')
     .height('100%')
     .backgroundColor(DesignTokens.canvasSoft2)
+
+      if (this.showSwitchStore) {
+        Column() {
+          Column()
+            .width('100%')
+            .layoutWeight(1)
+            .backgroundColor('#8C000000')
+            .onClick(() => { this.showSwitchStore = false; })
+          Column({ space: 12 }) {
+            Text('切换店铺')
+              .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              .margin({ top: 24 })
+            Text('可切换多个店铺查看数据')
+              .fontSize(13).fontColor(DesignTokens.body)
+            ForEach(this.stores, (s: string[]) => {
+              Text(s[1])
+                .fontSize(15).fontWeight(FontWeight.Medium)
+                .fontColor(s[0] === this.selectedStoreId ? '#1B82D2' : DesignTokens.ink)
+                .width('100%')
+                .textAlign(TextAlign.Center)
+                .padding({ top: 14, bottom: 14 })
+                .border({
+                  width: 1,
+                  color: s[0] === this.selectedStoreId ? '#1B82D2' : DesignTokens.hairline,
+                  radius: 24,
+                })
+                .onClick(() => {
+                  this.selectedStoreId = s[0];
+                  this.storeName = s[1];
+                  this.showSwitchStore = false;
+                })
+            }, (s: string[]) => s[0])
+            Text('取消')
+              .fontSize(15).fontColor(DesignTokens.body)
+              .margin({ top: 8, bottom: 24 })
+              .onClick(() => { this.showSwitchStore = false; })
+          }
+          .width('100%')
+          .padding({ left: 20, right: 20 })
+          .backgroundColor(Color.White)
+          .borderRadius({ topLeft: 16, topRight: 16 })
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.End)
+      }
+    }
+    .width('100%')
+    .height('100%')
   }
 
   @Builder
