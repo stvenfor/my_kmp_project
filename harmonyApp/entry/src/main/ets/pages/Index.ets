@@ -59,6 +59,10 @@ struct Index {
   @State chatMessages: string[] = [];
   @State chatSearchOpen: boolean = false;
   @State chatSearchQuery: string = '';
+  @State chatVoiceMode: boolean = false;
+  @State chatShowEmoji: boolean = false;
+  @State chatShowMore: boolean = false;
+  @State communityLiked: boolean = false;
   @State nativePane: string = '';
   @State featurePath: string = '';
   private islandController: ArkUIViewController | undefined = undefined;
@@ -420,22 +424,92 @@ struct Index {
           })
         }.layoutWeight(1).padding(16).width('100%')
 
-        Row({ space: 8 }) {
-          TextInput({ placeholder: '输入消息…', text: this.chatDraft })
-            .layoutWeight(1)
-            .height(40)
-            .onChange((v: string) => { this.chatDraft = v; })
-          Button('发送')
-            .backgroundColor(DesignTokens.link)
-            .onClick(() => {
-              const t = this.chatDraft.trim();
-              if (t.length === 0) {
-                return;
-              }
-              this.chatMessages = this.chatMessages.concat([t]);
-              this.chatDraft = '';
-            })
-        }.padding(12).width('100%').backgroundColor(DesignTokens.canvasSoft2)
+        Column() {
+          Row({ space: 8 }) {
+            Text(this.chatVoiceMode ? '⌨' : '🎤')
+              .fontSize(20).fontColor(DesignTokens.body).width(36).height(36).textAlign(TextAlign.Center)
+              .onClick(() => {
+                this.chatVoiceMode = !this.chatVoiceMode;
+                this.chatShowEmoji = false;
+                this.chatShowMore = false;
+              })
+            if (this.chatVoiceMode) {
+              Text('按住 说话')
+                .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                .layoutWeight(1).height(40).textAlign(TextAlign.Center)
+                .backgroundColor(DesignTokens.canvas).borderRadius(8)
+                .border({ width: 0.5, color: DesignTokens.hairline })
+            } else {
+              TextInput({ placeholder: '输入消息…', text: this.chatDraft })
+                .layoutWeight(1)
+                .height(40)
+                .onChange((v: string) => { this.chatDraft = v; })
+            }
+            Text('☺')
+              .fontSize(22)
+              .fontColor(this.chatShowEmoji ? DesignTokens.link : DesignTokens.body)
+              .width(36).height(36).textAlign(TextAlign.Center)
+              .onClick(() => {
+                this.chatShowEmoji = !this.chatShowEmoji;
+                this.chatShowMore = false;
+                this.chatVoiceMode = false;
+              })
+            if (this.chatDraft.trim().length === 0) {
+              Text('＋')
+                .fontSize(28)
+                .fontColor(this.chatShowMore ? DesignTokens.link : DesignTokens.body)
+                .width(36).height(36).textAlign(TextAlign.Center)
+                .onClick(() => {
+                  this.chatShowMore = !this.chatShowMore;
+                  this.chatShowEmoji = false;
+                })
+            } else {
+              Text('发送')
+                .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+                .backgroundColor(DesignTokens.link).borderRadius(18)
+                .onClick(() => {
+                  const t = this.chatDraft.trim();
+                  if (t.length === 0) {
+                    return;
+                  }
+                  this.chatMessages = this.chatMessages.concat([t]);
+                  this.chatDraft = '';
+                })
+            }
+          }.padding(12).width('100%')
+
+          if (this.chatShowEmoji) {
+            Flex({ wrap: FlexWrap.Wrap }) {
+              ForEach(['😀', '😁', '😂', '🤣', '😊', '😍', '🥰', '😘', '👍', '🙏', '🔥', '🎉', '🚗', '🏠', '✅', '❤️'],
+                (e: string) => {
+                  Text(e).fontSize(28).width('12.5%').textAlign(TextAlign.Center).padding(4)
+                    .onClick(() => { this.chatDraft = this.chatDraft + e; })
+                })
+            }.width('100%').height(160).padding(12).backgroundColor(DesignTokens.canvas)
+          }
+
+          if (this.chatShowMore) {
+            Row({ space: 24 }) {
+              ForEach([['照片', '[图片]'], ['拍摄', '[拍摄]'], ['文件', '[文件]'], ['位置', '[位置]']],
+                (item: string[]) => {
+                  Column({ space: 8 }) {
+                    Text(item[0].substring(0, 1))
+                      .width(52).height(52).textAlign(TextAlign.Center)
+                      .fontColor(DesignTokens.link).backgroundColor(DesignTokens.canvasSoft2).borderRadius(12)
+                    Text(item[0]).fontSize(12).fontColor(DesignTokens.body)
+                  }.onClick(() => {
+                    this.chatMessages = this.chatMessages.concat([item[1]]);
+                    this.chatShowMore = false;
+                  })
+                })
+            }
+            .justifyContent(FlexAlign.Center)
+            .width('100%')
+            .padding({ top: 20, bottom: 20 })
+            .backgroundColor(DesignTokens.canvas)
+          }
+        }.width('100%').backgroundColor(DesignTokens.canvasSoft2)
       }
       .width('100%')
       .height('100%')
@@ -562,6 +636,50 @@ struct Index {
       }.padding({ top: 12, bottom: 12 }).width('100%')
 
       List({ space: 12 }) {
+        if (this.communityFilter === '热门') {
+          ListItem() {
+            Column({ space: 8 }) {
+              Row() {
+                Text('热').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
+                  .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
+                Column() {
+                  Text('热门作者').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text('2小时前 · 热门').fontSize(14).fontColor(DesignTokens.body)
+                }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
+              }.width('100%')
+              Text('本周试驾排行榜出炉！#新车').fontSize(16).fontColor(DesignTokens.ink)
+              Image($r('app.media.community_post_video')).width('62%').aspectRatio(858 / 570).borderRadius(6).objectFit(ImageFit.Cover)
+              Row({ space: 24 }) {
+                Text(this.communityLiked ? '♥ 已赞 1.2k' : '♡ 赞 1.2k').fontSize(14)
+                  .fontColor(this.communityLiked ? '#EE0000' : DesignTokens.body)
+                  .onClick(() => { this.communityLiked = !this.communityLiked; })
+                Text('💬 86').fontSize(14).fontColor(DesignTokens.body)
+                  .onClick(() => this.openDeferred('/community/comment'))
+              }.width('100%')
+            }
+            .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
+            .backgroundColor(DesignTokens.canvas).borderRadius(8)
+            .border({ width: 0.5, color: DesignTokens.hairline })
+          }
+        } else if (this.communityFilter === '关注') {
+          ListItem() {
+            Column({ space: 8 }) {
+              Row() {
+                Text('张').width(44).height(44).textAlign(TextAlign.Center).borderRadius(22)
+                  .backgroundColor(DesignTokens.hairline).fontColor(DesignTokens.body)
+                Column() {
+                  Text('张三').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text('刚刚 · 关注').fontSize(14).fontColor(DesignTokens.body)
+                }.alignItems(HorizontalAlign.Start).margin({ left: 12 }).layoutWeight(1)
+              }.width('100%')
+              Text('刚发了保养心得，求交流。').fontSize(16).fontColor(DesignTokens.ink)
+              Image($r('app.media.community_post_a')).width('62%').aspectRatio(858 / 570).borderRadius(6).objectFit(ImageFit.Cover)
+            }
+            .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
+            .backgroundColor(DesignTokens.canvas).borderRadius(8)
+            .border({ width: 0.5, color: DesignTokens.hairline })
+          }
+        } else {
         ListItem() {
           Column({ space: 8 }) {
             Row() {
@@ -580,9 +698,13 @@ struct Index {
               .aspectRatio(858 / 570)
               .borderRadius(6)
               .objectFit(ImageFit.Cover)
+              .onClick(() => this.openDeferred('/community/image_preview'))
             Row({ space: 24 }) {
-              Text('♥ 158').fontSize(14).fontColor('#EE0000')
+              Text(this.communityLiked ? '♥ 已赞 158' : '♡ 赞 158').fontSize(14)
+                .fontColor(this.communityLiked ? '#EE0000' : DesignTokens.body)
+                .onClick(() => { this.communityLiked = !this.communityLiked; })
               Text('💬 6').fontSize(14).fontColor(DesignTokens.body)
+                .onClick(() => this.openDeferred('/community/comment'))
               Text('↗ 分享').fontSize(14).fontColor(DesignTokens.body)
             }.width('100%')
             Column({ space: 4 }) {
@@ -614,6 +736,7 @@ struct Index {
           .padding({ left: 16, top: 14, right: 12, bottom: 14 }).width('100%').alignItems(HorizontalAlign.Start)
           .backgroundColor(DesignTokens.canvas).borderRadius(8)
           .border({ width: 0.5, color: DesignTokens.hairline })
+        }
         }
       }.layoutWeight(1).padding({ left: 16, right: 16 })
     }
