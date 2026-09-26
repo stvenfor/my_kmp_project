@@ -101,7 +101,7 @@
 - [x] B.1.13 学习报告入口 → `/home/learning_report`
 - [x] B.1.14 下拉刷新 `refreshDashboard`
 - [~] B.1.15 加载中 / 错误重试 placeholder（刷新有；全页 error 未做）
-- [ ] B.1.16 签到弹窗 `DailyCheckInDialog.maybeShow`
+- [x] B.1.16 签到弹窗 `DailyCheckInDialog.maybeShow`
 - [ ] B.1.17 音乐 mini-player 底 inset（若 Music 启用）— 随 J.3
 
 ### 数据

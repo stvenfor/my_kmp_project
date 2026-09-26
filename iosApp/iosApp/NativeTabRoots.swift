@@ -66,6 +66,7 @@ struct HomeTabView: View {
     @State private var storeName = "[4S]北京沃德龙鼎吉利"
     @State private var selectedStoreId = "1"
     @State private var showCheckIn = false
+    @State private var toastText: String? = nil
     private let stores: [(String, String)] = [
         ("1", "[4S]北京沃德龙鼎吉利"),
         ("2", "[4S]北京腾远吉利"),
@@ -146,6 +147,10 @@ struct HomeTabView: View {
             Button("立即签到 · +10积分") {
                 let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
                 UserDefaults.standard.set(String(today), forKey: "check_in_dialog_ack_date")
+                toastText = "签到成功，+10积分"
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                    if toastText == "签到成功，+10积分" { toastText = nil }
+                }
             }
             Button("稍后再说", role: .cancel) {
                 let today = ISO8601DateFormatter().string(from: Date()).prefix(10)
@@ -153,6 +158,17 @@ struct HomeTabView: View {
             }
         } message: {
             Text("签到攒积分，可在签到页兑换好物\n已连续签到 3 天")
+        }
+        .overlay(alignment: .bottom) {
+            if let toastText {
+                Text(toastText)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 24)
+            }
         }
     }
 

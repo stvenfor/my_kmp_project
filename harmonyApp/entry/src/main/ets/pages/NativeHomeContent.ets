@@ -1,4 +1,7 @@
 import { DesignTokens } from './NativeShellShared';
+import { preferences } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
+import { promptAction } from '@kit.ArkUI';
 
 /**
  * SoT: my_ai_project HomePage —
@@ -17,6 +20,7 @@ export struct NativeHomeContent {
   @State showSwitchStore: boolean = false;
   @State selectedStoreId: string = '1';
   @State showCheckIn: boolean = false;
+  private checkInPref: preferences.Preferences | undefined = undefined;
   private readonly stores: string[][] = [
     ['1', '[4S]北京沃德龙鼎吉利'],
     ['2', '[4S]北京腾远吉利'],
@@ -77,12 +81,35 @@ export struct NativeHomeContent {
     return `${y}-${m}-${d}`;
   }
 
+  /** Flutter DailyCheckInDialog.markAcked — once per local calendar day. */
+  private ackCheckInDialog(): void {
+    const today = this.todayLocal();
+    if (this.checkInPref !== undefined) {
+      this.checkInPref.putSync('check_in_dialog_ack_date', today);
+      this.checkInPref.flush();
+    }
+    this.showCheckIn = false;
+  }
+
   aboutToAppear(): void {
-    if (!this.isLoggedIn || this.showCheckIn) {
+    if (!this.isLoggedIn) {
       return;
     }
-    // Flutter DailyCheckInDialog.maybeShow — mock once per Home enter when logged in.
-    this.showCheckIn = true;
+    const today = this.todayLocal();
+    try {
+      const ctx = getContext(this) as common.UIAbilityContext;
+      preferences.getPreferences(ctx, { name: 'home_check_in' }).then((pref: preferences.Preferences) => {
+        this.checkInPref = pref;
+        const ack = pref.getSync('check_in_dialog_ack_date', '') as string;
+        if (ack !== today) {
+          this.showCheckIn = true;
+        }
+      }).catch(() => {
+        this.showCheckIn = true;
+      });
+    } catch (_) {
+      this.showCheckIn = true;
+    }
   }
 
   private onFeatureTap(label: string) {
@@ -468,7 +495,7 @@ export struct NativeHomeContent {
             .width('100%')
             .height('100%')
             .backgroundColor('#8C000000')
-            .onClick(() => { this.showCheckIn = false; })
+            .onClick(() => { this.ackCheckInDialog(); })
           Column({ space: 12 }) {
             Text('每日签到')
               .fontSize(18).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
@@ -479,10 +506,13 @@ export struct NativeHomeContent {
               .fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
             Button('立即签到 · +10积分')
               .backgroundColor(DesignTokens.link)
-              .onClick(() => { this.showCheckIn = false; })
+              .onClick(() => {
+                promptAction.showToast({ message: '签到成功，+10积分' });
+                this.ackCheckInDialog();
+              })
             Text('稍后再说')
               .fontSize(14).fontColor(DesignTokens.body)
-              .onClick(() => { this.showCheckIn = false; })
+              .onClick(() => { this.ackCheckInDialog(); })
           }
           .width('80%')
           .padding(22)
