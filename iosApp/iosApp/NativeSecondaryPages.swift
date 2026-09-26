@@ -618,6 +618,400 @@ struct NativeCommunityPublishPage: View {
     }
 }
 
+struct NativeCommunityCommentPage: View {
+    var onClose: () -> Void
+    @State private var draft = ""
+    @State private var comments: [(String, String)] = [
+        ("李四", "说得对！周末一起去门店看看"),
+        ("赵六", "同感 +1，双擎确实省油"),
+        ("客服小助手", "欢迎到店试驾，预约通道已开放"),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Capsule().fill(DesignTokens.hairline).frame(width: 36, height: 4)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 8)
+            HStack {
+                Text("评论 \(comments.count)", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+                Button("关闭", action: onClose).foregroundStyle(DesignTokens.link)
+            }
+            .padding(16)
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(comments.enumerated()), id: \.offset) { _, item in
+                        HStack(alignment: .top, spacing: 12) {
+                            Circle()
+                                .fill(DesignTokens.link.opacity(0.15))
+                                .frame(width: 36, height: 36)
+                                .overlay(Text(String(item.0.prefix(1)), font: .system(size: 14, weight: .medium), color: DesignTokens.link))
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.0, font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
+                                Text(item.1, font: .system(size: 14), color: DesignTokens.body)
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+            }
+
+            HStack(spacing: 10) {
+                TextField("说说你的看法…", text: $draft)
+                    .padding(.horizontal, 12)
+                    .frame(height: 40)
+                    .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 20))
+                Button("发送") {
+                    let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !text.isEmpty else { return }
+                    comments.insert(("我", text), at: 0)
+                    draft = ""
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(DesignTokens.link, in: Capsule())
+            }
+            .padding(12)
+            .background(DesignTokens.canvas)
+        }
+        .background(DesignTokens.canvas.ignoresSafeArea())
+    }
+}
+
+struct NativeCommunityImagePreviewPage: View {
+    var onClose: () -> Void
+    @State private var index = 0
+    private let labels = ["社区配图 1", "社区配图 2", "社区配图 3"]
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            VStack {
+                Spacer()
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.white.opacity(0.12))
+                    .overlay(
+                        Text(labels[index], font: .system(size: 18, weight: .medium), color: .white)
+                    )
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 360)
+                    .padding(.horizontal, 24)
+                Spacer()
+            }
+            VStack {
+                HStack {
+                    Button("关闭", action: onClose).foregroundStyle(.white)
+                    Spacer()
+                    Text("\(index + 1)/\(labels.count)", font: .system(size: 15), color: .white)
+                }
+                .padding(16)
+                Spacer()
+                HStack {
+                    Button("上一张") { if index > 0 { index -= 1 } }
+                        .foregroundStyle(.white)
+                    Spacer()
+                    Button("下一张") { if index < labels.count - 1 { index += 1 } }
+                        .foregroundStyle(.white)
+                }
+                .padding(24)
+            }
+        }
+    }
+}
+
+struct NativeMallPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    @State private var category = 0
+    @State private var filter = 1
+    private let categories = ["推荐", "0元起兑", "国庆季", "钻铂专享", "数码家电", "生活好物"]
+    private let filters = ["积分", "热兑", "上新", "筛选"]
+    private let products: [(String, String, String, Bool)] = [
+        ("店庆纪念马克杯", "39.90元", "已兑2391", false),
+        ("电子礼品卡 50 元", "50.00元", "已兑2877", true),
+        ("会员壁纸包", "6.00元", "已兑6566", true),
+        ("线上精品课兑换", "99.00元", "已兑9492", true),
+        ("品牌帆布袋", "29.00元", "已兑5613", false),
+        ("冬季保暖围巾", "128.00元", "已兑8555", false),
+    ]
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Button { onClose() } label: {
+                        Image(systemName: "chevron.left").foregroundStyle(DesignTokens.ink)
+                    }
+                    HStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass").font(.system(size: 13)).foregroundStyle(DesignTokens.mute)
+                        Text("视频会员卡", font: .system(size: 14), color: DesignTokens.mute)
+                        Spacer()
+                        Text("搜索", font: .system(size: 12, weight: .semibold), color: .white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .padding(.leading, 10)
+                    .padding(.trailing, 4)
+                    .frame(height: 36)
+                    .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(DesignTokens.canvas)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 18) {
+                        ForEach(Array(categories.enumerated()), id: \.offset) { i, label in
+                            VStack(spacing: 4) {
+                                Text(label, font: .system(size: i == category ? 15 : 14, weight: i == category ? .semibold : .regular),
+                                      color: i == category ? DesignTokens.ink : DesignTokens.mute)
+                                Capsule()
+                                    .fill(i == category ? DesignTokens.link : Color.clear)
+                                    .frame(width: 16, height: 2)
+                            }
+                            .onTapGesture { category = i }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                }
+                .background(DesignTokens.canvas)
+
+                HStack(spacing: 6) {
+                    ForEach(Array(filters.enumerated()), id: \.offset) { i, label in
+                        let active = i == filter
+                        HStack(spacing: 2) {
+                            if active { Text("✓", font: .system(size: 11), color: DesignTokens.link) }
+                            Text(label, font: .system(size: 12, weight: active ? .semibold : .regular),
+                                  color: active ? DesignTokens.link : DesignTokens.body)
+                            if label == "积分" || label == "筛选" {
+                                Text("▾", font: .system(size: 11), color: active ? DesignTokens.link : DesignTokens.mute)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 30)
+                        .background(active ? DesignTokens.link.opacity(0.1) : DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(active ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
+                        .onTapGesture { filter = i }
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+
+                ScrollView {
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                        ForEach(Array(products.enumerated()), id: \.offset) { _, p in
+                            VStack(alignment: .leading, spacing: 8) {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(DesignTokens.canvasSoft2)
+                                    .frame(height: 110)
+                                    .overlay(
+                                        Text(p.3 ? "虚拟" : "实物", font: .system(size: 12), color: DesignTokens.mute)
+                                    )
+                                Text(p.0, font: .system(size: 14, weight: .medium), color: DesignTokens.ink)
+                                    .lineLimit(2)
+                                Text(p.1, font: .system(size: 15, weight: .semibold), color: Color(red: 0.9, green: 0.3, blue: 0.2))
+                                Text(p.2, font: .system(size: 11), color: DesignTokens.mute)
+                            }
+                            .padding(8)
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                            .onTapGesture { onOpen?("/mall/detail") }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 88)
+                }
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+
+            HStack {
+                Button {
+                    onOpen?("/mall/orders")
+                } label: {
+                    Text("我的订单", font: .system(size: 14, weight: .semibold), color: .white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(DesignTokens.link, in: Capsule())
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
+        }
+    }
+}
+
+struct NativeWalletPage: View {
+    var onClose: () -> Void
+    @State private var amount = ""
+    @State private var channel = 1
+    private let flows = [
+        ("membership_pay", "ref m2", "-30.00"),
+        ("充值", "ref alipay", "+100.00"),
+        ("充值", "ref alipay", "+1.00"),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "我的钱包", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("余额（元）", font: .system(size: 14), color: DesignTokens.body)
+                        Text("71.00", font: .system(size: 32, weight: .semibold), color: DesignTokens.ink)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(20)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+
+                    Text("充值", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
+                    TextField("金额 0.01-50000", text: $amount)
+                        .keyboardType(.decimalPad)
+                        .padding(12)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
+
+                    HStack(spacing: 8) {
+                        ForEach([(1, "支付宝"), (2, "微信"), (3, "银行卡")], id: \.0) { item in
+                            let sel = channel == item.0
+                            Text((sel ? "✓ " : "") + item.1, font: .system(size: 13), color: sel ? .white : DesignTokens.ink)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(sel ? DesignTokens.link : DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(sel ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
+                                .onTapGesture { channel = item.0 }
+                        }
+                        ForEach(["10", "50", "100"], id: \.self) { a in
+                            Text(a, font: .system(size: 13), color: DesignTokens.ink)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
+                                .onTapGesture { amount = a }
+                        }
+                    }
+
+                    Button("立即充值") {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                        .frame(maxWidth: .infinity)
+
+                    Text("流水", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
+                    ForEach(Array(flows.enumerated()), id: \.offset) { _, f in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(f.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                                Text(f.1, font: .system(size: 12), color: DesignTokens.mute)
+                            }
+                            Spacer()
+                            Text(f.2, font: .system(size: 15, weight: .semibold),
+                                  color: f.2.hasPrefix("+") ? Color(red: 0.1, green: 0.6, blue: 0.3) : DesignTokens.ink)
+                        }
+                        .padding(14)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeShortVideoPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    private let clips = [
+        ("新车到店 · 15s", "播放 2.1k · 赞 186"),
+        ("保养小贴士", "播放 980 · 赞 64"),
+        ("交车仪式", "播放 3.4k · 赞 412"),
+        ("展厅速览", "播放 1.1k · 赞 88"),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "小视频", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(DesignTokens.link.opacity(0.2))
+                            .frame(width: 56, height: 56)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("沃德龙鼎", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                            Text("粉丝 12.6万 · 作品 48", font: .system(size: 13), color: DesignTokens.body)
+                        }
+                        Spacer()
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        LinearGradient(colors: [Color(red: 0.86, green: 0.93, blue: 0.98), DesignTokens.canvasSoft2],
+                                       startPoint: .top, endPoint: .bottom)
+                    )
+
+                    HStack {
+                        Text("我发布的小视频", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
+                        Spacer()
+                        Button("如何拍摄小视频") { onOpen?("/video/short/help") }
+                            .font(.system(size: 13))
+                            .foregroundStyle(DesignTokens.link)
+                    }
+                    .padding(.horizontal, 16)
+
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                        VStack {
+                            Image(systemName: "plus")
+                                .font(.system(size: 28))
+                                .foregroundStyle(DesignTokens.link)
+                            Text("拍一个", font: .system(size: 13), color: DesignTokens.link)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 160)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(style: StrokeStyle(lineWidth: 1, dash: [6]))
+                                .foregroundStyle(DesignTokens.link)
+                        )
+                        .onTapGesture { onOpen?("/video/short/publish") }
+
+                        ForEach(Array(clips.enumerated()), id: \.offset) { _, c in
+                            VStack(alignment: .leading, spacing: 6) {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(red: 0.1, green: 0.12, blue: 0.16))
+                                    .frame(height: 120)
+                                    .overlay(
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 32))
+                                            .foregroundStyle(.white.opacity(0.9))
+                                    )
+                                Text(c.0, font: .system(size: 13, weight: .medium), color: DesignTokens.ink)
+                                    .lineLimit(1)
+                                Text(c.1, font: .system(size: 11), color: DesignTokens.mute)
+                            }
+                            .onTapGesture { onOpen?("/video/short/play") }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+
+                    Text("没有更多了", font: .system(size: 12), color: DesignTokens.mute)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                }
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {

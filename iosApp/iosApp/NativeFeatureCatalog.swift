@@ -9,9 +9,11 @@ enum NativeRouteResolver {
     }
 
     private static func normalizePath(_ path: String) -> String {
-        if path.hasPrefix("/video/short") { return "/video/short" }
+        if path == "/video/short" || path.hasPrefix("/video/short?") { return "/video/short" }
         if path.hasPrefix("/live") { return "/live" }
         if path.hasPrefix("/friend") { return "/friend" }
+        if path.hasPrefix("/mall/orders") { return "/mall/orders" }
+        if path.hasPrefix("/mall/detail") { return "/mall/detail" }
         if path.hasPrefix("/mall") { return "/mall" }
         if path.hasPrefix("/wallet") { return "/wallet" }
         if path.hasPrefix("/ai") { return "/ai/stream" }
@@ -19,6 +21,8 @@ enum NativeRouteResolver {
         if path.hasPrefix("/classroom") { return "/classroom/my_class" }
         if path.hasPrefix("/community/publish") { return "/community/publish" }
         if path.hasPrefix("/community/search") { return "/community/search" }
+        if path.hasPrefix("/community/comment") { return "/community/comment" }
+        if path.hasPrefix("/community/image_preview") { return "/community/image_preview" }
         if path.hasPrefix("/web") || path.hasPrefix("http") { return "/web" }
         if path.hasPrefix("/scan") { return "/scan" }
         return path
@@ -232,6 +236,12 @@ enum NativeFeatureCatalog {
                 .init(id: "2", title: "订单 #A0988", detail: "已完成 · ¥268", badge: "完成"),
             ], primaryAction: nil)
         },
+        "/mall/detail": {
+            .init(id: "/mall/detail", title: "商品详情", subtitle: "积分兑换", rows: [
+                .init(id: "1", title: "店庆纪念马克杯", detail: "39.90元 · 已兑2391", badge: "实物"),
+                .init(id: "2", title: "规格", detail: "默认款 · 1 件", badge: nil),
+            ], primaryAction: "立即兑换")
+        },
         "/wallet": {
             .init(id: "/wallet", title: "我的钱包", subtitle: "可用余额", rows: [
                 .init(id: "1", title: "余额", detail: "¥ 1,280.50", badge: nil),
@@ -244,6 +254,23 @@ enum NativeFeatureCatalog {
                 .init(id: "1", title: "新车到店 · 15s", detail: "播放 2.1k · 赞 186", badge: nil),
                 .init(id: "2", title: "保养小贴士", detail: "播放 980 · 赞 64", badge: nil),
             ], primaryAction: "拍一个")
+        },
+        "/video/short/play": {
+            .init(id: "/video/short/play", title: "播放", subtitle: "全屏预览", rows: [
+                .init(id: "1", title: "新车到店 · 15s", detail: "点赞 · 评论 · 分享", badge: nil),
+            ], primaryAction: nil)
+        },
+        "/video/short/publish": {
+            .init(id: "/video/short/publish", title: "发布小视频", subtitle: "选择素材", rows: [
+                .init(id: "1", title: "封面", detail: "从相册选择", badge: nil),
+                .init(id: "2", title: "标题", detail: "说说这一刻…", badge: nil),
+            ], primaryAction: "发布")
+        },
+        "/video/short/help": {
+            .init(id: "/video/short/help", title: "如何拍摄小视频", subtitle: "拍摄技巧", rows: [
+                .init(id: "1", title: "竖屏构图", detail: "主体居中，光线充足", badge: nil),
+                .init(id: "2", title: "时长建议", detail: "15–30 秒最佳", badge: nil),
+            ], primaryAction: nil)
         },
         "/live": {
             .init(id: "/live", title: "直播", subtitle: "直播间列表", rows: [
@@ -391,6 +418,16 @@ struct NativeFeatureHost: View {
             NativeCommunitySearchPage(onClose: onClose)
         } else if path == "/community/publish" {
             NativeCommunityPublishPage(onClose: onClose)
+        } else if path == "/community/comment" {
+            NativeCommunityCommentPage(onClose: onClose)
+        } else if path == "/community/image_preview" {
+            NativeCommunityImagePreviewPage(onClose: onClose)
+        } else if path == "/mall" {
+            NativeMallPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/wallet" {
+            NativeWalletPage(onClose: onClose)
+        } else if path == "/video/short" {
+            NativeShortVideoPage(onClose: onClose, onOpen: onOpen)
         } else {
             genericList
         }

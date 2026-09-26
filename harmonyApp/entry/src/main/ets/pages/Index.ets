@@ -21,6 +21,11 @@ import {
   NativeFriendPane,
   NativeCommunitySearchPane,
   NativeCommunityPublishPane,
+  NativeCommunityCommentPane,
+  NativeCommunityImagePreviewPane,
+  NativeMallPane,
+  NativeWalletPane,
+  NativeShortVideoPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -261,6 +266,36 @@ struct Index {
     }
     if (path === '/community/publish') {
       this.nativePane = 'community_publish';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/community/comment') {
+      this.nativePane = 'community_comment';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/community/image_preview') {
+      this.nativePane = 'community_image_preview';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mall') {
+      this.nativePane = 'mall';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/wallet') {
+      this.nativePane = 'wallet';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/video/short') {
+      this.nativePane = 'short_video';
       this.featurePath = '';
       this.showStub = false;
       return;
@@ -1063,6 +1098,38 @@ struct Index {
 
       if (this.nativePane === 'community_publish') {
         NativeCommunityPublishPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'community_comment') {
+        NativeCommunityCommentPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'community_image_preview') {
+        NativeCommunityImagePreviewPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'mall') {
+        NativeMallPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
+      }
+
+      if (this.nativePane === 'wallet') {
+        NativeWalletPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'short_video') {
+        NativeShortVideoPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {

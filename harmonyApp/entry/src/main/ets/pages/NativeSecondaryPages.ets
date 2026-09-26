@@ -609,3 +609,447 @@ export struct NativeCommunityPublishPane {
     .height('100%')
   }
 }
+
+@Component
+export struct NativeCommunityCommentPane {
+  onClose: () => void = () => {};
+  @State draft: string = '';
+  @State comments: string[][] = [
+    ['李四', '说得对！周末一起去门店看看'],
+    ['赵六', '同感 +1，双擎确实省油'],
+    ['客服小助手', '欢迎到店试驾，预约通道已开放'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Column()
+          .width(36).height(4).borderRadius(2)
+          .backgroundColor(DesignTokens.hairline)
+      }.width('100%').justifyContent(FlexAlign.Center).padding({ top: 8 })
+
+      Row() {
+        Text(`评论 ${this.comments.length}`)
+          .fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+        Text('关闭').fontSize(15).fontColor(DesignTokens.link).onClick(() => this.onClose())
+      }.padding(16).width('100%')
+
+      List() {
+        ForEach(this.comments, (item: string[], index: number) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Text(item[0].substring(0, 1))
+                .fontSize(14).fontColor(DesignTokens.link)
+                .width(36).height(36).textAlign(TextAlign.Center)
+                .borderRadius(18).backgroundColor('#260070F3')
+              Column({ space: 4 }) {
+                Text(item[0]).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(item[1]).fontSize(14).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+            }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%')
+          }
+        }, (item: string[], index: number) => `${index}_${item[0]}`)
+      }.layoutWeight(1).width('100%')
+
+      Row({ space: 10 }) {
+        TextInput({ placeholder: '说说你的看法…', text: this.draft })
+          .layoutWeight(1).height(40)
+          .backgroundColor(DesignTokens.canvasSoft2).borderRadius(20)
+          .padding({ left: 12, right: 12 })
+          .onChange((v: string) => { this.draft = v; })
+        Text('发送')
+          .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
+          .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+          .backgroundColor(DesignTokens.link).borderRadius(20)
+          .onClick(() => {
+            const text = this.draft.trim();
+            if (text.length === 0) {
+              return;
+            }
+            this.comments = [['我', text], ...this.comments];
+            this.draft = '';
+          })
+      }.padding(12).width('100%').backgroundColor(DesignTokens.canvas)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(DesignTokens.canvas)
+  }
+}
+
+@Component
+export struct NativeCommunityImagePreviewPane {
+  onClose: () => void = () => {};
+  @State index: number = 0;
+  private labels: string[] = ['社区配图 1', '社区配图 2', '社区配图 3'];
+
+  build() {
+    Stack() {
+      Column() {
+        Blank().layoutWeight(1)
+        Text(this.labels[this.index])
+          .fontSize(18).fontWeight(FontWeight.Medium).fontColor(Color.White)
+          .width('100%').height(360)
+          .textAlign(TextAlign.Center)
+          .backgroundColor('#1FFFFFFF')
+          .borderRadius(8)
+          .margin({ left: 24, right: 24 })
+        Blank().layoutWeight(1)
+      }.width('100%').height('100%')
+
+      Column() {
+        Row() {
+          Text('关闭').fontSize(15).fontColor(Color.White).onClick(() => this.onClose())
+          Blank().layoutWeight(1)
+          Text(`${this.index + 1}/${this.labels.length}`).fontSize(15).fontColor(Color.White)
+        }.padding(16).width('100%')
+        Blank().layoutWeight(1)
+        Row() {
+          Text('上一张').fontSize(15).fontColor(Color.White)
+            .onClick(() => {
+              if (this.index > 0) {
+                this.index -= 1;
+              }
+            })
+          Blank().layoutWeight(1)
+          Text('下一张').fontSize(15).fontColor(Color.White)
+            .onClick(() => {
+              if (this.index < this.labels.length - 1) {
+                this.index += 1;
+              }
+            })
+        }.padding(24).width('100%')
+      }.width('100%').height('100%')
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(Color.Black)
+  }
+}
+
+@Component
+export struct NativeMallPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
+  @State category: number = 0;
+  @State filter: number = 1;
+  private categories: string[] = ['推荐', '0元起兑', '国庆季', '钻铂专享', '数码家电', '生活好物'];
+  private filters: string[] = ['积分', '热兑', '上新', '筛选'];
+  private products: string[][] = [
+    ['店庆纪念马克杯', '39.90元', '已兑2391', '0'],
+    ['电子礼品卡 50 元', '50.00元', '已兑2877', '1'],
+    ['会员壁纸包', '6.00元', '已兑6566', '1'],
+    ['线上精品课兑换', '99.00元', '已兑9492', '1'],
+    ['品牌帆布袋', '29.00元', '已兑5613', '0'],
+    ['冬季保暖围巾', '128.00元', '已兑8555', '0'],
+  ];
+
+  build() {
+    Stack({ alignContent: Alignment.Bottom }) {
+      Column() {
+        Row({ space: 8 }) {
+          Text('‹').fontSize(28).fontColor(DesignTokens.ink).onClick(() => this.onClose())
+          Row({ space: 6 }) {
+            Text('⌕').fontSize(14).fontColor(DesignTokens.mute)
+            Text('视频会员卡').fontSize(14).fontColor(DesignTokens.mute).layoutWeight(1)
+            Text('搜索')
+              .fontSize(12).fontWeight(FontWeight.Medium).fontColor(Color.White)
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .backgroundColor(DesignTokens.link).borderRadius(6)
+          }
+          .layoutWeight(1).height(36)
+          .padding({ left: 10, right: 4 })
+          .backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
+        }.padding({ left: 12, right: 12, top: 8, bottom: 8 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+        Scroll().scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off) {
+          Row({ space: 18 }) {
+            ForEach(this.categories, (label: string, i: number) => {
+              Column({ space: 4 }) {
+                Text(label)
+                  .fontSize(i === this.category ? 15 : 14)
+                  .fontWeight(i === this.category ? FontWeight.Medium : FontWeight.Regular)
+                  .fontColor(i === this.category ? DesignTokens.ink : DesignTokens.mute)
+                Column()
+                  .width(16).height(2)
+                  .backgroundColor(i === this.category ? DesignTokens.link : Color.Transparent)
+              }.onClick(() => { this.category = i; })
+            })
+          }.padding({ left: 12, right: 12, top: 8, bottom: 8 })
+        }.width('100%').backgroundColor(DesignTokens.canvas)
+
+        Row({ space: 6 }) {
+          ForEach(this.filters, (label: string, i: number) => {
+            Row({ space: 2 }) {
+              if (i === this.filter) {
+                Text('✓').fontSize(11).fontColor(DesignTokens.link)
+              }
+              Text(label)
+                .fontSize(12)
+                .fontWeight(i === this.filter ? FontWeight.Medium : FontWeight.Regular)
+                .fontColor(i === this.filter ? DesignTokens.link : DesignTokens.body)
+              if (label === '积分' || label === '筛选') {
+                Text('▾').fontSize(11)
+                  .fontColor(i === this.filter ? DesignTokens.link : DesignTokens.mute)
+              }
+            }
+            .layoutWeight(1).height(30)
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(i === this.filter ? '#1A0070F3' : DesignTokens.canvas)
+            .border({
+              width: 1,
+              color: i === this.filter ? DesignTokens.link : DesignTokens.hairline,
+            })
+            .borderRadius(8)
+            .onClick(() => { this.filter = i; })
+          })
+        }.padding({ left: 12, right: 12, top: 8, bottom: 8 }).width('100%')
+
+        Grid() {
+          ForEach(this.products, (p: string[]) => {
+            GridItem() {
+              Column({ space: 8 }) {
+                Text(p[3] === '1' ? '虚拟' : '实物')
+                  .fontSize(12).fontColor(DesignTokens.mute)
+                  .width('100%').height(110)
+                  .textAlign(TextAlign.Center)
+                  .backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
+                Text(p[0]).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  .maxLines(2)
+                Text(p[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor('#E64D33')
+                Text(p[2]).fontSize(11).fontColor(DesignTokens.mute)
+              }
+              .padding(8)
+              .backgroundColor(DesignTokens.canvas)
+              .borderRadius(10)
+              .onClick(() => this.onOpen('/mall/detail'))
+            }
+          })
+        }
+        .columnsTemplate('1fr 1fr')
+        .columnsGap(8)
+        .rowsGap(8)
+        .padding({ left: 10, right: 10, bottom: 88 })
+        .layoutWeight(1)
+        .width('100%')
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor(DesignTokens.canvasSoft2)
+
+      Row() {
+        Text('我的订单')
+          .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
+          .textAlign(TextAlign.Center)
+          .layoutWeight(1)
+          .padding({ top: 14, bottom: 14 })
+          .backgroundColor(DesignTokens.link)
+          .borderRadius(24)
+          .onClick(() => this.onOpen('/mall/orders'))
+      }.padding({ left: 24, right: 24, bottom: 16 }).width('100%')
+    }
+    .width('100%')
+    .height('100%')
+  }
+}
+
+@Component
+export struct NativeWalletPane {
+  onClose: () => void = () => {};
+  @State amount: string = '';
+  @State channel: number = 1;
+  private flows: string[][] = [
+    ['membership_pay', 'ref m2', '-30.00'],
+    ['充值', 'ref alipay', '+100.00'],
+    ['充值', 'ref alipay', '+1.00'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('我的钱包').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 12 }) {
+          Column({ space: 8 }) {
+            Text('余额（元）').fontSize(14).fontColor(DesignTokens.body)
+            Text('71.00').fontSize(32).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          }
+          .alignItems(HorizontalAlign.Start)
+          .padding(20)
+          .width('100%')
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
+
+          Text('充值').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+          TextInput({ placeholder: '金额 0.01-50000', text: this.amount })
+            .height(44)
+            .backgroundColor(DesignTokens.canvas)
+            .border({ width: 1, color: DesignTokens.hairline })
+            .borderRadius(8)
+            .padding({ left: 12, right: 12 })
+            .onChange((v: string) => { this.amount = v; })
+
+          Flex({ wrap: FlexWrap.Wrap }) {
+            Text(`${this.channel === 1 ? '✓ ' : ''}支付宝`)
+              .fontSize(13)
+              .fontColor(this.channel === 1 ? Color.White : DesignTokens.ink)
+              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+              .margin({ right: 8, bottom: 8 })
+              .backgroundColor(this.channel === 1 ? DesignTokens.link : DesignTokens.canvas)
+              .border({ width: 1, color: this.channel === 1 ? DesignTokens.link : DesignTokens.hairline })
+              .borderRadius(8)
+              .onClick(() => { this.channel = 1; })
+            Text(`${this.channel === 2 ? '✓ ' : ''}微信`)
+              .fontSize(13)
+              .fontColor(this.channel === 2 ? Color.White : DesignTokens.ink)
+              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+              .margin({ right: 8, bottom: 8 })
+              .backgroundColor(this.channel === 2 ? DesignTokens.link : DesignTokens.canvas)
+              .border({ width: 1, color: this.channel === 2 ? DesignTokens.link : DesignTokens.hairline })
+              .borderRadius(8)
+              .onClick(() => { this.channel = 2; })
+            Text(`${this.channel === 3 ? '✓ ' : ''}银行卡`)
+              .fontSize(13)
+              .fontColor(this.channel === 3 ? Color.White : DesignTokens.ink)
+              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+              .margin({ right: 8, bottom: 8 })
+              .backgroundColor(this.channel === 3 ? DesignTokens.link : DesignTokens.canvas)
+              .border({ width: 1, color: this.channel === 3 ? DesignTokens.link : DesignTokens.hairline })
+              .borderRadius(8)
+              .onClick(() => { this.channel = 3; })
+            ForEach(['10', '50', '100'], (a: string) => {
+              Text(a)
+                .fontSize(13).fontColor(DesignTokens.ink)
+                .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+                .margin({ right: 8, bottom: 8 })
+                .backgroundColor(DesignTokens.canvas)
+                .border({ width: 1, color: DesignTokens.hairline })
+                .borderRadius(8)
+                .onClick(() => { this.amount = a; })
+            })
+          }.width('100%')
+
+          Button('立即充值').backgroundColor(DesignTokens.link).width('100%')
+
+          Text('流水').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+          ForEach(this.flows, (f: string[]) => {
+            Row() {
+              Column({ space: 4 }) {
+                Text(f[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(f[1]).fontSize(12).fontColor(DesignTokens.mute)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Text(f[2])
+                .fontSize(15).fontWeight(FontWeight.Medium)
+                .fontColor(f[2].startsWith('+') ? '#1A9933' : DesignTokens.ink)
+            }
+            .padding(14)
+            .width('100%')
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(10)
+          })
+        }.padding(16).width('100%')
+      }.layoutWeight(1).width('100%')
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeShortVideoPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
+  private clips: string[][] = [
+    ['新车到店 · 15s', '播放 2.1k · 赞 186'],
+    ['保养小贴士', '播放 980 · 赞 64'],
+    ['交车仪式', '播放 3.4k · 赞 412'],
+    ['展厅速览', '播放 1.1k · 赞 88'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('小视频').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 12 }) {
+          Row({ space: 12 }) {
+            Column()
+              .width(56).height(56).borderRadius(28)
+              .backgroundColor('#330070F3')
+            Column({ space: 4 }) {
+              Text('沃德龙鼎').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text('粉丝 12.6万 · 作品 48').fontSize(13).fontColor(DesignTokens.body)
+            }.alignItems(HorizontalAlign.Start)
+            Blank().layoutWeight(1)
+          }
+          .padding(16)
+          .width('100%')
+          .linearGradient({
+            angle: 180,
+            colors: [['#DCEEF9', 0], [DesignTokens.canvasSoft2, 1]],
+          })
+
+          Row() {
+            Text('我发布的小视频').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+            Blank().layoutWeight(1)
+            Text('如何拍摄小视频')
+              .fontSize(13).fontColor(DesignTokens.link)
+              .onClick(() => this.onOpen('/video/short/help'))
+          }.padding({ left: 16, right: 16 }).width('100%')
+
+          Grid() {
+            GridItem() {
+              Column({ space: 8 }) {
+                Text('+').fontSize(28).fontColor(DesignTokens.link)
+                Text('拍一个').fontSize(13).fontColor(DesignTokens.link)
+              }
+              .justifyContent(FlexAlign.Center)
+              .width('100%').height(160)
+              .border({ width: 1, color: DesignTokens.link, style: BorderStyle.Dashed })
+              .borderRadius(10)
+              .onClick(() => this.onOpen('/video/short/publish'))
+            }
+            ForEach(this.clips, (c: string[]) => {
+              GridItem() {
+                Column({ space: 6 }) {
+                  Text('▶')
+                    .fontSize(28).fontColor(Color.White)
+                    .width('100%').height(120)
+                    .textAlign(TextAlign.Center)
+                    .backgroundColor('#1A1F29')
+                    .borderRadius(10)
+                  Text(c[0]).fontSize(13).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                    .maxLines(1)
+                  Text(c[1]).fontSize(11).fontColor(DesignTokens.mute)
+                }.onClick(() => this.onOpen('/video/short/play'))
+              }
+            })
+          }
+          .columnsTemplate('1fr 1fr')
+          .columnsGap(8)
+          .rowsGap(8)
+          .padding({ left: 16, right: 16 })
+          .width('100%')
+
+          Text('没有更多了')
+            .fontSize(12).fontColor(DesignTokens.mute)
+            .width('100%').textAlign(TextAlign.Center)
+            .padding({ top: 16, bottom: 16 })
+        }.width('100%')
+      }.layoutWeight(1).width('100%')
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
+  }
+}

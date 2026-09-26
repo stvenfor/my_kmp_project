@@ -106,8 +106,8 @@ export function resolveNativePath(raw: string): string {
     return key;
   }
   if (key.startsWith('/')) {
-    if (key.startsWith('/video/short')) {
-      return '/video/short';
+    if (key.startsWith('/video/short/') || key === '/video/short') {
+      return key === '/video/short' || key.startsWith('/video/short?') ? '/video/short' : key;
     }
     if (key.startsWith('/live')) {
       return '/live';
@@ -115,8 +115,14 @@ export function resolveNativePath(raw: string): string {
     if (key.startsWith('/friend')) {
       return '/friend';
     }
+    if (key.startsWith('/mall/orders')) {
+      return '/mall/orders';
+    }
+    if (key.startsWith('/mall/detail')) {
+      return '/mall/detail';
+    }
     if (key.startsWith('/mall')) {
-      return key.startsWith('/mall/orders') ? '/mall/orders' : '/mall';
+      return '/mall';
     }
     if (key.startsWith('/wallet')) {
       return '/wallet';
@@ -135,6 +141,12 @@ export function resolveNativePath(raw: string): string {
     }
     if (key.startsWith('/community/search')) {
       return '/community/search';
+    }
+    if (key.startsWith('/community/comment')) {
+      return '/community/comment';
+    }
+    if (key.startsWith('/community/image_preview')) {
+      return '/community/image_preview';
     }
     if (key.startsWith('/web') || key.startsWith('http')) {
       return '/web';
@@ -258,6 +270,11 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('1', '订单 #A1024', '待发货 · ¥399', '待发货'),
         row('2', '订单 #A0988', '已完成 · ¥268', '完成'),
       ], '');
+    case '/mall/detail':
+      return page(path, '商品详情', '积分兑换', [
+        row('1', '店庆纪念马克杯', '39.90元 · 已兑2391', '实物'),
+        row('2', '规格', '默认款 · 1 件'),
+      ], '立即兑换');
     case '/wallet':
       return page(path, '我的钱包', '可用余额', [
         row('1', '余额', '¥ 1,280.50'),
@@ -269,6 +286,20 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('1', '新车到店 · 15s', '播放 2.1k · 赞 186'),
         row('2', '保养小贴士', '播放 980 · 赞 64'),
       ], '拍一个');
+    case '/video/short/play':
+      return page(path, '播放', '全屏预览', [
+        row('1', '新车到店 · 15s', '点赞 · 评论 · 分享'),
+      ], '');
+    case '/video/short/publish':
+      return page(path, '发布小视频', '选择素材', [
+        row('1', '封面', '从相册选择'),
+        row('2', '标题', '说说这一刻…'),
+      ], '发布');
+    case '/video/short/help':
+      return page(path, '如何拍摄小视频', '拍摄技巧', [
+        row('1', '竖屏构图', '主体居中，光线充足'),
+        row('2', '时长建议', '15–30 秒最佳'),
+      ], '');
     case '/live':
       return page(path, '直播', '直播间列表', [
         row('1', '沃德龙鼎直播间', '在线 326 · 讲解新车', '直播中'),
@@ -304,6 +335,15 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
     case '/community/search':
       return page(path, '社区搜索', '动态 · 话题 · 用户', [
         row('1', '热门话题', '#换车季 #保养日记'),
+      ], '');
+    case '/community/comment':
+      return page(path, '评论', '说说你的看法', [
+        row('1', '李四', '说得对！'),
+        row('2', '赵六', '同感 +1'),
+      ], '发送评论');
+    case '/community/image_preview':
+      return page(path, '图片预览', '', [
+        row('1', '预览图', '点击返回'),
       ], '');
     case '/scan':
       return page(path, '扫一扫', '对准二维码完成核销 / 收款', [
