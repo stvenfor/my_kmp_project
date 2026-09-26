@@ -211,14 +211,13 @@ export struct NativeHomeContent {
         .width('100%')
         .padding({ left: 16, right: 16, top: 16 })
 
-        // Banner — asset already has title/CTA
+        // Flutter HomeBannerSection: display-only (no onTap). Asset has title/CTA paint.
         Image($r('app.media.home_banner'))
           .width('100%')
           .height(132)
           .objectFit(ImageFit.Cover)
           .borderRadius(8)
           .margin({ left: 16, right: 16, top: 16 })
-          .onClick(() => this.onDeferred('朋友圈营销'))
 
         // Feature grid (9 items, 5-col)
         Column() {

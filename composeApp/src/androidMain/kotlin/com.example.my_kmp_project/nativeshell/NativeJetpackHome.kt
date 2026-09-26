@@ -265,7 +265,7 @@ internal fun JetpackHomeRoot(
                     }
                 }
             }
-            item { JetpackHomeBanner(onDeferred) }
+            item { JetpackHomeBanner() }
             item { JetpackFeatureGrid(onDeferred) }
             if (showTodos) {
                 item { JetpackTodoStrip(onDeferred) }
@@ -292,8 +292,8 @@ internal fun JetpackHomeRoot(
 }
 
 @Composable
-private fun JetpackHomeBanner(onDeferred: (String) -> Unit) {
-    // Pixel-locked crop from Flutter SoT `flutter-new/home.png` (includes overlay text/CTA).
+private fun JetpackHomeBanner() {
+    // Flutter HomeBannerSection: display-only (no onTap). Asset includes title/CTA paint.
     Image(
         painter = painterResource(Res.drawable.home_banner_sot),
         contentDescription = "朋友圈营销",
@@ -302,8 +302,7 @@ private fun JetpackHomeBanner(onDeferred: (String) -> Unit) {
             .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .fillMaxWidth()
             .height(132.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { onDeferred("朋友圈营销") },
+            .clip(RoundedCornerShape(8.dp)),
     )
 }
 

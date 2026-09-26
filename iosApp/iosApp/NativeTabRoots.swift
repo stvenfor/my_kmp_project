@@ -206,7 +206,7 @@ struct HomeTabView: View {
     }
 
     private var banner: some View {
-        // Asset already contains title/CTA artwork — do not overlay duplicate text.
+        // Flutter HomeBannerSection: display-only (no onTap). Asset has title/CTA paint.
         Image("home_banner")
             .resizable()
             .scaledToFill()
@@ -215,7 +215,6 @@ struct HomeTabView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 16)
             .padding(.top, 16)
-            .onTapGesture { onDeferred("朋友圈营销") }
     }
 
     private var featureGrid: some View {
