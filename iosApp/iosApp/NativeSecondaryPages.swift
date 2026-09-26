@@ -1741,6 +1741,144 @@ struct NativeLedgerPage: View {
     }
 }
 
+
+struct NativeSmsTemplatePage: View {
+    var onClose: () -> Void
+    @State private var selected = 0
+    private let templates = [
+        ("到店提醒", "您好，您预约的试驾已确认，请准时到店。"),
+        ("保养到期", "爱车即将到保养周期，回店可享工时折扣。"),
+        ("交车祝福", "恭喜提车！如有用车问题随时联系专属顾问。"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "短信模板", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(Array(templates.enumerated()), id: \.offset) { i, t in
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text(t.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Spacer()
+                                if selected == i {
+                                    Image(systemName: "checkmark.circle.fill").foregroundStyle(DesignTokens.link)
+                                }
+                            }
+                            Text(t.1, font: .system(size: 14), color: DesignTokens.body)
+                        }
+                        .padding(16)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected == i ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
+                        .onTapGesture { selected = i }
+                    }
+                    Button("发送") {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                        .padding(.top, 8)
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeStoreQrPage: View {
+    var onClose: () -> Void
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "店铺收款码", onClose: onClose, dark: false)
+            VStack(spacing: 16) {
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(DesignTokens.hairline, lineWidth: 1)
+                    .frame(width: 220, height: 220)
+                    .overlay(
+                        VStack(spacing: 8) {
+                            Image(systemName: "qrcode").font(.system(size: 72)).foregroundStyle(DesignTokens.ink)
+                            Text("沃德龙鼎收款码", font: .system(size: 13), color: DesignTokens.body)
+                        }
+                    )
+                Text("展示给客户扫码支付", font: .system(size: 14), color: DesignTokens.body)
+                Button("保存到相册") {}
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeQaPage: View {
+    var onClose: () -> Void
+    private let qs: [(String, String)] = [
+        ("双擎和汽油怎么选？", "待回复 · 3 人围观"),
+        ("置换补贴怎么算？", "已回复 · 12 人围观"),
+        ("保养套餐有哪些？", "待回复 · 1 人围观"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "选买问答", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(qs.enumerated()), id: \.offset) { _, q in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(q.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                Text(q.1, font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            Text("去回答", font: .system(size: 13), color: DesignTokens.link)
+                        }
+                        .padding(16).background(DesignTokens.canvas)
+                        Divider().overlay(DesignTokens.hairline)
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativePosterPage: View {
+    var onClose: () -> Void
+    @State private var picked = 0
+    private let templates = ["秋季置换季", "周末到店礼", "新车上市"]
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "商家海报", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(Array(templates.enumerated()), id: \.offset) { i, name in
+                        HStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(DesignTokens.link.opacity(0.15))
+                                .frame(width: 72, height: 96)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(name, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Text("模板 · 可编辑文案", font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            if picked == i {
+                                Image(systemName: "checkmark.circle.fill").foregroundStyle(DesignTokens.link)
+                            }
+                        }
+                        .padding(12)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .onTapGesture { picked = i }
+                    }
+                    Button("生成海报") {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
 private func navBar(title: String, onClose: @escaping () -> Void, dark: Bool) -> some View {
     HStack {
         Button {

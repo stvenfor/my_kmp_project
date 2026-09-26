@@ -41,6 +41,10 @@ import {
   NativeWebPane,
   NativeAfterSalesPane,
   NativeLedgerPane,
+  NativeSmsTemplatePane,
+  NativeStoreQrPane,
+  NativeQaPane,
+  NativePosterPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -401,6 +405,30 @@ struct Index {
     }
     if (path === '/home/ledger') {
       this.nativePane = 'ledger';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/sms_template') {
+      this.nativePane = 'sms_template';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/store_qr') {
+      this.nativePane = 'store_qr';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/qa') {
+      this.nativePane = 'qa';
+      this.featurePath = '';
+      this.showStub = false;
+      return;
+    }
+    if (path === '/mine/poster') {
+      this.nativePane = 'poster';
       this.featurePath = '';
       this.showStub = false;
       return;
@@ -1324,6 +1352,22 @@ struct Index {
 
       if (this.nativePane === 'ledger') {
         NativeLedgerPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'sms_template') {
+        NativeSmsTemplatePane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'store_qr') {
+        NativeStoreQrPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'qa') {
+        NativeQaPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'poster') {
+        NativePosterPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {

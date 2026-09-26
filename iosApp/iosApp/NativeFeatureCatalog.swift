@@ -480,6 +480,14 @@ struct NativeFeatureHost: View {
             NativeAfterSalesPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/ledger" {
             NativeLedgerPage(onClose: onClose)
+        } else if path == "/mine/sms_template" {
+            NativeSmsTemplatePage(onClose: onClose)
+        } else if path == "/mine/store_qr" {
+            NativeStoreQrPage(onClose: onClose)
+        } else if path == "/mine/qa" {
+            NativeQaPage(onClose: onClose)
+        } else if path == "/mine/poster" {
+            NativePosterPage(onClose: onClose)
         } else {
             genericList
         }

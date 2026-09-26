@@ -1817,3 +1817,138 @@ export struct NativeLedgerPane {
     }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
+
+@Component
+export struct NativeSmsTemplatePane {
+  onClose: () => void = () => {};
+  @State selected: number = 0;
+  private templates: string[][] = [
+    ['到店提醒', '您好，您预约的试驾已确认，请准时到店。'],
+    ['保养到期', '爱车即将到保养周期，回店可享工时折扣。'],
+    ['交车祝福', '恭喜提车！如有用车问题随时联系专属顾问。'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('短信模板').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.templates, (t: string[], i: number) => {
+          ListItem() {
+            Column({ space: 8 }) {
+              Row() {
+                Text(t[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Blank().layoutWeight(1)
+                if (this.selected === i) {
+                  Text('✓').fontSize(16).fontColor(DesignTokens.link)
+                }
+              }.width('100%')
+              Text(t[1]).fontSize(14).fontColor(DesignTokens.body)
+            }
+            .padding(16).margin({ bottom: 12 })
+            .backgroundColor(DesignTokens.canvas).borderRadius(12)
+            .border({ width: 1, color: this.selected === i ? DesignTokens.link : DesignTokens.hairline })
+            .onClick(() => { this.selected = i; })
+          }
+        }, (t: string[], i: number) => `${i}_${t[0]}`)
+      }.layoutWeight(1).width('100%').padding(16)
+      Button('发送').backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeStoreQrPane {
+  onClose: () => void = () => {};
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('店铺收款码').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      Column({ space: 16 }) {
+        Blank().layoutWeight(1)
+        Text('QR')
+          .fontSize(48).fontColor(DesignTokens.ink)
+          .width(220).height(220).textAlign(TextAlign.Center)
+          .border({ width: 1, color: DesignTokens.hairline }).borderRadius(12)
+        Text('沃德龙鼎收款码').fontSize(13).fontColor(DesignTokens.body)
+        Text('展示给客户扫码支付').fontSize(14).fontColor(DesignTokens.body)
+        Button('保存到相册').backgroundColor(DesignTokens.link)
+        Blank().layoutWeight(1)
+      }.width('100%').layoutWeight(1).alignItems(HorizontalAlign.Center)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeQaPane {
+  onClose: () => void = () => {};
+  private qs: string[][] = [
+    ['双擎和汽油怎么选？', '待回复 · 3 人围观'],
+    ['置换补贴怎么算？', '已回复 · 12 人围观'],
+    ['保养套餐有哪些？', '待回复 · 1 人围观'],
+  ];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('选买问答').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.qs, (q: string[]) => {
+          ListItem() {
+            Row() {
+              Column({ space: 4 }) {
+                Text(q[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(q[1]).fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Text('去回答').fontSize(13).fontColor(DesignTokens.link)
+            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativePosterPane {
+  onClose: () => void = () => {};
+  @State picked: number = 0;
+  private templates: string[] = ['秋季置换季', '周末到店礼', '新车上市'];
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('商家海报').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      List() {
+        ForEach(this.templates, (name: string, i: number) => {
+          ListItem() {
+            Row({ space: 12 }) {
+              Column().width(72).height(96).borderRadius(8).backgroundColor('#260070F3')
+              Column({ space: 6 }) {
+                Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text('模板 · 可编辑文案').fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              if (this.picked === i) {
+                Text('✓').fontSize(16).fontColor(DesignTokens.link)
+              }
+            }
+            .padding(12).margin({ bottom: 12 })
+            .backgroundColor(DesignTokens.canvas).borderRadius(12)
+            .onClick(() => { this.picked = i; })
+          }
+        }, (name: string, i: number) => `${i}_${name}`)
+      }.layoutWeight(1).width('100%').padding(16)
+      Button('生成海报').backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
