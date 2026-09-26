@@ -79,17 +79,17 @@ internal object HomeRoutes {
     /** Map Home feature / todo labels → route. */
     fun fromLabel(label: String): String? = when (label.trim()) {
         "搜索" -> Search
-        "投资策略", "策略", "朋友圈营销" -> Strategy
+        "投资策略", "策略", "朋友圈营销", "朋友圈" -> Strategy
         "学习报告" -> LearningReport
         "签到商城", "积分商城", "签到日历", "签到" -> CheckInMall
         "配音", "配音首页" -> DubbingFeed
         "热榜", "热配榜" -> HotRankDetail
         "生活服务" -> LifeService
-        "直播带货" -> LiveCommerce
+        "直播带货", "直播" -> LiveCommerce
         "Club" -> Club
         "二手车" -> UsedCar
         "台账", "公司数据", "收支" -> Ledger
-        "数据分析" -> DataAnalytics
+        "数据分析", "竞品分析" -> DataAnalytics
         "新伙伴待确认" -> TodoPartner
         "待跟进客户", "销售顾问" -> TodoFollowUp
         "售后预约" -> TodoAfterSales
@@ -97,6 +97,7 @@ internal object HomeRoutes {
         "售后", "售后专区" -> AfterSales
         "新车跟进", "新车成交", "新车关注" -> NewCarFollow
         "门店" -> DataAnalytics
+        "话术库" -> Strategy
         else -> null
     }
 }

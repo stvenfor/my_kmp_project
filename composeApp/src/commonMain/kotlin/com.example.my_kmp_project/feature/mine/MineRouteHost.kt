@@ -105,7 +105,7 @@ internal object MineRoutes {
         "提醒事项" -> Reminder
         "邀请好友" -> Invite
         "粉丝群" -> FanGroup
-        "电子名片" -> "/mine/business_card"
+        "电子名片", "好友" -> Invite
         else -> null
     }
 

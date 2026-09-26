@@ -43,7 +43,7 @@ internal object ClassroomRoutes {
     const val VideoDetail = "/classroom/video/detail"
 
     fun fromLabel(label: String): String? = when (label.trim()) {
-        "我的课程", "课程", "课堂", "我的班级", "班级教学" -> MyClass
+        "我的课程", "课程", "课堂", "我的班级", "班级教学", "培训" -> MyClass
         "作业统计" -> HomeworkStats
         "领取礼品卡", "礼品卡" -> GiftClaim
         else -> null
