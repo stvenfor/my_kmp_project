@@ -120,6 +120,7 @@ struct Index {
   @State tab: MainTab = MainTab.Home;
   @State isLoggedIn: boolean = false;
   @State showLogin: boolean = false;
+  @State pendingTabAfterLogin: number = -1;
   @State showIsland: boolean = false;
   @State communityFilter: string = '最新';
   @State errorMessage: string = '';
@@ -255,6 +256,10 @@ struct Index {
     this.isLoggedIn = true;
     this.loginDisplayName = session.userName || session.phone || '华为用户';
     this.showLogin = false;
+    if (this.pendingTabAfterLogin >= 0) {
+      this.tab = this.pendingTabAfterLogin;
+      this.pendingTabAfterLogin = -1;
+    }
   }
 
   private peerFromChatDetail(raw: String): string {
@@ -1612,8 +1617,9 @@ struct Index {
     .height('100%')
     .justifyContent(FlexAlign.Center)
     .onClick(() => {
-      // Flutter MainPage: soft-auth keeps current tab; only present login.
+      // Flutter MainPage: soft-auth keeps current tab; remember pending destination.
       if ((id === MainTab.Chat || id === MainTab.Community) && !this.isLoggedIn) {
+        this.pendingTabAfterLogin = id;
         this.showLogin = true;
         return;
       }
@@ -1900,6 +1906,7 @@ struct Index {
           },
           onCancel: () => {
             this.showLogin = false;
+            this.pendingTabAfterLogin = -1;
             this.tab = MainTab.Home;
           },
         })

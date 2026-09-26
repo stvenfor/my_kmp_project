@@ -70,6 +70,7 @@ struct ContentView: View {
     @State private var secondaryRoute = "/home/search"
     @State private var chatPendingPeer: String? = nil
     @State private var toastText: String? = nil
+    @State private var pendingTabAfterLogin: MainTab? = nil
 
     var body: some View {
         Group {
@@ -246,8 +247,9 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             NativeBottomBar(selected: tab) { next in
-                // Flutter MainPage: soft-auth keeps current tab; only present login.
+                // Flutter MainPage: soft-auth keeps current tab; remember pending destination.
                 if (next == .chat || next == .community) && !isLoggedIn {
+                    pendingTabAfterLogin = next
                     showLogin = true
                 } else {
                     tab = next
@@ -273,9 +275,14 @@ struct ContentView: View {
                     isLoggedIn = true
                     loginDisplayName = MainViewControllerKt.AuthDisplayName()
                     showLogin = false
+                    if let pending = pendingTabAfterLogin {
+                        tab = pending
+                        pendingTabAfterLogin = nil
+                    }
                 },
                 onCancel: {
                     showLogin = false
+                    pendingTabAfterLogin = nil
                     tab = .home
                 }
             )
