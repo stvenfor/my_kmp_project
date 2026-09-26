@@ -14,8 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.my_kmp_project.core.router.AppRoute
-import com.example.my_kmp_project.core.router.LocalAppNavigator
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.delay
 
@@ -36,7 +34,6 @@ internal fun MineScreen(
     var page by remember { mutableStateOf(MinePage.Home) }
     var personalizedReturn by remember { mutableStateOf(MinePage.Home) }
     var snackMessage by remember { mutableStateOf<String?>(null) }
-    val navigator = LocalAppNavigator.current
 
     val showSnack: (String) -> Unit = { snackMessage = it }
 
@@ -50,14 +47,6 @@ internal fun MineScreen(
                 ReportMainTabRoot(isRoot = false)
                 MineSettingsScreen(
                     onBack = { page = MinePage.Home },
-                    onOpenPersonalized = {
-                        personalizedReturn = MinePage.Settings
-                        page = MinePage.Personalized
-                    },
-                    onOpenMembership = {
-                        navigator?.navigate(AppRoute.Membership)
-                    },
-                    onOpenAbout = { page = MinePage.About },
                 )
             }
             MinePage.Personalized -> {

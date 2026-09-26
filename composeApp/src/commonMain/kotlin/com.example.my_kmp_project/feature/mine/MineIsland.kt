@@ -38,9 +38,6 @@ fun MineIsland(
             MineIslandRoute.Settings -> {
                 MineSettingsScreen(
                     onBack = onRequestClose,
-                    onOpenPersonalized = { route = MineIslandRoute.Personalized },
-                    onOpenMembership = { route = MineIslandRoute.Membership },
-                    onOpenAbout = { route = MineIslandRoute.About },
                 )
             }
             MineIslandRoute.Personalized -> {

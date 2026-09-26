@@ -165,9 +165,6 @@ internal fun MineRouteHost(
         route == MineRoutes.Poster -> PosterScreen(onBack = onBack)
         route == MineRoutes.Settings || route == MineRoutes.SettingsLegacy -> MineSettingsScreen(
             onBack = onBack,
-            onOpenPersonalized = { onNavigate(MineRoutes.PersonalizedSettings) },
-            onOpenMembership = { onNavigate(MineRoutes.Membership) },
-            onOpenAbout = { showPlatformToast("关于 My AI · KMP") },
         )
         route == MineRoutes.PersonalizedSettings -> MinePersonalizedSettingsScreen(
             onBack = onBack,
