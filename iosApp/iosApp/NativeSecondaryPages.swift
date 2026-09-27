@@ -2504,45 +2504,131 @@ struct NativeClassroomPage: View {
 struct NativeUsedCarPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
-    private let cars: [(String, String, String)] = [
-        ("2019 凯美瑞 双擎", "12.8 万 · 4.2 万公里", "急售"),
-        ("2021 汉兰达", "22.5 万 · 3.1 万公里", ""),
-        ("2018 雷凌", "7.9 万 · 6.8 万公里", "新上"),
+    @State private var status = "全部"
+    @State private var kind = "全部类型"
+    private let accent = Color(red: 0.043, green: 0.431, blue: 0.310)
+    private let ink = Color(red: 0.110, green: 0.141, blue: 0.188)
+    private let bg = Color(red: 0.953, green: 0.961, blue: 0.973)
+    private let statusTabs = ["全部", "待审核", "已通过", "未通过"]
+    private let kindTabs = ["全部类型", "置换", "专卖", "收车"]
+    /// Align Compose HomeSecondaryMock.usedCarOrders
+    private let orders: [(kind: String, status: String, date: String, model: String, plate: String, amountLabel: String, amount: String, customer: String)] = [
+        ("置换", "待审核", "2026-09-22", "2021 帝豪", "京A·88X21", "评估价", "¥86,000", "张先生"),
+        ("专卖", "已通过", "2026-09-18", "2020 星越L", "沪B·6K902", "成交价", "¥152,000", "李女士"),
+        ("收车", "已提交", "2026-09-15", "2019 博越", "粤C·19H33", "收车价", "¥79,000", "王先生"),
     ]
+    private var filtered: [(kind: String, status: String, date: String, model: String, plate: String, amountLabel: String, amount: String, customer: String)] {
+        orders.filter { row in
+            let statusOk = status == "全部" || row.status == status || (status == "待审核" && row.status == "已提交")
+            let kindOk = kind == "全部类型" || row.kind == kind
+            return statusOk && kindOk
+        }
+    }
+    private var submitted: Int { orders.filter { $0.status == "已提交" }.count }
+    private var pending: Int { orders.filter { $0.status == "待审核" || $0.status == "已提交" }.count }
+    private var approved: Int { orders.filter { $0.status == "已通过" }.count }
+    private var rejected: Int { orders.filter { $0.status == "未通过" }.count }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link) }
-                Text("二手车", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(accent) }
+                Text("二手车", font: .system(size: 17, weight: .semibold), color: ink)
                 Spacer()
-                Button("发布") { onOpen?("/home/used_car/create") }
+                Button("新建") { onOpen?("/home/used_car/create") }
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(DesignTokens.link)
+                    .foregroundStyle(accent)
             }
             .padding(.horizontal, 16).padding(.vertical, 12)
-            .background(DesignTokens.canvas)
+            .background(Color.white)
+
             ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(Array(cars.enumerated()), id: \.offset) { _, c in
-                        HStack(spacing: 12) {
-                            RoundedRectangle(cornerRadius: 8).fill(DesignTokens.canvasSoft2).frame(width: 96, height: 72)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(c.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
-                                Text(c.1, font: .system(size: 13), color: DesignTokens.body)
-                                if !c.2.isEmpty {
-                                    Text(c.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
+                VStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("销售顾问", font: .system(size: 18, weight: .bold), color: .white)
+                        Text("门店顾问 · 演示门店", font: .system(size: 13), color: .white.opacity(0.85))
+                        HStack {
+                            ForEach([("已提交", submitted), ("待审核", pending), ("已通过", approved), ("未通过", rejected)], id: \.0) { label, value in
+                                VStack(spacing: 2) {
+                                    Text("\(value)", font: .system(size: 18, weight: .bold), color: .white)
+                                    Text(label, font: .system(size: 11), color: .white.opacity(0.8))
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .padding(.top, 10)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        LinearGradient(colors: [accent, Color(red: 0.078, green: 0.620, blue: 0.435)], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: RoundedRectangle(cornerRadius: 16)
+                    )
+                    .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 8)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(statusTabs, id: \.self) { tab in
+                                Text(tab, font: .system(size: 13), color: status == tab ? .white : ink)
+                                    .padding(.horizontal, 14).padding(.vertical, 8)
+                                    .background(status == tab ? accent : Color(red: 0.91, green: 0.925, blue: 0.941), in: Capsule())
+                                    .onTapGesture { status = tab }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.bottom, 8)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(kindTabs, id: \.self) { tab in
+                                Text(tab, font: .system(size: 13, weight: kind == tab ? .semibold : .regular),
+                                      color: kind == tab ? accent : DesignTokens.mute)
+                                    .padding(.horizontal, 14).padding(.vertical, 8)
+                                    .background(kind == tab ? accent.opacity(0.08) : Color.white, in: Capsule())
+                                    .onTapGesture { kind = tab }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.bottom, 12)
+
+                    if filtered.isEmpty {
+                        VStack(spacing: 8) {
+                            Text("暂无业务单", font: .system(size: 16, weight: .semibold), color: ink)
+                            Text("点击右上角新建置换 / 专卖 / 收车单", font: .system(size: 13), color: DesignTokens.mute)
+                        }
+                        .padding(48)
+                    } else {
+                        ForEach(Array(filtered.enumerated()), id: \.offset) { _, row in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text(row.kind, font: .system(size: 12, weight: .semibold), color: accent)
+                                        .padding(.horizontal, 8).padding(.vertical, 3)
+                                        .background(accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+                                    Spacer()
+                                    Text(row.status, font: .system(size: 12), color: DesignTokens.mute)
+                                }
+                                Text(row.model, font: .system(size: 16, weight: .semibold), color: ink)
+                                Text("\(row.plate) · \(row.customer)", font: .system(size: 13), color: DesignTokens.body)
+                                HStack {
+                                    Text(row.amountLabel, font: .system(size: 12), color: DesignTokens.mute)
+                                    Text(row.amount, font: .system(size: 15, weight: .semibold), color: ink)
+                                    Spacer()
+                                    Text(row.date, font: .system(size: 12), color: DesignTokens.mute)
                                 }
                             }
-                            Spacer()
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 14))
+                            .padding(.horizontal, 16).padding(.vertical, 5)
+                            .onTapGesture { onOpen?("/home/used_car/detail") }
                         }
-                        .padding(12)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                        .onTapGesture { onOpen?("/home/used_car/detail") }
                     }
                 }
-                .padding(16)
+                .padding(.bottom, 24)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .background(bg.ignoresSafeArea())
         }
     }
 }

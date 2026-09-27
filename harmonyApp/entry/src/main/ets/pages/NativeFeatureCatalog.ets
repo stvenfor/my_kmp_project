@@ -206,11 +206,11 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
   const path = resolveNativePath(pathOrLabel);
   switch (path) {
     case '/home/used_car':
-      return page(path, '二手车', '置换 / 专卖 / 估价', [
-        row('1', '2019 凯美瑞 2.0G', '里程 6.2 万 · 北京大兴', '在售'),
-        row('2', '2021 卡罗拉 双擎', '里程 3.1 万 · 天津', '已定'),
-        row('3', '2018 RAV4 荣放', '里程 9.8 万 · 廊坊', '在售'),
-      ], '发布车源');
+      return page(path, '二手车', '置换 / 专卖 / 收车业务单', [
+        row('1', '2021 帝豪 · 置换', '待审核 · 评估价 ¥86,000', '待审'),
+        row('2', '2020 星越L · 专卖', '已通过 · 成交价 ¥152,000'),
+        row('3', '2019 博越 · 收车', '已提交 · 收车价 ¥79,000', '已提交'),
+      ], '新建');
     case '/home/life_service':
       return page(path, '生活服务', '洗车 · 保养 · 代驾', [
         row('1', '精洗套餐', '外观+内饰 · ¥99', '热门'),

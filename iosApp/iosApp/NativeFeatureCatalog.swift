@@ -144,11 +144,11 @@ enum NativeFeatureCatalog {
         "/home/search": { .init(id: "/home/search", title: "搜索", subtitle: nil, rows: [], primaryAction: nil) },
         "/home/all_services": { .init(id: "/home/all_services", title: "全部服务", subtitle: nil, rows: [], primaryAction: nil) },
         "/home/used_car": {
-            .init(id: "/home/used_car", title: "二手车", subtitle: "置换 / 专卖 / 估价", rows: [
-                .init(id: "1", title: "2019 凯美瑞 2.0G", detail: "里程 6.2 万 · 北京大兴", badge: "在售"),
-                .init(id: "2", title: "2021 卡罗拉 双擎", detail: "里程 3.1 万 · 天津", badge: "已定"),
-                .init(id: "3", title: "2018 RAV4 荣放", detail: "里程 9.8 万 · 廊坊", badge: "在售"),
-            ], primaryAction: "发布车源")
+            .init(id: "/home/used_car", title: "二手车", subtitle: "置换 / 专卖 / 收车业务单", rows: [
+                .init(id: "1", title: "2021 帝豪 · 置换", detail: "待审核 · 评估价 ¥86,000", badge: "待审"),
+                .init(id: "2", title: "2020 星越L · 专卖", detail: "已通过 · 成交价 ¥152,000", badge: nil),
+                .init(id: "3", title: "2019 博越 · 收车", detail: "已提交 · 收车价 ¥79,000", badge: "已提交"),
+            ], primaryAction: "新建")
         },
         "/home/life_service": {
             .init(id: "/home/life_service", title: "生活服务", subtitle: "洗车 · 保养 · 代驾", rows: [

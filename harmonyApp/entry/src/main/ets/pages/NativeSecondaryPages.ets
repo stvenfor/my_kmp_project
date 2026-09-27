@@ -2540,38 +2540,125 @@ export struct NativeClassroomPane {
 export struct NativeUsedCarPane {
   onClose: () => void = () => {};
   onOpen: (path: string) => void = (_p: string) => {};
-  private cars: string[][] = [
-    ['2019 凯美瑞 双擎', '12.8 万 · 4.2 万公里', '急售'],
-    ['2021 汉兰达', '22.5 万 · 3.1 万公里', ''],
-    ['2018 雷凌', '7.9 万 · 6.8 万公里', '新上'],
+  @State status: string = '全部';
+  @State kind: string = '全部类型';
+  private accent: string = '#0B6E4F';
+  private statusTabs: string[] = ['全部', '待审核', '已通过', '未通过'];
+  private kindTabs: string[] = ['全部类型', '置换', '专卖', '收车'];
+  // Align Compose HomeSecondaryMock.usedCarOrders
+  private orders: string[][] = [
+    ['置换', '待审核', '2026-09-22', '2021 帝豪', '京A·88X21', '评估价', '¥86,000', '张先生'],
+    ['专卖', '已通过', '2026-09-18', '2020 星越L', '沪B·6K902', '成交价', '¥152,000', '李女士'],
+    ['收车', '已提交', '2026-09-15', '2019 博越', '粤C·19H33', '收车价', '¥79,000', '王先生'],
   ];
+
+  private filteredOrders(): string[][] {
+    return this.orders.filter((row: string[]) => {
+      const statusOk = this.status === '全部' || row[1] === this.status ||
+        (this.status === '待审核' && row[1] === '已提交');
+      const kindOk = this.kind === '全部类型' || row[0] === this.kind;
+      return statusOk && kindOk;
+    });
+  }
+
+  private countStatus(label: string): number {
+    if (label === '待审核') {
+      return this.orders.filter((r: string[]) => r[1] === '待审核' || r[1] === '已提交').length;
+    }
+    return this.orders.filter((r: string[]) => r[1] === label).length;
+  }
+
   build() {
     Column() {
       Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('二手车').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('二手车').fontSize(17).fontWeight(FontWeight.Medium).fontColor('#1C2430')
         Blank().layoutWeight(1)
-        Text('发布').fontSize(14).fontColor(DesignTokens.link).onClick(() => this.onOpen('/home/used_car/create'))
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      List() {
-        ForEach(this.cars, (c: string[]) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Column().width(96).height(72).borderRadius(8).backgroundColor(DesignTokens.canvasSoft2)
-              Column({ space: 4 }) {
-                Text(c[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(c[1]).fontSize(13).fontColor(DesignTokens.body)
-                if (c[2].length > 0) {
-                  Text(c[2]).fontSize(11).fontColor(DesignTokens.link)
-                }
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-            }
-            .padding(12).margin({ bottom: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(12)
-            .onClick(() => this.onOpen('/home/used_car/detail'))
+        Text('新建').fontSize(14).fontWeight(FontWeight.Medium).fontColor(this.accent)
+          .onClick(() => this.onOpen('/home/used_car/create'))
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
+
+      Scroll() {
+        Column() {
+          Column({ space: 4 }) {
+            Text('销售顾问').fontSize(18).fontWeight(FontWeight.Bold).fontColor(Color.White)
+            Text('门店顾问 · 演示门店').fontSize(13).fontColor('#D9FFFFFF')
+            Row() {
+              ForEach([['已提交', '已提交'], ['待审核', '待审核'], ['已通过', '已通过'], ['未通过', '未通过']], (pair: string[]) => {
+                Column({ space: 2 }) {
+                  Text(`${this.countStatus(pair[0])}`).fontSize(18).fontWeight(FontWeight.Bold).fontColor(Color.White)
+                  Text(pair[1]).fontSize(11).fontColor('#CCFFFFFF')
+                }.layoutWeight(1).alignItems(HorizontalAlign.Center)
+              }, (pair: string[]) => pair[0])
+            }.width('100%').margin({ top: 10 })
           }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+          .width('100%').padding(16)
+          .linearGradient({ angle: 135, colors: [['#0B6E4F', 0.0], ['#149E6F', 1.0]] })
+          .borderRadius(16)
+          .margin({ left: 16, right: 16, top: 12, bottom: 8 })
+
+          Scroll() {
+            Row({ space: 8 }) {
+              ForEach(this.statusTabs, (tab: string) => {
+                Text(tab)
+                  .fontSize(13)
+                  .fontColor(this.status === tab ? Color.White : '#1C2430')
+                  .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+                  .backgroundColor(this.status === tab ? this.accent : '#E8ECF0')
+                  .borderRadius(16)
+                  .onClick(() => { this.status = tab; })
+              }, (tab: string) => `s_${tab}`)
+            }
+          }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).padding({ left: 16, right: 16 }).margin({ bottom: 8 })
+
+          Scroll() {
+            Row({ space: 8 }) {
+              ForEach(this.kindTabs, (tab: string) => {
+                Text(tab)
+                  .fontSize(13)
+                  .fontWeight(this.kind === tab ? FontWeight.Medium : FontWeight.Regular)
+                  .fontColor(this.kind === tab ? this.accent : DesignTokens.mute)
+                  .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+                  .backgroundColor(this.kind === tab ? '#140B6E4F' : Color.White)
+                  .borderRadius(16)
+                  .onClick(() => { this.kind = tab; })
+              }, (tab: string) => `k_${tab}`)
+            }
+          }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).padding({ left: 16, right: 16 }).margin({ bottom: 12 })
+
+          if (this.filteredOrders().length === 0) {
+            Column({ space: 8 }) {
+              Text('暂无业务单').fontSize(16).fontWeight(FontWeight.Medium).fontColor('#1C2430')
+              Text('点击右上角新建置换 / 专卖 / 收车单').fontSize(13).fontColor(DesignTokens.mute)
+            }.width('100%').padding(48).alignItems(HorizontalAlign.Center)
+          } else {
+            ForEach(this.filteredOrders(), (row: string[], i: number) => {
+              Column({ space: 8 }) {
+                Row() {
+                  Text(row[0]).fontSize(12).fontWeight(FontWeight.Medium).fontColor(this.accent)
+                    .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                    .backgroundColor('#1A0B6E4F').borderRadius(4)
+                  Blank().layoutWeight(1)
+                  Text(row[1]).fontSize(12).fontColor(DesignTokens.mute)
+                }.width('100%')
+                Text(row[3]).fontSize(16).fontWeight(FontWeight.Medium).fontColor('#1C2430')
+                Text(`${row[4]} · ${row[7]}`).fontSize(13).fontColor(DesignTokens.body)
+                Row() {
+                  Text(row[5]).fontSize(12).fontColor(DesignTokens.mute)
+                  Text(row[6]).fontSize(15).fontWeight(FontWeight.Medium).fontColor('#1C2430').margin({ left: 6 })
+                  Blank().layoutWeight(1)
+                  Text(row[2]).fontSize(12).fontColor(DesignTokens.mute)
+                }.width('100%')
+              }
+              .width('100%').padding(14)
+              .backgroundColor(Color.White).borderRadius(14)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+              .onClick(() => this.onOpen('/home/used_car/detail'))
+            }, (row: string[], i: number) => `o_${i}_${row[3]}`)
+          }
+        }.width('100%').padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor('#FFF3F5F8')
   }
 }
 

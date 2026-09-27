@@ -445,33 +445,69 @@ private fun PayCheckoutScreen(onBack: () -> Unit) {
 
 @Composable
 private fun CheckInShortcutScreen(onBack: () -> Unit) {
+    // MineRoutes.CheckIn == /home/check_in_mall — prefer Home CheckInMallScreen via SecondaryRouteIsland.
+    // Fallback stub only if MineRouteHost is invoked directly.
     var points by remember { mutableStateOf(1280) }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(DemoColors.PageBg)
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = 24.dp),
+    ) {
         MineTopBar(title = "签到商城", onBack = onBack, containerColor = DemoColors.PageBg)
-        Column(Modifier.padding(16.dp)) {
-            Text("当前积分 $points", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Column(
+            Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color.White)
+                .padding(16.dp),
+        ) {
+            Text("当前积分", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            Spacer(Modifier.height(4.dp))
+            Text("$points", fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(12.dp))
-            Button(
-                onClick = {
-                    points += 10
-                    showPlatformToast("签到成功 +10")
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-            ) { Text("今日签到") }
-            Spacer(Modifier.height(16.dp))
-            listOf("流量券", "洗车券", "精品周边").forEach { name ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 10.dp)
-                        .clickable { showPlatformToast("兑换 $name（mock）") },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(name, color = DemoColors.TextPrimary)
-                    Text("兑换", color = DemoColors.Accent)
-                }
-                HorizontalDivider(color = DemoColors.Divider)
+            Text(
+                "今日签到",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(DemoColors.Accent)
+                    .clickable {
+                        points += 10
+                        showPlatformToast("签到成功 +10")
+                    }
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            )
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "积分兑换",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(horizontal = 16.dp),
+        )
+        Spacer(Modifier.height(8.dp))
+        listOf(
+            "洗车券 ×1" to "200 积分",
+            "香氛挂件" to "500 积分",
+            "精品周边" to "800 积分",
+        ).forEach { (name, cost) ->
+            Row(
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 5.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White)
+                    .clickable { showPlatformToast("兑换 $name（mock）") }
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(name, fontWeight = FontWeight.Medium)
+                Text(cost, color = DemoColors.Accent, fontSize = 13.sp)
             }
         }
     }
