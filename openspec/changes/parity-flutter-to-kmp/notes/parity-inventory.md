@@ -7,6 +7,37 @@
 
 Status: `todo` | `wip` | `packet-pass` | `excluded` | `gap-only`
 
+
+## GitHub tickets (synced)
+
+| Domain | Issue |
+|--------|-------|
+| Harness Screenshot Diff Gate | #2 |
+| Routing expand (native-preferred) | #3 |
+| Baseline shell/auth/tabs | #4 |
+| Home discover | #5 |
+| Home learning + check-in | #6 |
+| Home strategy + hot rank | #7 |
+| Home used-car + ledger | #8 |
+| Home analytics + life | #9 |
+| Home club/live-commerce + todos | #10 |
+| Home after-sales + new-car | #11 |
+| Home dubbing feed | #12 |
+| Chat detail + friend | #13 |
+| Community write | #14 |
+| Live list + room | #15 |
+| Wallet + pay placeholder | #16 |
+| Mall | #17 |
+| Mine settings/profile/addresses | #18 |
+| Mine membership/calculator/deal invoice | #19 |
+| AI + music | #20 |
+| Short video + dubbing works | #21 |
+| Web + classroom | #22 |
+| Contract drop Legacy island | #23 |
+| Closeout | #24 |
+
+Parent spec: #1
+
 ## Shell & tabs
 
 | Route | Domain ticket (proposed) | Track | Status |
