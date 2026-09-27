@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Native SwiftUI secondary pages for high-traffic Home entries (ADR 0002).
 /// Aligned to Flutter module_home + Compose HomeSearchScreen / AllServicesScreen.
@@ -376,67 +377,124 @@ struct NativeLearningReportPage: View {
 
 struct NativePurchaseCalculatorPage: View {
     var onClose: () -> Void
-    @State private var price = "180000"
-    @State private var downPercent = 30.0
-    @State private var months = 36.0
-
-    private var priceValue: Double { Double(price) ?? 180_000 }
-    private var downPayment: Double { priceValue * downPercent / 100 }
-    private var loan: Double { priceValue - downPayment }
-    private var monthly: Double {
-        guard months > 0 else { return 0 }
-        // Simple equal principal+interest approximation (Flutter mock style)
-        let r = 0.045 / 12
-        let n = months
-        let factor = pow(1 + r, n)
-        return loan * r * factor / (factor - 1)
-    }
+    @State private var mode = "cash" // cash | loan
+    @State private var barePrice = "100000"
+    @State private var taxable = ""
+    @State private var includeCommercial = false
+    @State private var selectedProduct = 1
+    @State private var quote: [(String, String)]? = nil
+    private let products: [(Int, String, String)] = [
+        (1, "示例银行车贷", "年利率 4.5% · 最低首付 20.0%"),
+        (2, "厂商金融贴息", "年利率 4.5% · 最低首付 20.0% · 贴息减 0.5%"),
+        (3, "低息精品贷", "年利率 3.98% · 最低首付 15.0% · 减本金 ¥2000"),
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "购车计算器", onClose: onClose, dark: false)
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    field("车价（元）", text: $price)
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("首付 \(Int(downPercent))%", font: .system(size: 14), color: DesignTokens.ink)
-                        Slider(value: $downPercent, in: 10...60, step: 5).tint(DesignTokens.link)
+                VStack(alignment: .leading, spacing: 12) {
+                    sectionCard {
+                        Text("付款方式", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                        HStack(spacing: 8) {
+                            modeChip("全款", selected: mode == "cash") { mode = "cash" }
+                            modeChip("贷款", selected: mode == "loan") { mode = "loan" }
+                        }
+                        field("裸车价（元）", text: $barePrice)
+                        field("计税价格（可选，默认裸车价/1.13）", text: $taxable)
+                        Toggle(isOn: $includeCommercial) {
+                            Text("计入商业险粗算", font: .system(size: 15), color: DesignTokens.ink)
+                        }
+                        .tint(DesignTokens.link)
                     }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("期数 \(Int(months)) 期", font: .system(size: 14), color: DesignTokens.ink)
-                        Slider(value: $months, in: 12...60, step: 12).tint(DesignTokens.link)
+
+                    sectionCard {
+                        HStack {
+                            Text("金融产品", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                            Spacer()
+                            Text("刷新", font: .system(size: 14), color: DesignTokens.link)
+                        }
+                        ForEach(products, id: \.0) { p in
+                            HStack(alignment: .top, spacing: 10) {
+                                Text(selectedProduct == p.0 ? "◉" : "○",
+                                     font: .system(size: 18),
+                                     color: selectedProduct == p.0 ? DesignTokens.link : DesignTokens.mute)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(p.1, font: .system(size: 15, weight: .medium),
+                                         color: selectedProduct == p.0 ? DesignTokens.link : DesignTokens.ink)
+                                    Text(p.2, font: .system(size: 12), color: DesignTokens.body)
+                                }
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture { selectedProduct = p.0 }
+                        }
                     }
-                    resultRow("首付", String(format: "¥ %.0f", downPayment))
-                    resultRow("贷款", String(format: "¥ %.0f", loan))
-                    resultRow("月供估算", String(format: "¥ %.2f / %d 期", monthly, Int(months)))
+
+                    Button {
+                        let bare = Double(barePrice) ?? 0
+                        let tax = Double(taxable) ?? (bare / 1.13)
+                        let product = products.first(where: { $0.0 == selectedProduct })?.1 ?? ""
+                        quote = [
+                            ("付款方式", mode == "cash" ? "全款" : "贷款"),
+                            ("金融产品", product),
+                            ("裸车价", "¥\(Int(bare))"),
+                            ("计税价格", "¥\(Int(tax))"),
+                            ("商业险", includeCommercial ? "已计入粗算" : "未计入"),
+                            ("合计参考", "¥\(Int(bare * 1.08))"),
+                        ]
+                    } label: {
+                        Text("计算报价", font: .system(size: 16, weight: .semibold), color: .white)
+                            .frame(maxWidth: .infinity).frame(height: 48)
+                            .background(DesignTokens.ink, in: RoundedRectangle(cornerRadius: 12))
+                    }
+
+                    if let quote {
+                        sectionCard {
+                            Text("报价结果", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                            ForEach(quote, id: \.0) { row in
+                                HStack {
+                                    Text(row.0, font: .system(size: 14), color: DesignTokens.body)
+                                    Spacer()
+                                    Text(row.1, font: .system(size: 14, weight: .medium), color: DesignTokens.ink)
+                                }
+                            }
+                        }
+                    }
                 }
                 .padding(16)
             }
-        }
-        .background(DesignTokens.canvasSoft2.ignoresSafeArea())
-    }
-
-    private func field(_ title: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title, font: .system(size: 14), color: DesignTokens.body)
-            TextField(title, text: text)
-                .keyboardType(.numberPad)
-                .padding(12)
-                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 0.5))
+            .background(Color(red: 0.96, green: 0.96, blue: 0.97).ignoresSafeArea())
         }
     }
 
-    private func resultRow(_ title: String, _ value: String) -> some View {
-        HStack {
-            Text(title, font: .system(size: 15), color: DesignTokens.body)
-            Spacer()
-            Text(value, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+    private func sectionCard<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 12) { content() }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func modeChip(_ label: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Text(selected ? "✓ \(label)" : label, font: .system(size: 14, weight: .medium),
+             color: selected ? .white : DesignTokens.ink)
+            .padding(.horizontal, 14).padding(.vertical, 8)
+            .background(selected ? DesignTokens.link : DesignTokens.canvas, in: Capsule())
+            .overlay(Capsule().stroke(selected ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
+            .onTapGesture(perform: action)
+    }
+
+    private func field(_ label: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label, font: .system(size: 12), color: DesignTokens.body)
+            TextField("", text: text)
+                .padding(.horizontal, 12).padding(.vertical, 12)
+                .background(Color(red: 0.96, green: 0.96, blue: 0.97), in: RoundedRectangle(cornerRadius: 8))
+                .keyboardType(.decimalPad)
         }
-        .padding(14)
-        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
     }
 }
+
 
 struct NativeMallDetailPage: View {
     var onClose: () -> Void
@@ -2721,36 +2779,43 @@ struct NativeLedgerPage: View {
 struct NativeSmsTemplatePage: View {
     var onClose: () -> Void
     @State private var selected = 0
+    /// Align Compose SmsTemplateScreen
     private let templates = [
-        ("到店提醒", "您好，您预约的试驾已确认，请准时到店。"),
-        ("保养到期", "爱车即将到保养周期，回店可享工时折扣。"),
-        ("交车祝福", "恭喜提车！如有用车问题随时联系专属顾问。"),
+        ("到店提醒", "尊敬的客户，预约保养已排至今日 14:00，请准时到店。"),
+        ("试驾确认", "您好，试驾预约已确认，顾问将提前电话联系您。"),
+        ("活动邀约", "本周末门店试驾会，到店即送礼品，欢迎莅临。"),
+        ("回访关怀", "购车已满一周，如有用车问题请随时联系您的顾问。"),
     ]
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "短信模板", onClose: onClose, dark: false)
             ScrollView {
                 VStack(spacing: 12) {
-                    ForEach(Array(templates.enumerated()), id: \.offset) { i, t in
+                    ForEach(Array(templates.enumerated()), id: \.offset) { i, item in
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
-                                Text(t.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                                Text(item.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
                                 Spacer()
                                 if selected == i {
-                                    Image(systemName: "checkmark.circle.fill").foregroundStyle(DesignTokens.link)
+                                    Text("已选", font: .system(size: 12), color: DesignTokens.link)
                                 }
                             }
-                            Text(t.1, font: .system(size: 14), color: DesignTokens.body)
+                            Text(item.1, font: .system(size: 14), color: DesignTokens.body)
+                            Button("复制文案") {
+                                UIPasteboard.general.string = item.1
+                                selected = i
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(DesignTokens.link)
                         }
                         .padding(16)
                         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected == i ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(selected == i ? DesignTokens.link : DesignTokens.hairline, lineWidth: selected == i ? 1.5 : 0.5)
+                        )
                         .onTapGesture { selected = i }
                     }
-                    Button("发送") {}
-                        .buttonStyle(.borderedProminent)
-                        .tint(DesignTokens.link)
-                        .padding(.top, 8)
                 }
                 .padding(16)
             }
@@ -2759,31 +2824,46 @@ struct NativeSmsTemplatePage: View {
     }
 }
 
+
 struct NativeStoreQrPage: View {
     var onClose: () -> Void
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "店铺收款码", onClose: onClose, dark: false)
-            VStack(spacing: 16) {
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(DesignTokens.hairline, lineWidth: 1)
-                    .frame(width: 220, height: 220)
-                    .overlay(
-                        VStack(spacing: 8) {
-                            Image(systemName: "qrcode").font(.system(size: 72)).foregroundStyle(DesignTokens.ink)
-                            Text("沃德龙鼎收款码", font: .system(size: 13), color: DesignTokens.body)
+            ScrollView {
+                VStack(spacing: 16) {
+                    VStack(spacing: 8) {
+                        Text("演示门店", font: .system(size: 18, weight: .bold), color: DesignTokens.ink)
+                        Text("扫码向本店付款", font: .system(size: 13), color: DesignTokens.body)
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12).fill(Color(white: 0.07))
+                                .frame(width: 200, height: 200)
+                            RoundedRectangle(cornerRadius: 8).fill(Color.white)
+                                .frame(width: 160, height: 160)
+                            Text("QR", font: .system(size: 28, weight: .bold), color: Color(white: 0.07))
                         }
-                    )
-                Text("展示给客户扫码支付", font: .system(size: 14), color: DesignTokens.body)
-                Button("保存到相册") {}
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.link)
+                        .padding(.vertical, 12)
+                        Text("收款码仅用于演示，不产生真实扣款", font: .system(size: 12), color: DesignTokens.mute)
+                    }
+                    .padding(24)
+                    .frame(maxWidth: .infinity)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 16))
+                    .padding(.horizontal, 24)
+
+                    Button("保存收款码") {}
+                        .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.link)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 24)
+                }
+                .padding(.top, 24)
+                .padding(.bottom, 32)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(DesignTokens.canvasSoft2.ignoresSafeArea())
         }
     }
 }
+
 
 struct NativeQaPage: View {
     var onClose: () -> Void

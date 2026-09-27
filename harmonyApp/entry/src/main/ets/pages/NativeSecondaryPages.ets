@@ -384,28 +384,35 @@ export struct NativeLearningReportPane {
 @Component
 export struct NativePurchaseCalculatorPane {
   onClose: () => void = () => {};
-  @State priceText: string = '180000';
-  @State downPercent: number = 30;
-  @State months: number = 36;
+  @State mode: string = 'cash';
+  @State barePrice: string = '100000';
+  @State taxable: string = '';
+  @State includeCommercial: boolean = false;
+  @State selectedProduct: number = 1;
+  @State quoteKeys: string[] = [];
+  @State quoteVals: string[] = [];
+  private products: string[][] = [
+    ['1', '示例银行车贷', '年利率 4.5% · 最低首付 20.0%'],
+    ['2', '厂商金融贴息', '年利率 4.5% · 最低首付 20.0% · 贴息减 0.5%'],
+    ['3', '低息精品贷', '年利率 3.98% · 最低首付 15.0% · 减本金 ¥2000'],
+  ];
 
-  private price(): number {
-    const n = Number(this.priceText);
-    return isNaN(n) ? 180000 : n;
-  }
-
-  private down(): number {
-    return this.price() * this.downPercent / 100;
-  }
-
-  private loan(): number {
-    return this.price() - this.down();
-  }
-
-  private monthly(): number {
-    const r = 0.045 / 12;
-    const n = this.months;
-    const factor = Math.pow(1 + r, n);
-    return this.loan() * r * factor / (factor - 1);
+  private calc(): void {
+    const bare = Number(this.barePrice);
+    const b = isNaN(bare) ? 0 : bare;
+    const taxN = Number(this.taxable);
+    const tax = isNaN(taxN) || this.taxable.length === 0 ? b / 1.13 : taxN;
+    const product = this.products.find((p: string[]) => Number(p[0]) === this.selectedProduct);
+    const name = product !== undefined ? product[1] : '';
+    this.quoteKeys = ['付款方式', '金融产品', '裸车价', '计税价格', '商业险', '合计参考'];
+    this.quoteVals = [
+      this.mode === 'cash' ? '全款' : '贷款',
+      name,
+      `¥${Math.floor(b)}`,
+      `¥${Math.floor(tax)}`,
+      this.includeCommercial ? '已计入粗算' : '未计入',
+      `¥${Math.floor(b * 1.08)}`,
+    ];
   }
 
   build() {
@@ -413,49 +420,101 @@ export struct NativePurchaseCalculatorPane {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
         Text('购车计算器').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
-      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
 
       Scroll() {
-        Column({ space: 16 }) {
-          Text('车价（元）').fontSize(14).fontColor(DesignTokens.body).width('100%')
-          TextInput({ text: this.priceText })
-            .height(44)
-            .backgroundColor(DesignTokens.canvas)
-            .borderRadius(8)
-            .border({ width: 0.5, color: DesignTokens.hairline })
-            .onChange((v: string) => { this.priceText = v; })
+        Column({ space: 12 }) {
+          Column({ space: 12 }) {
+            Text('付款方式').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Row({ space: 8 }) {
+              Text(this.mode === 'cash' ? '✓ 全款' : '全款')
+                .fontSize(14).fontColor(this.mode === 'cash' ? Color.White : DesignTokens.ink)
+                .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+                .backgroundColor(this.mode === 'cash' ? DesignTokens.link : DesignTokens.canvas)
+                .borderRadius(20)
+                .border({ width: 1, color: this.mode === 'cash' ? DesignTokens.link : DesignTokens.hairline })
+                .onClick(() => { this.mode = 'cash'; })
+              Text(this.mode === 'loan' ? '✓ 贷款' : '贷款')
+                .fontSize(14).fontColor(this.mode === 'loan' ? Color.White : DesignTokens.ink)
+                .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+                .backgroundColor(this.mode === 'loan' ? DesignTokens.link : DesignTokens.canvas)
+                .borderRadius(20)
+                .border({ width: 1, color: this.mode === 'loan' ? DesignTokens.link : DesignTokens.hairline })
+                .onClick(() => { this.mode = 'loan'; })
+            }
+            Text('裸车价（元）').fontSize(12).fontColor(DesignTokens.body)
+            TextInput({ text: this.barePrice })
+              .onChange((v: string) => { this.barePrice = v; })
+              .height(44).padding({ left: 12, right: 12 })
+              .backgroundColor('#FFF5F6F8').borderRadius(8)
+            Text('计税价格（可选，默认裸车价/1.13）').fontSize(12).fontColor(DesignTokens.body)
+            TextInput({ text: this.taxable })
+              .onChange((v: string) => { this.taxable = v; })
+              .height(44).padding({ left: 12, right: 12 })
+              .backgroundColor('#FFF5F6F8').borderRadius(8)
+            Row() {
+              Text('计入商业险粗算').fontSize(15).fontColor(DesignTokens.ink).layoutWeight(1)
+              Toggle({ type: ToggleType.Switch, isOn: this.includeCommercial })
+                .selectedColor(DesignTokens.link)
+                .onChange((v: boolean) => { this.includeCommercial = v; })
+            }.width('100%')
+          }
+          .padding(14).width('100%')
+          .backgroundColor(DesignTokens.canvas).borderRadius(12)
 
-          Text(`首付 ${this.downPercent}%`).fontSize(14).fontColor(DesignTokens.ink).width('100%')
-          Slider({ value: this.downPercent, min: 10, max: 60, step: 5 })
-            .selectedColor(DesignTokens.link)
-            .onChange((v: number) => { this.downPercent = v; })
+          Column({ space: 8 }) {
+            Row() {
+              Text('金融产品').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).layoutWeight(1)
+              Text('刷新').fontSize(14).fontColor(DesignTokens.link)
+            }.width('100%')
+            ForEach(this.products, (p: string[]) => {
+              Row({ space: 10 }) {
+                Text(this.selectedProduct === Number(p[0]) ? '◉' : '○')
+                  .fontSize(18)
+                  .fontColor(this.selectedProduct === Number(p[0]) ? DesignTokens.link : '#888888')
+                Column({ space: 4 }) {
+                  Text(p[1]).fontSize(15).fontWeight(FontWeight.Medium)
+                    .fontColor(this.selectedProduct === Number(p[0]) ? DesignTokens.link : DesignTokens.ink)
+                  Text(p[2]).fontSize(12).fontColor(DesignTokens.body)
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              }
+              .width('100%').padding({ top: 8, bottom: 8 })
+              .onClick(() => { this.selectedProduct = Number(p[0]); })
+            })
+          }
+          .padding(14).width('100%')
+          .backgroundColor(DesignTokens.canvas).borderRadius(12)
 
-          Text(`期数 ${this.months} 期`).fontSize(14).fontColor(DesignTokens.ink).width('100%')
-          Slider({ value: this.months, min: 12, max: 60, step: 12 })
-            .selectedColor(DesignTokens.link)
-            .onChange((v: number) => { this.months = v; })
+          Text('计算报价')
+            .fontSize(16).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            .width('100%').textAlign(TextAlign.Center)
+            .height(48).borderRadius(12)
+            .backgroundColor(DesignTokens.ink)
+            .onClick(() => this.calc())
 
-          this.ResultRow('首付', `¥ ${this.down().toFixed(0)}`)
-          this.ResultRow('贷款', `¥ ${this.loan().toFixed(0)}`)
-          this.ResultRow('月供估算', `¥ ${this.monthly().toFixed(2)} / ${this.months} 期`)
-        }.padding(16).width('100%')
+          if (this.quoteKeys.length > 0) {
+            Column({ space: 8 }) {
+              Text('报价结果').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              ForEach(this.quoteKeys, (k: string, i: number) => {
+                Row() {
+                  Text(k).fontSize(14).fontColor(DesignTokens.body).layoutWeight(1)
+                  Text(this.quoteVals[i]).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                }.width('100%')
+              }, (k: string, i: number) => `${k}-${i}`)
+            }
+            .alignItems(HorizontalAlign.Start)
+            .padding(14).width('100%')
+            .backgroundColor(DesignTokens.canvas).borderRadius(12)
+          }
+        }.padding(16)
       }.layoutWeight(1).width('100%')
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
-  }
-
-  @Builder
-  ResultRow(title: string, value: string) {
-    Row() {
-      Text(title).fontSize(15).fontColor(DesignTokens.body).layoutWeight(1)
-      Text(value).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-    }
-    .padding(14).width('100%')
-    .backgroundColor(DesignTokens.canvas).borderRadius(8)
+    .width('100%').height('100%')
+    .backgroundColor('#FFF5F6F8')
   }
 }
+
 
 @Component
 export struct NativeMallDetailPane {
@@ -2740,67 +2799,106 @@ export struct NativeLedgerPane {
 export struct NativeSmsTemplatePane {
   onClose: () => void = () => {};
   @State selected: number = 0;
+  /** Align Compose SmsTemplateScreen */
   private templates: string[][] = [
-    ['到店提醒', '您好，您预约的试驾已确认，请准时到店。'],
-    ['保养到期', '爱车即将到保养周期，回店可享工时折扣。'],
-    ['交车祝福', '恭喜提车！如有用车问题随时联系专属顾问。'],
+    ['到店提醒', '尊敬的客户，预约保养已排至今日 14:00，请准时到店。'],
+    ['试驾确认', '您好，试驾预约已确认，顾问将提前电话联系您。'],
+    ['活动邀约', '本周末门店试驾会，到店即送礼品，欢迎莅临。'],
+    ['回访关怀', '购车已满一周，如有用车问题请随时联系您的顾问。'],
   ];
+
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('短信模板').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('短信模板').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
       List() {
-        ForEach(this.templates, (t: string[], i: number) => {
+        ForEach(this.templates, (item: string[], i: number) => {
           ListItem() {
             Column({ space: 8 }) {
               Row() {
-                Text(t[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(item[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
                 Blank().layoutWeight(1)
                 if (this.selected === i) {
-                  Text('✓').fontSize(16).fontColor(DesignTokens.link)
+                  Text('已选').fontSize(12).fontColor(DesignTokens.link)
                 }
               }.width('100%')
-              Text(t[1]).fontSize(14).fontColor(DesignTokens.body)
+              Text(item[1]).fontSize(14).fontColor(DesignTokens.body)
+              Text('复制文案')
+                .fontSize(14).fontColor(Color.White)
+                .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+                .backgroundColor(DesignTokens.link).borderRadius(8)
+                .onClick(() => { this.selected = i; })
             }
-            .padding(16).margin({ bottom: 12 })
-            .backgroundColor(DesignTokens.canvas).borderRadius(12)
-            .border({ width: 1, color: this.selected === i ? DesignTokens.link : DesignTokens.hairline })
+            .alignItems(HorizontalAlign.Start)
+            .padding(16)
+            .width('100%')
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(12)
+            .border({
+              width: this.selected === i ? 1.5 : 0.5,
+              color: this.selected === i ? DesignTokens.link : DesignTokens.hairline,
+            })
+            .margin({ bottom: 12 })
             .onClick(() => { this.selected = i; })
           }
-        }, (t: string[], i: number) => `${i}_${t[0]}`)
-      }.layoutWeight(1).width('100%').padding(16)
-      Button('发送').backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+        }, (item: string[], i: number) => `${item[0]}-${i}`)
+      }
+      .layoutWeight(1).width('100%')
+      .padding(16)
+    }
+    .width('100%').height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
 
 @Component
 export struct NativeStoreQrPane {
   onClose: () => void = () => {};
+
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('店铺收款码').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('店铺收款码').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      Column({ space: 16 }) {
-        Blank().layoutWeight(1)
-        Text('QR')
-          .fontSize(48).fontColor(DesignTokens.ink)
-          .width(220).height(220).textAlign(TextAlign.Center)
-          .border({ width: 1, color: DesignTokens.hairline }).borderRadius(12)
-        Text('沃德龙鼎收款码').fontSize(13).fontColor(DesignTokens.body)
-        Text('展示给客户扫码支付').fontSize(14).fontColor(DesignTokens.body)
-        Button('保存到相册').backgroundColor(DesignTokens.link)
-        Blank().layoutWeight(1)
-      }.width('100%').layoutWeight(1).alignItems(HorizontalAlign.Center)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+
+      Scroll() {
+        Column({ space: 16 }) {
+          Column({ space: 8 }) {
+            Text('演示门店').fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+            Text('扫码向本店付款').fontSize(13).fontColor(DesignTokens.body)
+            Stack({ alignContent: Alignment.Center }) {
+              Column().width(200).height(200).backgroundColor('#111111').borderRadius(12)
+              Column().width(160).height(160).backgroundColor(Color.White).borderRadius(8)
+              Text('QR').fontSize(28).fontWeight(FontWeight.Bold).fontColor('#111111')
+            }.margin({ top: 12, bottom: 12 })
+            Text('收款码仅用于演示，不产生真实扣款').fontSize(12).fontColor('#888888')
+          }
+          .padding(24)
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(16)
+
+          Text('保存收款码')
+            .fontSize(15).fontColor(Color.White)
+            .width('100%').textAlign(TextAlign.Center)
+            .padding({ top: 12, bottom: 12 })
+            .backgroundColor(DesignTokens.link).borderRadius(8)
+        }.padding({ left: 24, right: 24, top: 24, bottom: 32 })
+      }.layoutWeight(1).width('100%')
+    }
+    .width('100%').height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
 
 @Component
 export struct NativeQaPane {
