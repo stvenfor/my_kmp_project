@@ -117,7 +117,10 @@ internal fun HomeRouteHost(
     when (route) {
         HomeRoutes.Search -> HomeSearchScreen(onBack = onBack)
         HomeRoutes.Strategy -> StrategyScreen(onBack = onBack)
-        HomeRoutes.LearningReport -> LearningReportScreen(onBack = onBack)
+        HomeRoutes.LearningReport -> LearningReportScreen(
+            onBack = onBack,
+            onOpenMembership = { onNavigate("/pay/membership") },
+        )
         HomeRoutes.CheckInMall -> CheckInMallScreen(onBack = onBack)
         HomeRoutes.DubbingFeed -> DubbingFeedScreen(
             onBack = onBack,

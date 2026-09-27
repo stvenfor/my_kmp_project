@@ -2,6 +2,7 @@ package com.example.my_kmp_project.feature.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 /** Flutter `HomeReportColors` — local to report screen (DemoColors is light chrome). */
@@ -51,65 +54,95 @@ private object ReportColors {
 }
 
 @Composable
-internal fun LearningReportScreen(onBack: () -> Unit) {
+internal fun LearningReportScreen(
+    onBack: () -> Unit,
+    onOpenMembership: (() -> Unit)? = null,
+) {
     ReportMainTabRoot(isRoot = false)
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(ReportColors.Background),
     ) {
-        MineTopBar(
-            title = "学习报告",
-            onBack = onBack,
-            containerColor = ReportColors.Background,
-            titleColor = ReportColors.TitleWhite,
-        )
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-                .padding(top = 12.dp, bottom = 32.dp),
+            modifier = Modifier.fillMaxSize(),
         ) {
-            ReportSectionHeader(dotColor = ReportColors.DotYellow, title = "今日高光")
-            Spacer(modifier = Modifier.height(10.dp))
+            MineTopBar(
+                title = "学习报告",
+                onBack = onBack,
+                containerColor = ReportColors.Background,
+                titleColor = ReportColors.TitleWhite,
+            )
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(ReportColors.HighlightCard)
-                    .border(1.dp, ReportColors.HighlightBorder, RoundedCornerShape(16.dp)),
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 12.dp, bottom = 120.dp),
             ) {
-                HomeMockData.reportHighlights.forEachIndexed { index, item ->
-                    HighlightRow(item)
-                    if (index < HomeMockData.reportHighlights.lastIndex) {
-                        HorizontalDivider(
-                            color = ReportColors.Divider,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
+                ReportSectionHeader(dotColor = ReportColors.DotYellow, title = "今日高光")
+                Spacer(modifier = Modifier.height(10.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(ReportColors.HighlightCard)
+                        .border(1.dp, ReportColors.HighlightBorder, RoundedCornerShape(16.dp)),
+                ) {
+                    HomeMockData.reportHighlights.forEachIndexed { index, item ->
+                        HighlightRow(item)
+                        if (index < HomeMockData.reportHighlights.lastIndex) {
+                            HorizontalDivider(
+                                color = ReportColors.Divider,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+                ReportSectionHeader(dotColor = ReportColors.DotBlue, title = "今日学习记录")
+                Spacer(modifier = Modifier.height(10.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(ReportColors.RecordCard)
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    HomeMockData.reportRecords.forEach { record ->
+                        RecordRow(record)
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-            ReportSectionHeader(dotColor = ReportColors.DotBlue, title = "今日学习记录")
-            Spacer(modifier = Modifier.height(10.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(ReportColors.RecordCard)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                HomeMockData.reportRecords.forEach { record ->
-                    RecordRow(record)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-            MembershipBanner()
         }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(end = 16.dp, bottom = 88.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(ReportColors.RecordItem)
+                .clickable { showPlatformToast("家长助手") }
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("👨‍👩‍👧", fontSize = 14.sp)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("家长助手", color = ReportColors.SubtitleGrey, fontSize = 12.sp)
+        }
+
+        MembershipBanner(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            onOpen = {
+                onOpenMembership?.invoke() ?: showPlatformToast("立即开通")
+            },
+        )
     }
 }
 
@@ -224,38 +257,52 @@ private fun RecordRow(item: ReportRecord) {
 }
 
 @Composable
-private fun MembershipBanner() {
+private fun MembershipBanner(
+    modifier: Modifier = Modifier,
+    onOpen: () -> Unit = {},
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
             .background(
                 Brush.horizontalGradient(
                     listOf(ReportColors.BannerStart, ReportColors.BannerEnd),
                 ),
             )
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .border(1.dp, Color(0xFF3D2A20), RoundedCornerShape(16.dp))
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Text(text = "👑", fontSize = 28.sp)
+        Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "开通会员 · 解锁完整学习报告",
+                text = "开通会员，解锁全部内容",
                 color = ReportColors.TitleWhite,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "周报洞察 · 发音进步曲线 · 家长助手",
+                text = "全量剧集 · AI外教不限时 · 专属勋章",
                 color = ReportColors.SubtitleGrey,
-                fontSize = 12.sp,
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "去开通",
-            color = ReportColors.Orange,
+            text = "立即开通",
+            color = Color.White,
             fontWeight = FontWeight.SemiBold,
             fontSize = 13.sp,
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFFE65100))
+                .clickable(onClick = onOpen)
+                .padding(horizontal = 14.dp, vertical = 8.dp),
         )
     }
 }
