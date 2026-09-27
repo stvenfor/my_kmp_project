@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -1387,23 +1389,239 @@ private fun DubbingSectionTitle(
 
 @Composable
 private fun HotRankDetailScreen(onBack: () -> Unit) {
+    // Flutter HotRankDetailPage: pink header + sidebar categories + age filter + ranked list
+    val categories = HomeMockData.hotRankCategories
+    val ageFilters = HomeMockData.hotRankAgeFilters
+    // Flutter default: HotRankCategory.hotSearch
+    var categoryIndex by remember { mutableIntStateOf(categories.indexOf("热搜榜").coerceAtLeast(0)) }
+    var ageIndex by remember { mutableIntStateOf(ageFilters.indexOf("1-3年级").coerceAtLeast(0)) }
+    var showAgeMenu by remember { mutableStateOf(false) }
+    val items = remember(categoryIndex) { HomeMockData.hotRankDetailItems(categoryIndex) }
+    val headerPink = Color(0xFFF5F5F7)
+    val sidebarBg = Color(0xFFF0F0F2)
+    val ink = Color(0xFF1A1A1A)
+    val mute = DemoColors.TextSecondary
+    val gold = Color(0xFFFF9500)
+    val silver = Color(0xFFB0B0B8)
+    val bronze = Color(0xFFC9783A)
+
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "热榜", onBack = onBack, containerColor = DemoColors.PageBg)
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(DemoColors.PageBg)
+            .clickable(enabled = showAgeMenu) { showAgeMenu = false },
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(listOf(headerPink, Color.White)),
+                )
+                .statusBarsPadding()
+                .padding(bottom = 16.dp),
         ) {
-            items(HomeMockData.rankItemsForTab(0)) { item ->
-                Column(
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "‹",
+                    fontSize = 28.sp,
+                    color = ink,
+                    modifier = Modifier
+                        .clickable(onClick = onBack)
+                        .padding(12.dp),
+                )
+                Spacer(Modifier.weight(1f))
+                Text(
+                    "分享",
+                    fontSize = 14.sp,
+                    color = ink,
+                    modifier = Modifier
+                        .clickable { showPlatformToast("分享（mock）") }
+                        .padding(12.dp),
+                )
+            }
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("🌾", fontSize = 22.sp)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    categories[categoryIndex],
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = ink,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("🌾", fontSize = 22.sp)
+            }
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "iHome用户近期热搜内容",
+                fontSize = 12.sp,
+                color = mute,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+        }
+        Row(Modifier.fillMaxSize()) {
+            Column(
+                Modifier
+                    .width(88.dp)
+                    .fillMaxHeight()
+                    .background(sidebarBg)
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 8.dp, bottom = 24.dp),
+            ) {
+                categories.forEachIndexed { i, label ->
+                    val selected = i == categoryIndex
+                    Box(
+                        Modifier
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .fillMaxWidth()
+                            .clip(
+                                if (selected) {
+                                    RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                                } else {
+                                    RoundedCornerShape(8.dp)
+                                },
+                            )
+                            .background(if (selected) Color.White else Color.Transparent)
+                            .clickable { categoryIndex = i }
+                            .padding(vertical = 14.dp, horizontal = 4.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            label,
+                            fontSize = 13.sp,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (selected) ink else mute,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
+            Column(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(topStart = 12.dp))
+                    .background(DemoColors.PageBg),
+            ) {
+                Box(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DemoColors.Background)
-                        .padding(14.dp),
+                        .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 4.dp),
                 ) {
-                    Text("#${item.rank} ${item.title}", fontWeight = FontWeight.SemiBold)
-                    Text(item.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                    Column(Modifier.align(Alignment.CenterEnd)) {
+                        Text(
+                            ageFilters[ageIndex] + " ▾",
+                            fontSize = 13.sp,
+                            color = ink,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color.White.copy(alpha = 0.9f))
+                                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(14.dp))
+                                .clickable { showAgeMenu = !showAgeMenu }
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                        )
+                        if (showAgeMenu) {
+                            Column(
+                                Modifier
+                                    .padding(top = 4.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.White)
+                                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp)),
+                            ) {
+                                ageFilters.forEachIndexed { i, label ->
+                                    Text(
+                                        label,
+                                        fontSize = 13.sp,
+                                        color = if (i == ageIndex) DemoColors.Accent else ink,
+                                        fontWeight = if (i == ageIndex) FontWeight.SemiBold else FontWeight.Normal,
+                                        modifier = Modifier
+                                            .clickable {
+                                                ageIndex = i
+                                                showAgeMenu = false
+                                            }
+                                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                LazyColumn(Modifier.fillMaxSize()) {
+                    items(items) { item ->
+                        val rankBg = when (item.rank) {
+                            1 -> gold
+                            2 -> silver
+                            3 -> bronze
+                            else -> mute.copy(alpha = 0.35f)
+                        }
+                        val rankFg = if (item.rank <= 3) Color.White else mute
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { showPlatformToast(item.title) }
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Box(
+                                Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFE8F0FE)),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Box(
+                                Modifier
+                                    .size(18.dp)
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(rankBg),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    "${item.rank}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = rankFg,
+                                )
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    item.title,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = ink,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    item.subtitle,
+                                    fontSize = 12.sp,
+                                    color = mute,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text("热度${item.heat}", fontSize = 11.sp, color = mute)
+                            }
+                        }
+                        HorizontalDivider(
+                            Modifier.padding(horizontal = 12.dp),
+                            color = DemoColors.Divider,
+                            thickness = 0.5.dp,
+                        )
+                    }
+                    item { Spacer(Modifier.height(24.dp)) }
                 }
             }
         }

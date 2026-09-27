@@ -171,16 +171,16 @@ enum NativeFeatureCatalog {
             ], primaryAction: nil)
         },
         "/home/live_commerce": {
-            .init(id: "/home/live_commerce", title: "直播带货", subtitle: "本场预告与回放", rows: [
-                .init(id: "1", title: "周末新车专场", detail: "今晚 20:00 · 预约 1.2k", badge: "预告"),
-                .init(id: "2", title: "二手车清库直播", detail: "回放 · 观看 8.6k", badge: "回放"),
-            ], primaryAction: "开播")
+            .init(id: "/home/live_commerce", title: "直播带货", subtitle: "莫听Club · 动态与嘉宾分享", rows: [
+                .init(id: "1", title: "莫听官方", detail: "06-24 · 【官方纪要】本期聚焦 AI 算力与产业趋势", badge: nil),
+                .init(id: "2", title: "策略研究员", detail: "06-20 · 当星舰遇到算力：嘉宾分享回顾", badge: nil),
+            ], primaryAction: "+ 加入")
         },
         "/home/club": {
-            .init(id: "/home/club", title: "Club", subtitle: "车友活动与圈子", rows: [
-                .init(id: "1", title: "周末自驾·密云水库", detail: "报名 36 · 周六出发", badge: "报名中"),
-                .init(id: "2", title: "店庆抽奖夜", detail: "本周五 · 门店大厅", badge: nil),
-            ], primaryAction: "发布活动")
+            .init(id: "/home/club", title: "Club", subtitle: "莫听Club · 动态与嘉宾分享", rows: [
+                .init(id: "1", title: "莫听官方", detail: "06-24 · 【官方纪要】本期聚焦 AI 算力与产业趋势", badge: nil),
+                .init(id: "2", title: "策略研究员", detail: "06-20 · 当星舰遇到算力：嘉宾分享回顾", badge: nil),
+            ], primaryAction: "+ 加入")
         },
         "/home/strategy": {
             .init(id: "/home/strategy", title: "投资策略", subtitle: "朋友圈营销话术", rows: [
@@ -207,7 +207,7 @@ enum NativeFeatureCatalog {
             ], primaryAction: "开始配音")
         },
         "/home/hot_rank_detail": {
-            .init(id: "/home/hot_rank_detail", title: "热配榜", subtitle: "今日热门", rows: [
+            .init(id: "/home/hot_rank_detail", title: "热搜榜", subtitle: "iHome用户近期热搜内容", rows: [
                 .init(id: "1", title: "穿条纹睡衣的男孩", detail: "热度 9821", badge: "1"),
                 .init(id: "2", title: "蛮荒故事", detail: "热度 8740", badge: "2"),
                 .init(id: "3", title: "爱冒险的朵拉", detail: "热度 7655", badge: "3"),
@@ -468,8 +468,11 @@ struct NativeFeatureHost: View {
             NativeShortVideoHelpPage(onClose: onClose)
         } else if path == "/video/short" {
             NativeShortVideoPage(onClose: onClose, onOpen: onOpen)
-        } else if path == "/live" || path == "/home/live_commerce" {
+        } else if path == "/live" {
             NativeLivePage(onClose: onClose)
+        } else if path == "/home/live_commerce" || pathOrLabel == "直播带货" {
+            // Flutter homeLiveCommerce → HomeClubTabContent (same as Club)
+            NativeClubPage(title: "直播带货", onClose: onClose)
         } else if path == "/ai/stream" {
             NativeAiStreamPage(onClose: onClose)
         } else if path == "/scan" {
@@ -501,7 +504,7 @@ struct NativeFeatureHost: View {
         } else if path == "/home/new_car_follow" || pathOrLabel == "新车跟进" || pathOrLabel == "新车关注" {
             NativeNewCarFollowPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/club" || pathOrLabel == "Club" {
-            NativeClubPage(onClose: onClose)
+            NativeClubPage(title: "Club", onClose: onClose)
         } else if path == "/home/life_service" || pathOrLabel == "生活服务" {
             NativeLifeServicePage(onClose: onClose)
         } else if path == "/home/todo/partner-pending" {

@@ -2537,6 +2537,7 @@ struct NativeNewCarFollowPage: View {
 }
 
 struct NativeClubPage: View {
+    var title: String = "Club"
     var onClose: () -> Void
     @State private var filter = 0
     private let filters = ["最新", "嘉宾分享", "资料"]
@@ -2546,7 +2547,7 @@ struct NativeClubPage: View {
     ]
     var body: some View {
         VStack(spacing: 0) {
-            navBar(title: "Club", onClose: onClose, dark: false)
+            navBar(title: title, onClose: onClose, dark: false)
             ScrollView {
                 VStack(spacing: 12) {
                     HStack(spacing: 12) {
@@ -3287,34 +3288,110 @@ struct NativeDubbingFeedPage: View {
 
 struct NativeHotRankPage: View {
     var onClose: () -> Void
-    private let ranks: [(String, String, String)] = [
-        ("穿条纹睡衣的男孩", "热度 9821", "1"),
-        ("蛮荒故事", "热度 8740", "2"),
-        ("爱冒险的朵拉", "热度 7655", "3"),
-    ]
+    @State private var category = 3 // 热搜榜 — Flutter HotRankCategory.hotSearch
+    @State private var age = 2 // 1-3年级
+    @State private var showAgeMenu = false
+    private let categories = ["热读榜", "新书榜", "童话榜", "热搜榜", "科普榜", "高分榜"]
+    private let ages = ["1-2岁", "3岁到大班", "1-3年级", "4年级以上"]
+    private let titles = ["穿条纹睡衣的...", "蛮荒故事", "爱冒险的朵拉", "道奇小狗", "你好，小朋友", "完美的世界", "萌宠部落", "穿梭在迷宫的勇士"]
+    private let subs = ["某日布鲁诺决定...", "一种近似父子的不寻常感情", "开启你的奇幻冒险之旅", "跟佩奇一起快乐学英语", "经典动画配音练习", "趣味英语启蒙课堂"]
+    private let heats = [39274, 28390, 22007, 19874, 18560, 16230, 14890, 13540]
+    private let ranks = [1, 2, 3, 88, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     var body: some View {
         VStack(spacing: 0) {
-            navBar(title: "热配榜", onClose: onClose, dark: false)
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(Array(ranks.enumerated()), id: \.offset) { _, r in
-                        HStack(spacing: 12) {
-                            Text(r.2, font: .system(size: 18, weight: .bold), color: DesignTokens.link)
-                                .frame(width: 28)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(r.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
-                                Text(r.1, font: .system(size: 13), color: DesignTokens.body)
-                            }
-                            Spacer()
+            VStack(spacing: 6) {
+                HStack {
+                    Button(action: onClose) { Text("‹", font: .system(size: 28), color: DesignTokens.ink) }
+                    Spacer()
+                    Text("分享", font: .system(size: 14), color: DesignTokens.ink)
+                }
+                .padding(.horizontal, 16)
+                HStack(spacing: 8) {
+                    Text("🌾")
+                    Text(categories[category], font: .system(size: 22, weight: .bold), color: DesignTokens.ink)
+                    Text("🌾")
+                }
+                Text("iHome用户近期热搜内容", font: .system(size: 12), color: DesignTokens.mute)
+            }
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .background(
+                LinearGradient(colors: [DesignTokens.canvasSoft2, DesignTokens.canvas], startPoint: .top, endPoint: .bottom)
+            )
+            HStack(alignment: .top, spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 2) {
+                        ForEach(Array(categories.enumerated()), id: \.offset) { i, label in
+                            Text(label, font: .system(size: 13, weight: i == category ? .semibold : .regular),
+                                  color: i == category ? DesignTokens.ink : DesignTokens.mute)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(i == category ? DesignTokens.canvas : Color.clear)
+                                .onTapGesture { category = i }
                         }
-                        .padding(16).background(DesignTokens.canvas)
-                        Divider().overlay(DesignTokens.hairline)
+                    }
+                    .padding(.top, 8)
+                }
+                .frame(width: 88)
+                .background(DesignTokens.canvasSoft2)
+                VStack(alignment: .trailing, spacing: 0) {
+                    HStack {
+                        Spacer()
+                        Text(ages[age] + " ▾", font: .system(size: 13), color: DesignTokens.ink)
+                            .padding(.horizontal, 10).padding(.vertical, 6)
+                            .background(DesignTokens.canvas, in: Capsule())
+                            .overlay(Capsule().stroke(DesignTokens.hairline, lineWidth: 0.5))
+                            .onTapGesture { showAgeMenu.toggle() }
+                    }
+                    .padding(.horizontal, 12).padding(.top, 10)
+                    if showAgeMenu {
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(Array(ages.enumerated()), id: \.offset) { i, label in
+                                Text(label, font: .system(size: 13, weight: i == age ? .semibold : .regular),
+                                      color: i == age ? DesignTokens.link : DesignTokens.ink)
+                                    .padding(.horizontal, 14).padding(.vertical, 10)
+                                    .onTapGesture { age = i; showAgeMenu = false }
+                            }
+                        }
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                        .padding(.trailing, 12)
+                    }
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(0..<20, id: \.self) { i in
+                                HStack(alignment: .top, spacing: 8) {
+                                    RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.91, green: 0.94, blue: 0.99))
+                                        .frame(width: 56, height: 56)
+                                    Text("\(ranks[i])", font: .system(size: 11, weight: .bold),
+                                          color: ranks[i] <= 3 ? .white : DesignTokens.mute)
+                                        .frame(width: 18, height: 18)
+                                        .background(
+                                            ranks[i] == 1 ? Color.orange :
+                                            ranks[i] == 2 ? Color.gray :
+                                            ranks[i] == 3 ? Color(red: 0.79, green: 0.47, blue: 0.23) :
+                                            DesignTokens.mute.opacity(0.35),
+                                            in: RoundedRectangle(cornerRadius: 4)
+                                        )
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(titles[i % titles.count], font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
+                                            .lineLimit(1)
+                                        Text(subs[i % subs.count], font: .system(size: 12), color: DesignTokens.mute)
+                                            .lineLimit(1)
+                                        Text("热度\(heats[i % heats.count])", font: .system(size: 11), color: DesignTokens.mute)
+                                    }
+                                    Spacer(minLength: 0)
+                                }
+                                .padding(.horizontal, 12).padding(.vertical, 10)
+                                Divider().overlay(DesignTokens.hairline).padding(.horizontal, 12)
+                            }
+                        }
                     }
                 }
-                .padding(16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
         }
+        .background(DesignTokens.canvasSoft2.ignoresSafeArea())
     }
 }
 

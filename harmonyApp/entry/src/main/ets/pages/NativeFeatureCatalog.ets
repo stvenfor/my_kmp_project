@@ -229,15 +229,16 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('3', '线索转化', '6.8% · 持平'),
       ], '');
     case '/home/live_commerce':
-      return page(path, '直播带货', '本场预告与回放', [
-        row('1', '周末新车专场', '今晚 20:00 · 预约 1.2k', '预告'),
-        row('2', '二手车清库直播', '回放 · 观看 8.6k', '回放'),
-      ], '开播');
+      // Flutter homeLiveCommerce → HomeClubTabContent (same body as Club)
+      return page(path, '直播带货', '莫听Club · 动态与嘉宾分享', [
+        row('1', '莫听官方', '06-24 · 【官方纪要】本期聚焦 AI 算力与产业趋势'),
+        row('2', '策略研究员', '06-20 · 当星舰遇到算力：嘉宾分享回顾'),
+      ], '+ 加入');
     case '/home/club':
-      return page(path, 'Club', '车友活动与圈子', [
-        row('1', '周末自驾·密云水库', '报名 36 · 周六出发', '报名中'),
-        row('2', '店庆抽奖夜', '本周五 · 门店大厅'),
-      ], '发布活动');
+      return page(path, 'Club', '莫听Club · 动态与嘉宾分享', [
+        row('1', '莫听官方', '06-24 · 【官方纪要】本期聚焦 AI 算力与产业趋势'),
+        row('2', '策略研究员', '06-20 · 当星舰遇到算力：嘉宾分享回顾'),
+      ], '+ 加入');
     case '/home/strategy':
       return page(path, '投资策略', '朋友圈营销话术', [
         row('1', '周末到店礼', '适合朋友圈 · 已用 128 次', '推荐'),
@@ -259,10 +260,10 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('2', '飞屋环游记 · OP', '难度中级 · 男声'),
       ], '开始配音');
     case '/home/hot_rank_detail':
-      return page(path, '热配榜', '今日热门', [
-        row('1', '穿条纹睡衣的男孩', '热度 9821', '1'),
-        row('2', '蛮荒故事', '热度 8740', '2'),
-        row('3', '爱冒险的朵拉', '热度 7655', '3'),
+      return page(path, '热搜榜', 'iHome用户近期热搜内容', [
+        row('1', '穿条纹睡衣的...', '热度39274', '1'),
+        row('2', '蛮荒故事', '热度28390', '2'),
+        row('3', '爱冒险的朵拉', '热度22007', '3'),
       ], '');
     case '/home/ledger':
       return page(path, '台账', '公司经营数据', [

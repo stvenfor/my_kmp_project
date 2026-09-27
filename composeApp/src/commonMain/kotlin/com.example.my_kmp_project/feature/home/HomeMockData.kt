@@ -42,6 +42,15 @@ internal data class SearchRankItem(
     val subtitle: String,
 )
 
+/** Flutter `HotRankDetailItem` — detail page list row. */
+internal data class HotRankDetailItem(
+    val id: String,
+    val rank: Int,
+    val title: String,
+    val subtitle: String,
+    val heat: Int,
+)
+
 internal data class ReportHighlight(
     val emoji: String,
     val title: String,
@@ -227,6 +236,47 @@ internal object HomeMockData {
     )
 
     val rankTabs = listOf("热配榜", "诵读榜", "剧集榜", "记录榜", "合作榜")
+
+    /** Flutter `HotRankCategory` sidebar labels. */
+    val hotRankCategories = listOf("热读榜", "新书榜", "童话榜", "热搜榜", "科普榜", "高分榜")
+
+    /** Flutter `HotRankAgeFilter` labels. */
+    val hotRankAgeFilters = listOf("1-2岁", "3岁到大班", "1-3年级", "4年级以上")
+
+    private val hotRankTitles = listOf(
+        "穿条纹睡衣的...",
+        "蛮荒故事",
+        "爱冒险的朵拉",
+        "道奇小狗",
+        "你好，小朋友",
+        "完美的世界",
+        "萌宠部落",
+        "穿梭在迷宫的勇士",
+    )
+    private val hotRankSubtitles = listOf(
+        "某日布鲁诺决定...",
+        "一种近似父子的不寻常感情",
+        "开启你的奇幻冒险之旅",
+        "跟佩奇一起快乐学英语",
+        "经典动画配音练习",
+        "趣味英语启蒙课堂",
+    )
+    private val hotRankHeats = listOf(39274, 28390, 22007, 19874, 18560, 16230, 14890, 13540)
+    private val hotRankRanks = listOf(1, 2, 3, 88, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+
+    /** Flutter `HotRankDetailMockData` — 20 items per category. */
+    fun hotRankDetailItems(categoryIndex: Int): List<HotRankDetailItem> {
+        val prefix = hotRankCategories.getOrElse(categoryIndex) { "hot" }
+        return List(20) { i ->
+            HotRankDetailItem(
+                id = "${prefix}_item_${i + 1}",
+                rank = hotRankRanks[i],
+                title = hotRankTitles[i % hotRankTitles.size],
+                subtitle = hotRankSubtitles[i % hotRankSubtitles.size],
+                heat = hotRankHeats[i % hotRankHeats.size],
+            )
+        }
+    }
 
     fun rankItemsForTab(tabIndex: Int): List<SearchRankItem> = when (tabIndex) {
         1 -> listOf(

@@ -2573,6 +2573,7 @@ export struct NativeNewCarFollowPane {
 @Component
 export struct NativeClubPane {
   onClose: () => void = () => {};
+  @Prop title: string = 'Club';
   @State filter: number = 0;
   private filters: string[] = ['最新', '嘉宾分享', '资料'];
   private posts: string[][] = [
@@ -2583,7 +2584,7 @@ export struct NativeClubPane {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('Club').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text(this.title).fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
       Scroll() {
@@ -3311,31 +3312,85 @@ export struct NativeDubbingFeedPane {
 @Component
 export struct NativeHotRankPane {
   onClose: () => void = () => {};
-  private ranks: string[][] = [
-    ['穿条纹睡衣的男孩', '热度 9821', '1'],
-    ['蛮荒故事', '热度 8740', '2'],
-    ['爱冒险的朵拉', '热度 7655', '3'],
-  ];
+  @State category: number = 3;
+  @State age: number = 2;
+  @State showAgeMenu: boolean = false;
+  private categories: string[] = ['热读榜', '新书榜', '童话榜', '热搜榜', '科普榜', '高分榜'];
+  private ages: string[] = ['1-2岁', '3岁到大班', '1-3年级', '4年级以上'];
+  private titles: string[] = ['穿条纹睡衣的...', '蛮荒故事', '爱冒险的朵拉', '道奇小狗', '你好，小朋友', '完美的世界', '萌宠部落', '穿梭在迷宫的勇士'];
+  private subs: string[] = ['某日布鲁诺决定...', '一种近似父子的不寻常感情', '开启你的奇幻冒险之旅', '跟佩奇一起快乐学英语', '经典动画配音练习', '趣味英语启蒙课堂'];
+  private heats: number[] = [39274, 28390, 22007, 19874, 18560, 16230, 14890, 13540];
+  private ranks: number[] = [1, 2, 3, 88, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   build() {
     Column() {
+      Column({ space: 6 }) {
+        Row() {
+          Text('‹').fontSize(28).fontColor(DesignTokens.ink).onClick(() => this.onClose())
+          Blank().layoutWeight(1)
+          Text('分享').fontSize(14).fontColor(DesignTokens.ink)
+        }.width('100%').padding({ left: 16, right: 16 })
+        Row({ space: 8 }) {
+          Text('🌾')
+          Text(this.categories[this.category]).fontSize(22).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+          Text('🌾')
+        }
+        Text('iHome用户近期热搜内容').fontSize(12).fontColor(DesignTokens.mute)
+      }.width('100%').padding({ top: 12, bottom: 12 }).backgroundColor(DesignTokens.canvasSoft2)
       Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('热配榜').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-        Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      List() {
-        ForEach(this.ranks, (r: string[]) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Text(r[2]).fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.link).width(28)
-              Column({ space: 4 }) {
-                Text(r[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+        Scroll() {
+          Column({ space: 2 }) {
+            ForEach(this.categories, (label: string, i: number) => {
+              Text(label)
+                .fontSize(13)
+                .fontWeight(i === this.category ? FontWeight.Medium : FontWeight.Regular)
+                .fontColor(i === this.category ? DesignTokens.ink : DesignTokens.mute)
+                .width('100%').textAlign(TextAlign.Center)
+                .padding({ top: 14, bottom: 14 })
+                .backgroundColor(i === this.category ? DesignTokens.canvas : Color.Transparent)
+                .onClick(() => { this.category = i; })
+            }, (label: string, i: number) => `${i}_${label}`)
+          }.padding({ top: 8 })
+        }.width(88).height('100%').backgroundColor(DesignTokens.canvasSoft2)
+        Column() {
+          Row() {
+            Blank().layoutWeight(1)
+            Text(`${this.ages[this.age]} ▾`).fontSize(13).fontColor(DesignTokens.ink)
+              .padding({ left: 10, right: 10, top: 6, bottom: 6 })
+              .backgroundColor(DesignTokens.canvas).borderRadius(14)
+              .onClick(() => { this.showAgeMenu = !this.showAgeMenu; })
+          }.width('100%').padding({ left: 12, right: 12, top: 10 })
+          if (this.showAgeMenu) {
+            Column() {
+              ForEach(this.ages, (label: string, i: number) => {
+                Text(label)
+                  .fontSize(13)
+                  .fontWeight(i === this.age ? FontWeight.Medium : FontWeight.Regular)
+                  .fontColor(i === this.age ? DesignTokens.link : DesignTokens.ink)
+                  .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+                  .onClick(() => { this.age = i; this.showAgeMenu = false; })
+              }, (label: string, i: number) => `age_${i}`)
+            }.backgroundColor(DesignTokens.canvas).borderRadius(10).margin({ right: 12 })
           }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
+          List() {
+            ForEach(this.ranks, (rank: number, i: number) => {
+              ListItem() {
+                Row({ space: 8 }) {
+                  Text('').width(56).height(56).borderRadius(8).backgroundColor('#E8F0FE')
+                  Text(`${rank}`).fontSize(11).fontWeight(FontWeight.Bold)
+                    .fontColor(rank <= 3 ? Color.White : DesignTokens.mute)
+                    .width(18).height(18).textAlign(TextAlign.Center).borderRadius(4)
+                    .backgroundColor(rank === 1 ? '#FF9500' : rank === 2 ? '#B0B0B8' : rank === 3 ? '#C9783A' : '#B0B0B855')
+                  Column({ space: 4 }) {
+                    Text(this.titles[i % this.titles.length]).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).maxLines(1)
+                    Text(this.subs[i % this.subs.length]).fontSize(12).fontColor(DesignTokens.mute).maxLines(1)
+                    Text(`热度${this.heats[i % this.heats.length]}`).fontSize(11).fontColor(DesignTokens.mute)
+                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                }.padding({ left: 12, right: 12, top: 10, bottom: 10 }).width('100%')
+              }
+            }, (rank: number, i: number) => `r_${i}_${rank}`)
+          }.layoutWeight(1).width('100%')
+        }.layoutWeight(1).height('100%')
+      }.layoutWeight(1).width('100%')
     }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
