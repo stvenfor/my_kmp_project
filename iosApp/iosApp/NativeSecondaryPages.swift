@@ -2843,14 +2843,14 @@ struct NativeStoreQrPage: View {
                             Text("QR", font: .system(size: 28, weight: .bold), color: Color(white: 0.07))
                         }
                         .padding(.vertical, 12)
-                        Text("收款码仅用于演示，不产生真实扣款", font: .system(size: 12), color: DesignTokens.mute)
+                        Text("支持微信 / 支付宝", font: .system(size: 12), color: DesignTokens.mute)
                     }
                     .padding(24)
                     .frame(maxWidth: .infinity)
                     .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 16))
                     .padding(.horizontal, 24)
 
-                    Button("保存收款码") {}
+                    Button("保存到相册") {}
                         .buttonStyle(.borderedProminent)
                         .tint(DesignTokens.link)
                         .frame(maxWidth: .infinity)

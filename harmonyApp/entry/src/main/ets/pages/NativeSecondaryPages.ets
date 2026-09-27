@@ -2878,7 +2878,7 @@ export struct NativeStoreQrPane {
               Column().width(160).height(160).backgroundColor(Color.White).borderRadius(8)
               Text('QR').fontSize(28).fontWeight(FontWeight.Bold).fontColor('#111111')
             }.margin({ top: 12, bottom: 12 })
-            Text('收款码仅用于演示，不产生真实扣款').fontSize(12).fontColor('#888888')
+            Text('支持微信 / 支付宝').fontSize(12).fontColor('#888888')
           }
           .padding(24)
           .width('100%')
@@ -2886,7 +2886,7 @@ export struct NativeStoreQrPane {
           .backgroundColor(DesignTokens.canvas)
           .borderRadius(16)
 
-          Text('保存收款码')
+          Text('保存到相册')
             .fontSize(15).fontColor(Color.White)
             .width('100%').textAlign(TextAlign.Center)
             .padding({ top: 12, bottom: 12 })
