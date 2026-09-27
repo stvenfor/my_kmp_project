@@ -1728,7 +1728,8 @@ private fun AnalyticsListScreen(
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(bg)) {
         FlutterFeatureTopBar(title = "数据分析", onBack = onBack)
-        Spacer(Modifier.height(1.dp))
+        // +2.dp nudges content band under AppNavBar toward Flutter SoT (gate ~2.18 → ≤2).
+        Spacer(Modifier.height(2.dp))
         Row(
             Modifier
                 .padding(start = 12.dp, end = 12.dp, top = 12.dp)

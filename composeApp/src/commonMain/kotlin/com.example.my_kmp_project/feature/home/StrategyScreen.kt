@@ -50,7 +50,7 @@ internal fun StrategyScreen(onBack: () -> Unit) {
             .background(DemoColors.PageBg),
     ) {
         FlutterFeatureTopBar(title = "策略", onBack = onBack)
-        Spacer(modifier = Modifier.height(1.dp))
+        Spacer(modifier = Modifier.height(2.dp))
         Column(
             modifier = Modifier
                 .fillMaxSize()

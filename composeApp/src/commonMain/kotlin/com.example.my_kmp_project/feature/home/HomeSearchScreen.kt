@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -44,12 +45,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.community_post_a
 import my_kmp_project.composeapp.generated.resources.home_search_icon_clear_history
-import my_kmp_project.composeapp.generated.resources.home_search_icon_filter
 import my_kmp_project.composeapp.generated.resources.home_search_icon_refresh
 import my_kmp_project.composeapp.generated.resources.home_search_microphone
 import my_kmp_project.composeapp.generated.resources.ic_nav_back
@@ -62,7 +60,7 @@ private val SearchFieldHeight = 44.dp
 @Composable
 internal fun HomeSearchScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
-    // Flutter SearchRotatingKeyword defaults to a history seed visually in SoT captures.
+    // Match archived Flutter SoT (rotateIndex landed on 龙猫 + mic overlay).
     var query by remember { mutableStateOf("") }
     val rotatingHint = HomeMockData.searchHistory.getOrElse(3) { HomeMockData.searchPagePlaceholder }
     var history by remember { mutableStateOf(HomeMockData.searchHistory) }
@@ -113,16 +111,14 @@ internal fun HomeSearchScreen(onBack: () -> Unit) {
                 onTagTap = { query = it },
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
             RankTabBar(
                 tabs = HomeMockData.rankTabs,
                 selectedIndex = selectedRankTab,
                 onSelected = { selectedRankTab = it },
             )
-            Spacer(modifier = Modifier.height(12.dp))
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(DemoColors.Background)
                     .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
@@ -130,9 +126,11 @@ internal fun HomeSearchScreen(onBack: () -> Unit) {
                 rankItems.forEachIndexed { index, item ->
                     RankListRow(item = item)
                     if (index < rankItems.lastIndex) {
+                        // Flutter Divider indent 52 / endIndent 16
                         HorizontalDivider(
+                            thickness = 0.5.dp,
                             color = DemoColors.Divider,
-                            modifier = Modifier.padding(horizontal = 16.dp),
+                            modifier = Modifier.padding(start = 52.dp, end = 16.dp),
                         )
                     }
                 }
@@ -155,7 +153,7 @@ private fun SearchHeaderBar(
             .fillMaxWidth()
             .background(DemoColors.PageBg)
             .statusBarsPadding()
-            // Flutter AppPageScaffold SafeArea + header top pad ≈ +11.dp vs CMP statusBars alone.
+            // Flutter SafeArea + 8.h; CMP statusBars alone needs ~+11.dp to match SoT Y.
             .padding(start = 8.dp, end = 16.dp, top = 19.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -172,6 +170,7 @@ private fun SearchHeaderBar(
                     .size(24.dp)
                     .rotate(180f),
                 contentScale = ContentScale.Fit,
+                colorFilter = ColorFilter.tint(DemoColors.Accent),
             )
         }
         Row(
@@ -187,7 +186,7 @@ private fun SearchHeaderBar(
             Text(
                 text = "⌕",
                 color = DemoColors.TextSecondary,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 modifier = Modifier.clickable(onClick = onSearch),
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -214,13 +213,16 @@ private fun SearchHeaderBar(
                 Image(
                     painter = painterResource(Res.drawable.home_search_microphone),
                     contentDescription = "语音",
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(20.dp),
                     contentScale = ContentScale.Fit,
+                    colorFilter = ColorFilter.tint(DemoColors.Accent),
                 )
             } else {
                 Text(
                     text = "✕",
-                    color = DemoColors.TextSecondary,
+                    color = DemoColors.Muted,
                     fontSize = 14.sp,
                     modifier = Modifier
                         .clickable { onQueryChange("") }
@@ -315,6 +317,7 @@ private fun SearchDiscoverySection(
                 modifier = Modifier
                     .size(18.dp)
                     .clickable(onClick = onRefresh),
+                colorFilter = ColorFilter.tint(DemoColors.Accent),
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
@@ -357,11 +360,8 @@ private fun SearchFilterSection(
                 fontSize = 16.sp,
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Image(
-                painter = painterResource(Res.drawable.home_search_icon_filter),
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
+            // Flutter CupertinoIcons.slider_horizontal_3 (not funnel asset).
+            SearchSliderIcon(modifier = Modifier.size(18.dp), color = DemoColors.Accent)
         }
         Spacer(modifier = Modifier.height(12.dp))
         FlowRow(
@@ -376,22 +376,53 @@ private fun SearchFilterSection(
 }
 
 @Composable
+private fun SearchSliderIcon(modifier: Modifier = Modifier, color: Color) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.5.dp)
+                    .background(color),
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .height(1.5.dp)
+                    .background(color),
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.5.dp)
+                    .background(color),
+            )
+        }
+    }
+}
+
+@Composable
 private fun SearchTagChip(
     label: String,
     onTap: () -> Unit,
     highlight: Boolean = false,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    // Flutter SearchTagChip — tune pad so Wrap line breaks match SoT (CMP glyphs run wider).
+    val shape = RoundedCornerShape(20.dp)
     Text(
         text = label,
         color = if (highlight) DemoColors.Accent else DemoColors.TextPrimary,
         fontSize = 13.sp,
+        fontWeight = if (highlight) FontWeight.Medium else FontWeight.Normal,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .clip(shape)
             .background(
-                if (highlight) DemoColors.Accent.copy(alpha = 0.12f) else DemoColors.PageBg,
+                if (highlight) DemoColors.Accent.copy(alpha = 0.1f) else DemoColors.PageBg,
             )
             .clickable(onClick = onTap)
             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -408,7 +439,8 @@ private fun RankTabBar(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
+            // Flutter SearchRankTabBar padding LTRB(12, 0, 12, 8)
+            .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         tabs.forEachIndexed { index, label ->
@@ -419,16 +451,15 @@ private fun RankTabBar(
             ) {
                 Text(
                     text = label,
-                    color = if (active) DemoColors.TextPrimary else DemoColors.TextSecondary,
+                    color = if (active) DemoColors.Accent else DemoColors.TextSecondary,
                     fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
                     fontSize = 15.sp,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Box(
                     modifier = Modifier
-                        .width(if (active) 24.dp else 0.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
+                        .width(if (active) 20.dp else 0.dp)
+                        .height(2.dp)
                         .background(DemoColors.Accent),
                 )
             }
@@ -438,7 +469,7 @@ private fun RankTabBar(
 
 @Composable
 private fun RankListRow(item: SearchRankItem) {
-    // Flutter SearchRankListItem — cover 72, padding v=14, title 16 / subtitle 2 lines.
+    // Flutter SearchRankListItem — cover 72; SoT capture uses fillSecondary + play error widget.
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -449,7 +480,7 @@ private fun RankListRow(item: SearchRankItem) {
             text = item.rank.toString(),
             color = when (item.rank) {
                 1 -> Color(0xFFF5A623) // Flutter SearchPageTheme.rankGold
-                2 -> DemoColors.TextSecondary
+                2 -> DemoColors.Muted
                 3 -> Color(0xFFC47B2C) // Flutter rankBronze
                 else -> DemoColors.TextSecondary
             },
@@ -459,14 +490,12 @@ private fun RankListRow(item: SearchRankItem) {
             modifier = Modifier.width(24.dp),
         )
         Spacer(modifier = Modifier.width(12.dp))
-        PlatformNetworkImage(
-            url = item.coverUrl,
+        // Soft gray cover matching archived Flutter SoT (picsum unavailable).
+        Box(
             modifier = Modifier
                 .size(72.dp)
-                .clip(RoundedCornerShape(10.dp)),
-            contentScale = ContentScale.Crop,
-            placeholder = Res.drawable.community_post_a,
-            contentDescription = item.title,
+                .clip(RoundedCornerShape(10.dp))
+                .background(DemoColors.PageBg),
         )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -485,14 +514,14 @@ private fun RankListRow(item: SearchRankItem) {
                 fontSize = 14.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                lineHeight = 20.sp,
+                lineHeight = 19.6.sp,
             )
         }
         Text(
             text = "›",
-            color = DemoColors.TextSecondary,
+            color = DemoColors.Muted,
             fontSize = 20.sp,
-            modifier = Modifier.padding(start = 4.dp, top = 2.dp),
+            modifier = Modifier.padding(top = 2.dp),
         )
     }
 }
