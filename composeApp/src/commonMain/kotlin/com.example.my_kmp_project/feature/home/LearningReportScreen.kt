@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,26 +32,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
-/** Flutter `HomeReportColors` — local to report screen (DemoColors is light chrome). */
+/** Flutter `HomeReportColors` — map onto Vercel dark canvas semantics. */
 private object ReportColors {
-    val Background = Color(0xFF0B0C11)
-    val HighlightCard = Color(0xFF121A1F)
-    val HighlightBorder = Color(0xFF1E3330)
-    val RecordCard = Color(0xFF17161F)
-    val RecordItem = Color(0xFF242630)
-    val TitleWhite = Color(0xFFF5F6F8)
-    val SubtitleGrey = Color(0xFF8B9099)
-    val MetaGrey = Color(0xFF6B7078)
-    val Orange = Color(0xFFFF8A34)
-    val DotYellow = Color(0xFFFFD54F)
-    val DotBlue = Color(0xFF5EB3FF)
-    val Divider = Color(0xFF2A2D35)
-    val BannerStart = Color(0xFF2A1810)
-    val BannerEnd = Color(0xFF1A1210)
+    val Background = Color(0xFF000000)
+    val HighlightCard = Color(0xFF0A0A0A)
+    val HighlightBorder = Color(0xFF2E2E2E)
+    val RecordCard = Color(0xFF111111)
+    val RecordItem = Color(0xFF1A1A1A)
+    val IconTeal = Color(0xFF0070F3)
+    val IconTealLight = Color(0xFF3291FF)
+    val TitleWhite = Color(0xFFEDEDED)
+    val SubtitleGrey = Color(0xFFA1A1A1)
+    val MetaGrey = Color(0xFF666666)
+    val Orange = Color(0xFFF5A623)
+    val OrangeDeep = Color(0xFFAB570A)
+    val DotYellow = Color(0xFFF9CB28)
+    val DotBlue = Color(0xFF0070F3)
+    val Divider = Color(0xFF2E2E2E)
+    val BannerStart = Color(0xFF111111)
+    val BannerEnd = Color(0xFF0A0A0A)
+    val ParentChip = Color(0xCC1A1A1A)
+    val PlayBg = Color(0xFF2E3340)
 }
 
 @Composable
@@ -67,7 +72,7 @@ internal fun LearningReportScreen(
         Column(
             modifier = Modifier.fillMaxSize(),
         ) {
-            MineTopBar(
+            FlutterFeatureTopBar(
                 title = "学习报告",
                 onBack = onBack,
                 containerColor = ReportColors.Background,
@@ -76,6 +81,7 @@ internal fun LearningReportScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .offset(y = (-16).dp)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
                     .padding(top = 12.dp, bottom = 120.dp),
@@ -124,7 +130,8 @@ internal fun LearningReportScreen(
                 .navigationBarsPadding()
                 .padding(end = 16.dp, bottom = 88.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .background(ReportColors.RecordItem)
+                .background(ReportColors.ParentChip)
+                .border(1.dp, ReportColors.Divider, RoundedCornerShape(20.dp))
                 .clickable { showPlatformToast("家长助手") }
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -167,6 +174,9 @@ private fun ReportSectionHeader(dotColor: Color, title: String) {
 
 @Composable
 private fun HighlightRow(item: ReportHighlight) {
+    // Flutter: teal gradient icon tile + orangeDeep score pill / emoji / play square.
+    val isScore = item.trailing.isNotEmpty() && item.trailing.all { it.isDigit() }
+    val isPlay = item.trailing == "▶" || item.trailing.equals("play", ignoreCase = true)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -175,16 +185,16 @@ private fun HighlightRow(item: ReportHighlight) {
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
                 .background(
                     Brush.linearGradient(
-                        listOf(Color(0xFF1A3B38), Color(0xFF2A5A54)),
+                        listOf(ReportColors.IconTealLight, ReportColors.IconTeal),
                     ),
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = item.emoji, fontSize = 18.sp)
+            Text(text = item.emoji, fontSize = 22.sp)
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -206,12 +216,29 @@ private fun HighlightRow(item: ReportHighlight) {
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = item.trailing,
-            color = ReportColors.Orange,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-        )
+        when {
+            isScore -> Text(
+                text = item.trailing,
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(ReportColors.OrangeDeep)
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            )
+            // Flutter SoT: blue circular play (code uses dark square + blue icon; pixels favor circle).
+            isPlay -> Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(ReportColors.DotBlue),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("▶", color = Color.White, fontSize = 12.sp)
+            }
+            else -> Text(text = item.trailing, fontSize = 24.sp)
+        }
     }
 }
 
@@ -222,10 +249,20 @@ private fun RecordRow(item: ReportRecord) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(ReportColors.RecordItem)
-            .padding(12.dp),
+            .border(1.dp, ReportColors.Divider, RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = item.emoji, fontSize = 22.sp)
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(ReportColors.RecordItem)
+                .border(1.dp, ReportColors.Divider, RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text = item.emoji, fontSize = 22.sp)
+        }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -234,7 +271,7 @@ private fun RecordRow(item: ReportRecord) {
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp,
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = item.subtitle,
                 color = ReportColors.SubtitleGrey,
@@ -244,11 +281,11 @@ private fun RecordRow(item: ReportRecord) {
             )
         }
         Column(horizontalAlignment = Alignment.End) {
-            Text(text = item.time, color = ReportColors.MetaGrey, fontSize = 11.sp)
+            Text(text = item.time, color = ReportColors.MetaGrey, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = item.status,
-                color = if (item.statusHighlight) ReportColors.Orange else ReportColors.SubtitleGrey,
+                color = if (item.statusHighlight) ReportColors.Orange else ReportColors.MetaGrey,
                 fontWeight = if (item.statusHighlight) FontWeight.SemiBold else FontWeight.Normal,
                 fontSize = 12.sp,
             )
@@ -300,7 +337,7 @@ private fun MembershipBanner(
             fontSize = 13.sp,
             modifier = Modifier
                 .clip(RoundedCornerShape(20.dp))
-                .background(Color(0xFFE65100))
+                .background(ReportColors.OrangeDeep)
                 .clickable(onClick = onOpen)
                 .padding(horizontal = 14.dp, vertical = 8.dp),
         )

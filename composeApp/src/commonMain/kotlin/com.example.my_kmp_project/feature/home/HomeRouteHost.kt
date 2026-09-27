@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -45,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -653,6 +655,7 @@ internal fun FlutterFeatureTopBar(
     title: String,
     onBack: () -> Unit,
     containerColor: Color = DemoColors.PageBg,
+    titleColor: Color = DemoColors.TextPrimary,
     actions: (@Composable () -> Unit)? = null,
 ) {
     Column(
@@ -675,12 +678,13 @@ internal fun FlutterFeatureTopBar(
                         .size(24.dp)
                         .rotate(180f),
                     contentScale = ContentScale.Fit,
+                    colorFilter = ColorFilter.tint(titleColor),
                 )
             }
             Text(
                 text = title,
                 fontWeight = FontWeight.Bold,
-                color = DemoColors.TextPrimary,
+                color = titleColor,
                 fontSize = 18.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f),
@@ -883,61 +887,46 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
     // 成长任务 → 积分换礼. Mock fills until PointsApi is wired.
     val headerBlue = DemoColors.Accent
     val coinGold = Color(0xFFF5A623)
-    var points by remember { mutableStateOf(1280) }
-    var streak by remember { mutableStateOf(3) }
+    // Match Flutter CheckInMall SoT: 0 points, streak 1, today +5, no prior signed cells.
+    var points by remember { mutableStateOf(0) }
+    var streak by remember { mutableStateOf(1) }
     var checkedToday by remember { mutableStateOf(false) }
     var remind by remember { mutableStateOf(false) }
     var checkingIn by remember { mutableStateOf(false) }
-    // Flutter CheckInDayView week strip — signed / today / future
+    // Flutter CheckInDayView week strip — unsigned past / today / future
     data class DayCell(val label: String, val reward: Int, val signed: Boolean, val isToday: Boolean)
     val calendar = listOf(
-        DayCell("19", 5, true, false),
-        DayCell("20", 5, true, false),
-        DayCell("21", 5, true, false),
+        DayCell("19", 5, false, false),
+        DayCell("20", 5, false, false),
+        DayCell("21", 5, false, false),
         DayCell("22", 5, false, false),
         DayCell("23", 5, false, false),
         DayCell("24", 5, false, false),
-        DayCell("今天", 10, false, true),
+        DayCell("今天", 5, false, true),
     )
-    data class TaskRow(val title: String, val points: Int, val action: String)
+    data class TaskRow(val title: String, val points: Int, val action: String, val icon: String)
     val tasks = listOf(
-        TaskRow("每日登录", 5, "领取"),
-        TaskRow("发一条动态", 10, "去完成"),
-        TaskRow("商城下单", 20, "去完成"),
+        TaskRow("每日登录", 5, "领取", "➡️"),
+        TaskRow("发一条动态", 10, "去完成", "💬"),
+        TaskRow("商城下单", 20, "去完成", "🛍"),
     )
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .background(headerBlue)
-                .statusBarsPadding(),
+                .background(headerBlue),
         ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(44.dp)
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            FlutterFeatureTopBar(
+                title = "签到商城",
+                onBack = onBack,
+                containerColor = headerBlue,
+                titleColor = Color.White,
+            )
+            Column(
+                // Tuned vs Flutter SoT (1440): −28 overshot; −18 keeps card/tasks aligned.
+                Modifier.offset(y = (-18).dp),
             ) {
-                Text(
-                    "‹",
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    modifier = Modifier
-                        .clickable(onClick = onBack)
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
-                )
-                Text(
-                    "签到商城",
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.width(44.dp))
-            }
             Row(
                 Modifier
                     .padding(horizontal = 16.dp)
@@ -955,6 +944,7 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                     fontSize = 12.sp,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             Spacer(Modifier.height(16.dp))
@@ -984,14 +974,16 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                     }
                 }
             }
+            } // offset header body
         }
         Column(
             Modifier
                 .weight(1f)
+                .offset(y = (-18).dp)
                 .verticalScroll(rememberScrollState())
                 .padding(top = 0.dp, bottom = 24.dp),
         ) {
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
             // Check-in card
             Column(
                 Modifier
@@ -1031,10 +1023,10 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                             .clickable(enabled = !checkedToday && !checkingIn) {
                                 checkingIn = true
                                 checkedToday = true
-                                points += 10
+                                points += 5
                                 streak += 1
                                 checkingIn = false
-                                showPlatformToast("签到成功，+10积分")
+                                showPlatformToast("签到成功，+5积分")
                             }
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
@@ -1065,7 +1057,8 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                                 verticalArrangement = Arrangement.Center,
                             ) {
                                 Text("+${day.reward}", color = fg, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                                Text("›", color = fg.copy(alpha = 0.8f), fontSize = 10.sp)
+                                // Flutter Icons.arrow_forward
+                                Text("→", color = fg.copy(alpha = 0.8f), fontSize = 10.sp)
                             }
                             Spacer(Modifier.height(4.dp))
                             Text(
@@ -1125,25 +1118,48 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                     .background(Color.White),
             ) {
                 tasks.forEachIndexed { idx, task ->
-                    if (idx > 0) HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
+                    if (idx > 0) {
+                        HorizontalDivider(
+                            color = DemoColors.Divider,
+                            thickness = 0.5.dp,
+                            modifier = Modifier.padding(start = 56.dp, end = 16.dp),
+                        )
+                    }
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Box(
+                            Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFE8F1FA)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(task.icon, fontSize = 16.sp)
+                        }
+                        Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(task.title, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(
+                                task.title,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                                color = DemoColors.TextPrimary,
+                            )
+                            Spacer(Modifier.height(2.dp))
                             Text("+${task.points}积分", fontSize = 12.sp, color = DemoColors.TextSecondary)
                         }
+                        // Flutter solid primary pill (4.dp), white label.
                         Text(
                             task.action,
-                            color = headerBlue,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(headerBlue.copy(alpha = 0.1f))
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(headerBlue)
                                 .clickable {
                                     when (task.action) {
                                         "领取" -> {
@@ -1175,7 +1191,12 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                     .padding(vertical = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("🎁", fontSize = 64.sp, color = DemoColors.Muted.copy(alpha = 0.3f))
+                // Flutter Icons.card_giftcard_outlined @ 80.sp, textHint@0.3
+                Text(
+                    "❐",
+                    fontSize = 72.sp,
+                    color = DemoColors.Muted.copy(alpha = 0.3f),
+                )
                 Spacer(Modifier.height(16.dp))
                 Text("暂无积分商品", fontSize = 14.sp, color = DemoColors.Muted)
             }
