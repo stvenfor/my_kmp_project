@@ -2666,36 +2666,122 @@ export struct NativeUsedCarPane {
 export struct NativeNewCarFollowPane {
   onClose: () => void = () => {};
   onOpen: (path: string) => void = (_p: string) => {};
+  @State tab: string = '全部';
+  private accent: string = '#3B8CFF';
+  private tabs: string[] = ['全部', '高意向', '中意向', '低意向', '逾期'];
+  // name, phone, vehicle, stage, intent, next, overdue(0/1)
   private rows: string[][] = [
-    ['陈先生 · 凯美瑞', '意向强 · 未回访 2 天', '紧急'],
-    ['周女士 · 汉兰达', '询价 · 今早留言', '跟进'],
-    ['刘总 · 塞那', '试驾预约 · 周六', '预约'],
+    ['孙某', '138****2101', '银河 L7', '跟进中', '高', '今日 15:00', '0'],
+    ['吴某', '139****8820', '星愿', '报价', '中', '明日 10:30', '0'],
+    ['赵某', '186****4412', '星越 L', '试驾', '低', '09-20 已逾期', '1'],
   ];
+
+  private filtered(): string[][] {
+    if (this.tab === '高意向') {
+      return this.rows.filter((r: string[]) => r[4] === '高');
+    }
+    if (this.tab === '中意向') {
+      return this.rows.filter((r: string[]) => r[4] === '中');
+    }
+    if (this.tab === '低意向') {
+      return this.rows.filter((r: string[]) => r[4] === '低');
+    }
+    if (this.tab === '逾期') {
+      return this.rows.filter((r: string[]) => r[6] === '1');
+    }
+    return this.rows;
+  }
+
   build() {
-    Column() {
-      Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('新车跟进').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-        Blank().layoutWeight(1)
-        Text('新建').fontSize(14).fontColor(DesignTokens.link).onClick(() => this.onOpen('/home/new_car_follow/create'))
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      List() {
-        ForEach(this.rows, (r: string[]) => {
-          ListItem() {
-            Row() {
-              Column({ space: 4 }) {
-                Text(r[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              Text(r[2]).fontSize(11).fontColor(DesignTokens.link)
-                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                .backgroundColor('#1A0070F3').borderRadius(12)
-            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
-            .onClick(() => this.onOpen('/home/new_car_follow/detail'))
-          }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+    Stack({ alignContent: Alignment.BottomEnd }) {
+      Column() {
+        Row() {
+          Text('‹').fontSize(22).fontColor('#1A1A1A').onClick(() => this.onClose())
+          Text('新车跟进').fontSize(17).fontWeight(FontWeight.Medium).fontColor('#1A1A1A')
+          Blank().layoutWeight(1)
+        }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
+
+        Scroll() {
+          Column() {
+            Column() {
+              Row() {
+                Column({ space: 6 }) {
+                  Row({ space: 8 }) {
+                    Text('销售顾问').fontSize(20).fontWeight(FontWeight.Bold).fontColor('#1A1A1A')
+                    Text('顾问').fontSize(12).fontColor(Color.White)
+                      .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                      .backgroundColor(this.accent).borderRadius(4)
+                  }
+                  Text('演示门店').fontSize(13).fontColor(DesignTokens.mute)
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                Text('销').fontSize(22).fontWeight(FontWeight.Bold).fontColor(this.accent)
+                  .width(56).height(56).textAlign(TextAlign.Center).borderRadius(28).backgroundColor('#E8EEF8')
+              }.width('100%')
+              Row() {
+                ForEach([
+                  [`${this.rows.filter((r: string[]) => r[6] === '0').length}`, '跟进中'],
+                  [`${this.rows.filter((r: string[]) => r[6] === '1').length}`, '逾期'],
+                  [`${this.rows.filter((r: string[]) => r[4] === '高').length}`, '高意向'],
+                  ['0', '战败'],
+                ], (pair: string[]) => {
+                  Column({ space: 4 }) {
+                    Text(pair[0]).fontSize(18).fontWeight(FontWeight.Bold).fontColor('#1A1A1A')
+                    Text(pair[1]).fontSize(12).fontColor(DesignTokens.mute)
+                  }.layoutWeight(1).alignItems(HorizontalAlign.Center)
+                }, (pair: string[]) => pair[1])
+              }.width('100%').margin({ top: 20 })
+            }
+            .width('100%').padding(16).backgroundColor(Color.White).borderRadius(12)
+            .margin({ left: 16, right: 16, top: 12, bottom: 8 })
+
+            Scroll() {
+              Row() {
+                ForEach(this.tabs, (t: string) => {
+                  Column({ space: 6 }) {
+                    Text(t)
+                      .fontSize(14)
+                      .fontWeight(this.tab === t ? FontWeight.Medium : FontWeight.Regular)
+                      .fontColor(this.tab === t ? this.accent : DesignTokens.mute)
+                    Column().width(20).height(2).backgroundColor(this.tab === t ? this.accent : Color.Transparent)
+                  }
+                  .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                  .onClick(() => { this.tab = t; })
+                }, (t: string) => t)
+              }
+            }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).padding({ left: 8, right: 8 })
+
+            ForEach(this.filtered(), (r: string[], i: number) => {
+              Column({ space: 8 }) {
+                Row({ space: 8 }) {
+                  Text(r[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor('#1A1A1A')
+                  Text(`${r[4]}意向`).fontSize(11).fontColor(r[4] === '高' ? '#FF3B30' : this.accent)
+                    .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                    .backgroundColor(r[4] === '高' ? '#1AFF3B30' : '#1A3B8CFF').borderRadius(10)
+                  Blank().layoutWeight(1)
+                  if (r[6] === '1') {
+                    Text('逾期').fontSize(11).fontColor(Color.White)
+                      .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                      .backgroundColor('#FF3B30').borderRadius(10)
+                  }
+                }.width('100%')
+                Text(`${r[2]} · ${r[3]}`).fontSize(13).fontColor(DesignTokens.body)
+                Text(`${r[1]} · 下次 ${r[5]}`).fontSize(12).fontColor(DesignTokens.mute)
+              }
+              .width('100%').padding(14).alignItems(HorizontalAlign.Start)
+              .backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+              .onClick(() => this.onOpen('/home/new_car_follow/detail'))
+            }, (r: string[], i: number) => `f_${i}_${r[0]}`)
+          }.width('100%').padding({ bottom: 88 })
+        }.layoutWeight(1).width('100%')
+      }.width('100%').height('100%').backgroundColor('#FFF5F6F8')
+
+      Text('+').fontSize(28).fontColor(Color.White)
+        .width(56).height(56).textAlign(TextAlign.Center).borderRadius(28)
+        .backgroundColor(this.accent)
+        .margin({ right: 24, bottom: 24 })
+        .onClick(() => this.onOpen('/home/new_car_follow/create'))
+    }.width('100%').height('100%')
   }
 }
 

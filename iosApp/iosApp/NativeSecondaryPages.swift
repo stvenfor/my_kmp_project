@@ -2636,42 +2636,128 @@ struct NativeUsedCarPage: View {
 struct NativeNewCarFollowPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
-    private let rows: [(String, String, String)] = [
-        ("陈先生 · 凯美瑞", "意向强 · 未回访 2 天", "紧急"),
-        ("周女士 · 汉兰达", "询价 · 今早留言", "跟进"),
-        ("刘总 · 塞那", "试驾预约 · 周六", "预约"),
+    @State private var tab = "全部"
+    private let accent = Color(red: 0.231, green: 0.549, blue: 1)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let tabs = ["全部", "高意向", "中意向", "低意向", "逾期"]
+    /// Align Compose HomeSecondaryMock.newCarFollows
+    private let rows: [(name: String, phone: String, vehicle: String, stage: String, intent: String, next: String, overdue: Bool)] = [
+        ("孙某", "138****2101", "银河 L7", "跟进中", "高", "今日 15:00", false),
+        ("吴某", "139****8820", "星愿", "报价", "中", "明日 10:30", false),
+        ("赵某", "186****4412", "星越 L", "试驾", "低", "09-20 已逾期", true),
     ]
+    private var filtered: [(name: String, phone: String, vehicle: String, stage: String, intent: String, next: String, overdue: Bool)] {
+        switch tab {
+        case "高意向": return rows.filter { $0.intent == "高" }
+        case "中意向": return rows.filter { $0.intent == "中" }
+        case "低意向": return rows.filter { $0.intent == "低" }
+        case "逾期": return rows.filter { $0.overdue }
+        default: return rows
+        }
+    }
+    private var active: Int { rows.filter { !$0.overdue }.count }
+    private var overdueCount: Int { rows.filter { $0.overdue }.count }
+    private var high: Int { rows.filter { $0.intent == "高" }.count }
+
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link) }
-                Text("新车跟进", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
-                Spacer()
-                Button("新建") { onOpen?("/home/new_car_follow/create") }
-                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(DesignTokens.link)
-            }
-            .padding(.horizontal, 16).padding(.vertical, 12).background(DesignTokens.canvas)
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(r.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                                Text(r.1, font: .system(size: 13), color: DesignTokens.body)
-                            }
-                            Spacer()
-                            Text(r.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
-                                .padding(.horizontal, 8).padding(.vertical, 4)
-                                .background(DesignTokens.link.opacity(0.12), in: Capsule())
-                        }
-                        .padding(16).background(DesignTokens.canvas)
-                        .onTapGesture { onOpen?("/home/new_car_follow/detail") }
-                        Divider().overlay(DesignTokens.hairline)
-                    }
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 0) {
+                HStack {
+                    Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.ink) }
+                    Text("新车跟进", font: .system(size: 17, weight: .semibold), color: ink)
+                    Spacer()
                 }
-                .padding(16)
+                .padding(.horizontal, 16).padding(.vertical, 12).background(Color.white)
+
+                ScrollView {
+                    VStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 8) {
+                                        Text("销售顾问", font: .system(size: 20, weight: .bold), color: ink)
+                                        Text("顾问", font: .system(size: 12), color: .white)
+                                            .padding(.horizontal, 8).padding(.vertical, 3)
+                                            .background(accent, in: RoundedRectangle(cornerRadius: 4))
+                                    }
+                                    Text("演示门店", font: .system(size: 13), color: DesignTokens.mute)
+                                }
+                                Spacer()
+                                Text("销", font: .system(size: 22, weight: .bold), color: accent)
+                                    .frame(width: 56, height: 56)
+                                    .background(Color(red: 0.91, green: 0.933, blue: 0.973), in: Circle())
+                            }
+                            HStack {
+                                ForEach([("\(active)", "跟进中"), ("\(overdueCount)", "逾期"), ("\(high)", "高意向"), ("0", "战败")], id: \.1) { v, label in
+                                    VStack(spacing: 4) {
+                                        Text(v, font: .system(size: 18, weight: .bold), color: ink)
+                                        Text(label, font: .system(size: 12), color: DesignTokens.mute)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .padding(.top, 20)
+                        }
+                        .padding(16)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 8)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 0) {
+                                ForEach(tabs, id: \.self) { t in
+                                    VStack(spacing: 6) {
+                                        Text(t, font: .system(size: 14, weight: tab == t ? .semibold : .regular),
+                                              color: tab == t ? accent : DesignTokens.mute)
+                                        Rectangle().fill(tab == t ? accent : Color.clear).frame(width: 20, height: 2)
+                                    }
+                                    .padding(.horizontal, 12).padding(.vertical, 10)
+                                    .onTapGesture { tab = t }
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                        }
+
+                        ForEach(Array(filtered.enumerated()), id: \.offset) { _, r in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text(r.name, font: .system(size: 16, weight: .semibold), color: ink)
+                                    Text(r.intent + "意向", font: .system(size: 11, weight: .medium),
+                                          color: r.intent == "高" ? Color.red : accent)
+                                        .padding(.horizontal, 6).padding(.vertical, 2)
+                                        .background((r.intent == "高" ? Color.red : accent).opacity(0.12), in: Capsule())
+                                    Spacer()
+                                    if r.overdue {
+                                        Text("逾期", font: .system(size: 11, weight: .medium), color: .white)
+                                            .padding(.horizontal, 6).padding(.vertical, 2)
+                                            .background(Color.red, in: Capsule())
+                                    }
+                                }
+                                Text("\(r.vehicle) · \(r.stage)", font: .system(size: 13), color: DesignTokens.body)
+                                Text("\(r.phone) · 下次 \(r.next)", font: .system(size: 12), color: DesignTokens.mute)
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                            .padding(.horizontal, 16).padding(.vertical, 5)
+                            .onTapGesture { onOpen?("/home/new_car_follow/detail") }
+                        }
+                    }
+                    .padding(.bottom, 88)
+                }
+                .background(bg.ignoresSafeArea())
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            Button {
+                onOpen?("/home/new_car_follow/create")
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(accent, in: Circle())
+                    .shadow(color: accent.opacity(0.35), radius: 8, y: 4)
+            }
+            .padding(24)
         }
     }
 }
