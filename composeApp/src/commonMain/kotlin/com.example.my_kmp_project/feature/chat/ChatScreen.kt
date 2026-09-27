@@ -50,6 +50,8 @@ import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 @Composable
 internal fun ChatScreen(
     engine: ImEngine = remember { MockImEngine(seedDemo = true) },
+    /** Flutter square_pencil → [RoutePath.friend] / 通讯录. */
+    onOpenFriends: () -> Unit = {},
 ) {
     var selectedConversationId by remember { mutableStateOf<String?>(null) }
     var revision by remember { mutableStateOf(0) }
@@ -86,6 +88,7 @@ internal fun ChatScreen(
                 if (!searchOpen) query = ""
             },
             onOpen = { selectedConversationId = it },
+            onOpenFriends = onOpenFriends,
         )
     }
 }
@@ -98,6 +101,7 @@ private fun ChatListContent(
     onQueryChange: (String) -> Unit,
     onToggleSearch: () -> Unit,
     onOpen: (String) -> Unit,
+    onOpenFriends: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -131,7 +135,9 @@ private fun ChatListContent(
                 text = "✎",
                 color = DemoColors.Accent,
                 fontSize = 22.sp,
-                modifier = Modifier.padding(end = 8.dp),
+                modifier = Modifier
+                    .clickable(onClick = onOpenFriends)
+                    .padding(end = 8.dp),
             )
         }
         if (searchOpen) {
@@ -173,6 +179,18 @@ private fun ChatListContent(
                             text = "加个好友，发一条问候吧",
                             color = DemoColors.TextSecondary,
                             fontSize = 15.sp,
+                        )
+                        Spacer(Modifier.height(28.dp))
+                        Text(
+                            text = "去通讯录",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(DemoColors.Accent)
+                                .clickable(onClick = onOpenFriends)
+                                .padding(horizontal = 48.dp, vertical = 12.dp),
                         )
                     }
                 }

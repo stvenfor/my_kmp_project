@@ -954,10 +954,21 @@ struct ChatTabView: View {
             }
 
             if visible.isEmpty {
-                VStack {
+                VStack(spacing: 8) {
                     Spacer()
                     Text(searchQuery.isEmpty ? "还没有消息" : "没有匹配的会话",
-                         font: .system(size: 15), color: DesignTokens.body)
+                         font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                    if searchQuery.isEmpty {
+                        Text("加个好友，发一条问候吧", font: .system(size: 15), color: DesignTokens.body)
+                        Button { onDeferred("/friend") } label: {
+                            Text("去通讯录", font: .system(size: 15, weight: .semibold), color: .white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 12))
+                        }
+                        .padding(.horizontal, 48)
+                        .padding(.top, 20)
+                    }
                     Spacer()
                 }
             } else {

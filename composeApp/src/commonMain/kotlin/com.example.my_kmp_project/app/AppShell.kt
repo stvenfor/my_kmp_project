@@ -394,7 +394,12 @@ private fun MainShell() {
                         )
                         AuthOverlay.None -> when (tab) {
                             MainTab.Home -> HomeScreen()
-                            MainTab.Chat -> ChatScreen()
+                            MainTab.Chat -> ChatScreen(
+                                onOpenFriends = {
+                                    shellRoute = AppRoute.Friend
+                                    tabChrome.updateBottomBarVisible(false)
+                                },
+                            )
                             MainTab.Community -> CommunityScreen()
                             MainTab.Mine -> MineScreen(
                                 loggedIn = loggedIn,

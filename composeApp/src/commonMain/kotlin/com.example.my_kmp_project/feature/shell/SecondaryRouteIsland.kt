@@ -125,7 +125,7 @@ fun SecondaryRouteIsland(
                 onBack = ::pop,
             )
         route == AppRoutePath.chat || route == AppRoutePath.chatDetail ->
-            ChatScreen()
+            ChatScreen(onOpenFriends = { navigate(AppRoutePath.friend) })
         route == AppRoutePath.community || route == "/community" ->
             CommunityScreen()
         route.startsWith("/home/") ->

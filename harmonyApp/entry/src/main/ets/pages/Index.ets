@@ -1121,9 +1121,20 @@ struct Index {
         Column() {
           Blank()
           Text(this.chatSearchQuery.trim().length === 0 ? '还没有消息' : '没有匹配的会话')
-            .fontSize(15).fontColor(DesignTokens.body)
+            .fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          if (this.chatSearchQuery.trim().length === 0) {
+            Text('加个好友，发一条问候吧')
+              .fontSize(15).fontColor(DesignTokens.body).margin({ top: 8 })
+            Text('去通讯录')
+              .fontSize(15).fontWeight(FontWeight.Medium).fontColor(Color.White)
+              .padding({ left: 48, right: 48, top: 12, bottom: 12 })
+              .margin({ top: 28 })
+              .backgroundColor(DesignTokens.link)
+              .borderRadius(12)
+              .onClick(() => this.openDeferred('/friend'))
+          }
           Blank()
-        }.width('100%').layoutWeight(1)
+        }.width('100%').layoutWeight(1).alignItems(HorizontalAlign.Center)
       } else {
         List() {
           ForEach(this.visibleChatConversations(), (conv: ChatConv, index: number) => {
