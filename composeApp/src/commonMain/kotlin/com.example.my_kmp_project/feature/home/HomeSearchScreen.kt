@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,7 +62,9 @@ private val SearchFieldHeight = 44.dp
 @Composable
 internal fun HomeSearchScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
+    // Flutter SearchRotatingKeyword defaults to a history seed visually in SoT captures.
     var query by remember { mutableStateOf("") }
+    val rotatingHint = HomeMockData.searchHistory.getOrElse(3) { HomeMockData.searchPagePlaceholder }
     var history by remember { mutableStateOf(HomeMockData.searchHistory) }
     var discovery by remember { mutableStateOf(HomeMockData.searchDiscovery) }
     var selectedRankTab by remember { mutableStateOf(0) }
@@ -74,6 +77,7 @@ internal fun HomeSearchScreen(onBack: () -> Unit) {
     ) {
         SearchHeaderBar(
             query = query,
+            rotatingHint = rotatingHint,
             onQueryChange = { query = it },
             onBack = onBack,
             onCancel = onBack,
@@ -140,6 +144,7 @@ internal fun HomeSearchScreen(onBack: () -> Unit) {
 @Composable
 private fun SearchHeaderBar(
     query: String,
+    rotatingHint: String,
     onQueryChange: (String) -> Unit,
     onBack: () -> Unit,
     onCancel: () -> Unit,
@@ -150,7 +155,8 @@ private fun SearchHeaderBar(
             .fillMaxWidth()
             .background(DemoColors.PageBg)
             .statusBarsPadding()
-            .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
+            // Flutter AppPageScaffold SafeArea + header top pad ≈ +11.dp vs CMP statusBars alone.
+            .padding(start = 8.dp, end = 16.dp, top = 19.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -194,10 +200,11 @@ private fun SearchHeaderBar(
                 modifier = Modifier.weight(1f),
                 decorationBox = { inner ->
                     if (query.isEmpty()) {
+                        // Match Flutter rotating keyword overlay (primary ink, not tertiary hint).
                         Text(
-                            text = HomeMockData.searchPagePlaceholder,
-                            color = DemoColors.TextSecondary,
-                            fontSize = 15.sp,
+                            text = rotatingHint,
+                            color = DemoColors.TextPrimary,
+                            fontSize = 16.sp,
                         )
                     }
                     inner()
@@ -431,11 +438,12 @@ private fun RankTabBar(
 
 @Composable
 private fun RankListRow(item: SearchRankItem) {
+    // Flutter SearchRankListItem — cover 72, padding v=14, title 16 / subtitle 2 lines.
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.Top,
     ) {
         Text(
             text = item.rank.toString(),
@@ -447,13 +455,15 @@ private fun RankListRow(item: SearchRankItem) {
             },
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
-            modifier = Modifier.width(28.dp),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.width(24.dp),
         )
+        Spacer(modifier = Modifier.width(12.dp))
         PlatformNetworkImage(
             url = item.coverUrl,
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(8.dp)),
+                .size(72.dp)
+                .clip(RoundedCornerShape(10.dp)),
             contentScale = ContentScale.Crop,
             placeholder = Res.drawable.community_post_a,
             contentDescription = item.title,
@@ -464,18 +474,25 @@ private fun RankListRow(item: SearchRankItem) {
                 text = item.title,
                 color = DemoColors.TextPrimary,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp,
+                fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = item.subtitle,
                 color = DemoColors.TextSecondary,
-                fontSize = 12.sp,
-                maxLines = 1,
+                fontSize = 14.sp,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                lineHeight = 20.sp,
             )
         }
+        Text(
+            text = "›",
+            color = DemoColors.TextSecondary,
+            fontSize = 20.sp,
+            modifier = Modifier.padding(start = 4.dp, top = 2.dp),
+        )
     }
 }

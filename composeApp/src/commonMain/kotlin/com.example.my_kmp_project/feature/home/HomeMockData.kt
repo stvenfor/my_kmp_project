@@ -43,6 +43,10 @@ internal data class SearchRankItem(
     val coverUrl: String = "https://picsum.photos/seed/search-rank-$rank/144/144",
 )
 
+/** Cover seed helper matching Flutter `SearchMockData._coverUrls`. */
+internal fun searchRankCoverUrl(rank: Int): String =
+    "https://picsum.photos/seed/search-rank-$rank/144/144"
+
 /** Flutter `HotRankDetailItem` — detail page list row. */
 internal data class HotRankDetailItem(
     val id: String,
@@ -314,14 +318,14 @@ internal object HomeMockData {
             SearchRankItem("c4", 5, "剑桥少儿英语", "剑桥体系标准发音示范..."),
         )
         else -> listOf(
-            SearchRankItem("h0", 1, "穿条纹睡衣的男孩", "某日布鲁诺决定，去铁丝网的另外..."),
-            SearchRankItem("h1", 2, "蛮荒故事", "六个独立故事，荒诞与黑色幽默交织..."),
-            SearchRankItem("h2", 3, "爱冒险的朵拉", "和朵拉一起开启奇妙冒险之旅..."),
-            SearchRankItem("h3", 4, "小王子", "来自 B612 小行星的小王子..."),
-            SearchRankItem("h4", 5, "寻梦环游记", "米格在亡灵节追寻音乐梦想..."),
-            SearchRankItem("h5", 6, "飞屋环游记", "卡尔用气球带着房子去冒险..."),
-            SearchRankItem("h6", 7, "头脑特工队", "情绪小人在大脑里协作成长..."),
-            SearchRankItem("h7", 8, "疯狂动物城", "兔子警官与狐狸搭档破案..."),
+            SearchRankItem("h0", 1, "穿条纹睡衣的男孩", "某日布鲁诺决定，去铁丝网的另外...", searchRankCoverUrl(1)),
+            SearchRankItem("h1", 2, "蛮荒故事", "六个独立故事，荒诞与黑色幽默交织...", searchRankCoverUrl(2)),
+            SearchRankItem("h2", 3, "爱冒险的朵拉", "和朵拉一起开启奇妙冒险之旅...", searchRankCoverUrl(3)),
+            SearchRankItem("h3", 4, "小王子", "来自 B612 小行星的小王子...", searchRankCoverUrl(4)),
+            SearchRankItem("h4", 5, "寻梦环游记", "米格在亡灵节追寻音乐梦想...", searchRankCoverUrl(5)),
+            SearchRankItem("h5", 6, "飞屋环游记", "卡尔用气球带着房子去冒险...", searchRankCoverUrl(6)),
+            SearchRankItem("h6", 7, "头脑特工队", "情绪小人在大脑里协作成长...", searchRankCoverUrl(7)),
+            SearchRankItem("h7", 8, "疯狂动物城", "兔子警官与狐狸搭档破案...", searchRankCoverUrl(8)),
         )
     }
 

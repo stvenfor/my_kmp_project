@@ -33,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 private val GainRed = Color(0xFFFF3B30)
@@ -50,7 +49,8 @@ internal fun StrategyScreen(onBack: () -> Unit) {
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "策略", onBack = onBack, containerColor = DemoColors.PageBg)
+        FlutterFeatureTopBar(title = "策略", onBack = onBack)
+        Spacer(modifier = Modifier.height(1.dp))
         Column(
             modifier = Modifier
                 .fillMaxSize()

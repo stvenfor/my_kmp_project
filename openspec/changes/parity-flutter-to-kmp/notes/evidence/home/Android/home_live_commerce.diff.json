@@ -1,17 +1,17 @@
 {
   "home_live_commerce": {
-    "mse_pct": 1.7173,
-    "mad_pct": 3.5964,
+    "mse_pct": 1.7108,
+    "mad_pct": 3.5867,
     "pass_": true,
     "bar_mse_pct": 2.0,
-    "flutter": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_live_commerce.flutter.png",
-    "kmp": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_live_commerce.kmp.png",
-    "heat": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_live_commerce.heat.png"
+    "flutter": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_live_commerce.flutter.png",
+    "kmp": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_live_commerce.kmp.png",
+    "heat": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_live_commerce.heat.png"
   },
   "meta": {
     "gate": "mse_pct<=2.0",
     "roi": "top=0.04,bot=0.9,resize=540x960",
-    "measured_at": "2026-09-27T10:04Z",
+    "measured_at": "2026-09-27T10:43Z",
     "script": "scripts/screenshot_diff_gate.py",
     "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
   }

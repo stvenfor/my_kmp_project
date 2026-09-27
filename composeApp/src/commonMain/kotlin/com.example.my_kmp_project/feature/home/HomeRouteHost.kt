@@ -60,6 +60,7 @@ import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.feature.mine.MineRoutes
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.community_avatar
+import my_kmp_project.composeapp.generated.resources.community_post_a
 import my_kmp_project.composeapp.generated.resources.ic_nav_back
 import org.jetbrains.compose.resources.painterResource
 
@@ -428,21 +429,31 @@ internal object HomeSecondaryMock {
 @Composable
 private fun LifeServiceScreen(onBack: () -> Unit) {
     // Flutter: HomeFeatureContentPage(title: 生活服务, child: HomeVideoTabContent)
+    data class LifeShortcut(val label: String, val icon: String, val tint: Color)
+    data class LifeDaily(val title: String, val tag: String, val avatar: String)
+    data class LifeCourse(
+        val title: String,
+        val author: String,
+        val cover: String,
+        val isLive: Boolean,
+        val isMember: Boolean,
+    )
     val shortcuts = listOf(
-        "会员专享" to Color(0xFF0070F3),
-        "配音专栏" to Color(0xFFFF9500),
-        "其他课程" to Color(0xFF5856D6),
-        "功能教程" to Color(0xFF34C759),
+        LifeShortcut("会员专享", "▶", Color(0xFF0070F3)),
+        LifeShortcut("配音专栏", "▤", Color(0xFFFF9500)),
+        LifeShortcut("其他课程", "▣", Color(0xFF5856D6)),
+        LifeShortcut("功能教程", "✎", Color(0xFF34C759)),
     )
     val daily = listOf(
-        Triple("带你玩转 ETF", "直播中", true),
-        Triple("新能源赛道解读", "回放", false),
-        Triple("门店短视频运营", "直播中", true),
+        LifeDaily("带你玩转 ETF", "直播中", "https://picsum.photos/seed/v1/120/120"),
+        LifeDaily("新能源赛道解读", "回放", "https://picsum.photos/seed/v2/120/120"),
+        LifeDaily("门店短视频运营", "直播中", "https://picsum.photos/seed/v3/120/120"),
     )
     val courses = listOf(
-        Triple("【配置】当星舰撞上算力", "尤国梁", true),
-        Triple("黄金恐贪定投实战", "策略组", false),
+        LifeCourse("【配置】当星舰撞上算力", "尤国梁", "https://picsum.photos/seed/c1/400/240", true, true),
+        LifeCourse("黄金恐贪定投实战", "策略组", "https://picsum.photos/seed/c2/400/240", false, false),
     )
+    val cardRadius = 8.dp
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
@@ -454,46 +465,47 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp),
         ) {
-            shortcuts.forEach { (label, tint) ->
+            shortcuts.forEach { s ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { showPlatformToast(label) },
+                        .clickable { showPlatformToast(s.label) },
                 ) {
                     Box(
                         Modifier
                             .width(52.dp)
                             .height(52.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .background(tint.copy(alpha = 0.12f)),
+                            .background(s.tint.copy(alpha = 0.12f)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(label.take(1), color = tint, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(s.label.take(1), color = s.tint, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     }
                     Spacer(Modifier.height(8.dp))
-                    Text(label, fontSize = 12.sp, color = DemoColors.TextPrimary, maxLines = 1)
+                    Text(s.label, fontSize = 12.sp, color = DemoColors.TextPrimary, maxLines = 1)
                 }
             }
         }
         LifeSectionHeader(title = "每日推荐")
         Column(Modifier.padding(horizontal = 16.dp)) {
-            daily.forEachIndexed { index, (title, tag, isLive) ->
+            daily.forEach { item ->
+                val isLive = item.tag == "直播中"
                 Row(
                     Modifier
                         .fillMaxWidth()
                         .padding(bottom = 10.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(cardRadius))
                         .background(Color.White)
-                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
-                        .clickable { showPlatformToast(title) }
+                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(cardRadius))
+                        .clickable { showPlatformToast(item.title) }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        tag,
+                        item.tag,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (isLive) Color(0xFFFF3B30) else DemoColors.TextSecondary,
@@ -506,7 +518,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
-                        title,
+                        item.title,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp,
                         modifier = Modifier.weight(1f),
@@ -514,13 +526,13 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                     )
                     PlatformNetworkImage(
-                        url = "https://picsum.photos/seed/life_daily_$index/80/80",
+                        url = item.avatar,
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape),
                         contentScale = ContentScale.Crop,
                         placeholder = Res.drawable.community_avatar,
-                        contentDescription = title,
+                        contentDescription = item.title,
                     )
                 }
             }
@@ -529,26 +541,31 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
         Row(
             Modifier
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .height(200.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            courses.forEach { (title, author, isMember) ->
+            courses.forEach { course ->
                 Column(
                     Modifier
                         .width(168.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(cardRadius))
                         .background(Color.White)
-                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
-                        .clickable { showPlatformToast(title) },
+                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(cardRadius))
+                        .clickable { showPlatformToast(course.title) },
                 ) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(96.dp)
-                            .background(Color(0xFFE8EEF5)),
-                    ) {
+                    Box {
+                        PlatformNetworkImage(
+                            url = course.cover,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(96.dp),
+                            contentScale = ContentScale.Crop,
+                            placeholder = Res.drawable.community_post_a,
+                            contentDescription = course.title,
+                        )
                         Text(
-                            "直播中",
+                            if (course.isLive) "直播中" else "回放",
                             color = Color.White,
                             fontSize = 10.sp,
                             modifier = Modifier
@@ -560,7 +577,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
                     }
                     Column(Modifier.padding(10.dp)) {
                         Text(
-                            title,
+                            course.title,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             maxLines = 2,
@@ -568,8 +585,8 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
                             lineHeight = 17.sp,
                         )
                         Spacer(Modifier.height(6.dp))
-                        Text(author, fontSize = 12.sp, color = DemoColors.TextSecondary)
-                        if (isMember) {
+                        Text(course.author, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        if (course.isMember) {
                             Spacer(Modifier.height(6.dp))
                             Text(
                                 "V 会员专属",
@@ -586,7 +603,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
                 }
             }
         }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
             "进入配音视频专区",
             color = DemoColors.Accent,
@@ -595,9 +612,9 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(cardRadius))
                 .background(DemoColors.Accent.copy(alpha = 0.08f))
-                .border(1.dp, DemoColors.Accent.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                .border(1.dp, DemoColors.Accent.copy(alpha = 0.2f), RoundedCornerShape(cardRadius))
                 .clickable { showPlatformToast("配音") }
                 .padding(vertical = 14.dp),
         )
@@ -632,7 +649,7 @@ private fun ClubScreen(onBack: () -> Unit, onJoin: () -> Unit = {}) {
 
 /** Flutter `AppNavBar` — 56.dp toolbar (not M3 64.dp MineTopBar). */
 @Composable
-private fun FlutterFeatureTopBar(title: String, onBack: () -> Unit) {
+internal fun FlutterFeatureTopBar(title: String, onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1710,7 +1727,8 @@ private fun AnalyticsListScreen(
     val items = HomeSecondaryMock.analyticsRecords
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(bg)) {
-        MineTopBar(title = "数据分析", onBack = onBack, containerColor = Color.White)
+        FlutterFeatureTopBar(title = "数据分析", onBack = onBack)
+        Spacer(Modifier.height(1.dp))
         Row(
             Modifier
                 .padding(start = 12.dp, end = 12.dp, top = 12.dp)

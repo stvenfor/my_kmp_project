@@ -1,0 +1,18 @@
+{
+  "home_dubbing_feed": {
+    "mse_pct": 6.4712,
+    "mad_pct": 13.9669,
+    "pass_": false,
+    "bar_mse_pct": 2.0,
+    "flutter": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_dubbing_feed.flutter.png",
+    "kmp": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_dubbing_feed.kmp.png",
+    "heat": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_dubbing_feed.heat.png"
+  },
+  "meta": {
+    "gate": "mse_pct<=2.0",
+    "roi": "top=0.04,bot=0.9,resize=540x960",
+    "measured_at": "2026-09-27T10:41Z",
+    "script": "scripts/screenshot_diff_gate.py",
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
+  }
+}
