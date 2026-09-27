@@ -29,6 +29,9 @@ import {
   NativeMallPane,
   NativeWalletPane,
   NativeShortVideoPane,
+  NativeShortVideoHelpPane,
+  NativeShortVideoPublishPane,
+  NativeShortVideoPlayPane,
   NativeLivePane,
   NativeAiStreamPane,
   NativeScanPane,
@@ -1892,6 +1895,16 @@ struct Index {
 
       if (this.nativePane === 'wallet') {
         NativeWalletPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+            if (this.nativePane === 'short_play') {
+        NativeShortVideoPlayPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'short_publish') {
+        NativeShortVideoPublishPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'short_help') {
+        NativeShortVideoHelpPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'short_video') {

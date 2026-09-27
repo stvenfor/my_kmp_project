@@ -1271,6 +1271,164 @@ struct NativeWalletPage: View {
     }
 }
 
+struct NativeShortVideoPlayPage: View {
+    var onClose: () -> Void
+    @State private var playing = true
+    @State private var liked = false
+    @State private var toastText: String? = nil
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                HStack {
+                    Button { onClose() } label: {
+                        Text("‹", font: .system(size: 28), color: .white).frame(width: 44, alignment: .leading)
+                    }
+                    Text("播放", font: .system(size: 17, weight: .semibold), color: .white)
+                        .frame(maxWidth: .infinity)
+                    Color.clear.frame(width: 44, height: 1)
+                }
+                .padding(.horizontal, 8)
+                .frame(height: 44)
+
+                Spacer()
+                Text(playing ? "播放中 · 单击暂停" : "已暂停 · 单击继续",
+                      font: .system(size: 16), color: .white)
+                    .onTapGesture { playing.toggle() }
+                Spacer()
+
+                HStack {
+                    Button { liked.toggle() } label: {
+                        Text(liked ? "已赞" : "赞", font: .system(size: 15), color: .white)
+                    }
+                    .frame(maxWidth: .infinity)
+                    Button { flash("评论（mock）") } label: {
+                        Text("评", font: .system(size: 15), color: .white)
+                    }
+                    .frame(maxWidth: .infinity)
+                    Button { flash("分享（mock）") } label: {
+                        Text("分享", font: .system(size: 15), color: .white)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(16)
+
+                Text("口语跟读 · 第一课  #口语", font: .system(size: 14), color: .white)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+            }
+            .background(Color.black.ignoresSafeArea())
+
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
+        }
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
+        }
+    }
+}
+
+struct NativeShortVideoPublishPage: View {
+    var onClose: () -> Void
+    @State private var title = ""
+    @State private var topic = "#口语"
+    @State private var toastText: String? = nil
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                navBar(title: "发布短视频", onClose: onClose, dark: false)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("本地预览 · 选视频/拍摄见 platform-gap", font: .system(size: 13), color: DesignTokens.body)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 180)
+                            .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 12))
+
+                        Text("标题", font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                        TextField("输入标题（≤40）", text: $title)
+                            .padding(12)
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                            .onChange(of: title) { _, v in
+                                if v.count > 40 { title = String(v.prefix(40)) }
+                            }
+
+                        Text("话题", font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                        TextField("话题", text: $topic)
+                            .padding(12)
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+
+                        Button {
+                            if title.trimmingCharacters(in: .whitespaces).isEmpty {
+                                flash("请填写标题")
+                            } else {
+                                flash("已提交（mock）")
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { onClose() }
+                            }
+                        } label: {
+                            Text("提交", font: .system(size: 16, weight: .semibold), color: .white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 10))
+                        }
+                        .padding(.top, 8)
+                    }
+                    .padding(16)
+                }
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
+        }
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
+        }
+    }
+}
+
+struct NativeShortVideoHelpPage: View {
+    var onClose: () -> Void
+    private let steps = ["选择或拍摄视频", "填写标题与话题", "提交后等待审核", "在「我的作品」查看"]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "短视频帮助", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(spacing: 10) {
+                    ForEach(Array(steps.enumerated()), id: \.offset) { i, step in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("步骤 \(i + 1)", font: .system(size: 15, weight: .semibold), color: DesignTokens.link)
+                            Text(step, font: .system(size: 14), color: DesignTokens.ink)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                    }
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
 struct NativeShortVideoPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil

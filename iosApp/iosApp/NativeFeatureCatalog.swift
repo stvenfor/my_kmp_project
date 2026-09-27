@@ -439,6 +439,12 @@ struct NativeFeatureHost: View {
             NativeMallPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/wallet" {
             NativeWalletPage(onClose: onClose)
+        } else if path == "/video/short/play" {
+            NativeShortVideoPlayPage(onClose: onClose)
+        } else if path == "/video/short/publish" {
+            NativeShortVideoPublishPage(onClose: onClose)
+        } else if path == "/video/short/help" {
+            NativeShortVideoHelpPage(onClose: onClose)
         } else if path == "/video/short" {
             NativeShortVideoPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/live" || path == "/home/live_commerce" {

@@ -1275,6 +1275,140 @@ export struct NativeWalletPane {
 }
 
 @Component
+export struct NativeShortVideoPlayPane {
+  onClose: () => void = () => {};
+  @State playing: boolean = true;
+  @State liked: boolean = false;
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(28).fontColor(Color.White).width(44).onClick(() => this.onClose())
+        Text('播放').fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White)
+          .layoutWeight(1).textAlign(TextAlign.Center)
+        Blank().width(44)
+      }.width('100%').height(44).padding({ left: 8, right: 8 })
+
+      Column() {
+        Blank()
+        Text(this.playing ? '播放中 · 单击暂停' : '已暂停 · 单击继续')
+          .fontSize(16).fontColor(Color.White)
+          .onClick(() => { this.playing = !this.playing; })
+        Blank()
+      }.layoutWeight(1).width('100%').alignItems(HorizontalAlign.Center)
+
+      Row() {
+        Text(this.liked ? '已赞' : '赞').fontSize(15).fontColor(Color.White).layoutWeight(1)
+          .textAlign(TextAlign.Center).onClick(() => { this.liked = !this.liked; })
+        Text('评').fontSize(15).fontColor(Color.White).layoutWeight(1)
+          .textAlign(TextAlign.Center).onClick(() => this.flash('评论（mock）'))
+        Text('分享').fontSize(15).fontColor(Color.White).layoutWeight(1)
+          .textAlign(TextAlign.Center).onClick(() => this.flash('分享（mock）'))
+      }.width('100%').padding(16)
+
+      Text('口语跟读 · 第一课  #口语')
+        .fontSize(14).fontColor(Color.White)
+        .width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(Color.Black)
+  }
+}
+
+@Component
+export struct NativeShortVideoPublishPane {
+  onClose: () => void = () => {};
+  @State titleText: string = '';
+  @State topic: string = '#口语';
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('发布短视频').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 12 }) {
+          Text('本地预览 · 选视频/拍摄见 platform-gap')
+            .fontSize(13).fontColor(DesignTokens.body)
+            .width('100%').height(180).textAlign(TextAlign.Center)
+            .backgroundColor(DesignTokens.canvasSoft2).borderRadius(12)
+
+          Text('标题').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          TextInput({ placeholder: '输入标题（≤40）', text: this.titleText })
+            .height(44).padding({ left: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(8)
+            .onChange((v: string) => { this.titleText = v.length > 40 ? v.substring(0, 40) : v; })
+
+          Text('话题').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          TextInput({ text: this.topic })
+            .height(44).padding({ left: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(8)
+            .onChange((v: string) => { this.topic = v; })
+
+          Text('提交')
+            .fontSize(16).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            .width('100%').textAlign(TextAlign.Center)
+            .padding({ top: 14, bottom: 14 })
+            .margin({ top: 8 })
+            .backgroundColor(DesignTokens.link).borderRadius(10)
+            .onClick(() => {
+              if (this.titleText.trim().length === 0) {
+                this.flash('请填写标题');
+              } else {
+                this.flash('已提交（mock）');
+                this.onClose();
+              }
+            })
+        }.width('100%').padding(16)
+      }.layoutWeight(1).width('100%').scrollBar(BarState.Off)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeShortVideoHelpPane {
+  onClose: () => void = () => {};
+  private steps: string[] = ['选择或拍摄视频', '填写标题与话题', '提交后等待审核', '在「我的作品」查看'];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('短视频帮助').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List() {
+        ForEach(this.steps, (step: string, i: number) => {
+          ListItem() {
+            Column({ space: 4 }) {
+              Text(`步骤 ${i + 1}`).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+              Text(step).fontSize(14).fontColor(DesignTokens.ink)
+            }
+            .width('100%')
+            .padding(14)
+            .margin({ bottom: 10 })
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(10)
+            .alignItems(HorizontalAlign.Start)
+          }
+        })
+      }.layoutWeight(1).width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
 export struct NativeShortVideoPane {
   onClose: () => void = () => {};
   onOpen: (path: string) => void = (_p: string) => {};
