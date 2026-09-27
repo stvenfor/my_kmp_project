@@ -1739,103 +1739,181 @@ struct NativeLivePage: View {
     }
 }
 
+private struct AiStreamBubble: Identifiable {
+    let id: String
+    let role: String
+    var text: String
+}
+
 struct NativeAiStreamPage: View {
     var onClose: () -> Void
     @State private var input = ""
     @State private var streaming = false
-    @State private var bubbles: [(String, String)] = [
-        ("welcome", "你好，我是 AI 小石头——本 App / 4S 店的业务向导。你可以问「二手车入口在哪」「如何登录」或点下方快捷问。"),
+    @State private var stopRequested = false
+    @State private var bubbles: [AiStreamBubble] = [
+        AiStreamBubble(
+            id: "0",
+            role: "welcome",
+            text: "你好，我是 AI 小石头——本 App / 4S 店的业务向导。你可以问「二手车入口在哪」「如何登录」或点下方快捷问。"
+        ),
     ]
     private let chips = ["二手车入口在哪里？", "怎么登录账号？", "数据分析怎么看？"]
+    private let welcomeBg = Color(red: 0xE8/255, green: 0xF0/255, blue: 0xFE/255)
+    private let stopRed = Color(red: 0xE5/255, green: 0x39/255, blue: 0x35/255)
+
+    private var showChips: Bool { bubbles.count <= 1 && !streaming }
 
     var body: some View {
         VStack(spacing: 0) {
-            navBar(title: "AI 小石头", onClose: onClose, dark: false)
+            HStack {
+                Button { onClose() } label: {
+                    Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link)
+                }
+                Text("AI 小石头", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                Spacer()
+                if streaming {
+                    Button("停止") { stopRequested = true }
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(stopRed)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(DesignTokens.canvas)
+
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
-                        ForEach(Array(bubbles.enumerated()), id: \.offset) { i, b in
-                            HStack {
-                                if b.0 == "user" { Spacer(minLength: 48) }
-                                Text(b.1, font: .system(size: 15), color: b.0 == "user" ? .white : DesignTokens.ink)
-                                    .padding(12)
-                                    .background(
-                                        b.0 == "user" ? DesignTokens.link : DesignTokens.canvas,
-                                        in: RoundedRectangle(cornerRadius: 12)
-                                    )
-                                if b.0 == "assistant" { Spacer(minLength: 48) }
-                            }
-                            .id(i)
+                    LazyVStack(alignment: .leading, spacing: 10) {
+                        Color.clear.frame(height: 10)
+                        ForEach(bubbles) { b in
+                            bubbleView(b).id(b.id)
                         }
+                        Color.clear.frame(height: 8)
                     }
-                    .padding(16)
+                    .padding(.horizontal, 14)
                 }
-                .onChange(of: bubbles.count) { _, _ in
-                    if let last = bubbles.indices.last {
-                        withAnimation { proxy.scrollTo(last, anchor: .bottom) }
+                .onChange(of: bubbles.last?.text) { _, _ in
+                    if let last = bubbles.last {
+                        withAnimation { proxy.scrollTo(last.id, anchor: .bottom) }
                     }
                 }
             }
-            .background(DesignTokens.canvasSoft2)
+            .background(Color(white: 0.96))
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(chips, id: \.self) { chip in
-                        Text(chip, font: .system(size: 13), color: DesignTokens.link)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(DesignTokens.link.opacity(0.1), in: Capsule())
-                            .onTapGesture { send(chip) }
+            if showChips {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(chips, id: \.self) { chip in
+                            Text(chip, font: .system(size: 13), color: DesignTokens.body)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.white, in: Capsule())
+                                .overlay(Capsule().stroke(DesignTokens.hairline, lineWidth: 0.5))
+                                .onTapGesture { send(chip) }
+                        }
                     }
+                    .padding(.horizontal, 14)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.bottom, 10)
             }
 
             HStack(spacing: 10) {
-                TextField("输入问题…", text: $input)
+                TextField(streaming ? "生成中，请稍候…" : "输入问题…", text: $input)
+                    .disabled(streaming)
                     .padding(.horizontal, 12)
                     .frame(height: 40)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 20))
-                if streaming {
-                    Button("停止") { streaming = false }
-                        .foregroundStyle(DesignTokens.link)
-                } else {
-                    Button("发送") { send(input) }
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(DesignTokens.link, in: Capsule())
-                }
+                    .background(Color(white: 0.96), in: RoundedRectangle(cornerRadius: 20))
+                Button("发送") { send(input) }
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        (streaming || input.trimmingCharacters(in: .whitespaces).isEmpty)
+                            ? DesignTokens.mute : DesignTokens.link,
+                        in: Capsule()
+                    )
+                    .disabled(streaming || input.trimmingCharacters(in: .whitespaces).isEmpty)
             }
-            .padding(12)
-            .background(DesignTokens.canvas)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.white)
         }
+    }
+
+    @ViewBuilder
+    private func bubbleView(_ b: AiStreamBubble) -> some View {
+        switch b.role {
+        case "user":
+            HStack {
+                Spacer(minLength: 48)
+                Text(b.text, font: .system(size: 15), color: .white)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 16))
+            }
+        case "welcome":
+            VStack(alignment: .leading, spacing: 6) {
+                Text("AI 小石头", font: .system(size: 12, weight: .medium), color: DesignTokens.link)
+                Text(b.text, font: .system(size: 15), color: DesignTokens.ink)
+                    .lineSpacing(4)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(welcomeBg, in: RoundedRectangle(cornerRadius: 16))
+        default:
+            VStack(alignment: .leading, spacing: 6) {
+                Text("AI 小石头", font: .system(size: 12, weight: .medium), color: DesignTokens.link)
+                Text(b.text.isEmpty ? "…" : b.text, font: .system(size: 15), color: DesignTokens.ink)
+                    .lineSpacing(4)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(DesignTokens.hairline, lineWidth: 0.5))
+        }
+    }
+
+    private func mockReply(_ q: String) -> String {
+        if q.contains("二手车") {
+            return "二手车入口：首页「二手车」或全部服务 → 二手车（路由 /home/used_car）。需登录后查看车源列表。（mock）"
+        }
+        if q.contains("登录") {
+            return "登录：我的 Tab 点头像/登录，或打开 /auth/login；支持密码与验证码（mock，真微信登录见 gap）。"
+        }
+        if q.contains("数据") {
+            return "数据分析：首页/全部服务 →「数据分析」（/home/data_analytics），登录后可看门店指标。（mock）"
+        }
+        return "关于「\(q)」：我可以指路到二手车、登录、数据分析等业务入口。更多能力接 SSE 后开放。（mock 流）"
     }
 
     private func send(_ prompt: String) {
         let q = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty, !streaming else { return }
-        bubbles.append(("user", q))
+        bubbles.append(AiStreamBubble(id: "u-\(bubbles.count)", role: "user", text: q))
         input = ""
         streaming = true
-        let reply: String
-        if q.contains("二手车") {
-            reply = "二手车入口：首页「二手车」或全部服务 → 二手车（/home/used_car）。（mock）"
-        } else if q.contains("登录") {
-            reply = "登录：我的 Tab 点头像/登录，或打开 /auth/login。（mock）"
-        } else if q.contains("数据") {
-            reply = "数据分析：全部服务 →「数据分析」（/home/data_analytics）。（mock）"
-        } else {
-            reply = "关于「\(q)」：可指路到二手车、登录、数据分析等入口。（mock 流）"
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            bubbles.append(("assistant", reply))
+        stopRequested = false
+        let full = mockReply(q)
+        let id = "a-\(bubbles.count)"
+        bubbles.append(AiStreamBubble(id: id, role: "assistant", text: ""))
+        streamChars(id: id, full: full, index: 1)
+    }
+
+    private func streamChars(id: String, full: String, index: Int) {
+        if stopRequested || index > full.count {
             streaming = false
+            return
+        }
+        if let i = bubbles.firstIndex(where: { $0.id == id }) {
+            bubbles[i].text = String(full.prefix(index))
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.028) {
+            streamChars(id: id, full: full, index: index + 1)
         }
     }
 }
+
 
 struct NativeScanPage: View {
     var onClose: () -> Void
@@ -3325,38 +3403,32 @@ struct NativeQaPage: View {
 
 struct NativePosterPage: View {
     var onClose: () -> Void
-    @State private var picked = 0
     /// Align Compose PosterScreen
     private let templates = ["置换专场", "专卖精选", "估价引流", "到店礼"]
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    private let previewBg = Color(red: 1, green: 0xF3/255, blue: 0xE0/255)
+    private let previewFg = Color(red: 1, green: 0x95/255, blue: 0)
+
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "商家海报", onClose: onClose, dark: false)
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(Array(templates.enumerated()), id: \.offset) { i, name in
+                    ForEach(templates, id: \.self) { name in
                         VStack(spacing: 8) {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(DesignTokens.link.opacity(0.12))
+                            Text(String(name.prefix(2)), font: .system(size: 18, weight: .bold), color: previewFg)
+                                .frame(maxWidth: .infinity)
                                 .frame(height: 120)
-                                .overlay(
-                                    Text(name, font: .system(size: 16, weight: .semibold), color: DesignTokens.link)
-                                )
-                            Text(picked == i ? "已选用" : "选用模板", font: .system(size: 13),
-                                 color: picked == i ? DesignTokens.link : DesignTokens.body)
+                                .background(previewBg, in: RoundedRectangle(cornerRadius: 8))
+                            Text(name, font: .system(size: 13, weight: .medium), color: DesignTokens.ink)
                         }
-                        .padding(10)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(picked == i ? DesignTokens.link : DesignTokens.hairline, lineWidth: picked == i ? 1.5 : 0.5)
-                        )
-                        .onTapGesture { picked = i }
+                        .padding(12)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
                     }
                 }
                 .padding(16)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .background(Color(white: 0.96).ignoresSafeArea())
         }
     }
 }

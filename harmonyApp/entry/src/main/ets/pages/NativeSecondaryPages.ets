@@ -1772,31 +1772,62 @@ export struct NativeAiStreamPane {
   onClose: () => void = () => {};
   @State input: string = '';
   @State streaming: boolean = false;
+  @State stopRequested: boolean = false;
   @State bubbles: string[][] = [
-    ['welcome', '你好，我是 AI 小石头——本 App / 4S 店的业务向导。你可以问「二手车入口在哪」「如何登录」或点下方快捷问。'],
+    ['0', 'welcome', '你好，我是 AI 小石头——本 App / 4S 店的业务向导。你可以问「二手车入口在哪」「如何登录」或点下方快捷问。'],
   ];
   private chips: string[] = ['二手车入口在哪里？', '怎么登录账号？', '数据分析怎么看？'];
 
-  private send(prompt: string): void {
+  private showChips(): boolean {
+    return this.bubbles.length <= 1 && !this.streaming;
+  }
+
+  private mockReply(q: string): string {
+    if (q.includes('二手车')) {
+      return '二手车入口：首页「二手车」或全部服务 → 二手车（路由 /home/used_car）。需登录后查看车源列表。（mock）';
+    }
+    if (q.includes('登录')) {
+      return '登录：我的 Tab 点头像/登录，或打开 /auth/login；支持密码与验证码（mock，真微信登录见 gap）。';
+    }
+    if (q.includes('数据')) {
+      return '数据分析：首页/全部服务 →「数据分析」（/home/data_analytics），登录后可看门店指标。（mock）';
+    }
+    return `关于「${q}」：我可以指路到二手车、登录、数据分析等业务入口。更多能力接 SSE 后开放。（mock 流）`;
+  }
+
+  private send(prompt: string) {
     const q = prompt.trim();
     if (q.length === 0 || this.streaming) {
       return;
     }
-    this.bubbles = [...this.bubbles, ['user', q]];
+    this.bubbles = this.bubbles.concat([[`u-${this.bubbles.length}`, 'user', q]]);
     this.input = '';
     this.streaming = true;
-    let reply = `关于「${q}」：可指路到二手车、登录、数据分析等入口。（mock 流）`;
-    if (q.indexOf('二手车') >= 0) {
-      reply = '二手车入口：首页「二手车」或全部服务 → 二手车（/home/used_car）。（mock）';
-    } else if (q.indexOf('登录') >= 0) {
-      reply = '登录：我的 Tab 点头像/登录，或打开 /auth/login。（mock）';
-    } else if (q.indexOf('数据') >= 0) {
-      reply = '数据分析：全部服务 →「数据分析」（/home/data_analytics）。（mock）';
-    }
-    setTimeout(() => {
-      this.bubbles = [...this.bubbles, ['assistant', reply]];
+    this.stopRequested = false;
+    const full = this.mockReply(q);
+    const id = `a-${this.bubbles.length}`;
+    this.bubbles = this.bubbles.concat([[id, 'assistant', '']]);
+    this.streamChars(id, full, 1);
+  }
+
+  private streamChars(id: string, full: string, index: number) {
+    if (this.stopRequested || index > full.length) {
       this.streaming = false;
-    }, 350);
+      return;
+    }
+    const next: string[][] = [];
+    for (let i = 0; i < this.bubbles.length; i++) {
+      const b = this.bubbles[i];
+      if (b[0] === id) {
+        next.push([b[0], b[1], full.substring(0, index)]);
+      } else {
+        next.push(b);
+      }
+    }
+    this.bubbles = next;
+    setTimeout(() => {
+      this.streamChars(id, full, index + 1);
+    }, 28);
   }
 
   build() {
@@ -1805,63 +1836,106 @@ export struct NativeAiStreamPane {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
         Text('AI 小石头').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+        if (this.streaming) {
+          Text('停止')
+            .fontSize(15)
+            .fontColor('#E53935')
+            .onClick(() => { this.stopRequested = true; })
+        }
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
 
-      List() {
-        ForEach(this.bubbles, (b: string[], i: number) => {
-          ListItem() {
-            Row() {
-              if (b[0] === 'user') {
+      Scroll() {
+        Column({ space: 10 }) {
+          Blank().height(10)
+          ForEach(this.bubbles, (b: string[]) => {
+            if (b[1] === 'user') {
+              Row() {
                 Blank().layoutWeight(1)
+                Text(b[2])
+                  .fontSize(15)
+                  .fontColor(Color.White)
+                  .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+                  .backgroundColor(DesignTokens.link)
+                  .borderRadius(16)
+              }.width('100%')
+            } else if (b[1] === 'welcome') {
+              Column({ space: 6 }) {
+                Text('AI 小石头').fontSize(12).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+                Text(b[2]).fontSize(15).fontColor(DesignTokens.ink)
               }
-              Text(b[1])
-                .fontSize(15)
-                .fontColor(b[0] === 'user' ? Color.White : DesignTokens.ink)
-                .padding(12)
-                .backgroundColor(b[0] === 'user' ? DesignTokens.link : DesignTokens.canvas)
-                .borderRadius(12)
-                .constraintSize({ maxWidth: '75%' })
-              if (b[0] === 'assistant') {
-                Blank().layoutWeight(1)
-              }
-            }.padding({ left: 16, right: 16, top: 6, bottom: 6 }).width('100%')
-          }
-        }, (b: string[], i: number) => `${i}_${b[0]}`)
-      }.layoutWeight(1).width('100%').backgroundColor(DesignTokens.canvasSoft2)
-
-      Scroll().scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off) {
-        Row({ space: 8 }) {
-          ForEach(this.chips, (chip: string) => {
-            Text(chip)
-              .fontSize(13).fontColor(DesignTokens.link)
-              .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-              .backgroundColor('#1A0070F3')
+              .alignItems(HorizontalAlign.Start)
+              .padding(14)
+              .width('92%')
+              .backgroundColor('#E8F0FE')
               .borderRadius(16)
-              .onClick(() => this.send(chip))
-          })
-        }.padding({ left: 16, right: 16, top: 8, bottom: 8 })
-      }.width('100%')
+            } else {
+              Column({ space: 6 }) {
+                Text('AI 小石头').fontSize(12).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+                Text(b[2].length === 0 ? '…' : b[2]).fontSize(15).fontColor(DesignTokens.ink)
+              }
+              .alignItems(HorizontalAlign.Start)
+              .padding(14)
+              .width('92%')
+              .backgroundColor(Color.White)
+              .border({ width: 0.5, color: DesignTokens.hairline })
+              .borderRadius(16)
+            }
+          }, (b: string[]) => b[0])
+          Blank().height(8)
+        }.padding({ left: 14, right: 14 }).width('100%')
+      }.layoutWeight(1).width('100%').backgroundColor('#F5F5F5')
+
+      if (this.showChips()) {
+        Scroll() {
+          Row({ space: 8 }) {
+            ForEach(this.chips, (chip: string) => {
+              Text(chip)
+                .fontSize(13)
+                .fontColor(DesignTokens.body)
+                .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+                .backgroundColor(Color.White)
+                .border({ width: 0.5, color: DesignTokens.hairline })
+                .borderRadius(16)
+                .onClick(() => this.send(chip))
+            })
+          }.padding({ left: 14, right: 14 })
+        }
+        .scrollable(ScrollDirection.Horizontal)
+        .scrollBar(BarState.Off)
+        .width('100%')
+        .margin({ bottom: 10 })
+      }
 
       Row({ space: 10 }) {
-        TextInput({ placeholder: '输入问题…', text: this.input })
-          .layoutWeight(1).height(40)
-          .backgroundColor(DesignTokens.canvas).borderRadius(20)
+        TextInput({
+          placeholder: this.streaming ? '生成中，请稍候…' : '输入问题…',
+          text: this.input,
+        })
+          .layoutWeight(1)
+          .height(40)
+          .enabled(!this.streaming)
+          .backgroundColor('#F5F5F5')
+          .borderRadius(20)
           .padding({ left: 12, right: 12 })
           .onChange((v: string) => { this.input = v; })
-        if (this.streaming) {
-          Text('停止').fontSize(14).fontColor(DesignTokens.link)
-            .onClick(() => { this.streaming = false; })
-        } else {
-          Text('发送')
-            .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
-            .padding({ left: 14, right: 14, top: 10, bottom: 10 })
-            .backgroundColor(DesignTokens.link).borderRadius(20)
-            .onClick(() => this.send(this.input))
-        }
-      }.padding(12).width('100%').backgroundColor(DesignTokens.canvas)
+        Button('发送')
+          .fontSize(14)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(Color.White)
+          .backgroundColor(
+            (this.streaming || this.input.trim().length === 0) ? DesignTokens.mute : DesignTokens.link
+          )
+          .borderRadius(20)
+          .enabled(!(this.streaming || this.input.trim().length === 0))
+          .onClick(() => this.send(this.input))
+      }
+      .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+      .width('100%')
+      .backgroundColor(Color.White)
     }
     .width('100%')
     .height('100%')
+    .backgroundColor('#F5F5F5')
   }
 }
 
@@ -3348,52 +3422,45 @@ export struct NativeQaPane {
 @Component
 export struct NativePosterPane {
   onClose: () => void = () => {};
-  @State picked: number = 0;
   private templates: string[] = ['置换专场', '专卖精选', '估价引流', '到店礼'];
 
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('商家海报').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Text('商家海报').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
 
-      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
-        ForEach(this.templates, (name: string, i: number) => {
-          Column({ space: 8 }) {
-            Column() {
-              Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+      Scroll() {
+        Flex({ wrap: FlexWrap.Wrap }) {
+          ForEach(this.templates, (name: string) => {
+            Column({ space: 8 }) {
+              Text(name.substring(0, 2))
+                .fontSize(18)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#FF9500')
+                .width('100%')
+                .height(120)
+                .textAlign(TextAlign.Center)
+                .backgroundColor('#FFF3E0')
+                .borderRadius(8)
+              Text(name).fontSize(13).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
             }
-            .width('100%').height(120)
-            .justifyContent(FlexAlign.Center)
-            .backgroundColor('#1A0070F3')
-            .borderRadius(10)
-            Text(this.picked === i ? '已选用' : '选用模板')
-              .fontSize(13)
-              .fontColor(this.picked === i ? DesignTokens.link : DesignTokens.body)
-          }
-          .width('48%')
-          .padding(10)
-          .margin({ bottom: 12 })
-          .backgroundColor(DesignTokens.canvas)
-          .borderRadius(12)
-          .border({
-            width: this.picked === i ? 1.5 : 0.5,
-            color: this.picked === i ? DesignTokens.link : DesignTokens.hairline,
+            .padding(12)
+            .width('47%')
+            .margin({ right: '3%', bottom: 12 })
+            .backgroundColor(Color.White)
+            .borderRadius(12)
           })
-          .onClick(() => { this.picked = i; })
-        }, (name: string, i: number) => `${name}-${i}`)
-      }
-      .padding(16)
-      .layoutWeight(1)
-      .width('100%')
+        }.padding(16).width('100%')
+      }.layoutWeight(1).width('100%')
     }
-    .width('100%').height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F5F5F5')
   }
 }
-
 
 @Component
 export struct NativeBusinessPane {
