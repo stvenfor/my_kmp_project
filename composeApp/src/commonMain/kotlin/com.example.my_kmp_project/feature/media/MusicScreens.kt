@@ -3,27 +3,29 @@ package com.example.my_kmp_project.feature.media
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import kotlin.random.Random
 
 private data class MockTrack(
     val id: String,
@@ -54,50 +57,92 @@ internal fun MusicListScreen(
     onOpenNowPlaying: (() -> Unit)? = null,
 ) {
     val tracks = remember { FlutterTracks }
+    val sessionActive = MusicSession.isActive
+    val miniInset = if (sessionActive) 64.dp else 0.dp
+
+    fun playAt(index: Int) {
+        val track = tracks[index]
+        MusicSession.start(track.title, track.artist)
+        onOpenNowPlaying?.invoke()
+    }
 
     ReportMainTabRoot(isRoot = false)
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "音频列表", onBack = onBack, containerColor = Color.White)
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items(tracks, key = { it.id }) { track ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            MusicSession.start(track.title, track.artist)
-                            if (onOpenNowPlaying != null) onOpenNowPlaying()
-                            else {
-                                /* stay on list; mini player / session active */
-                            }
-                        },
-                    colors = CardDefaults.cardColors(containerColor = DemoColors.Background),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = track.title,
-                            color = DemoColors.TextPrimary,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = track.artist,
-                            color = DemoColors.Muted,
-                            fontSize = 12.sp,
-                        )
+        Column(Modifier.fillMaxSize()) {
+            MineTopBar(
+                title = "音频列表",
+                onBack = onBack,
+                containerColor = Color.White,
+                actions = {
+                    if (sessionActive && onOpenNowPlaying != null) {
+                        TextButton(onClick = onOpenNowPlaying) {
+                            Text("Now Playing", color = DemoColors.Primary, fontSize = 14.sp)
+                        }
+                    }
+                },
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(bottom = miniInset),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(tracks, key = { it.id }) { track ->
+                    val index = tracks.indexOf(track)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { playAt(index) },
+                        colors = CardDefaults.cardColors(containerColor = DemoColors.Background),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = track.title,
+                                color = DemoColors.TextPrimary,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "By ${track.artist}",
+                                color = DemoColors.Muted,
+                                fontSize = 12.sp,
+                            )
+                        }
                     }
                 }
             }
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(end = 16.dp, bottom = miniInset + 16.dp)
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(DemoColors.Primary)
+                .clickable {
+                    playAt(Random.nextInt(tracks.size))
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("🔀", fontSize = 22.sp)
+        }
+
+        if (sessionActive) {
+            MiniPlayerBar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding(),
+                onOpenNowPlaying = onOpenNowPlaying,
+            )
         }
     }
 }
