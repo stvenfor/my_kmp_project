@@ -1600,9 +1600,9 @@ struct NativeAiStreamPage: View {
     @State private var input = ""
     @State private var streaming = false
     @State private var bubbles: [(String, String)] = [
-        ("assistant", "你好，我是小石头。有什么想问的？"),
+        ("welcome", "你好，我是 AI 小石头——本 App / 4S 店的业务向导。你可以问「二手车入口在哪」「如何登录」或点下方快捷问。"),
     ]
-    private let chips = ["今日学习建议", "语法纠错", "口语话题"]
+    private let chips = ["二手车入口在哪里？", "怎么登录账号？", "数据分析怎么看？"]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -1649,7 +1649,7 @@ struct NativeAiStreamPage: View {
             }
 
             HStack(spacing: 10) {
-                TextField("问问小石头…", text: $input)
+                TextField("输入问题…", text: $input)
                     .padding(.horizontal, 12)
                     .frame(height: 40)
                     .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 20))
@@ -1676,7 +1676,16 @@ struct NativeAiStreamPage: View {
         bubbles.append(("user", q))
         input = ""
         streaming = true
-        let reply = "关于「\(q)」：建议每天跟读 15 分钟，并记录生词。（mock 流）"
+        let reply: String
+        if q.contains("二手车") {
+            reply = "二手车入口：首页「二手车」或全部服务 → 二手车（/home/used_car）。（mock）"
+        } else if q.contains("登录") {
+            reply = "登录：我的 Tab 点头像/登录，或打开 /auth/login。（mock）"
+        } else if q.contains("数据") {
+            reply = "数据分析：全部服务 →「数据分析」（/home/data_analytics）。（mock）"
+        } else {
+            reply = "关于「\(q)」：可指路到二手车、登录、数据分析等入口。（mock 流）"
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             bubbles.append(("assistant", reply))
             streaming = false

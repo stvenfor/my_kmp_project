@@ -63,7 +63,9 @@ internal object MembershipTokens {
 
 internal object MembershipCatalog {
     val statusExpired = "您的会员身份已过期"
-    val displayName = "会员用户"
+    /** Flutter membership_mock_data display name */
+    val displayName = "小趣友腻腻"
+    const val DeductionAmount = 12.0
 
     val svipPlans = listOf(
         MembershipPlan(

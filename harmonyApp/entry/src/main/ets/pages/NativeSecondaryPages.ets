@@ -1612,9 +1612,9 @@ export struct NativeAiStreamPane {
   @State input: string = '';
   @State streaming: boolean = false;
   @State bubbles: string[][] = [
-    ['assistant', '你好，我是小石头。有什么想问的？'],
+    ['welcome', '你好，我是 AI 小石头——本 App / 4S 店的业务向导。你可以问「二手车入口在哪」「如何登录」或点下方快捷问。'],
   ];
-  private chips: string[] = ['今日学习建议', '语法纠错', '口语话题'];
+  private chips: string[] = ['二手车入口在哪里？', '怎么登录账号？', '数据分析怎么看？'];
 
   private send(prompt: string): void {
     const q = prompt.trim();
@@ -1624,7 +1624,14 @@ export struct NativeAiStreamPane {
     this.bubbles = [...this.bubbles, ['user', q]];
     this.input = '';
     this.streaming = true;
-    const reply = `关于「${q}」：建议每天跟读 15 分钟，并记录生词。（mock 流）`;
+    let reply = `关于「${q}」：可指路到二手车、登录、数据分析等入口。（mock 流）`;
+    if (q.indexOf('二手车') >= 0) {
+      reply = '二手车入口：首页「二手车」或全部服务 → 二手车（/home/used_car）。（mock）';
+    } else if (q.indexOf('登录') >= 0) {
+      reply = '登录：我的 Tab 点头像/登录，或打开 /auth/login。（mock）';
+    } else if (q.indexOf('数据') >= 0) {
+      reply = '数据分析：全部服务 →「数据分析」（/home/data_analytics）。（mock）';
+    }
     setTimeout(() => {
       this.bubbles = [...this.bubbles, ['assistant', reply]];
       this.streaming = false;
@@ -1675,7 +1682,7 @@ export struct NativeAiStreamPane {
       }.width('100%')
 
       Row({ space: 10 }) {
-        TextInput({ placeholder: '问问小石头…', text: this.input })
+        TextInput({ placeholder: '输入问题…', text: this.input })
           .layoutWeight(1).height(40)
           .backgroundColor(DesignTokens.canvas).borderRadius(20)
           .padding({ left: 12, right: 12 })

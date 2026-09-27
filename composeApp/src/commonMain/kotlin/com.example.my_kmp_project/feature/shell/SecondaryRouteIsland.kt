@@ -19,6 +19,7 @@ import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.router.AppRoutePath
+import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.feature.chat.ChatScreen
 import com.example.my_kmp_project.feature.community.CommunityRouteHost
@@ -116,7 +117,17 @@ fun SecondaryRouteIsland(
             ScanScreen(
                 onBack = ::pop,
                 onScanResult = { payload ->
-                    if (payload.startsWith("http")) navigate(payload)
+                    when {
+                        payload.startsWith("http://") || payload.startsWith("https://") ->
+                            navigate(payload)
+                        else -> {
+                            val deeplink = DeepLinkRouter.parse(payload)
+                            when {
+                                deeplink != null -> navigate(deeplink.route)
+                                payload.startsWith("/") -> navigate(payload)
+                            }
+                        }
+                    }
                 },
             )
         route == AppRoutePath.web || route.startsWith("http://") || route.startsWith("https://") ->

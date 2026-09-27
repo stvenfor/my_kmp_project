@@ -66,10 +66,20 @@ internal fun MembershipScreen(
     var selectedPlanId by remember(tier) { mutableStateOf(plans.first().id) }
     val available = remember(gateway) { gateway.availableChannels() }
     var statusMessage by remember { mutableStateOf<String?>(null) }
+    var agreedToTerms by remember { mutableStateOf(false) }
+    var useDeduction by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
     val promo = MembershipCatalog.promoFor(tier)
     val accent = if (tier == MembershipTier.Svip) MembershipTokens.SvipAccent else MembershipTokens.AiAccent
+    val selectedPlan = plans.firstOrNull { it.id == selectedPlanId } ?: plans.first()
+    val payable = (selectedPlan.price - if (useDeduction) MembershipCatalog.DeductionAmount else 0.0)
+        .coerceAtLeast(0.0)
 
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MembershipTokens.PageBg),
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,7 +90,7 @@ internal fun MembershipScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp),
+                .padding(bottom = 120.dp),
         ) {
             Box(
                 modifier = Modifier
@@ -183,6 +193,34 @@ internal fun MembershipScreen(
                         onClick = { selectedPlanId = plan.id },
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { useDeduction = !useDeduction }
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = if (useDeduction) "☑" else "☐",
+                    color = accent,
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "剩余会员天数可抵扣",
+                    color = MembershipTokens.TitleBlack,
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = "-¥${MembershipCatalog.DeductionAmount.toInt()}",
+                    color = MembershipTokens.BeanOrange,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
 
             if (tier == MembershipTier.AiSvip) {
@@ -295,9 +333,42 @@ internal fun MembershipScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(MembershipTokens.CardWhite)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { agreedToTerms = !agreedToTerms },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = if (agreedToTerms) "☑" else "☐",
+                    color = accent,
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "已阅读并同意《iHome会员协议》《iHome自动续费协议》",
+                    color = MembershipTokens.TextGray,
+                    fontSize = 11.sp,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = {
+                    if (!agreedToTerms) {
+                        statusMessage = "请先同意会员协议"
+                        return@Button
+                    }
                     scope.launch {
                         val channel = available.firstOrNull()
                         statusMessage = if (channel == null) {
@@ -315,7 +386,6 @@ internal fun MembershipScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = accent,
@@ -323,7 +393,11 @@ internal fun MembershipScreen(
                 ),
                 shape = RoundedCornerShape(24.dp),
             ) {
-                Text("立即开通", fontWeight = FontWeight.SemiBold)
+                Text(
+                    "¥${"%.2f".format(payable)} 立即开通",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                )
             }
         }
     }
