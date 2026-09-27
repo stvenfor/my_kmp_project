@@ -3028,32 +3028,59 @@ export struct NativeAfterSalesPane {
 @Component
 export struct NativeLedgerPane {
   onClose: () => void = () => {};
-  private metrics: string[][] = [
-    ['9 月销售额', '¥ 2,860,000'],
-    ['毛利率', '18.6%'],
-    ['库存周转', '42 天'],
-    ['售后产值', '¥ 486,000'],
+  onOpen: (path: string) => void = (_p: string) => {};
+  // type, category, amount, date, note
+  private items: string[][] = [
+    ['收入', '新车定金', '¥ 5000.00', '2026-09-24', '星越L 意向金'],
+    ['支出', '售后配件', '¥ 1280.50', '2026-09-23', '工单 AS-441'],
+    ['收入', '二手车过户费', '¥ 1.26 万', '2026-09-22', ''],
   ];
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('台账').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('收支').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      Grid() {
-        ForEach(this.metrics, (m: string[]) => {
-          GridItem() {
-            Column({ space: 8 }) {
-              Text(m[0]).fontSize(13).fontColor(DesignTokens.body)
-              Text(m[1]).fontSize(20).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            }.alignItems(HorizontalAlign.Start).padding(16).width('100%')
-            .backgroundColor(DesignTokens.canvas).borderRadius(12)
-          }
-        })
-      }.columnsTemplate('1fr 1fr').columnsGap(12).rowsGap(12).padding(16).width('100%')
-      Blank().layoutWeight(1)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
+
+      if (this.items.length === 0) {
+        Column() {
+          Blank().layoutWeight(1)
+          Text('暂无收支记录').fontSize(15).fontColor(DesignTokens.mute)
+          Blank().layoutWeight(1)
+        }.width('100%').layoutWeight(1)
+      } else {
+        List() {
+          ForEach(this.items, (item: string[], i: number) => {
+            ListItem() {
+              Row() {
+                Column() {
+                  Row({ space: 8 }) {
+                    Text(item[0]).fontSize(11).fontWeight(FontWeight.Medium)
+                      .fontColor(item[0] === '收入' ? '#2E7D32' : '#C62828')
+                      .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                      .backgroundColor(item[0] === '收入' ? '#E8F5E9' : '#FFEBEE')
+                      .borderRadius(4)
+                    Text(item[1]).fontSize(16).fontWeight(FontWeight.Medium).fontColor('#1A1A1A').maxLines(1)
+                  }
+                  Text(item[2]).fontSize(22).fontWeight(FontWeight.Bold).fontColor('#1A1A1A').margin({ top: 12 })
+                  Row({ space: 12 }) {
+                    Text(item[3]).fontSize(13).fontColor('#757575')
+                    if (item[4].length > 0) {
+                      Text(item[4]).fontSize(13).fontColor('#9E9E9E').maxLines(1).layoutWeight(1)
+                    }
+                  }.margin({ top: 10 }).width('100%')
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                Text('›').fontSize(22).fontColor('#BDBDBD')
+              }
+              .width('100%').padding(16)
+              .backgroundColor(Color.White).borderRadius(12)
+              .onClick(() => this.onOpen('/home/ledger/detail'))
+            }.padding({ left: 16, right: 16, bottom: 12 })
+          }, (item: string[], i: number) => `l_${i}_${item[1]}`)
+        }.layoutWeight(1).width('100%').padding({ top: 12, bottom: 24 })
+      }
+    }.width('100%').height('100%').backgroundColor('#FFF5F6F8')
   }
 }
 

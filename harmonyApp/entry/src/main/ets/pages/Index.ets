@@ -2015,7 +2015,13 @@ struct Index {
       }
 
       if (this.nativePane === 'ledger') {
-        NativeLedgerPane({ onClose: (): void => { this.nativePane = ''; } })
+        NativeLedgerPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
       }
 
       if (this.nativePane === 'sms_template') {

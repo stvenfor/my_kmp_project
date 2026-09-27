@@ -266,9 +266,10 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('3', '爱冒险的朵拉', '热度22007', '3'),
       ], '');
     case '/home/ledger':
-      return page(path, '台账', '公司经营数据', [
-        row('1', '9 月销售额', '¥ 2,860,000'),
-        row('2', '毛利率', '18.6%'),
+      return page(path, '收支', '个人收支记录', [
+        row('1', '新车定金', '收入 · ¥ 5000.00 · 2026-09-24', '收入'),
+        row('2', '售后配件', '支出 · ¥ 1280.50 · 2026-09-23', '支出'),
+        row('3', '二手车过户费', '收入 · ¥ 1.26 万 · 2026-09-22', '收入'),
       ], '');
     case '/home/todo/partner-pending':
       return page(path, '新伙伴待确认', '3 位新成员', [

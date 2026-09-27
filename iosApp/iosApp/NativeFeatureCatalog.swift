@@ -214,9 +214,10 @@ enum NativeFeatureCatalog {
             ], primaryAction: nil)
         },
         "/home/ledger": {
-            .init(id: "/home/ledger", title: "台账", subtitle: "公司经营数据", rows: [
-                .init(id: "1", title: "9 月销售额", detail: "¥ 2,860,000", badge: nil),
-                .init(id: "2", title: "毛利率", detail: "18.6%", badge: nil),
+            .init(id: "/home/ledger", title: "收支", subtitle: "个人收支记录", rows: [
+                .init(id: "1", title: "新车定金", detail: "收入 · ¥ 5000.00 · 2026-09-24", badge: "收入"),
+                .init(id: "2", title: "售后配件", detail: "支出 · ¥ 1280.50 · 2026-09-23", badge: "支出"),
+                .init(id: "3", title: "二手车过户费", detail: "收入 · ¥ 1.26 万 · 2026-09-22", badge: "收入"),
             ], primaryAction: nil)
         },
         "/home/todo/partner-pending": {
@@ -531,7 +532,7 @@ struct NativeFeatureHost: View {
         } else if path == "/home/after_sales" {
             NativeAfterSalesPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/ledger" {
-            NativeLedgerPage(onClose: onClose)
+            NativeLedgerPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/mine/sms_template" {
             NativeSmsTemplatePage(onClose: onClose)
         } else if path == "/mine/store_qr" {

@@ -3025,31 +3025,62 @@ struct NativeAfterSalesPage: View {
 
 struct NativeLedgerPage: View {
     var onClose: () -> Void
-    private let metrics: [(String, String)] = [
-        ("9 月销售额", "¥ 2,860,000"),
-        ("毛利率", "18.6%"),
-        ("库存周转", "42 天"),
-        ("售后产值", "¥ 486,000"),
+    var onOpen: ((String) -> Void)? = nil
+    /// Align Compose HomeSecondaryMock.ledger / Flutter LedgerListPage
+    private let items: [(type: String, category: String, amount: String, date: String, note: String)] = [
+        ("收入", "新车定金", "¥ 5000.00", "2026-09-24", "星越L 意向金"),
+        ("支出", "售后配件", "¥ 1280.50", "2026-09-23", "工单 AS-441"),
+        ("收入", "二手车过户费", "¥ 1.26 万", "2026-09-22", ""),
     ]
     var body: some View {
         VStack(spacing: 0) {
-            navBar(title: "台账", onClose: onClose, dark: false)
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(Array(metrics.enumerated()), id: \.offset) { _, m in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(m.0, font: .system(size: 13), color: DesignTokens.body)
-                            Text(m.1, font: .system(size: 20, weight: .semibold), color: DesignTokens.ink)
+            navBar(title: "收支", onClose: onClose, dark: false)
+            if items.isEmpty {
+                Spacer()
+                Text("暂无收支记录", font: .system(size: 15), color: DesignTokens.mute)
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                            HStack(alignment: .top) {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    HStack(spacing: 8) {
+                                        Text(item.type, font: .system(size: 11, weight: .semibold),
+                                              color: item.type == "收入" ? Color(red: 0.18, green: 0.49, blue: 0.20) : Color(red: 0.776, green: 0.157, blue: 0.157))
+                                            .padding(.horizontal, 8).padding(.vertical, 3)
+                                            .background(
+                                                item.type == "收入" ? Color(red: 0.91, green: 0.961, blue: 0.914) : Color(red: 1, green: 0.922, blue: 0.933),
+                                                in: RoundedRectangle(cornerRadius: 4)
+                                            )
+                                        Text(item.category, font: .system(size: 16, weight: .semibold), color: Color(red: 0.102, green: 0.102, blue: 0.102))
+                                            .lineLimit(1)
+                                    }
+                                    Text(item.amount, font: .system(size: 22, weight: .bold), color: Color(red: 0.102, green: 0.102, blue: 0.102))
+                                        .padding(.top, 12)
+                                    HStack(spacing: 12) {
+                                        Text(item.date, font: .system(size: 13), color: Color(white: 0.46))
+                                        if !item.note.isEmpty {
+                                            Text(item.note, font: .system(size: 13), color: Color(white: 0.62))
+                                                .lineLimit(1)
+                                        }
+                                    }
+                                    .padding(.top, 10)
+                                }
+                                Spacer(minLength: 8)
+                                Text("›", font: .system(size: 22), color: Color(white: 0.74))
+                            }
+                            .padding(16)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                            .padding(.horizontal, 16)
+                            .onTapGesture { onOpen?("/home/ledger/detail") }
                         }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
                     }
+                    .padding(.top, 12).padding(.bottom, 24)
                 }
-                .padding(16)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
         }
+        .background(Color(red: 0.961, green: 0.965, blue: 0.973).ignoresSafeArea())
     }
 }
 
