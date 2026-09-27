@@ -957,6 +957,9 @@ struct Index {
     if (route === '/ai/stream') {
       return true;
     }
+    if (route === '/friend' || route.indexOf('/friend/') === 0) {
+      return true;
+    }
     return false;
   }
 
@@ -1929,7 +1932,13 @@ struct Index {
       }
 
       if (this.nativePane === 'scan') {
-        NativeScanPane({ onClose: (): void => { this.nativePane = ''; } })
+        NativeScanPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
       }
 
       if (this.nativePane === 'strategy') {

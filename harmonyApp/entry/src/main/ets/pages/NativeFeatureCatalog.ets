@@ -110,8 +110,29 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['关于', '/mine/about'],
 ]);
 
+/** Align with DeepLinkRouter.extractPath: `myai://mall/orders` → `/mall/orders`. */
+function stripSchemeToPath(raw: string): string {
+  let candidate = raw.trim();
+  const sep = candidate.indexOf('://');
+  if (sep >= 0) {
+    candidate = candidate.substring(sep + 3);
+    if (!candidate.startsWith('/')) {
+      candidate = `/${candidate}`;
+    }
+  }
+  const q = candidate.indexOf('?');
+  if (q >= 0) {
+    candidate = candidate.substring(0, q);
+  }
+  const hash = candidate.indexOf('#');
+  if (hash >= 0) {
+    candidate = candidate.substring(0, hash);
+  }
+  return candidate;
+}
+
 export function resolveNativePath(raw: string): string {
-  const key = raw.trim();
+  const key = stripSchemeToPath(raw);
   if (key.length === 0) {
     return key;
   }

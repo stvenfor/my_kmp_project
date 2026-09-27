@@ -212,6 +212,7 @@ struct ContentView: View {
         if route == "/mine/profile" { return true }
         if route == "/video/short" { return true }
         if route == "/ai/stream" { return true }
+        if route == "/friend" || route.hasPrefix("/friend/") { return true }
         return false
     }
 

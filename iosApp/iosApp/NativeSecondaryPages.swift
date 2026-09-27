@@ -1518,43 +1518,53 @@ struct NativeShortVideoPage: View {
 struct NativeLivePage: View {
     var onClose: () -> Void
     @State private var roomId: String? = nil
-    private let rooms: [(String, String, String, String)] = [
-        ("1", "沃德龙鼎直播间", "在线 326 · 讲解新车", "直播中"),
-        ("2", "售后讲堂", "预约 88 · 明天 19:00", "预约"),
-        ("3", "二手车清库", "回放 · 观看 8.6k", "回放"),
+    @State private var joined = false
+    @State private var signals: [String] = ["state: idle"]
+    /// Align Compose LiveMockData
+    private let rooms: [(String, String, String)] = [
+        ("mock_room_001", "晚间答疑直播", "主播 · 小智"),
+        ("mock_room_002", "口语陪练公开课", "主播 · 阿语"),
+        ("mock_room_003", "周末分享会", "主播 · Demo"),
     ]
 
     var body: some View {
         if let id = roomId, let room = rooms.first(where: { $0.0 == id }) {
-            ZStack {
-                Color.black.ignoresSafeArea()
-                VStack {
-                    Spacer()
-                    Text(room.1, font: .system(size: 20, weight: .semibold), color: .white)
-                    Text("直播画面（mock）", font: .system(size: 14), color: .white.opacity(0.7))
-                        .padding(.top, 8)
-                    Spacer()
-                    Text("进入直播间 · 推流通道见 gap registry", font: .system(size: 12), color: .white.opacity(0.5))
-                        .padding(.bottom, 32)
-                }
-                VStack {
-                    HStack {
-                        Button {
-                            roomId = nil
-                        } label: {
-                            Image(systemName: "chevron.left").foregroundStyle(.white)
-                        }
-                        Text(room.1, font: .system(size: 17, weight: .semibold), color: .white)
-                        Spacer()
-                        Text(room.3, font: .system(size: 12, weight: .medium), color: .white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.red.opacity(0.8), in: Capsule())
+            VStack(spacing: 0) {
+                navBar(title: "直播 \(room.0)", onClose: { roomId = nil; joined = false; signals = ["state: idle"] }, dark: false)
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(DesignTokens.canvasSoft2)
+                    .frame(height: 180)
+                    .overlay(
+                        Text(joined ? "WS: connected · paused 保持连接" : "WS: disconnected",
+                             font: .system(size: 15), color: DesignTokens.ink)
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(room.2, font: .system(size: 14), color: DesignTokens.body)
+                    Text("信令（上限 30）", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                    ForEach(signals.suffix(30), id: \.self) { line in
+                        Text(line, font: .system(size: 12), color: DesignTokens.mute)
                     }
-                    .padding(16)
-                    Spacer()
+                    Button("发送 Mock 信令 live.join") {
+                        joined = true
+                        signals = Array((signals + ["signal: live.join payload={room=\(room.0)}"]).suffix(30))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+                    .frame(maxWidth: .infinity)
+                    Button("退订 liveSignal") {
+                        joined = false
+                        signals = signals + ["state: left"]
+                    }
+                    .buttonStyle(.bordered)
+                    Text("Realtime SDK 未接入；本页 mock 信令列表。", font: .system(size: 12), color: DesignTokens.mute)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                Spacer()
             }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
         } else {
             VStack(spacing: 0) {
                 navBar(title: "直播", onClose: onClose, dark: false)
@@ -1565,24 +1575,19 @@ struct NativeLivePage: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         ForEach(rooms, id: \.0) { room in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(room.1, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                                    Text(room.2, font: .system(size: 13), color: DesignTokens.body)
-                                }
-                                Spacer()
-                                Text(room.3, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(room.1, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                Text(room.2, font: .system(size: 12), color: DesignTokens.mute)
                             }
-                            .padding(16)
-                            .background(DesignTokens.canvas)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .contentShape(Rectangle())
                             .onTapGesture { roomId = room.0 }
                             Divider().overlay(DesignTokens.hairline)
                         }
                     }
-                    .padding(16)
+                    .padding(.top, 8)
                 }
                 .background(DesignTokens.canvasSoft2.ignoresSafeArea())
             }
@@ -1681,38 +1686,73 @@ struct NativeAiStreamPage: View {
 
 struct NativeScanPage: View {
     var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
     @State private var result: String? = nil
+    @State private var torchOn = false
+    /// Flutter WysScanConfig.borderColor ARGB(255, 255, 20, 147)
+    private let pink = Color(red: 1, green: 20/255, blue: 147/255)
 
     var body: some View {
         VStack(spacing: 0) {
-            navBar(title: "扫一扫", onClose: onClose, dark: false)
             if let result {
+                navBar(title: "扫一扫", onClose: onClose, dark: false)
                 VStack(alignment: .leading, spacing: 12) {
                     Text("扫码结果", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
                     Text(result, font: .system(size: 15), color: DesignTokens.link)
+                        .textSelection(.enabled)
+                    Button("打开结果") {
+                        onOpen?(result)
+                        onClose()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
                     Button("继续扫码") { self.result = nil }
-                        .buttonStyle(.borderedProminent)
-                        .tint(DesignTokens.link)
+                        .foregroundStyle(DesignTokens.link)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(16)
                 Spacer()
+                    .background(DesignTokens.canvasSoft2)
             } else {
                 ZStack {
-                    Color.black.ignoresSafeArea(edges: .bottom)
-                    VStack(spacing: 24) {
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(DesignTokens.link, lineWidth: 2)
-                            .frame(width: 220, height: 220)
+                    Color.black.ignoresSafeArea()
+                    VStack(spacing: 0) {
+                        HStack {
+                            Button { onClose() } label: {
+                                Text("‹", font: .system(size: 28), color: .white)
+                                    .frame(width: 44, alignment: .leading)
+                            }
+                            Text("扫一扫", font: .system(size: 15), color: .white)
+                                .frame(maxWidth: .infinity)
+                            Button { torchOn.toggle() } label: {
+                                Image(systemName: torchOn ? "flashlight.on.fill" : "flashlight.off.fill")
+                                    .foregroundStyle(.white)
+                                    .frame(width: 44, height: 44)
+                            }
+                        }
+                        .padding(.horizontal, 8)
+                        .frame(height: 44)
+
+                        Spacer()
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(pink, lineWidth: 3)
+                            .frame(width: 280, height: 280)
                             .overlay(
-                                Text("将二维码放入框内", font: .system(size: 13), color: .white.opacity(0.8))
+                                Rectangle()
+                                    .fill(pink.opacity(0.85))
+                                    .frame(height: 2)
+                                    .padding(.horizontal, 8)
                             )
-                        Text("用于门店收款码 / 活动核销", font: .system(size: 13), color: .white.opacity(0.6))
+                        Text("将二维码放入框内，即可自动扫码", font: .system(size: 14), color: .white.opacity(0.9))
+                            .padding(.top, 20)
+                        Spacer()
                         Button("模拟扫码成功") {
-                            result = "myai://mall/orders?id=A1024"
+                            let payload = "myai://mall/orders?id=A1024"
+                            result = payload
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(DesignTokens.link)
+                        .tint(pink)
+                        .padding(.bottom, 40)
                     }
                 }
             }
@@ -1720,7 +1760,6 @@ struct NativeScanPage: View {
         .background(DesignTokens.canvasSoft2.ignoresSafeArea())
     }
 }
-
 
 struct NativeStrategyPage: View {
     var onClose: () -> Void

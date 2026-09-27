@@ -1505,92 +1505,104 @@ export struct NativeShortVideoPane {
 export struct NativeLivePane {
   onClose: () => void = () => {};
   @State roomId: string = '';
+  @State joined: boolean = false;
+  @State signals: string[] = ['state: idle'];
+  /** Align Compose LiveMockData */
   private rooms: string[][] = [
-    ['1', '沃德龙鼎直播间', '在线 326 · 讲解新车', '直播中'],
-    ['2', '售后讲堂', '预约 88 · 明天 19:00', '预约'],
-    ['3', '二手车清库', '回放 · 观看 8.6k', '回放'],
+    ['mock_room_001', '晚间答疑直播', '主播 · 小智'],
+    ['mock_room_002', '口语陪练公开课', '主播 · 阿语'],
+    ['mock_room_003', '周末分享会', '主播 · Demo'],
   ];
 
   build() {
-    Stack() {
-      if (this.roomId.length > 0) {
-        Column() {
-          Row() {
-            Text('‹').fontSize(22).fontColor(Color.White).onClick(() => { this.roomId = ''; })
-            Text(this.roomTitle())
-              .fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White)
-            Blank().layoutWeight(1)
-            Text(this.roomBadge())
-              .fontSize(12).fontColor(Color.White)
-              .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-              .backgroundColor('#CCE02020')
-              .borderRadius(12)
-          }.padding(16).width('100%')
+    if (this.roomId.length > 0) {
+      Column() {
+        Row() {
+          Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => {
+            this.roomId = '';
+            this.joined = false;
+            this.signals = ['state: idle'];
+          })
+          Text(`直播 ${this.roomId}`).fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
           Blank().layoutWeight(1)
-          Text(this.roomTitle())
-            .fontSize(20).fontWeight(FontWeight.Medium).fontColor(Color.White)
-          Text('直播画面（mock）').fontSize(14).fontColor('#B3FFFFFF').margin({ top: 8 })
-          Blank().layoutWeight(1)
-          Text('进入直播间 · 推流通道见 gap registry')
-            .fontSize(12).fontColor('#80FFFFFF')
-            .margin({ bottom: 32 })
-        }
-        .width('100%')
-        .height('100%')
-        .alignItems(HorizontalAlign.Center)
-        .backgroundColor(Color.Black)
-      } else {
+        }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
         Column() {
-          Row() {
-            Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-            Text('直播').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            Blank().layoutWeight(1)
-          }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-
-          Text('点选进入房间入口 · 推流/实时通道见 gap registry')
-            .fontSize(13).fontColor(DesignTokens.body)
-            .padding({ left: 16, right: 16, top: 12 })
-            .width('100%')
-
-          List() {
-            ForEach(this.rooms, (room: string[]) => {
-              ListItem() {
-                Row() {
-                  Column({ space: 4 }) {
-                    Text(room[1]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                    Text(room[2]).fontSize(13).fontColor(DesignTokens.body)
-                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-                  Text(room[3])
-                    .fontSize(11).fontColor(DesignTokens.link)
-                    .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                    .backgroundColor('#1A0070F3')
-                    .borderRadius(12)
-                }
-                .padding(16)
-                .width('100%')
-                .backgroundColor(DesignTokens.canvas)
-                .onClick(() => { this.roomId = room[0]; })
-              }
-            })
-          }.layoutWeight(1).width('100%').padding(16)
+          Text(this.joined ? 'WS: connected · paused 保持连接' : 'WS: disconnected')
+            .fontSize(15).fontColor(DesignTokens.ink)
         }
-        .width('100%')
-        .height('100%')
+        .width('100%').height(180)
+        .justifyContent(FlexAlign.Center)
         .backgroundColor(DesignTokens.canvasSoft2)
+        .borderRadius(12)
+        .margin({ left: 16, right: 16, top: 8 })
+
+        Column({ space: 12 }) {
+          Text(this.roomHost()).fontSize(14).fontColor(DesignTokens.body)
+          Text('信令（上限 30）').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          ForEach(this.signals.slice(-30), (line: string) => {
+            Text(line).fontSize(12).fontColor('#888888')
+          })
+          Button('发送 Mock 信令 live.join')
+            .backgroundColor(DesignTokens.link)
+            .width('100%')
+            .onClick(() => {
+              this.joined = true;
+              const next = this.signals.concat([`signal: live.join payload={room=${this.roomId}}`]);
+              this.signals = next.slice(-30);
+            })
+          Button('退订 liveSignal')
+            .width('100%')
+            .onClick(() => {
+              this.joined = false;
+              this.signals = this.signals.concat(['state: left']);
+            })
+          Text('Realtime SDK 未接入；本页 mock 信令列表。')
+            .fontSize(12).fontColor('#888888')
+        }
+        .alignItems(HorizontalAlign.Start)
+        .padding(16)
+        .width('100%')
+        Blank().layoutWeight(1)
       }
+      .width('100%').height('100%')
+      .backgroundColor(DesignTokens.canvasSoft2)
+    } else {
+      Column() {
+        Row() {
+          Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+          Text('直播').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+          Blank().layoutWeight(1)
+        }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+        Text('点选进入房间入口 · 推流/实时通道见 gap registry')
+          .fontSize(13).fontColor(DesignTokens.body)
+          .padding({ left: 16, right: 16, top: 12 })
+          .width('100%')
+
+        List() {
+          ForEach(this.rooms, (room: string[]) => {
+            ListItem() {
+              Column({ space: 4 }) {
+                Text(room[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(room[2]).fontSize(12).fontColor('#888888')
+              }
+              .alignItems(HorizontalAlign.Start)
+              .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+              .width('100%')
+              .onClick(() => { this.roomId = room[0]; })
+            }
+          })
+        }.layoutWeight(1).width('100%')
+      }
+      .width('100%').height('100%')
+      .backgroundColor(DesignTokens.canvasSoft2)
     }
-    .width('100%')
-    .height('100%')
   }
 
-  private roomTitle(): string {
+  private roomHost(): string {
     const room = this.rooms.find((r: string[]) => r[0] === this.roomId);
-    return room !== undefined ? room[1] : '直播间';
-  }
-
-  private roomBadge(): string {
-    const room = this.rooms.find((r: string[]) => r[0] === this.roomId);
-    return room !== undefined ? room[3] : '';
+    return room !== undefined ? room[2] : '';
   }
 }
 
@@ -1688,22 +1700,35 @@ export struct NativeAiStreamPane {
 @Component
 export struct NativeScanPane {
   onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
   @State result: string = '';
+  @State torchOn: boolean = false;
+  private pink: string = '#FFFF1493';
 
   build() {
     Column() {
-      Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('扫一扫').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-        Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-
       if (this.result.length > 0) {
+        Row() {
+          Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+          Text('扫一扫').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+          Blank().layoutWeight(1)
+        }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
         Column({ space: 12 }) {
           Text('扫码结果').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
           Text(this.result).fontSize(15).fontColor(DesignTokens.link)
-          Button('继续扫码')
-            .backgroundColor(DesignTokens.link)
+          Text('打开结果')
+            .fontSize(15).fontColor(Color.White)
+            .width('100%').textAlign(TextAlign.Center)
+            .padding({ top: 12, bottom: 12 })
+            .backgroundColor(DesignTokens.link).borderRadius(8)
+            .onClick(() => {
+              const payload = this.result;
+              this.onOpen(payload);
+              this.onClose();
+            })
+          Text('继续扫码')
+            .fontSize(15).fontColor(DesignTokens.link)
             .onClick(() => { this.result = ''; })
         }
         .alignItems(HorizontalAlign.Start)
@@ -1711,23 +1736,38 @@ export struct NativeScanPane {
         .width('100%')
         Blank().layoutWeight(1)
       } else {
-        Column({ space: 24 }) {
+        Column() {
+          Row() {
+            Text('‹').fontSize(28).fontColor(Color.White).width(44).onClick(() => this.onClose())
+            Text('扫一扫').fontSize(15).fontColor(Color.White)
+              .layoutWeight(1).textAlign(TextAlign.Center)
+            Text(this.torchOn ? '🔦' : '💡')
+              .fontSize(20).fontColor(Color.White).width(44).textAlign(TextAlign.Center)
+              .onClick(() => { this.torchOn = !this.torchOn; })
+          }.width('100%').height(44).padding({ left: 8, right: 8 })
+
           Blank().layoutWeight(1)
-          Text('将二维码放入框内')
-            .fontSize(13).fontColor('#CCFFFFFF')
-            .width(220).height(220)
-            .textAlign(TextAlign.Center)
-            .border({ width: 2, color: DesignTokens.link })
-            .borderRadius(12)
-          Text('用于门店收款码 / 活动核销').fontSize(13).fontColor('#99FFFFFF')
-          Button('模拟扫码成功')
-            .backgroundColor(DesignTokens.link)
+          Column({ space: 20 }) {
+            Stack({ alignContent: Alignment.Center }) {
+              Column()
+                .width(280).height(280)
+                .border({ width: 3, color: this.pink })
+                .borderRadius(10)
+              Row().width('90%').height(2).backgroundColor(this.pink)
+            }
+            Text('将二维码放入框内，即可自动扫码')
+              .fontSize(14).fontColor('#E6FFFFFF')
+          }.alignItems(HorizontalAlign.Center)
+          Blank().layoutWeight(1)
+          Text('模拟扫码成功')
+            .fontSize(15).fontColor(Color.White)
+            .padding({ left: 24, right: 24, top: 12, bottom: 12 })
+            .margin({ bottom: 40 })
+            .backgroundColor(this.pink).borderRadius(8)
             .onClick(() => { this.result = 'myai://mall/orders?id=A1024'; })
-          Blank().layoutWeight(1)
         }
         .width('100%')
         .layoutWeight(1)
-        .alignItems(HorizontalAlign.Center)
         .backgroundColor(Color.Black)
       }
     }
@@ -1736,7 +1776,6 @@ export struct NativeScanPane {
     .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
-
 
 @Component
 export struct NativeStrategyPane {

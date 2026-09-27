@@ -70,8 +70,7 @@ internal object DeepLinkRouter {
                 ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.friend)
             AppRoutes.Mine.MINE, "mine" ->
                 ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = AppRoutes.Mine.MINE)
-            // Flutter RoutePath uses `/login`; `myai://auth/login` extracts as `/login`
-            // (host=auth). Also accept `/auth/login` and bare `auth/login`.
+            // `myai://auth/login` → `/auth/login` (AppRoutes.Auth.LOGIN). Also accept bare login paths.
             AppRoutes.Auth.LOGIN, "auth/login",
             AppRoutePath.login, "login",
             ->
@@ -120,9 +119,13 @@ internal object DeepLinkRouter {
         var candidate = trimmed
         val schemeSep = candidate.indexOf("://")
         if (schemeSep >= 0) {
+            // Keep authority as first path segment so myai://mall/orders → /mall/orders
+            // and myai://auth/login → /auth/login (not /login). Empty authority
+            // myai:///chat already starts with '/'.
             candidate = candidate.substring(schemeSep + 3)
-            val slash = candidate.indexOf('/')
-            candidate = if (slash >= 0) candidate.substring(slash) else "/$candidate"
+            if (!candidate.startsWith("/")) {
+                candidate = "/$candidate"
+            }
         }
 
         val q = candidate.indexOf('?')

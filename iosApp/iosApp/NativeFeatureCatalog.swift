@@ -3,9 +3,27 @@ import SwiftUI
 /// Resolves Chinese labels / Flutter RoutePath → native feature id (ADR 0002).
 enum NativeRouteResolver {
     static func resolve(_ raw: String) -> String {
-        let key = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = stripSchemeToPath(raw.trimmingCharacters(in: .whitespacesAndNewlines))
         if key.hasPrefix("/") { return normalizePath(key) }
         return labelToPath[key] ?? key
+    }
+
+    /// Align with DeepLinkRouter.extractPath: `myai://mall/orders` → `/mall/orders`.
+    private static func stripSchemeToPath(_ raw: String) -> String {
+        var candidate = raw
+        if let sep = candidate.range(of: "://") {
+            candidate = String(candidate[sep.upperBound...])
+            if !candidate.hasPrefix("/") {
+                candidate = "/" + candidate
+            }
+        }
+        if let q = candidate.firstIndex(of: "?") {
+            candidate = String(candidate[..<q])
+        }
+        if let h = candidate.firstIndex(of: "#") {
+            candidate = String(candidate[..<h])
+        }
+        return candidate
     }
 
     private static func normalizePath(_ path: String) -> String {
@@ -455,7 +473,7 @@ struct NativeFeatureHost: View {
         } else if path == "/ai/stream" {
             NativeAiStreamPage(onClose: onClose)
         } else if path == "/scan" {
-            NativeScanPage(onClose: onClose)
+            NativeScanPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/strategy" {
             NativeStrategyPage(onClose: onClose)
         } else if path == "/home/check_in_mall" {
