@@ -2495,33 +2495,100 @@ struct NativeProfilePage: View {
 
 struct NativeAddressesPage: View {
     var onClose: () -> Void
+    @State private var list: [(String, String, String, Bool)] = [
+        ("qa_user", "138****5172", "北京市朝阳区演示路 1 号", true),
+        ("测试乙", "139****0000", "上海市浦东新区世纪大道 100 号", false),
+    ]
+    @State private var toastText: String? = nil
+
     var body: some View {
-        VStack(spacing: 0) {
-            navBar(title: "收货地址", onClose: onClose, dark: false)
-            ScrollView {
-                VStack(spacing: 12) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Text("默认地址", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
-                                Text("默认", font: .system(size: 11), color: DesignTokens.link)
-                                    .padding(.horizontal, 6).padding(.vertical, 2)
-                                    .background(DesignTokens.link.opacity(0.12), in: Capsule())
-                            }
-                            Text("北京市大兴区 · 兴荣丰田", font: .system(size: 14), color: DesignTokens.body)
-                            Text("qa_user  138****5172", font: .system(size: 13), color: DesignTokens.mute)
-                        }
-                        Spacer()
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                HStack {
+                    Button { onClose() } label: {
+                        Text("‹", font: .system(size: 28), color: DesignTokens.link)
+                            .frame(width: 44, alignment: .leading)
                     }
-                    .padding(16)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                    Button("添加地址") {}
-                        .buttonStyle(.borderedProminent)
-                        .tint(DesignTokens.link)
+                    Text("收货地址", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                        .frame(maxWidth: .infinity)
+                    Button { flash("编辑地址（开发中）") } label: {
+                        Text("新增", font: .system(size: 15, weight: .semibold), color: DesignTokens.link)
+                    }
+                    .frame(width: 52, alignment: .trailing)
                 }
-                .padding(16)
+                .padding(.horizontal, 8)
+                .frame(height: 44)
+                .background(DesignTokens.canvas)
+
+                if list.isEmpty {
+                    Spacer()
+                    VStack(spacing: 12) {
+                        Text("暂无地址", font: .system(size: 15), color: DesignTokens.mute)
+                        Button { flash("编辑地址（开发中）") } label: {
+                            Text("添加收货地址", font: .system(size: 15, weight: .semibold), color: DesignTokens.link)
+                        }
+                    }
+                    Spacer()
+                } else {
+                    ScrollView {
+                        VStack(spacing: 10) {
+                            ForEach(Array(list.enumerated()), id: \.offset) { idx, a in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 8) {
+                                        Text("\(a.0)  \(a.1)", font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                                        if a.3 {
+                                            Text("默认", font: .system(size: 11), color: .white)
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 2)
+                                                .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 4))
+                                        }
+                                        Spacer()
+                                    }
+                                    Text(a.2, font: .system(size: 13), color: DesignTokens.body)
+                                    HStack(spacing: 16) {
+                                        Button {
+                                            list = list.enumerated().map { i, row in
+                                                (row.0, row.1, row.2, i == idx)
+                                            }
+                                            flash("已设为默认")
+                                        } label: {
+                                            Text("设为默认", font: .system(size: 13), color: DesignTokens.link)
+                                        }
+                                        Button {
+                                            list.remove(at: idx)
+                                            flash("已删除")
+                                        } label: {
+                                            Text("删除", font: .system(size: 13), color: Color(red: 0xE5/255, green: 0x39/255, blue: 0x35/255))
+                                        }
+                                    }
+                                    .padding(.top, 4)
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                                .onTapGesture { flash("编辑地址（开发中）") }
+                            }
+                        }
+                        .padding(16)
+                    }
+                }
             }
             .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
+        }
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
         }
     }
 }

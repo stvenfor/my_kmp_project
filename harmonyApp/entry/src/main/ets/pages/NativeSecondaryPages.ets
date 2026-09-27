@@ -2522,29 +2522,83 @@ export struct NativeProfilePane {
 @Component
 export struct NativeAddressesPane {
   onClose: () => void = () => {};
+  @State list: string[][] = [
+    ['qa_user', '138****5172', '北京市朝阳区演示路 1 号', '1'],
+    ['测试乙', '139****0000', '上海市浦东新区世纪大道 100 号', '0'],
+  ];
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
+  private setDefault(idx: number) {
+    this.list = this.list.map((row: string[], i: number) => [row[0], row[1], row[2], i === idx ? '1' : '0']);
+    this.flash('已设为默认');
+  }
+
+  private removeAt(idx: number) {
+    this.list = this.list.filter((_: string[], i: number) => i !== idx);
+    this.flash('已删除');
+  }
+
   build() {
     Column() {
       Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('收货地址').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-        Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      Column({ space: 12 }) {
-        Column({ space: 6 }) {
-          Row({ space: 8 }) {
-            Text('默认地址').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            Text('默认').fontSize(11).fontColor(DesignTokens.link)
-              .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-              .backgroundColor('#1A0070F3').borderRadius(8)
-          }
-          Text('北京市大兴区 · 兴荣丰田').fontSize(14).fontColor(DesignTokens.body)
-          Text('qa_user  138****5172').fontSize(13).fontColor(DesignTokens.mute)
-        }.alignItems(HorizontalAlign.Start).padding(16).width('100%')
-        .backgroundColor(DesignTokens.canvas).borderRadius(12)
-        Button('添加地址').backgroundColor(DesignTokens.link).width('100%')
-      }.padding(16).width('100%')
-      Blank().layoutWeight(1)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+        Text('‹').fontSize(28).fontColor(DesignTokens.link)
+          .width(44).onClick(() => this.onClose())
+        Text('收货地址')
+          .fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          .layoutWeight(1).textAlign(TextAlign.Center)
+        Text('新增').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+          .width(52).textAlign(TextAlign.End)
+          .onClick(() => this.flash('编辑地址（开发中）'))
+      }
+      .width('100%').height(44).padding({ left: 8, right: 8 })
+      .backgroundColor(DesignTokens.canvas)
+
+      if (this.list.length === 0) {
+        Column({ space: 12 }) {
+          Blank()
+          Text('暂无地址').fontSize(15).fontColor(DesignTokens.mute)
+          Text('添加收货地址').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+            .onClick(() => this.flash('编辑地址（开发中）'))
+          Blank()
+        }.width('100%').layoutWeight(1).alignItems(HorizontalAlign.Center)
+      } else {
+        List() {
+          ForEach(this.list, (a: string[], idx: number) => {
+            ListItem() {
+              Column({ space: 6 }) {
+                Row({ space: 8 }) {
+                  Text(`${a[0]}  ${a[1]}`)
+                    .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  if (a[3] === '1') {
+                    Text('默认').fontSize(11).fontColor(Color.White)
+                      .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                      .backgroundColor(DesignTokens.link).borderRadius(4)
+                  }
+                  Blank().layoutWeight(1)
+                }.width('100%')
+                Text(a[2]).fontSize(13).fontColor(DesignTokens.body)
+                Row({ space: 16 }) {
+                  Text('设为默认').fontSize(13).fontColor(DesignTokens.link)
+                    .onClick(() => this.setDefault(idx))
+                  Text('删除').fontSize(13).fontColor('#FFE53935')
+                    .onClick(() => this.removeAt(idx))
+                }.width('100%').margin({ top: 4 })
+              }
+              .width('100%')
+              .padding(14)
+              .margin({ bottom: 10 })
+              .backgroundColor(Color.White)
+              .borderRadius(12)
+              .onClick(() => this.flash('编辑地址（开发中）'))
+            }
+          }, (a: string[], idx: number) => `${a[0]}_${idx}`)
+        }.layoutWeight(1).width('100%').padding(16)
+      }
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
 
