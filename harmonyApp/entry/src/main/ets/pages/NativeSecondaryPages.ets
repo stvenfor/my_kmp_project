@@ -2036,79 +2036,146 @@ export struct NativeStrategyPane {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('策略').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Text('策略').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
 
       Scroll() {
         Column({ space: 16 }) {
-          Row({ space: 32 }) {
+          Row() {
             ForEach(this.tabs, (label: string, i: number) => {
               Column({ space: 8 }) {
                 Text(label)
                   .fontSize(16)
-                  .fontWeight(this.tab === i ? FontWeight.Medium : FontWeight.Regular)
+                  .fontWeight(this.tab === i ? FontWeight.Medium : FontWeight.Normal)
                   .fontColor(this.tab === i ? DesignTokens.ink : DesignTokens.body)
-                Row().width(20).height(3)
-                  .backgroundColor(this.tab === i ? DesignTokens.link : Color.Transparent)
+                Row()
+                  .width(this.tab === i ? 24 : 0)
+                  .height(3)
                   .borderRadius(2)
-              }.onClick(() => { this.tab = i; })
-            }, (label: string, i: number) => `${label}-${i}`)
-          }.justifyContent(FlexAlign.Center).width('100%')
+                  .backgroundColor(this.tab === i ? DesignTokens.link : Color.Transparent)
+              }
+              .padding({ left: 16, right: 16 })
+              .onClick(() => { this.tab = i; })
+            })
+          }.width('100%').justifyContent(FlexAlign.Center)
 
-          Column({ space: 12 }) {
-            Row({ space: 8 }) {
-              ForEach(this.periods, (p: string, i: number) => {
-                Text(p)
-                  .fontSize(12)
-                  .fontColor(this.period === i ? Color.White : DesignTokens.body)
-                  .padding({ left: 10, right: 10, top: 6, bottom: 6 })
-                  .backgroundColor(this.period === i ? DesignTokens.link : DesignTokens.canvasSoft2)
-                  .borderRadius(12)
-                  .onClick(() => { this.period = i; })
-              }, (p: string, i: number) => `${p}-${i}`)
-            }
+          Column({ space: 16 }) {
+            Text('「大类资产九宫格策略」通过分散配置降低波动，帮助你在不同市场环境下保持稳健收益。')
+              .fontSize(13).fontColor(DesignTokens.ink)
 
-            Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
+            Flex({ wrap: FlexWrap.Wrap }) {
               ForEach(this.assets, (a: string[]) => {
-                Column({ space: 6 }) {
-                  Text(a[0]).fontSize(13).fontColor(DesignTokens.body)
-                  Text(a[1]).fontSize(15).fontWeight(FontWeight.Medium)
-                    .fontColor(a[2] === '1' ? '#FFFF3B30' : '#FF34C759')
+                Column({ space: 4 }) {
+                  Text(a[0]).fontSize(12).fontColor(DesignTokens.ink)
+                  Text(a[1])
+                    .fontSize(14)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(a[2] === '1' ? '#FF3B30' : '#34C759')
                 }
-                .width('30%')
-                .padding({ top: 12, bottom: 12 })
-                .backgroundColor(DesignTokens.canvasSoft2)
+                .justifyContent(FlexAlign.Center)
+                .alignItems(HorizontalAlign.Center)
+                .width('31%')
+                .margin({ right: '2%', bottom: 8 })
+                .padding(8)
                 .borderRadius(8)
-                .margin({ bottom: 8 })
+                .backgroundColor(a[2] === '1' ? '#14FF3B30' : '#1434C759')
               })
             }.width('100%')
-          }
-          .padding(16)
-          .backgroundColor(DesignTokens.canvas)
-          .borderRadius(12)
-          .width('100%')
 
-          Column({ space: 8 }) {
-            Text(`${this.tabs[this.tab]}策略计划`)
-              .fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            Text('基于当前行情的 mock 配置，切换 Tab 查看不同风格。')
-              .fontSize(13).fontColor(DesignTokens.body)
-            Text('仓位 62%').fontSize(12).fontColor('#888888')
+            Scroll() {
+              Row({ space: 16 }) {
+                ForEach(this.periods, (p: string, i: number) => {
+                  Text(p)
+                    .fontSize(13)
+                    .fontWeight(this.period === i ? FontWeight.Medium : FontWeight.Normal)
+                    .fontColor(this.period === i ? DesignTokens.link : DesignTokens.body)
+                    .onClick(() => { this.period = i; })
+                })
+              }
+            }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).width('100%')
           }
           .alignItems(HorizontalAlign.Start)
           .padding(16)
           .width('100%')
-          .backgroundColor(DesignTokens.canvas)
+          .backgroundColor(Color.White)
+          .border({ width: 0.5, color: DesignTokens.hairline })
           .borderRadius(12)
-        }.padding(16)
+
+          Column() {
+            Row() {
+              Column({ space: 6 }) {
+                Text('黄金恐贪定投 · 第一期').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(this.tabs[this.tab])
+                  .fontSize(11)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(DesignTokens.link)
+                  .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                  .backgroundColor('#1A0070F3')
+                  .borderRadius(4)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Text('如何跟投').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+            }.width('100%')
+
+            Blank().height(20)
+
+            Row() {
+              Column({ space: 4 }) {
+                Text('-11.35%').fontSize(32).fontWeight(FontWeight.Bold).fontColor('#34C759')
+                Text('本期收益率').fontSize(13).fontColor(DesignTokens.body)
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              Column({ space: 4 }) {
+                Text('恐贪指数').fontSize(11).fontColor(DesignTokens.body)
+                Text('63 中立').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              }.alignItems(HorizontalAlign.Center)
+            }.width('100%').alignItems(VerticalAlign.Bottom)
+
+            Blank().height(20)
+            Text('定投进度').fontSize(13).fontColor(DesignTokens.body)
+            Blank().height(8)
+            Stack({ alignContent: Alignment.Center }) {
+              Progress({ value: 36, total: 50 })
+                .width('100%')
+                .height(24)
+                .color(DesignTokens.link)
+                .style(ProgressStyle.Linear)
+                .backgroundColor('#F5F5F5')
+                .borderRadius(6)
+              Text('36 / 50').fontSize(12).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').height(24)
+
+            Blank().height(12)
+            Row() {
+              Text('本周已投 1 份').fontSize(13).fontColor(DesignTokens.body).layoutWeight(1)
+              Text('订阅')
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(Color.White)
+                .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+                .backgroundColor(DesignTokens.link)
+                .borderRadius(8)
+            }.width('100%')
+
+            Blank().height(16)
+            Text('在恐慌时买入、贪婪时卖出，通过定期定额降低择时压力，适合长期持有的投资者。')
+              .fontSize(13).fontColor(DesignTokens.body)
+          }
+          .alignItems(HorizontalAlign.Start)
+          .padding(16)
+          .width('100%')
+          .backgroundColor(Color.White)
+          .border({ width: 0.5, color: DesignTokens.hairline })
+          .borderRadius(12)
+        }
+        .padding({ left: 16, right: 16, top: 8, bottom: 24 })
+        .width('100%')
       }.layoutWeight(1).width('100%')
     }
-    .width('100%').height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F5F5F5')
   }
 }
-
 
 @Component
 export struct NativeCheckInMallPane {

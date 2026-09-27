@@ -2004,67 +2004,125 @@ struct NativeStrategyPage: View {
         ("美元债", "-1.80%", false), ("商品", "+4.56%", true), ("现金", "+1.20%", true),
     ]
     private let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+    private let gainRed = Color(red: 1, green: 59/255, blue: 48/255)
+    private let gainGreen = Color(red: 52/255, green: 199/255, blue: 89/255)
 
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "策略", onClose: onClose, dark: false)
             ScrollView {
                 VStack(spacing: 16) {
-                    HStack(spacing: 32) {
+                    HStack(spacing: 0) {
                         ForEach(Array(tabs.enumerated()), id: \.offset) { i, label in
                             VStack(spacing: 8) {
                                 Text(label, font: .system(size: 16, weight: tab == i ? .semibold : .regular),
                                      color: tab == i ? DesignTokens.ink : DesignTokens.body)
-                                Capsule()
+                                RoundedRectangle(cornerRadius: 2)
                                     .fill(tab == i ? DesignTokens.link : Color.clear)
-                                    .frame(width: 20, height: 3)
+                                    .frame(width: tab == i ? 24 : 0, height: 3)
                             }
+                            .padding(.horizontal, 16)
                             .onTapGesture { tab = i }
                         }
                     }
                     .frame(maxWidth: .infinity)
 
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(
+                            "「大类资产九宫格策略」通过分散配置降低波动，帮助你在不同市场环境下保持稳健收益。",
+                            font: .system(size: 13),
+                            color: DesignTokens.ink
+                        )
+                        .lineSpacing(4)
+
+                        LazyVGrid(columns: columns, spacing: 8) {
+                            ForEach(Array(assets.enumerated()), id: \.offset) { _, a in
+                                VStack(spacing: 4) {
+                                    Text(a.0, font: .system(size: 12), color: DesignTokens.ink)
+                                    Text(a.1, font: .system(size: 14, weight: .bold),
+                                         color: a.2 ? gainRed : gainGreen)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(8)
+                                .background(
+                                    (a.2 ? gainRed : gainGreen).opacity(0.08),
+                                    in: RoundedRectangle(cornerRadius: 8)
+                                )
+                            }
+                        }
+
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
+                            HStack(spacing: 16) {
                                 ForEach(Array(periods.enumerated()), id: \.offset) { i, p in
-                                    Text(p, font: .system(size: 12), color: period == i ? .white : DesignTokens.body)
-                                        .padding(.horizontal, 10).padding(.vertical, 6)
-                                        .background(period == i ? DesignTokens.link : DesignTokens.canvasSoft2, in: Capsule())
+                                    Text(p, font: .system(size: 13, weight: period == i ? .semibold : .regular),
+                                         color: period == i ? DesignTokens.link : DesignTokens.body)
                                         .onTapGesture { period = i }
                                 }
                             }
                         }
-                        LazyVGrid(columns: columns, spacing: 12) {
-                            ForEach(Array(assets.enumerated()), id: \.offset) { _, a in
-                                VStack(spacing: 6) {
-                                    Text(a.0, font: .system(size: 13), color: DesignTokens.body)
-                                    Text(a.1, font: .system(size: 15, weight: .semibold),
-                                         color: a.2 ? Color(red: 1, green: 59/255, blue: 48/255) : Color(red: 52/255, green: 199/255, blue: 89/255))
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                    }
+                    .padding(16)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline, lineWidth: 0.5))
+
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("黄金恐贪定投 · 第一期", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                                Text(tabs[tab], font: .system(size: 11, weight: .semibold), color: DesignTokens.link)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(DesignTokens.link.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+                            }
+                            Spacer()
+                            Text("如何跟投", font: .system(size: 14, weight: .medium), color: DesignTokens.link)
+                        }
+                        Spacer().frame(height: 20)
+                        HStack(alignment: .bottom) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("-11.35%", font: .system(size: 32, weight: .bold), color: gainGreen)
+                                Text("本期收益率", font: .system(size: 13), color: DesignTokens.body)
+                            }
+                            Spacer()
+                            VStack(spacing: 4) {
+                                Text("恐贪指数", font: .system(size: 11), color: DesignTokens.body)
+                                Text("63 中立", font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
                             }
                         }
+                        Spacer().frame(height: 20)
+                        Text("定投进度", font: .system(size: 13), color: DesignTokens.body)
+                        Spacer().frame(height: 8)
+                        ZStack {
+                            ProgressView(value: 36, total: 50)
+                                .tint(DesignTokens.link)
+                                .scaleEffect(x: 1, y: 2.2, anchor: .center)
+                            Text("36 / 50", font: .system(size: 12, weight: .semibold), color: DesignTokens.ink)
+                        }
+                        .frame(height: 24)
+                        Spacer().frame(height: 12)
+                        HStack {
+                            Text("本周已投 1 份", font: .system(size: 13), color: DesignTokens.body)
+                            Spacer()
+                            Text("订阅", font: .system(size: 14, weight: .semibold), color: .white)
+                                .padding(.horizontal, 16).padding(.vertical, 8)
+                                .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 8))
+                        }
+                        Spacer().frame(height: 16)
+                        Text(
+                            "在恐慌时买入、贪婪时卖出，通过定期定额降低择时压力，适合长期持有的投资者。",
+                            font: .system(size: 13),
+                            color: DesignTokens.body
+                        )
+                        .lineSpacing(4)
                     }
                     .padding(16)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("\(tabs[tab])策略计划", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                        Text("基于当前行情的 mock 配置，切换 Tab 查看不同风格。", font: .system(size: 13), color: DesignTokens.body)
-                        ProgressView(value: 0.62)
-                            .tint(DesignTokens.link)
-                        Text("仓位 62%", font: .system(size: 12), color: DesignTokens.mute)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(16)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline, lineWidth: 0.5))
                 }
-                .padding(16)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .background(Color(white: 0.96).ignoresSafeArea())
         }
     }
 }
