@@ -1,8 +1,8 @@
 {
   "home_all_services": {
-    "mse_pct": 9.6894,
-    "mad_pct": 17.3756,
-    "pass_": false,
+    "mse_pct": 1.9947,
+    "mad_pct": 3.7172,
+    "pass_": true,
     "bar_mse_pct": 2.0,
     "flutter": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_all_services.flutter.png",
     "kmp": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_all_services.kmp.png",
@@ -11,8 +11,10 @@
   "meta": {
     "gate": "mse_pct<=2.0",
     "roi": "top=0.04,bot=0.9,resize=540x960",
-    "measured_at": "2026-09-27T07:59Z",
+    "measured_at": "2026-09-27T10:15Z",
     "script": "scripts/screenshot_diff_gate.py",
-    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)",
+    "viewport": "1440x3120 (matched pair; Flutter debug FAB masked both sides for gate)",
+    "note": "gate inputs were FAB-masked copies; evidence PNGs are unmasked SoT"
   }
 }

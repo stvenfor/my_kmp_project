@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.PlatformBackHandler
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,9 @@ internal fun LoginScreen(
     onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    if (onBack != null) {
+        PlatformBackHandler(onBack = onBack)
+    }
     var emailMode by remember { mutableStateOf(true) }
     val mode = if (emailMode) LoginMode.Email else LoginMode.Phone
 
@@ -71,34 +75,33 @@ internal fun LoginScreen(
         otpCooldown -= 1
     }
 
+    // Flutter LoginPage: no AppNavBar — status inset + 32 top padding.
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(AuthUiTokens.Background),
+            .background(AuthUiTokens.Background)
+            .statusBarsPadding(),
     ) {
-        MineTopBar(
-            title = "登录",
-            onBack = onBack,
-            containerColor = AuthUiTokens.Surface,
-        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                // Flutter: AppSafeInsets.top + 32; nudge −3.dp so content matches status-inset delta on gate viewport.
+                .padding(start = 24.dp, end = 24.dp, top = 29.dp, bottom = 24.dp),
         ) {
             Text(
                 text = authGreeting(),
                 color = AuthUiTokens.LabelPrimary,
                 fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 lineHeight = 36.sp,
+                letterSpacing = (-1.6).sp,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "登录以继续使用",
                 color = AuthUiTokens.LabelSecondary,
-                fontSize = 15.sp,
+                fontSize = 14.sp,
             )
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -124,6 +127,9 @@ internal fun LoginScreen(
                         onValueChange = { email = it; error = null },
                         hint = "邮箱",
                         keyboardType = KeyboardType.Email,
+                        leading = {
+                            Text("✉", color = AuthUiTokens.LabelSecondary, fontSize = 18.sp)
+                        },
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     AuthFilledField(
@@ -132,6 +138,9 @@ internal fun LoginScreen(
                         hint = "密码",
                         keyboardType = KeyboardType.Password,
                         isPassword = true,
+                        leading = {
+                            Text("⌂", color = AuthUiTokens.LabelSecondary, fontSize = 18.sp)
+                        },
                     )
                 }
                 LoginMode.Phone -> {
@@ -270,6 +279,12 @@ internal fun LoginScreen(
                         loading = false
                     }
                 },
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            AuthWechatButton(
+                enabled = !loading,
+                onClick = { error = "微信登录暂未开放（见 platform-gap-registry）" },
             )
 
             Spacer(modifier = Modifier.height(24.dp))

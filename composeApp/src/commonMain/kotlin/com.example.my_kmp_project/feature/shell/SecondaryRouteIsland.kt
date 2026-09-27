@@ -36,7 +36,12 @@ import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.web.InAppWebScreen
 
 /**
- * Shared secondary-route island for iOS / OHOS native shells (ADR 0002).
+ * Shared secondary-route island for iOS / OHOS native shells (ADR 0002 / Legacy Shared Compose).
+ *
+ * Android main path does **not** host secondaries here — see `NativeAndroidMain` overlays
+ * (`HomeRouteHost`, `MineIsland`, …). Deleting this island is blocked until iOS/OHOS native
+ * hosts cut over (#23).
+ *
  * Resolves Flutter RoutePath strings or Chinese labels used by tab roots.
  */
 object SecondaryRouteResolver {

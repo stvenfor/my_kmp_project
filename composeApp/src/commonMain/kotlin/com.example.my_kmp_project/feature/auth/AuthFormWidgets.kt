@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -48,7 +49,9 @@ internal object AuthUiTokens {
     val LabelTertiary = Color(0x4D3C3C43)
     val Separator = Color(0xFFC6C6C8)
     val ButtonDisabled = Color(0xFFC7C7CC)
-    val RadiusMd = 12.dp
+    /** Flutter `AuthTheme.radiusMd` / `radiusLg`. */
+    val RadiusMd = 8.dp
+    val RadiusLg = 12.dp
     val FieldHeight = 52.dp
     val ButtonHeight = 52.dp
 }
@@ -61,10 +64,11 @@ internal fun authGreeting(): String {
     return authGreetingForHour(hour)
 }
 
+/** Flutter `AuthController.greeting` brand string. */
 internal fun authGreetingForHour(hour: Int): String = when {
-    hour < 12 -> "早上好，欢迎使用i车商"
-    hour < 18 -> "下午好，欢迎使用i车商"
-    else -> "晚上好，欢迎使用i车商"
+    hour < 12 -> "早上好，欢迎使用iHome"
+    hour < 18 -> "下午好，欢迎使用iHome"
+    else -> "晚上好，欢迎使用iHome"
 }
 
 @Composable
@@ -79,7 +83,7 @@ internal fun AuthSegmentedControl(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(AuthUiTokens.FillSecondary, RoundedCornerShape(AuthUiTokens.RadiusMd))
+            .background(AuthUiTokens.FillSecondary, RoundedCornerShape(AuthUiTokens.RadiusLg))
             .padding(4.dp),
     ) {
         AuthSegmentChip(
@@ -153,7 +157,7 @@ internal fun AuthFilledField(
             modifier = Modifier.weight(1f),
             singleLine = true,
             textStyle = TextStyle(
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 color = AuthUiTokens.LabelPrimary,
             ),
             cursorBrush = SolidColor(AuthUiTokens.Accent),
@@ -169,7 +173,7 @@ internal fun AuthFilledField(
                         Text(
                             text = hint,
                             color = AuthUiTokens.LabelTertiary,
-                            fontSize = 17.sp,
+                            fontSize = 16.sp,
                         )
                     }
                     inner()
@@ -197,12 +201,12 @@ internal fun AuthPrimaryButton(
         modifier = modifier
             .fillMaxWidth()
             .height(AuthUiTokens.ButtonHeight),
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(AuthUiTokens.RadiusLg),
         colors = ButtonDefaults.buttonColors(
             containerColor = AuthUiTokens.Accent,
             contentColor = Color.White,
             disabledContainerColor = AuthUiTokens.ButtonDisabled,
-            disabledContentColor = Color.White,
+            disabledContentColor = Color.White.copy(alpha = 0.8f),
         ),
     ) {
         if (loading) {
@@ -214,8 +218,40 @@ internal fun AuthPrimaryButton(
         } else {
             Text(
                 text = label,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+            )
+        }
+    }
+}
+
+/** Flutter `LoginPage._buildWechatButton` — outline CTA (SDK may still be stubbed). */
+@Composable
+internal fun AuthWechatButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(AuthUiTokens.ButtonHeight)
+            .border(1.dp, AuthUiTokens.Separator, RoundedCornerShape(AuthUiTokens.RadiusLg))
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "◎",
+                color = AuthUiTokens.Accent,
+                fontSize = 18.sp,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "微信登录",
+                color = AuthUiTokens.Accent,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
             )
         }
     }
@@ -227,37 +263,50 @@ internal fun AuthPrivacyRow(
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Flutter privacy row: 44-tap target, 22 circle checkbox, 《某个隐私条款》.
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onToggle)
             .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
     ) {
         Box(
             modifier = Modifier
-                .size(22.dp)
-                .background(
-                    color = if (agreed) AuthUiTokens.Accent else AuthUiTokens.Surface,
-                    shape = RoundedCornerShape(6.dp),
-                )
-                .border(
-                    width = 1.dp,
-                    color = if (agreed) AuthUiTokens.Accent else AuthUiTokens.Separator,
-                    shape = RoundedCornerShape(6.dp),
-                ),
-            contentAlignment = Alignment.Center,
+                .size(44.dp),
+            contentAlignment = Alignment.CenterStart,
         ) {
-            if (agreed) {
-                Text("✓", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Box(
+                modifier = Modifier
+                    .size(22.dp)
+                    .background(
+                        color = if (agreed) AuthUiTokens.Accent else Color.Transparent,
+                        shape = CircleShape,
+                    )
+                    .border(
+                        width = 1.5.dp,
+                        color = if (agreed) AuthUiTokens.Accent else AuthUiTokens.Separator,
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (agreed) {
+                    Text("✓", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = "我已阅读并同意《用户协议》和《隐私政策》",
-            color = AuthUiTokens.LabelSecondary,
-            fontSize = 13.sp,
-        )
+        Row(modifier = Modifier.padding(top = 12.dp)) {
+            Text(
+                text = "我已阅读并同意",
+                color = AuthUiTokens.LabelSecondary,
+                fontSize = 12.sp,
+            )
+            Text(
+                text = "《某个隐私条款》",
+                color = AuthUiTokens.Accent,
+                fontSize = 12.sp,
+            )
+        }
     }
 }
 
@@ -290,13 +339,13 @@ internal fun AuthFooterLinks(
             Text(
                 text = "我要注册",
                 color = AuthUiTokens.Accent,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
             )
         }
         Box(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = 16.dp)
                 .width(1.dp)
                 .height(12.dp)
                 .background(AuthUiTokens.Separator),
@@ -305,7 +354,7 @@ internal fun AuthFooterLinks(
             Text(
                 text = "忘记密码",
                 color = AuthUiTokens.Accent,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
             )
         }

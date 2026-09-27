@@ -1,0 +1,19 @@
+{
+  "login_otp": {
+    "mse_pct": 1.1566,
+    "mad_pct": 2.8102,
+    "pass_": true,
+    "bar_mse_pct": 2.0,
+    "flutter": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/auth/Android/login_otp.flutter.png",
+    "kmp": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/auth/Android/login_otp.kmp.png",
+    "heat": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/auth/Android/login_otp.heat.png"
+  },
+  "meta": {
+    "gate": "mse_pct<=2.0",
+    "roi": "top=0.04,bot=0.9,resize=540x960",
+    "measured_at": "2026-09-27T09:34Z",
+    "script": "scripts/screenshot_diff_gate.py",
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)",
+    "viewport": "1125x2436 @ 480dpi (375x812 dp)"
+  }
+}

@@ -40,6 +40,7 @@ internal data class SearchRankItem(
     val rank: Int,
     val title: String,
     val subtitle: String,
+    val coverUrl: String = "https://picsum.photos/seed/search-rank-$rank/144/144",
 )
 
 /** Flutter `HotRankDetailItem` — detail page list row. */
@@ -76,7 +77,11 @@ internal data class StrategyAssetCell(
 internal object HomeMockData {
     const val greeting = "早上好，沃德龙鼎"
     const val storeName = "[4S]北京沃德龙鼎吉利"
+    /** Home dashboard search chip (Flutter home). */
     const val searchPlaceholder = "搜索客户、订单、资讯"
+
+    /** Flutter `SearchMockData.searchPlaceholder` on search page. */
+    const val searchPagePlaceholder = "搜索客户、订单、课程、视频"
 
     val features = listOf(
         HomeFeatureItem("H5 调试"),
@@ -224,6 +229,7 @@ internal object HomeMockData {
         "极限文字超出九个字...",
         "小猪佩奇全系列",
         "百家讲坛全集",
+        "罗振宇2026跨年演讲",
         "百家讲坛明朝",
     )
 

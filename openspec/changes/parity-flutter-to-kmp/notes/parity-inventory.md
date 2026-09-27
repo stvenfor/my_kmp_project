@@ -7,7 +7,11 @@
 
 Status: `todo` | `wip` | `packet-pass` | `excluded` | `gap-only`
 
-**Implement session note (2026-09-27):** Android Screenshot Diff Gate PASS only under `notes/evidence/shell/Android/*.diff.json` (home/chat/community/mine). iOS/OHOS shell is open-path via native shell (not hard gate). Do **not** mark `packet-pass` without Android gate PASS.
+**Implement session note (2026-09-27):** Android Screenshot Diff Gate PASS under `notes/evidence/shell/Android/*.diff.json` (home/chat/community/mine) plus auth packet + `home/all_services` + `home/club` + `home/live_commerce`. iOS/OHOS shell is open-path via native shell (not hard gate). Do **not** mark `packet-pass` without Android gate PASS.
+
+**#23 Legacy island (Android):** Home/chat/community/content secondaries open via `NativeAndroidMain` overlays (`HomeRouteHost` / `CommunityRouteHost` / `ContentRouteHost` / `MineIsland`) — not `SecondaryRouteIsland`. `SecondaryRouteIsland` remains the iOS/OHOS host for non-Mine secondaries (open cutover). Do not delete the island until iOS/OHOS native hosts exist.
+
+**#24 Closeout (partial):** Android shell+auth+all_services+club+live_commerce packet-pass; remaining home/domain routes still `wip` (search≈3.5 / life≈2.8 / used_car Flutter auth-gated SoT missing). Platform gaps unchanged in `platform-gap-registry.md`.
 
 
 ## GitHub tickets (synced)
@@ -55,28 +59,28 @@ Parent spec: #1
 
 | Route | Domain ticket | Track | Status | Notes |
 |-------|---------------|-------|--------|-------|
-| `/login` | auth-native | native | wip | Soft Auth open-path live; **no** dedicated Android `login*.diff.json` yet — not packet-pass |
-| `/login/password` | auth-native | native | wip | same |
-| `/login/otp` | auth-native | native | wip | same |
-| `/register` | auth-native | native | wip | same; register rate-limit blocked in registry |
+| `/login` | auth-native | native | pass | gate PASS mse=1.471 @ 375dp — `auth/Android/login.diff.json` |
+| `/login/password` | auth-native | native | pass | gate PASS mse=1.8683 — `auth/Android/login_password.diff.json` |
+| `/login/otp` | auth-native | native | pass | gate PASS mse=1.1566 — `auth/Android/login_otp.diff.json` |
+| `/register` | auth-native | native | pass | gate PASS mse=0.1899 — `auth/Android/register.diff.json`; OTP rate-limit still in registry |
 
 ## Home secondaries (Native-First Cutover)
 
 | Route | Domain ticket | Track | Status | Notes |
 |-------|---------------|-------|--------|-------|
-| `/home/search` | home-discover | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
-| `/home/all_services` | home-discover | native-cutover | wip | gate FAIL mse≈9.69 — evidence `home/Android/home_all_services.diff.json` |
+| `/home/search` | home-discover | native-cutover | wip | UI aligned to Flutter search chrome (取消/换一换/快捷筛选/Flow tags); gate FAIL mse=3.4653 — `home/Android/home_search.diff.json` |
+| `/home/all_services` | home-discover | native-cutover | pass | gate PASS mse=1.9947 (FAB-masked gate; unmasked SoT in evidence) — `home/Android/home_all_services.diff.json` |
 | `/home/learning_report` | home-learning | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
 | `/home/check_in_mall` | home-checkin | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
 | `/home/dubbing_feed` | home-dubbing | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
 | `/home/strategy` | home-strategy | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
 | `/home/hot_rank_detail` | home-hot-rank | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
-| `/home/used_car` (+ detail/create) | home-used-car | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
+| `/home/used_car` (+ detail/create) | home-used-car | native-cutover | wip | native path live; Flutter SoT auth-gated (login intercept) — gate not closed |
 | `/home/ledger` (+ detail) | home-ledger | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
 | `/home/data_analytics` (+ detail) | home-analytics | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
-| `/home/life_service` | home-life | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
-| `/home/live_commerce` | home-club-live | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
-| `/home/club` | home-club-live | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
+| `/home/life_service` | home-life | native-cutover | wip | 56dp AppNavBar + network thumbs; gate FAIL mse=2.776 — `home/Android/home_life_service.diff.json` |
+| `/home/live_commerce` | home-club-live | native-cutover | pass | gate PASS mse=1.7173 — `home/Android/home_live_commerce.diff.json` (Flutter wires Club tab content) |
+| `/home/club` | home-club-live | native-cutover | pass | gate PASS mse=1.653 — `home/Android/home_club.diff.json` |
 | `/home/after_sales` (+ create/detail) | home-after-sales | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
 | `/home/new_car_follow` (+ create/detail) | home-new-car | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |
 | `/home/todo/*` | home-todos | native-cutover | wip | native-preferred path live; Android Screenshot Diff Gate pending per ticket |

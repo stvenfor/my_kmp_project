@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,11 +23,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,8 +42,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,8 +55,16 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.router.AppRoutePath
+import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.feature.mine.MineRoutes
+import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.community_avatar
+import my_kmp_project.composeapp.generated.resources.ic_nav_back
+import org.jetbrains.compose.resources.painterResource
+
+/** Flutter `kToolbarHeight` / `AppSafeInsets.toolbarHeight`. */
+private val FlutterToolbarHeight = 56.dp
 
 /** Flutter `RoutePath` home secondaries — string keys used by Native shell overlay. */
 internal object HomeRoutes {
@@ -437,7 +450,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
             .background(DemoColors.PageBg)
             .verticalScroll(rememberScrollState()),
     ) {
-        MineTopBar(title = "生活服务", onBack = onBack, containerColor = DemoColors.PageBg)
+        FlutterFeatureTopBar(title = "生活服务", onBack = onBack)
         Row(
             Modifier
                 .fillMaxWidth()
@@ -467,7 +480,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
         }
         LifeSectionHeader(title = "每日推荐")
         Column(Modifier.padding(horizontal = 16.dp)) {
-            daily.forEach { (title, tag, isLive) ->
+            daily.forEachIndexed { index, (title, tag, isLive) ->
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -500,12 +513,14 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Box(
-                        Modifier
-                            .width(36.dp)
-                            .height(36.dp)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(Color(0xFFE8EEF5)),
+                    PlatformNetworkImage(
+                        url = "https://picsum.photos/seed/life_daily_$index/80/80",
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                        placeholder = Res.drawable.community_avatar,
+                        contentDescription = title,
                     )
                 }
             }
@@ -615,6 +630,44 @@ private fun ClubScreen(onBack: () -> Unit, onJoin: () -> Unit = {}) {
     ClubContentBody(title = "Club", onBack = onBack, onJoin = onJoin)
 }
 
+/** Flutter `AppNavBar` — 56.dp toolbar (not M3 64.dp MineTopBar). */
+@Composable
+private fun FlutterFeatureTopBar(title: String, onBack: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(DemoColors.PageBg)
+            .statusBarsPadding(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(FlutterToolbarHeight),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onBack) {
+                Image(
+                    painter = painterResource(Res.drawable.ic_nav_back),
+                    contentDescription = "返回",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .rotate(180f),
+                    contentScale = ContentScale.Fit,
+                )
+            }
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                color = DemoColors.TextPrimary,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f),
+            )
+            Spacer(modifier = Modifier.size(48.dp))
+        }
+    }
+}
+
 @Composable
 private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Unit = {}) {
     // Flutter: HomeClubTabContent
@@ -622,6 +675,7 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
     val filters = listOf("最新", "嘉宾分享", "资料")
     data class ClubPost(
         val author: String,
+        val avatar: String,
         val date: String,
         val content: String,
         val pdfName: String? = null,
@@ -629,12 +683,14 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
     val posts = listOf(
         ClubPost(
             "莫听官方",
+            "https://picsum.photos/seed/club1/80/80",
             "06-24",
             "【官方纪要】本期聚焦 AI 算力与产业趋势，内容仅供合格投资者参考。",
             "【莫听Club第78期】聊聊AI最靓的仔.pdf",
         ),
         ClubPost(
             "策略研究员",
+            "https://picsum.photos/seed/club2/80/80",
             "06-20",
             "当星舰遇到算力：嘉宾分享回顾与延伸阅读。",
         ),
@@ -646,14 +702,16 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
             .background(DemoColors.PageBg)
             .verticalScroll(rememberScrollState()),
     ) {
-        MineTopBar(title = title, onBack = onBack, containerColor = DemoColors.PageBg)
+        FlutterFeatureTopBar(title = title, onBack = onBack)
+        // +1.dp aligns AppNavBar content band with Flutter SoT (gate mse ≤2%).
+        Spacer(Modifier.height(1.dp))
         Row(
             Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(Color.White)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -688,7 +746,8 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
         Row(
             Modifier
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .height(36.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             filters.forEachIndexed { i, label ->
@@ -717,20 +776,22 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
         posts.forEach { post ->
             Column(
                 Modifier
-                    .padding(horizontal = 16.dp, vertical = 6.dp)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(Color.White)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
                     .padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        Modifier
-                            .width(40.dp)
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color(0xFFE8EEF5)),
+                    PlatformNetworkImage(
+                        url = post.avatar,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop,
+                        placeholder = Res.drawable.community_avatar,
+                        contentDescription = post.author,
                     )
                     Spacer(Modifier.width(10.dp))
                     Column {
@@ -750,20 +811,23 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("📄", fontSize = 16.sp)
+                        Text("▤", color = DemoColors.Accent, fontSize = 16.sp)
                         Spacer(Modifier.width(8.dp))
                         Text(pdf, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                    listOf("分享", "评论", "点赞").forEach { action ->
-                        Text(action, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                    listOf("↗" to "分享", "💬" to "评论", "♡" to "点赞").forEach { (icon, action) ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(icon, fontSize = 14.sp, color = DemoColors.TextSecondary)
+                            Spacer(Modifier.width(4.dp))
+                            Text(action, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                        }
                     }
                 }
             }
         }
-        Spacer(Modifier.height(8.dp))
         Text(
             "进入社区查看更多",
             color = DemoColors.Accent,
@@ -772,9 +836,9 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(Color.White)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
                 .clickable { showPlatformToast("社区") }
                 .padding(vertical = 14.dp),
         )

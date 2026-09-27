@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,6 +8,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,15 +33,31 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.community_post_a
+import my_kmp_project.composeapp.generated.resources.home_search_icon_clear_history
+import my_kmp_project.composeapp.generated.resources.home_search_icon_filter
+import my_kmp_project.composeapp.generated.resources.home_search_icon_refresh
+import my_kmp_project.composeapp.generated.resources.home_search_microphone
+import my_kmp_project.composeapp.generated.resources.ic_nav_back
+import org.jetbrains.compose.resources.painterResource
 
+/** Flutter `SearchPageTheme.searchFieldHeight` / AppNav chrome. */
+private val SearchFieldHeight = 44.dp
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun HomeSearchScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
@@ -57,6 +76,7 @@ internal fun HomeSearchScreen(onBack: () -> Unit) {
             query = query,
             onQueryChange = { query = it },
             onBack = onBack,
+            onCancel = onBack,
             onSearch = {
                 val text = query.trim().ifEmpty { return@SearchHeaderBar }
                 history = listOf(text) + history.filterNot { it == text }.take(9)
@@ -69,37 +89,27 @@ internal fun HomeSearchScreen(onBack: () -> Unit) {
                 .padding(bottom = 24.dp),
         ) {
             if (history.isNotEmpty()) {
-                SectionHeader(
-                    title = "搜索历史",
-                    action = "清除",
-                    onAction = { history = emptyList() },
-                )
-                TagFlow(
-                    tags = history,
+                SearchHistorySection(
+                    history = history,
+                    onClear = { history = emptyList() },
                     onTagTap = { query = it },
                 )
             } else {
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            SectionHeader(
-                title = "搜索发现",
-                action = "换一批",
-                onAction = { discovery = discovery.reversed() },
-            )
-            TagFlow(
-                tags = discovery,
+            SearchDiscoverySection(
+                discovery = discovery,
+                onRefresh = { discovery = discovery.reversed() },
                 onTagTap = { query = it },
             )
 
-            SectionHeader(title = "筛选标签")
-            TagFlow(
+            SearchFilterSection(
                 tags = HomeMockData.filterTags,
                 onTagTap = { query = it },
-                outlined = true,
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             RankTabBar(
                 tabs = HomeMockData.rankTabs,
                 selectedIndex = selectedRankTab,
@@ -109,9 +119,9 @@ internal fun HomeSearchScreen(onBack: () -> Unit) {
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(DemoColors.Background)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp)),
+                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
             ) {
                 rankItems.forEachIndexed { index, item ->
                     RankListRow(item = item)
@@ -132,47 +142,60 @@ private fun SearchHeaderBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onBack: () -> Unit,
+    onCancel: () -> Unit,
     onSearch: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(DemoColors.Toolbar)
+            .background(DemoColors.PageBg)
             .statusBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = "返回",
-            color = DemoColors.Accent,
-            fontSize = 15.sp,
+        Box(
             modifier = Modifier
-                .clickable(onClick = onBack)
-                .padding(end = 8.dp, top = 8.dp, bottom = 8.dp),
-        )
+                .size(44.dp)
+                .clickable(onClick = onBack),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.ic_nav_back),
+                contentDescription = "返回",
+                modifier = Modifier
+                    .size(24.dp)
+                    .rotate(180f),
+                contentScale = ContentScale.Fit,
+            )
+        }
         Row(
             modifier = Modifier
                 .weight(1f)
-                .height(40.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(DemoColors.PageBg)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
-                .padding(horizontal = 12.dp),
+                .height(SearchFieldHeight)
+                .clip(RoundedCornerShape(8.dp))
+                .background(DemoColors.Background)
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(text = "⌕", color = DemoColors.TextSecondary, fontSize = 16.sp)
+            Text(
+                text = "⌕",
+                color = DemoColors.TextSecondary,
+                fontSize = 16.sp,
+                modifier = Modifier.clickable(onClick = onSearch),
+            )
             Spacer(modifier = Modifier.width(8.dp))
             BasicTextField(
                 value = query,
                 onValueChange = onQueryChange,
                 singleLine = true,
-                textStyle = TextStyle(color = DemoColors.TextPrimary, fontSize = 15.sp),
+                textStyle = TextStyle(color = DemoColors.TextPrimary, fontSize = 16.sp),
                 cursorBrush = SolidColor(DemoColors.Accent),
                 modifier = Modifier.weight(1f),
                 decorationBox = { inner ->
                     if (query.isEmpty()) {
                         Text(
-                            text = HomeMockData.searchPlaceholder,
+                            text = HomeMockData.searchPagePlaceholder,
                             color = DemoColors.TextSecondary,
                             fontSize = 15.sp,
                         )
@@ -180,84 +203,192 @@ private fun SearchHeaderBar(
                     inner()
                 },
             )
+            if (query.isEmpty()) {
+                Image(
+                    painter = painterResource(Res.drawable.home_search_microphone),
+                    contentDescription = "语音",
+                    modifier = Modifier.size(20.dp),
+                    contentScale = ContentScale.Fit,
+                )
+            } else {
+                Text(
+                    text = "✕",
+                    color = DemoColors.TextSecondary,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .clickable { onQueryChange("") }
+                        .padding(4.dp),
+                )
+            }
         }
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "搜索",
+            text = "取消",
             color = DemoColors.Accent,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 15.sp,
+            fontSize = 16.sp,
             modifier = Modifier
-                .clickable(onClick = onSearch)
-                .padding(start = 12.dp, top = 8.dp, bottom = 8.dp),
+                .clickable(onClick = onCancel)
+                .padding(horizontal = 4.dp, vertical = 8.dp),
         )
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SectionHeader(
-    title: String,
-    action: String? = null,
-    onAction: (() -> Unit)? = null,
+private fun SearchHistorySection(
+    history: List<String>,
+    onClear: () -> Unit,
+    onTagTap: (String) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
-        Text(
-            text = title,
-            color = DemoColors.TextPrimary,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 16.sp,
-            modifier = Modifier.weight(1f),
-        )
-        if (action != null && onAction != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
-                text = action,
-                color = DemoColors.Accent,
-                fontSize = 13.sp,
-                modifier = Modifier.clickable(onClick = onAction),
+                text = "搜索历史",
+                color = DemoColors.TextPrimary,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f),
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(onClick = onClear),
+            ) {
+                Image(
+                    painter = painterResource(Res.drawable.home_search_icon_clear_history),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "清除", color = DemoColors.TextSecondary, fontSize = 14.sp)
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            history.forEach { tag ->
+                SearchTagChip(label = tag, onTap = { onTagTap(tag) })
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SearchDiscoverySection(
+    discovery: List<String>,
+    onRefresh: () -> Unit,
+    onTagTap: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(DemoColors.Background)
+            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+            .padding(16.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "搜索发现",
+                color = DemoColors.TextPrimary,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Image(
+                painter = painterResource(Res.drawable.home_search_icon_refresh),
+                contentDescription = "换一换",
+                modifier = Modifier
+                    .size(18.dp)
+                    .clickable(onClick = onRefresh),
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "换一换",
+                color = DemoColors.TextSecondary,
+                fontSize = 14.sp,
+                modifier = Modifier.clickable(onClick = onRefresh),
             )
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            discovery.forEachIndexed { index, tag ->
+                SearchTagChip(
+                    label = tag,
+                    highlight = index == 0,
+                    onTap = { onTagTap(tag) },
+                )
+            }
+        }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TagFlow(
+private fun SearchFilterSection(
     tags: List<String>,
     onTagTap: (String) -> Unit,
-    outlined: Boolean = false,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    Column(
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
-        tags.forEach { tag ->
-            val shape = RoundedCornerShape(16.dp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = tag,
-                color = if (outlined) DemoColors.Accent else DemoColors.TextPrimary,
-                fontSize = 13.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .clip(shape)
-                    .then(
-                        if (outlined) {
-                            Modifier.border(1.dp, DemoColors.Accent.copy(alpha = 0.4f), shape)
-                        } else {
-                            Modifier.background(DemoColors.Background)
-                        },
-                    )
-                    .clickable { onTagTap(tag) }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                text = "快捷筛选",
+                color = DemoColors.TextPrimary,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Image(
+                painter = painterResource(Res.drawable.home_search_icon_filter),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
             )
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            tags.forEach { tag ->
+                SearchTagChip(label = tag, onTap = { onTagTap(tag) })
+            }
+        }
     }
+}
+
+@Composable
+private fun SearchTagChip(
+    label: String,
+    onTap: () -> Unit,
+    highlight: Boolean = false,
+) {
+    val shape = RoundedCornerShape(16.dp)
+    Text(
+        text = label,
+        color = if (highlight) DemoColors.Accent else DemoColors.TextPrimary,
+        fontSize = 13.sp,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier
+            .clip(shape)
+            .background(
+                if (highlight) DemoColors.Accent.copy(alpha = 0.12f) else DemoColors.PageBg,
+            )
+            .clickable(onClick = onTap)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    )
 }
 
 @Composable
@@ -309,28 +440,24 @@ private fun RankListRow(item: SearchRankItem) {
         Text(
             text = item.rank.toString(),
             color = when (item.rank) {
-                1 -> DemoColors.Danger
-                2 -> DemoColors.Accent
-                3 -> DemoColors.TextSecondary
+                1 -> Color(0xFFF5A623) // Flutter SearchPageTheme.rankGold
+                2 -> DemoColors.TextSecondary
+                3 -> Color(0xFFC47B2C) // Flutter rankBronze
                 else -> DemoColors.TextSecondary
             },
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             modifier = Modifier.width(28.dp),
         )
-        Box(
+        PlatformNetworkImage(
+            url = item.coverUrl,
             modifier = Modifier
                 .size(48.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(DemoColors.Accent.copy(alpha = 0.12f)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = item.title.take(1),
-                color = DemoColors.Accent,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop,
+            placeholder = Res.drawable.community_post_a,
+            contentDescription = item.title,
+        )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
