@@ -407,6 +407,111 @@ export struct NativePurchaseCalculatorPane {
 }
 
 @Component
+export struct NativeMallDetailPane {
+  onClose: () => void = () => {};
+  @State qty: number = 1;
+  @State skuSel: number = 0;
+  private skus: string[] = ['经典白', '店庆红'];
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('商品详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          Text('店庆纪念马克杯')
+            .fontSize(14).fontColor(DesignTokens.mute)
+            .width('100%').height(280).textAlign(TextAlign.Center)
+            .backgroundColor('#FFF0F0F0')
+
+          Column({ space: 8 }) {
+            Text('店庆纪念马克杯').fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+            Text('39.90元').fontSize(22).fontWeight(FontWeight.Medium).fontColor('#FFEE0000')
+            Text('实体商品 · 需填写收货信息').fontSize(13).fontColor(DesignTokens.body)
+          }
+          .width('100%').padding(16).alignItems(HorizontalAlign.Start)
+          .backgroundColor(Color.White)
+
+          Row({ space: 8 }) {
+            Text('📍').fontSize(14)
+            Text('选择收货地址').fontSize(14).fontColor(DesignTokens.mute).layoutWeight(1)
+            Text('›').fontSize(18).fontColor(DesignTokens.mute)
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 14, bottom: 14 })
+          .backgroundColor(Color.White)
+          .onClick(() => this.flash('选择收货地址'))
+
+          Column({ space: 12 }) {
+            Text('规格').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Row({ space: 8 }) {
+              ForEach(this.skus, (label: string, i: number) => {
+                Text(label)
+                  .fontSize(13)
+                  .fontWeight(this.skuSel === i ? FontWeight.Medium : FontWeight.Normal)
+                  .fontColor(this.skuSel === i ? DesignTokens.link : DesignTokens.body)
+                  .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+                  .backgroundColor(this.skuSel === i ? '#1A0070F3' : DesignTokens.canvasSoft2)
+                  .border({ width: 1, color: this.skuSel === i ? DesignTokens.link : DesignTokens.hairline })
+                  .borderRadius(8)
+                  .onClick(() => { this.skuSel = i; })
+              })
+            }
+            Row() {
+              Text('数量').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Blank().layoutWeight(1)
+              Text('库存 128').fontSize(12).fontColor(DesignTokens.mute).margin({ right: 8 })
+              Text('−').fontSize(16)
+                .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+                .border({ width: 1, color: DesignTokens.hairline }).borderRadius(4)
+                .onClick(() => { if (this.qty > 1) { this.qty -= 1; } })
+              Text(`${this.qty}`).fontSize(15).fontWeight(FontWeight.Medium)
+                .padding({ left: 12, right: 12 })
+              Text('+').fontSize(16)
+                .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+                .border({ width: 1, color: DesignTokens.hairline }).borderRadius(4)
+                .onClick(() => { this.qty += 1; })
+            }.width('100%').alignItems(VerticalAlign.Center)
+          }
+          .width('100%').padding(16).alignItems(HorizontalAlign.Start)
+          .backgroundColor(Color.White)
+
+          Blank().height(24)
+        }.width('100%')
+      }.layoutWeight(1).width('100%').scrollBar(BarState.Off)
+
+      Row({ space: 12 }) {
+        Text('加入购物车')
+          .fontSize(15).fontColor(DesignTokens.ink)
+          .layoutWeight(1).textAlign(TextAlign.Center)
+          .padding({ top: 12, bottom: 12 })
+          .border({ width: 1, color: DesignTokens.hairline }).borderRadius(8)
+          .onClick(() => this.flash('已加入购物车'))
+        Text('立即购买')
+          .fontSize(15).fontWeight(FontWeight.Medium).fontColor(Color.White)
+          .layoutWeight(1).textAlign(TextAlign.Center)
+          .padding({ top: 12, bottom: 12 })
+          .backgroundColor(DesignTokens.link).borderRadius(8)
+          .onClick(() => this.flash('立即购买'))
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+      .backgroundColor(Color.White)
+      .border({ width: { top: 1 }, color: DesignTokens.hairline })
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
 export struct NativeMallOrdersPane {
   onClose: () => void = () => {};
   onOpen: (path: string) => void = (_path: string) => {};

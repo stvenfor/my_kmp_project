@@ -431,6 +431,8 @@ struct NativeFeatureHost: View {
             NativeCommunityCommentPage(onClose: onClose)
         } else if path == "/community/image_preview" {
             NativeCommunityImagePreviewPage(onClose: onClose)
+        } else if path == "/mall/detail" {
+            NativeMallDetailPage(onClose: onClose)
         } else if path == "/mall/orders" {
             NativeMallOrdersPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/mall" {

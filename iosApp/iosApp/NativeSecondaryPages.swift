@@ -402,6 +402,120 @@ struct NativePurchaseCalculatorPage: View {
     }
 }
 
+struct NativeMallDetailPage: View {
+    var onClose: () -> Void
+    @State private var qty = 1
+    @State private var skuSel = 0
+    @State private var toastText: String? = nil
+    private let skus = ["经典白", "店庆红"]
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                navBar(title: "商品详情", onClose: onClose, dark: false)
+                ScrollView {
+                    VStack(spacing: 8) {
+                        Text("店庆纪念马克杯", font: .system(size: 14), color: DesignTokens.mute)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 280)
+                            .background(Color(red: 0xF0/255, green: 0xF0/255, blue: 0xF0/255))
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("店庆纪念马克杯", font: .system(size: 18, weight: .bold), color: DesignTokens.ink)
+                            Text("39.90元", font: .system(size: 22, weight: .semibold), color: Color(red: 0xEE/255, green: 0, blue: 0))
+                            Text("实体商品 · 需填写收货信息", font: .system(size: 13), color: DesignTokens.body)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(16)
+                        .background(DesignTokens.canvas)
+
+                        HStack {
+                            Text("📍")
+                            Text("选择收货地址", font: .system(size: 14), color: DesignTokens.mute)
+                            Spacer()
+                            Text("›", font: .system(size: 18), color: DesignTokens.mute)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(DesignTokens.canvas)
+                        .onTapGesture { flash("选择收货地址") }
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("规格", font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
+                            HStack(spacing: 8) {
+                                ForEach(Array(skus.enumerated()), id: \.offset) { i, label in
+                                    let sel = skuSel == i
+                                    Text(label, font: .system(size: 13, weight: sel ? .semibold : .regular),
+                                          color: sel ? DesignTokens.link : DesignTokens.body)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(sel ? DesignTokens.link.opacity(0.12) : DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(sel ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
+                                        .onTapGesture { skuSel = i }
+                                }
+                            }
+                            HStack {
+                                Text("数量", font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
+                                Spacer()
+                                Text("库存 128", font: .system(size: 12), color: DesignTokens.mute)
+                                Button { if qty > 1 { qty -= 1 } } label: {
+                                    Text("−").padding(.horizontal, 10).padding(.vertical, 4)
+                                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(DesignTokens.hairline))
+                                }
+                                Text("\(qty)", font: .system(size: 15, weight: .medium))
+                                    .padding(.horizontal, 12)
+                                Button { qty += 1 } label: {
+                                    Text("+").padding(.horizontal, 10).padding(.vertical, 4)
+                                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(DesignTokens.hairline))
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(16)
+                        .background(DesignTokens.canvas)
+
+                        Color.clear.frame(height: 80)
+                    }
+                }
+
+                HStack(spacing: 12) {
+                    Button { flash("已加入购物车") } label: {
+                        Text("加入购物车", font: .system(size: 15), color: DesignTokens.ink)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline))
+                    }
+                    Button { flash("立即购买") } label: {
+                        Text("立即购买", font: .system(size: 15, weight: .semibold), color: .white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(DesignTokens.canvas)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 100)
+            }
+        }
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
+        }
+    }
+}
+
 struct NativeMallOrdersPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
