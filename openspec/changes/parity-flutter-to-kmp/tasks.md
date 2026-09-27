@@ -20,6 +20,7 @@
 - [x] 2.3 Persist privacy consent across relaunch on Android/iOS/OHOS actual storage
 - [x] 2.4 Pixel-accept splash → privacy → Home chrome on Android; record evidence; update matrix
 - [ ] 2.5 Repeat shell chrome pixel accept on iOS and OHOS; update registry rows for tokens/privacy/shell
+  - Android shell tabs hard-gated PASS (`notes/evidence/shell/Android/*.diff.json`); iOS/OHOS device accept still open — track Full Parity tickets #2/#4 (not falsely checked).
 
 ## 3. Auth & session (remote)
 
@@ -30,7 +31,7 @@
 - [ ] 3.5 Acceptance: guest→login→resume pending tab on all three targets with evidence
   - **Android Partial→device Pass for happy path**: guest Chat→Login→`200 OK` via `10.0.2.2:8080`→resume Chat list (`notes/evidence/auth/Android/04_after_login.png`). iOS/OHOS not run.
   - **Register blocker**: public `/user/register` hits Supabase `over_email_send_rate_limit` (was opaque 500/502). Accept used admin-created confirmed user. Go mapper now surfaces rate-limit copy.
-  - Leave unchecked until iOS/OHOS + register path unblocked or product accepts Android-only + registry note.
+  - Leave unchecked until iOS/OHOS + register path unblocked or product accepts Android-only + registry note — Full Parity ticket #4 (baseline shell/auth/tabs).
 
 ## 4. Home & Mine product surfaces
 

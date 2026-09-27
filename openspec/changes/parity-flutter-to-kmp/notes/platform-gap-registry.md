@@ -4,6 +4,8 @@ Status: `missing` | `stub` | `partial` | `ready` | `n/a-out-of-scope`
 
 Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all `ready` (or product-signed `n/a-out-of-scope`). Incomplete targets MUST stay listed with blocker + follow_up.
 
+**Harness note (not a capability):** Android Screenshot Diff Gate runner lives at `scripts/screenshot_diff_gate.py` (ADR 0003 / issue #2). This documents that the pixel-gate tooling exists; it does **not** mark pay / WeChat / RongCloud / OHOS camera (or any other SDK gap) as `ready`.
+
 | capability | android | ios | ohos | blocker | flutter_ref | kmp_ref | follow_up |
 |---|---|---|---|---|---|---|---|
 | design tokens vs Flutter | partial | partial | partial | Tokens aligned to AppTheme hex; pixel evidence pending | commons/ui/lib/theme/app_theme.dart | core/design/DemoColors.kt | phase 2.4–2.5 evidence |

@@ -68,7 +68,10 @@ fun MainArkUIViewController(env: napi_env): napi_value {
 }
 
 /**
- * kind: 0 = Mine island (routeCode 0=settings, 1=personalized, 2=membership)
+ * kind: 0 = Mine island
+ *   routeCode: 0=settings, 1=personalized, 2=membership, 3=about,
+ *   4=profile, 5=addresses, 6=calculator, 7=deal_invoice, 8=deal_invoice_upload,
+ *   9=address_edit
  * kind: 1 = Secondary route — [routeCode] ignored; use [KnSetOhosSecondaryRoute] for path.
  */
 @OptIn(ExperimentalNativeApi::class)
@@ -79,6 +82,13 @@ fun KnSetOhosHost(kind: Int, routeCode: Int) {
         OhosComposeHostRequest.mineRoute = when (routeCode) {
             1 -> MineIslandRoute.Personalized
             2 -> MineIslandRoute.Membership
+            3 -> MineIslandRoute.About
+            4 -> MineIslandRoute.Profile
+            5 -> MineIslandRoute.Addresses
+            6 -> MineIslandRoute.Calculator
+            7 -> MineIslandRoute.DealInvoiceDemo
+            8 -> MineIslandRoute.DealInvoiceUpload
+            9 -> MineIslandRoute.AddressEdit
             else -> MineIslandRoute.Settings
         }
     }

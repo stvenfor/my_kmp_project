@@ -451,3 +451,135 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
     }
   }
 }
+
+/**
+ * Full Parity #3/#23: map Flutter path → Index.nativePane id.
+ * Mine/settings/membership stay on Compose island / SecondaryRouteIsland.
+ * Unknown non-Mine paths use nativePane='feature' (catalog host), not Legacy island.
+ */
+export function nativePaneIdFor(pathOrLabel: string): string {
+  const path = resolveNativePath(pathOrLabel);
+  if (path.length === 0) {
+    return '';
+  }
+  if (path === '/' || path === '/main' || path === '/home' || path === '/chat' ||
+    path === '/community' || path === '/mine') {
+    return '';
+  }
+  if (path.indexOf('/chat/') === 0) {
+    return '';
+  }
+  if (path.startsWith('/mine') || path.startsWith('/settings')) {
+    return '';
+  }
+  if (path === '/pay/membership' || path.startsWith('/pay/membership')) {
+    return '';
+  }
+  if (path === '/home/search') {
+    return 'search';
+  }
+  if (path === '/home/all_services') {
+    return 'all_services';
+  }
+  if (path === '/home/learning_report') {
+    return 'learning_report';
+  }
+  if (path === '/home/strategy') {
+    return 'strategy';
+  }
+  if (path === '/home/check_in_mall') {
+    return 'check_in_mall';
+  }
+  if (path === '/home/dubbing_feed') {
+    return 'dubbing';
+  }
+  if (path === '/home/hot_rank_detail') {
+    return 'hot_rank';
+  }
+  if (path === '/home/used_car' || path.startsWith('/home/used_car/')) {
+    return 'used_car';
+  }
+  if (path === '/home/ledger' || path.startsWith('/home/ledger/')) {
+    return 'ledger';
+  }
+  if (path === '/home/data_analytics' || path.startsWith('/home/data_analytics/')) {
+    return 'data_analytics';
+  }
+  if (path === '/home/life_service') {
+    return 'life_service';
+  }
+  if (path === '/home/live_commerce') {
+    return 'club';
+  }
+  if (path === '/home/club') {
+    return 'club';
+  }
+  if (path === '/home/after_sales' || path.startsWith('/home/after_sales/')) {
+    return 'after_sales';
+  }
+  if (path === '/home/new_car_follow' || path.startsWith('/home/new_car_follow/')) {
+    return 'new_car_follow';
+  }
+  if (path.startsWith('/home/todo/')) {
+    return 'todo';
+  }
+  if (path === '/community/search') {
+    return 'community_search';
+  }
+  if (path === '/community/publish') {
+    return 'community_publish';
+  }
+  if (path === '/community/comment') {
+    return 'community_comment';
+  }
+  if (path === '/community/image_preview') {
+    return 'community_image_preview';
+  }
+  if (path === '/friend' || path.startsWith('/friend/')) {
+    return 'friend';
+  }
+  if (path === '/live' || path.startsWith('/live/')) {
+    return 'live';
+  }
+  if (path === '/mall/detail') {
+    return 'mall_detail';
+  }
+  if (path === '/mall/orders') {
+    return 'mall_orders';
+  }
+  if (path === '/mall' || path.startsWith('/mall/')) {
+    return 'mall';
+  }
+  if (path === '/wallet' || path.startsWith('/wallet/')) {
+    return 'wallet';
+  }
+  if (path === '/video/short/play') {
+    return 'short_play';
+  }
+  if (path === '/video/short/publish') {
+    return 'short_publish';
+  }
+  if (path === '/video/short/help') {
+    return 'short_help';
+  }
+  if (path === '/video/short' || path.startsWith('/video/')) {
+    return 'short_video';
+  }
+  if (path === '/ai/stream' || path.startsWith('/ai/')) {
+    return 'ai_stream';
+  }
+  if (path.startsWith('/music')) {
+    return 'music';
+  }
+  if (path.startsWith('/classroom')) {
+    return 'classroom';
+  }
+  if (path === '/web' || path.startsWith('http')) {
+    return 'web';
+  }
+  if (path === '/scan' || path.startsWith('/scan')) {
+    return 'scan';
+  }
+  // Catalog-backed generic native host (not Legacy SecondaryRouteIsland).
+  return 'feature';
+}

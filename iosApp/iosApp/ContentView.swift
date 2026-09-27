@@ -68,6 +68,8 @@ struct ContentView: View {
     @State private var mineIslandRoute = "settings"
     @State private var showSecondary = false
     @State private var secondaryRoute = "/home/search"
+    @State private var showNativeFeature = false
+    @State private var nativeFeaturePath = "/home/search"
     @State private var chatPendingPeer: String? = nil
     @State private var toastText: String? = nil
     @State private var pendingTabAfterLogin: MainTab? = nil
@@ -109,8 +111,8 @@ struct ContentView: View {
         }
     }
 
-    /// Route ownership: tab roots native; Mine island Compose; all other product
-    /// routes → Compose SecondaryRouteIsland (Flutter-aligned commonMain hosts).
+    /// Route ownership: tab roots native; Mine island Compose; non-Mine with a
+    /// SwiftUI host → NativeFeatureHost (#3); else Legacy SecondaryRouteIsland.
     private func handleDeepLinkOrLabel(_ raw: String) {
         let route: String
         if let parsed = MainViewControllerKt.AcceptDeepLinkFromIos(uri: raw) {
@@ -150,9 +152,9 @@ struct ContentView: View {
             }
             return
         }
-        // Flutter DealInvoiceNavigation: require login, then open demo.
+        // Flutter DealInvoiceNavigation: require login, then Mine island demo.
         if key == "新车成交" || key == "/settings/deal_invoice_demo" {
-            openSecondaryWithSoftAuth("/settings/deal_invoice_demo")
+            openMineIslandWithSoftAuth("deal_invoice")
             return
         }
         let path = NativeRouteResolver.resolve(key)
@@ -187,14 +189,84 @@ struct ContentView: View {
         case "/mine/about":
             mineIslandRoute = "about"
             showMineIsland = true
+        case "/mine/profile":
+            openMineIslandWithSoftAuth("profile")
+            return
+        case "/mine/addresses":
+            openMineIslandWithSoftAuth("addresses")
+            return
+        case "/mine/addresses/edit":
+            openMineIslandWithSoftAuth("address_edit")
+            return
+        case "/mine/purchase_calculator":
+            mineIslandRoute = "calculator"
+            showMineIsland = true
+        case "/settings/deal_invoice_demo":
+            openMineIslandWithSoftAuth("deal_invoice")
+            return
+        case "/settings/deal_invoice/upload":
+            openMineIslandWithSoftAuth("deal_invoice_upload")
+            return
         default:
             let target = path.isEmpty ? key : path
             if Self.requiresLogin(for: target) {
                 openSecondaryWithSoftAuth(target)
             } else {
-                secondaryRoute = target
-                showSecondary = true
+                openSecondaryOrNative(target)
             }
+        }
+    }
+
+    /// Prefer native shell when a dedicated host exists; else Legacy island.
+    private func openSecondaryOrNative(_ route: String) {
+        if let island = Self.mineIslandKey(for: route) {
+            mineIslandRoute = island
+            showMineIsland = true
+            return
+        }
+        if NativeRouteResolver.hasNativeShellHost(route) {
+            nativeFeaturePath = route
+            showNativeFeature = true
+        } else {
+            secondaryRoute = route
+            showSecondary = true
+        }
+    }
+
+    private func openMineIslandWithSoftAuth(_ islandKey: String) {
+        if !isLoggedIn {
+            pendingRouteAfterLogin = Self.pathForMineIslandKey(islandKey)
+            showLogin = true
+            return
+        }
+        mineIslandRoute = islandKey
+        showMineIsland = true
+    }
+
+    private static func pathForMineIslandKey(_ key: String) -> String {
+        switch key {
+        case "profile": return "/mine/profile"
+        case "addresses": return "/mine/addresses"
+        case "address_edit": return "/mine/addresses/edit"
+        case "deal_invoice_upload": return "/settings/deal_invoice/upload"
+        case "deal_invoice": return "/settings/deal_invoice_demo"
+        default: return "/settings/deal_invoice_demo"
+        }
+    }
+
+    private static func mineIslandKey(for route: String) -> String? {
+        switch route {
+        case "/settings", "/mine/settings": return "settings"
+        case "/mine/personalized_settings": return "personalized"
+        case "/mine/about": return "about"
+        case "/pay/membership": return "membership"
+        case "/mine/profile": return "profile"
+        case "/mine/addresses": return "addresses"
+        case "/mine/addresses/edit": return "address_edit"
+        case "/mine/purchase_calculator": return "calculator"
+        case "/settings/deal_invoice_demo": return "deal_invoice"
+        case "/settings/deal_invoice/upload": return "deal_invoice_upload"
+        default: return nil
         }
     }
 
@@ -222,8 +294,7 @@ struct ContentView: View {
             showLogin = true
             return
         }
-        secondaryRoute = route
-        showSecondary = true
+        openSecondaryOrNative(route)
     }
 
     private func chatPeerFromDeepLink(_ raw: String) -> String {
@@ -319,8 +390,7 @@ struct ContentView: View {
                     }
                     if let route = pendingRouteAfterLogin {
                         pendingRouteAfterLogin = nil
-                        secondaryRoute = route
-                        showSecondary = true
+                        openSecondaryOrNative(route)
                     }
                 },
                 onCancel: {
@@ -334,6 +404,14 @@ struct ContentView: View {
         .fullScreenCover(isPresented: $showMineIsland) {
             MineIslandHost(route: mineIslandRoute)
                 .ignoresSafeArea(.all)
+        }
+        .fullScreenCover(isPresented: $showNativeFeature) {
+            NativeFeatureHost(
+                pathOrLabel: nativeFeaturePath,
+                onClose: { showNativeFeature = false },
+                onOpen: { openOwnedRoute($0) }
+            )
+            .ignoresSafeArea(.all)
         }
         .fullScreenCover(isPresented: $showSecondary) {
             SecondaryRouteHost(route: secondaryRoute)

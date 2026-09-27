@@ -13,7 +13,7 @@ import { NativeHomeContent } from './NativeHomeContent';
 import { NativeLoginPane } from '../auth/NativeLoginPane';
 import { AuthSession, sharedSessionStore } from '../auth/SessionStore';
 import { PENDING_DEEP_LINK_KEY } from '../entryability/EntryAbility';
-import { featurePageFor, FeatureRow, resolveNativePath } from './NativeFeatureCatalog';
+import { featurePageFor, FeatureRow, resolveNativePath, nativePaneIdFor } from './NativeFeatureCatalog';
 import {
   NativeSearchPane,
   NativeAllServicesPane,
@@ -274,7 +274,7 @@ struct Index {
     if (this.pendingRouteAfterLogin.length > 0) {
       const route = this.pendingRouteAfterLogin;
       this.pendingRouteAfterLogin = '';
-      this.openSecondaryCompose(route);
+      this.openSecondaryOrNative(route);
     }
   }
 
@@ -821,6 +821,22 @@ struct Index {
     this.openComposeHost(0, personalized ? 1 : 0);
   }
 
+  /** Mine island routeCode — see KnSetOhosHost (0 settings … 8 deal upload). */
+  private openMineIslandRouteWithSoftAuth(routeCode: number): void {
+    const gated = routeCode === 4 || routeCode === 5 || routeCode === 7 ||
+      routeCode === 8 || routeCode === 9;
+    if (!this.isLoggedIn && gated) {
+      this.pendingRouteAfterLogin = routeCode === 4 ? '/mine/profile'
+        : routeCode === 5 ? '/mine/addresses'
+          : routeCode === 9 ? '/mine/addresses/edit'
+            : routeCode === 8 ? '/settings/deal_invoice/upload'
+              : '/settings/deal_invoice_demo';
+      this.showLogin = true;
+      return;
+    }
+    this.openComposeHost(0, routeCode);
+  }
+
   private openSecondaryCompose(route: string): void {
     if (libentry !== undefined && libentry.SetOhosSecondaryRoute !== undefined) {
       libentry.SetOhosSecondaryRoute(route);
@@ -848,18 +864,18 @@ struct Index {
       promptAction.showToast({ message: title, duration: 2000 });
       return;
     }
-    // Flutter DealInvoiceNavigation: login then open demo.
+    // Flutter DealInvoiceNavigation: login then Mine island demo.
     if (title === '新车成交' || title === '/settings/deal_invoice_demo') {
-      this.openSecondaryWithSoftAuth('/settings/deal_invoice_demo');
+      this.openMineIslandRouteWithSoftAuth(7);
       return;
     }
     const path = resolveNativePath(title);
     if (path === '/settings') {
-      this.openMineIsland(false);
+      this.openComposeHost(0, 0);
       return;
     }
     if (path === '/mine/personalized_settings') {
-      this.openMineIsland(true);
+      this.openComposeHost(0, 1);
       return;
     }
     if (path === '/pay/membership') {
@@ -867,7 +883,27 @@ struct Index {
       return;
     }
     if (path === '/mine/about') {
-      this.openComposeHost(0, 0);
+      this.openComposeHost(0, 3);
+      return;
+    }
+    if (path === '/mine/profile') {
+      this.openMineIslandRouteWithSoftAuth(4);
+      return;
+    }
+    if (path === '/mine/addresses/edit' || path.indexOf('/mine/addresses/edit') === 0) {
+      this.openMineIslandRouteWithSoftAuth(9);
+      return;
+    }
+    if (path === '/mine/addresses' || path.indexOf('/mine/addresses/') === 0) {
+      this.openMineIslandRouteWithSoftAuth(5);
+      return;
+    }
+    if (path === '/mine/purchase_calculator') {
+      this.openComposeHost(0, 6);
+      return;
+    }
+    if (path.indexOf('/settings/deal_invoice') === 0) {
+      this.openMineIslandRouteWithSoftAuth(path.indexOf('upload') >= 0 ? 8 : 7);
       return;
     }
     if (path === '/chat' || title === '消息') {
@@ -905,16 +941,26 @@ struct Index {
       this.tab = MainTab.Mine;
       return;
     }
-    // Flutter-aligned secondary UI via Compose SecondaryRouteIsland (commonMain hosts).
-    this.nativePane = '';
-    this.featurePath = '';
+    // Full Parity #3: prefer dedicated ArkTS native pane; else Legacy SecondaryRouteIsland.
     this.showStub = false;
     const target = path.length > 0 ? path : title;
     if (this.requiresLoginForRoute(target)) {
       this.openSecondaryWithSoftAuth(target);
     } else {
-      this.openSecondaryCompose(target);
+      this.openSecondaryOrNative(target);
     }
+  }
+
+  private openSecondaryOrNative(route: string): void {
+    const pane = nativePaneIdFor(route);
+    if (pane.length > 0) {
+      this.nativePane = pane;
+      this.featurePath = route;
+      return;
+    }
+    this.nativePane = '';
+    this.featurePath = '';
+    this.openSecondaryCompose(route);
   }
 
   private requiresLoginForRoute(route: string): boolean {
@@ -969,7 +1015,7 @@ struct Index {
       this.showLogin = true;
       return;
     }
-    this.openSecondaryCompose(route);
+    this.openSecondaryOrNative(route);
   }
 
 

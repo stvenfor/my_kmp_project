@@ -4,7 +4,7 @@
 
 | golden_path | target | result | evidence | notes |
 |---|---|---|---|---|
-| shell | Android | Pass | `shell/Android/` | 并排 |
+| shell | Android | Pass | `shell/Android/home.diff.json`, `chat.diff.json`, `community.diff.json`, `mine.diff.json` (all PASS, mse≤2%) | Android Screenshot Diff Gate hard pass; 并排 |
 | shell | iOS | Pass | `shell/iOS/main.kmp.png` | SwiftUI 壳 |
 | shell | OHOS | Pass | `shell/OHOS/main.kmp.png` | ArkTS 壳 |
 | auth | Android | Pass | `auth/Android/` | OTP 配额 partial |

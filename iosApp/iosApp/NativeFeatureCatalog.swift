@@ -8,6 +8,24 @@ enum NativeRouteResolver {
         return labelToPath[key] ?? key
     }
 
+    /// Full Parity #3/#23: any non-Mine product path prefers NativeFeatureHost
+    /// (dedicated page or genericList). Mine / settings / membership stay on the
+    /// Compose island or SecondaryRouteIsland (MineRouteHost).
+    static func hasNativeShellHost(_ raw: String) -> Bool {
+        let path = resolve(raw)
+        if path.isEmpty { return false }
+        // Tab roots / splash handled by ContentView switch — not secondary hosts.
+        if path == "/" || path == "/main" || path == "/home" || path == "/chat"
+            || path == "/community" || path == "/mine" {
+            return false
+        }
+        if path.hasPrefix("/chat/") { return false } // chat detail stays in Chat tab
+        // Mine island ownership (ADR 0002): not NativeFeatureHost.
+        if path.hasPrefix("/mine") || path.hasPrefix("/settings") { return false }
+        if path == "/pay/membership" || path.hasPrefix("/pay/membership") { return false }
+        return true
+    }
+
     /// Align with DeepLinkRouter.extractPath: `myai://mall/orders` → `/mall/orders`.
     private static func stripSchemeToPath(_ raw: String) -> String {
         var candidate = raw

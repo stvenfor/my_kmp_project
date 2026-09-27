@@ -193,6 +193,14 @@ internal fun NativeAndroidMain() {
     }
 
     fun openMineRoute(route: String) {
+        // Full Parity #18/#19: preferred Mine Compose Island for owned secondaries.
+        val island = MineIslandRoute.fromPath(route)
+        if (island != null) {
+            islandRoute = island
+            overlay = ShellOverlay.MineIsland
+            bottomBarVisible = false
+            return
+        }
         mineRoute = route
         mineRouteStack = listOf(route)
         overlay = ShellOverlay.MineRoute
