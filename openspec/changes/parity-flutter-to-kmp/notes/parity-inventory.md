@@ -11,7 +11,7 @@ Status: `todo` | `wip` | `packet-pass` | `excluded` | `gap-only`
 
 **#23 Legacy island (Android):** Home/chat/community/content secondaries open via `NativeAndroidMain` overlays (`HomeRouteHost` / `CommunityRouteHost` / `ContentRouteHost` / `MineIsland`) — not `SecondaryRouteIsland`. `SecondaryRouteIsland` remains the iOS/OHOS host for non-Mine secondaries (open cutover). Do not delete the island until iOS/OHOS native hosts exist.
 
-**#24 Closeout (partial):** Android PASS — shell/auth/all_services/club/live_commerce/life_service/ledger/new_car_follow. Still wip — search≈2.88, strategy≈2.94, hot_rank≈2.19, analytics≈2.18, check_in/learning≈3.7, after_sales≈5.9, dubbing≈6.5, used_car≈10 (Flutter auth). Chat/community/mine/media gates not re-run this batch. Platform gaps unchanged.
+**#24 Closeout (partial):** Android PASS — shell/auth/all_services/club/live_commerce/life_service/ledger/new_car_follow. Still wip — search≈2.88, strategy≈2.90, hot_rank≈2.19, analytics≈2.18, check_in/learning≈3.7, after_sales≈5.9, dubbing≈6.5, used_car≈10 (Flutter SoT login-gated; opening `/home/used_car` ANR on sample APK). Chat/community/mine/media gates not re-run this batch. Platform gaps unchanged.
 
 
 ## GitHub tickets (synced)
@@ -73,9 +73,9 @@ Parent spec: #1
 | `/home/learning_report` | home-learning | native-cutover | wip | gate FAIL mse=3.7506 — `home/Android/home_learning_report.diff.json` |
 | `/home/check_in_mall` | home-checkin | native-cutover | wip | gate FAIL mse=3.734 — `home/Android/home_check_in_mall.diff.json` |
 | `/home/dubbing_feed` | home-dubbing | native-cutover | wip | gate FAIL mse=6.4712 — `home/Android/home_dubbing_feed.diff.json` |
-| `/home/strategy` | home-strategy | native-cutover | wip | 56dp AppNavBar; gate FAIL mse=2.9364 — `home/Android/home_strategy.diff.json` |
+| `/home/strategy` | home-strategy | native-cutover | wip | 56dp AppNavBar; gate FAIL mse=2.895 — `home/Android/home_strategy.diff.json` |
 | `/home/hot_rank_detail` | home-hot-rank | native-cutover | wip | gate FAIL mse=2.1854 — `home/Android/home_hot_rank_detail.diff.json` |
-| `/home/used_car` (+ detail/create) | home-used-car | native-cutover | wip | Flutter SoT often login-gated; gate FAIL mse=10.0942 — `home/Android/home_used_car.diff.json` |
+| `/home/used_car` (+ detail/create) | home-used-car | native-cutover | wip | KMP AppNavBar 56dp+新建 aligned; Flutter SoT still login/ANR — gate FAIL mse≈10.2 vs login SoT — `home/Android/home_used_car.diff.json` |
 | `/home/ledger` (+ detail) | home-ledger | native-cutover | pass | gate PASS mse=1.3707 — `home/Android/home_ledger.diff.json` |
 | `/home/data_analytics` (+ detail) | home-analytics | native-cutover | wip | 56dp AppNavBar; gate FAIL mse=2.1798 — `home/Android/home_data_analytics.diff.json` |
 | `/home/life_service` | home-life | native-cutover | pass | gate PASS mse=1.998 — `home/Android/home_life_service.diff.json` |

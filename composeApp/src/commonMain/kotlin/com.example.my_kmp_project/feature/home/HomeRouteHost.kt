@@ -649,11 +649,16 @@ private fun ClubScreen(onBack: () -> Unit, onJoin: () -> Unit = {}) {
 
 /** Flutter `AppNavBar` — 56.dp toolbar (not M3 64.dp MineTopBar). */
 @Composable
-internal fun FlutterFeatureTopBar(title: String, onBack: () -> Unit) {
+internal fun FlutterFeatureTopBar(
+    title: String,
+    onBack: () -> Unit,
+    containerColor: Color = DemoColors.PageBg,
+    actions: (@Composable () -> Unit)? = null,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(DemoColors.PageBg)
+            .background(containerColor)
             .statusBarsPadding(),
     ) {
         Row(
@@ -680,7 +685,16 @@ internal fun FlutterFeatureTopBar(title: String, onBack: () -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f),
             )
-            Spacer(modifier = Modifier.size(48.dp))
+            if (actions != null) {
+                Box(
+                    modifier = Modifier.size(48.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    actions()
+                }
+            } else {
+                Spacer(modifier = Modifier.size(48.dp))
+            }
         }
     }
 }
@@ -2201,14 +2215,18 @@ private fun UsedCarListScreen(
 
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(bg)) {
-        MineTopBar(
+        // Flutter UsedCarListPage AppNavBar (56.dp) + add_circle_outline action.
+        FlutterFeatureTopBar(
             title = "二手车",
             onBack = onBack,
             containerColor = Color.White,
             actions = {
-                TextButton(onClick = onCreate) {
-                    Text("新建", color = accent)
-                }
+                Text(
+                    text = "＋",
+                    color = accent,
+                    fontSize = 22.sp,
+                    modifier = Modifier.clickable(onClick = onCreate),
+                )
             },
         )
         LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
