@@ -18,6 +18,9 @@ enum NativeRouteResolver {
         if path.hasPrefix("/wallet") { return "/wallet" }
         if path.hasPrefix("/ai") { return "/ai/stream" }
         if path.hasPrefix("/music") { return "/music/list" }
+        if path.hasPrefix("/classroom/homework") || path.hasPrefix("/classroom/video") || path.hasPrefix("/classroom/gift") {
+            return path
+        }
         if path.hasPrefix("/classroom") { return "/classroom/my_class" }
         if path.hasPrefix("/community/publish") { return "/community/publish" }
         if path.hasPrefix("/community/search") { return "/community/search" }
@@ -459,6 +462,18 @@ struct NativeFeatureHost: View {
             NativeCheckInMallPage(onClose: onClose)
         } else if path == "/music/list" {
             NativeMusicPage(onClose: onClose)
+        } else if path == "/classroom/homework" || path == "/classroom/homework_stats" {
+            NativeHomeworkStatsPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/classroom/homework/detail_teacher" {
+            NativeHomeworkDetailPage(title: "教师作业详情", detail: "批改进度 12/30 · 平均分 86", onClose: onClose)
+        } else if path == "/classroom/homework/detail_student" {
+            NativeHomeworkDetailPage(title: "学生作业详情", detail: "已提交 · 待批改 · 附件 2", onClose: onClose)
+        } else if path == "/classroom/homework/dubbing" {
+            NativeHomeworkDetailPage(title: "配音作业", detail: "录制入口 stub · 见 media gap", onClose: onClose, action: "开始录制")
+        } else if path == "/classroom/homework/review" {
+            NativeHomeworkDetailPage(title: "作业点评", detail: "教师评语：语速适中，注意连读。", onClose: onClose)
+        } else if path == "/classroom/video" {
+            NativeHomeworkDetailPage(title: "课堂视频", detail: "播放头 mock · 非 short 链路", onClose: onClose)
         } else if path == "/classroom/my_class" {
             NativeClassroomPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/used_car" {

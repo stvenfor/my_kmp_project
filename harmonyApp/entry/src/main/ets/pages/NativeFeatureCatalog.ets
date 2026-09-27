@@ -143,9 +143,12 @@ export function resolveNativePath(raw: string): string {
     if (key.startsWith('/music')) {
       return '/music/list';
     }
-    if (key.startsWith('/classroom')) {
-      return '/classroom/my_class';
-    }
+    if (key.startsWith('/classroom/homework') || key.startsWith('/classroom/video') || key.startsWith('/classroom/gift')) {
+    return key;
+  }
+  if (key.startsWith('/classroom')) {
+    return '/classroom/my_class';
+  }
     if (key.startsWith('/community/publish')) {
       return '/community/publish';
     }

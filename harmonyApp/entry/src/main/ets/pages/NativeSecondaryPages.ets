@@ -2080,6 +2080,102 @@ export struct NativeMusicPane {
 }
 
 @Component
+export struct NativeHomeworkStatsPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_path: string) => {};
+  private rows: string[][] = [
+    ['语法练习 3', '书面', '今日 23:59'],
+    ['配音作业 · 致橡树', '配音', '明日 18:00'],
+    ['听力精听', '听力', '本周六'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('作业统计').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      List() {
+        ListItem() {
+          Text('班级作业概览（mock）').fontSize(13).fontColor(DesignTokens.body).padding({ bottom: 8 })
+        }
+        ForEach(this.rows, (row: string[]) => {
+          ListItem() {
+            Column({ space: 4 }) {
+              Text(row[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(`${row[1]} · 截止 ${row[2]}`).fontSize(12).fontColor(DesignTokens.mute)
+            }
+            .width('100%')
+            .padding(14)
+            .margin({ bottom: 10 })
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(10)
+            .alignItems(HorizontalAlign.Start)
+            .onClick(() => {
+              if (row[1] === '配音') {
+                this.onOpen('/classroom/homework/dubbing');
+              } else {
+                this.onOpen('/classroom/homework/detail_teacher');
+              }
+            })
+          }
+        })
+        ListItem() {
+          Text('学生视角详情 →').fontSize(15).fontColor(DesignTokens.link)
+            .padding({ top: 8 }).onClick(() => this.onOpen('/classroom/homework/detail_student'))
+        }
+        ListItem() {
+          Text('作业点评 →').fontSize(15).fontColor(DesignTokens.link)
+            .onClick(() => this.onOpen('/classroom/homework/review'))
+        }
+        ListItem() {
+          Text('课堂视频 →').fontSize(15).fontColor(DesignTokens.link)
+            .onClick(() => this.onOpen('/classroom/video'))
+        }
+      }.layoutWeight(1).width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeHomeworkDetailPane {
+  titleText: string = '作业详情';
+  detail: string = '';
+  action: string = '';
+  onClose: () => void = () => {};
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text(this.titleText).fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Column({ space: 16 }) {
+        Text(this.detail).fontSize(15).fontColor(DesignTokens.body)
+        if (this.action.length > 0) {
+          Text(this.action)
+            .fontSize(15).fontColor(Color.White)
+            .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+            .backgroundColor(DesignTokens.link).borderRadius(8)
+            .onClick(() => this.flash(`${this.action}（mock）`))
+        }
+      }.width('100%').padding(16).alignItems(HorizontalAlign.Start)
+      Blank().layoutWeight(1)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
 export struct NativeClassroomPane {
   onClose: () => void = () => {};
   onOpen: (path: string) => void = (_p: string) => {};

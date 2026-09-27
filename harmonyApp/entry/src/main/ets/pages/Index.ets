@@ -39,6 +39,8 @@ import {
   NativeCheckInMallPane,
   NativeMusicPane,
   NativeClassroomPane,
+  NativeHomeworkDetailPane,
+  NativeHomeworkStatsPane,
   NativeUsedCarPane,
   NativeNewCarFollowPane,
   NativeClubPane,

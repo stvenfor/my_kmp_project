@@ -2050,6 +2050,95 @@ struct NativeMusicPage: View {
     }
 }
 
+struct NativeHomeworkStatsPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    private let rows: [(String, String, String)] = [
+        ("语法练习 3", "书面", "今日 23:59"),
+        ("配音作业 · 致橡树", "配音", "明日 18:00"),
+        ("听力精听", "听力", "本周六"),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "作业统计", onClose: onClose, dark: false)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("班级作业概览（mock）", font: .system(size: 13), color: DesignTokens.body)
+                    ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(row.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                            Text("\(row.1) · 截止 \(row.2)", font: .system(size: 12), color: DesignTokens.mute)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                        .onTapGesture {
+                            if row.1 == "配音" {
+                                onOpen?("/classroom/homework/dubbing")
+                            } else {
+                                onOpen?("/classroom/homework/detail_teacher")
+                            }
+                        }
+                    }
+                    Button("学生视角详情 →") { onOpen?("/classroom/homework/detail_student") }
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(DesignTokens.link)
+                    Button("作业点评 →") { onOpen?("/classroom/homework/review") }
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(DesignTokens.link)
+                    Button("课堂视频 →") { onOpen?("/classroom/video") }
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(DesignTokens.link)
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeHomeworkDetailPage: View {
+    var title: String
+    var detail: String
+    var onClose: () -> Void
+    var action: String? = nil
+    @State private var toastText: String? = nil
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                navBar(title: title, onClose: onClose, dark: false)
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(detail, font: .system(size: 15), color: DesignTokens.body)
+                    if let action {
+                        Button(action) { flash(action + "（mock）") }
+                            .buttonStyle(.borderedProminent)
+                            .tint(DesignTokens.link)
+                    }
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
+        }
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
+        }
+    }
+}
+
 struct NativeClassroomPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
@@ -2078,7 +2167,7 @@ struct NativeClassroomPage: View {
                         }
                         .padding(16)
                         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                        .onTapGesture { onOpen?("/classroom/homework") }
+                        .onTapGesture { onOpen?("/classroom/homework_stats") }
                     }
                 }
                 .padding(16)
