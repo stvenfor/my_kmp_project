@@ -2415,28 +2415,107 @@ export struct NativeFeedbackPane {
 export struct NativeProfilePane {
   onClose: () => void = () => {};
   @State nickname: string = 'qa_user';
-  @State role: string = '销售顾问';
+  @State dirty: boolean = false;
+  private phone: string = '138****5172';
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
   build() {
     Column() {
       Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('个人资料').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-        Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      Column({ space: 16 }) {
-        Text('头').fontSize(28).fontColor(DesignTokens.link)
-          .width(72).height(72).textAlign(TextAlign.Center)
-          .borderRadius(36).backgroundColor('#260070F3')
-        Text('昵称').fontSize(13).fontColor(DesignTokens.body)
-        TextInput({ text: this.nickname }).height(44).padding({ left: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(10)
-          .onChange((v: string) => { this.nickname = v; })
-        Text('职位').fontSize(13).fontColor(DesignTokens.body)
-        TextInput({ text: this.role }).height(44).padding({ left: 12 }).backgroundColor(DesignTokens.canvas).borderRadius(10)
-          .onChange((v: string) => { this.role = v; })
-        Button('保存').backgroundColor(DesignTokens.link).width('100%').onClick(() => this.onClose())
-      }.padding(16).width('100%').alignItems(HorizontalAlign.Start)
-      Blank().layoutWeight(1)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+        Text('‹').fontSize(28).fontColor(DesignTokens.link)
+          .width(44).onClick(() => this.onClose())
+        Text('个人资料')
+          .fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          .layoutWeight(1).textAlign(TextAlign.Center)
+        Text('保存')
+          .fontSize(16).fontWeight(FontWeight.Medium)
+          .fontColor(this.dirty ? DesignTokens.link : DesignTokens.mute)
+          .width(52).textAlign(TextAlign.End)
+          .onClick(() => {
+            if (!this.dirty) {
+              return;
+            }
+            this.flash('已保存');
+            this.dirty = false;
+            this.onClose();
+          })
+      }
+      .width('100%').height(44).padding({ left: 8, right: 8 })
+      .backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column() {
+          Column({ space: 10 }) {
+            Stack({ alignContent: Alignment.BottomEnd }) {
+              Text('Q')
+                .fontSize(40).fontWeight(FontWeight.Bold).fontColor(DesignTokens.mute)
+                .width(104).height(104).textAlign(TextAlign.Center)
+                .borderRadius(52).backgroundColor('#FFE0E0E0')
+                .onClick(() => this.flash('更换头像（开发中）'))
+              Text('📷')
+                .fontSize(12)
+                .width(32).height(32).textAlign(TextAlign.Center)
+                .borderRadius(16).backgroundColor(DesignTokens.link)
+                .border({ width: 2.5, color: Color.White })
+            }
+            Text('轻触更换头像').fontSize(13).fontColor(DesignTokens.mute)
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Center)
+          .margin({ top: 24, bottom: 32 })
+
+          Text('基本信息')
+            .fontSize(12).fontWeight(FontWeight.Medium).fontColor(DesignTokens.mute)
+            .margin({ left: 20 })
+
+          Column() {
+            Row() {
+              Text('昵称').fontSize(15).fontColor(DesignTokens.ink).width(72)
+              TextInput({ placeholder: '请输入昵称', text: this.nickname })
+                .layoutWeight(1).height(40).textAlign(TextAlign.End)
+                .backgroundColor(Color.Transparent)
+                .onChange((v: string) => {
+                  this.nickname = v;
+                  this.dirty = true;
+                })
+            }
+            .width('100%')
+            .padding({ left: 16, right: 16, top: 14, bottom: 14 })
+
+            Row().width('100%').height(1).backgroundColor(DesignTokens.hairline)
+              .margin({ left: 16, right: 16 })
+
+            Row() {
+              Text('手机号').fontSize(15).fontColor(DesignTokens.ink).width(72)
+              Blank().layoutWeight(1)
+              Text(this.phone).fontSize(15).fontColor(DesignTokens.body)
+            }
+            .width('100%')
+            .padding({ left: 16, right: 16, top: 14, bottom: 14 })
+          }
+          .width('100%')
+          .margin({ left: 16, right: 16, top: 8 })
+          .backgroundColor(Color.White)
+          .borderRadius(12)
+
+          Text('退出登录')
+            .fontSize(16).fontWeight(FontWeight.Medium).fontColor('#FFE53935')
+            .width('100%')
+            .textAlign(TextAlign.Center)
+            .padding({ top: 16, bottom: 16 })
+            .margin({ left: 16, right: 16, top: 32, bottom: 40 })
+            .backgroundColor(Color.White)
+            .borderRadius(12)
+            .onClick(() => this.flash('退出登录（开发中）'))
+        }
+        .width('100%')
+      }
+      .layoutWeight(1).width('100%').scrollBar(BarState.Off)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
 

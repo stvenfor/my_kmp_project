@@ -2382,31 +2382,113 @@ struct NativeFeedbackPage: View {
 struct NativeProfilePage: View {
     var onClose: () -> Void
     @State private var nickname = "qa_user"
-    @State private var role = "销售顾问"
+    @State private var dirty = false
+    @State private var toastText: String? = nil
+    private let phone = "138****5172"
+
     var body: some View {
-        VStack(spacing: 0) {
-            navBar(title: "个人资料", onClose: onClose, dark: false)
-            VStack(spacing: 16) {
-                Circle().fill(DesignTokens.link.opacity(0.15)).frame(width: 72, height: 72)
-                    .overlay(Image(systemName: "person.fill").font(.system(size: 28)).foregroundStyle(DesignTokens.link))
-                labeled("昵称", $nickname)
-                labeled("职位", $role)
-                Button("保存") { onClose() }
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.link)
-                    .frame(maxWidth: .infinity)
-                Spacer()
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                HStack {
+                    Button { onClose() } label: {
+                        Text("‹", font: .system(size: 28), color: DesignTokens.link)
+                            .frame(width: 44, alignment: .leading)
+                    }
+                    Text("个人资料", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                        .frame(maxWidth: .infinity)
+                    Button {
+                        guard dirty else { return }
+                        flash("已保存")
+                        dirty = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { onClose() }
+                    } label: {
+                        Text("保存", font: .system(size: 16, weight: .semibold),
+                              color: dirty ? DesignTokens.link : DesignTokens.mute)
+                    }
+                    .disabled(!dirty)
+                    .frame(width: 52, alignment: .trailing)
+                }
+                .padding(.horizontal, 8)
+                .frame(height: 44)
+                .background(DesignTokens.canvas)
+
+                ScrollView {
+                    VStack(spacing: 0) {
+                        VStack(spacing: 10) {
+                            ZStack(alignment: .bottomTrailing) {
+                                Text("Q", font: .system(size: 40, weight: .bold), color: DesignTokens.mute)
+                                    .frame(width: 104, height: 104)
+                                    .background(Color(red: 0xE0/255, green: 0xE0/255, blue: 0xE0/255), in: Circle())
+                                    .onTapGesture { flash("更换头像（开发中）") }
+                                Text("📷", font: .system(size: 12))
+                                    .frame(width: 32, height: 32)
+                                    .background(DesignTokens.link, in: Circle())
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 2.5))
+                            }
+                            Text("轻触更换头像", font: .system(size: 13), color: DesignTokens.mute)
+                        }
+                        .padding(.top, 24)
+                        .padding(.bottom, 32)
+
+                        Text("基本信息", font: .system(size: 12, weight: .medium), color: DesignTokens.mute)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 20)
+
+                        VStack(spacing: 0) {
+                            HStack {
+                                Text("昵称", font: .system(size: 15), color: DesignTokens.ink)
+                                    .frame(width: 72, alignment: .leading)
+                                TextField("请输入昵称", text: $nickname)
+                                    .multilineTextAlignment(.trailing)
+                                    .font(.system(size: 15))
+                                    .onChange(of: nickname) { _, _ in dirty = true }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            Divider().padding(.horizontal, 16)
+                            HStack {
+                                Text("手机号", font: .system(size: 15), color: DesignTokens.ink)
+                                    .frame(width: 72, alignment: .leading)
+                                Spacer()
+                                Text(phone, font: .system(size: 15), color: DesignTokens.body)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                        }
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+
+                        Button {
+                            flash("退出登录（开发中）")
+                        } label: {
+                            Text("退出登录", font: .system(size: 16, weight: .medium), color: Color(red: 0xE5/255, green: 0x39/255, blue: 0x35/255))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 32)
+                        .padding(.bottom, 40)
+                    }
+                }
             }
-            .padding(16)
             .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
         }
     }
-    private func labeled(_ title: String, _ text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title, font: .system(size: 13), color: DesignTokens.body)
-            TextField(title, text: text)
-                .padding(12)
-                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
         }
     }
 }
