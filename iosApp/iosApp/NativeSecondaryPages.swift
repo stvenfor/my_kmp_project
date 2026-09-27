@@ -2844,26 +2844,94 @@ struct NativeClubPage: View {
 
 struct NativeLifeServicePage: View {
     var onClose: () -> Void
-    private let items = ["代驾", "洗车", "道路救援", "充电桩", "年检代办", "保险续保"]
+    private let shortcuts: [(String, Color)] = [
+        ("会员专享", DesignTokens.link),
+        ("配音专栏", Color.orange),
+        ("其他课程", Color(red: 0.345, green: 0.337, blue: 0.839)),
+        ("功能教程", Color(red: 0.204, green: 0.780, blue: 0.349)),
+    ]
+    private let daily: [(String, String, Bool)] = [
+        ("带你玩转 ETF", "直播中", true),
+        ("新能源赛道解读", "回放", false),
+        ("门店短视频运营", "直播中", true),
+    ]
+    private let courses: [(String, String, Bool)] = [
+        ("【配置】当星舰撞上算力", "尤国梁", true),
+        ("黄金恐贪定投实战", "策略组", false),
+    ]
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "生活服务", onClose: onClose, dark: false)
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                ForEach(items, id: \.self) { item in
-                    VStack(spacing: 8) {
-                        Circle().fill(DesignTokens.link.opacity(0.12)).frame(width: 48, height: 48)
-                            .overlay(Text(String(item.prefix(1)), font: .system(size: 16, weight: .semibold), color: DesignTokens.link))
-                        Text(item, font: .system(size: 13), color: DesignTokens.ink)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(spacing: 0) {
+                        ForEach(shortcuts, id: \.0) { label, tint in
+                            VStack(spacing: 8) {
+                                Text(String(label.prefix(1)), font: .system(size: 18, weight: .bold), color: tint)
+                                    .frame(width: 52, height: 52)
+                                    .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+                                Text(label, font: .system(size: 12), color: DesignTokens.ink).lineLimit(1)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal, 16).padding(.vertical, 8)
+
+                    sectionHeader("每日推荐")
+                    VStack(spacing: 10) {
+                        ForEach(Array(daily.enumerated()), id: \.offset) { _, row in
+                            HStack(spacing: 10) {
+                                Text(row.1, font: .system(size: 11, weight: .semibold),
+                                      color: row.2 ? Color.red : DesignTokens.mute)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(row.2 ? Color.red.opacity(0.08) : Color(white: 0.95), in: RoundedRectangle(cornerRadius: 4))
+                                Text(row.0, font: .system(size: 15), color: DesignTokens.ink)
+                                Spacer()
+                            }
+                            .padding(12)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.hairline, lineWidth: 0.5))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+
+                    sectionHeader("热门课程")
+                    VStack(spacing: 10) {
+                        ForEach(Array(courses.enumerated()), id: \.offset) { _, row in
+                            HStack(spacing: 10) {
+                                RoundedRectangle(cornerRadius: 8).fill(DesignTokens.link.opacity(0.1)).frame(width: 56, height: 56)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    HStack {
+                                        Text(row.0, font: .system(size: 14, weight: .semibold), color: DesignTokens.ink).lineLimit(1)
+                                        if row.2 {
+                                            Text("V 会员专属", font: .system(size: 10, weight: .semibold), color: Color.orange)
+                                                .padding(.horizontal, 6).padding(.vertical, 2)
+                                                .background(Color.orange.opacity(0.08), in: RoundedRectangle(cornerRadius: 4))
+                                        }
+                                    }
+                                    Text(row.1, font: .system(size: 12), color: DesignTokens.mute)
+                                }
+                                Spacer()
+                            }
+                            .padding(12)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
                 }
             }
-            .padding(16)
-            Spacer()
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
         }
-        .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+    }
+
+    private func sectionHeader(_ title: String) -> some View {
+        HStack {
+            Text(title, font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+            Spacer()
+            Text("更多 >", font: .system(size: 13), color: DesignTokens.mute)
+        }
+        .padding(.horizontal, 16).padding(.top, 24).padding(.bottom, 12)
     }
 }
 

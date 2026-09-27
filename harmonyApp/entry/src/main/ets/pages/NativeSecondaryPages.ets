@@ -2857,7 +2857,21 @@ export struct NativeClubPane {
 @Component
 export struct NativeLifeServicePane {
   onClose: () => void = () => {};
-  private items: string[] = ['代驾', '洗车', '道路救援', '充电桩', '年检代办', '保险续保'];
+  private shortcuts: string[][] = [
+    ['会员专享', '#0070F3'],
+    ['配音专栏', '#FF9500'],
+    ['其他课程', '#5856D6'],
+    ['功能教程', '#34C759'],
+  ];
+  private daily: string[][] = [
+    ['带你玩转 ETF', '直播中', '1'],
+    ['新能源赛道解读', '回放', '0'],
+    ['门店短视频运营', '直播中', '1'],
+  ];
+  private courses: string[][] = [
+    ['【配置】当星舰撞上算力', '尤国梁', '1'],
+    ['黄金恐贪定投实战', '策略组', '0'],
+  ];
   build() {
     Column() {
       Row() {
@@ -2865,18 +2879,68 @@ export struct NativeLifeServicePane {
         Text('生活服务').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      Grid() {
-        ForEach(this.items, (item: string) => {
-          GridItem() {
-            Column({ space: 8 }) {
-              Text(item.substring(0, 1)).fontSize(16).fontColor(DesignTokens.link)
-                .width(48).height(48).textAlign(TextAlign.Center).borderRadius(24).backgroundColor('#1A0070F3')
-              Text(item).fontSize(13).fontColor(DesignTokens.ink)
-            }.padding({ top: 16, bottom: 16 }).width('100%').backgroundColor(DesignTokens.canvas).borderRadius(12)
-          }
-        })
-      }.columnsTemplate('1fr 1fr 1fr').columnsGap(12).rowsGap(12).padding(16).width('100%')
-      Blank().layoutWeight(1)
+
+      Scroll() {
+        Column() {
+          Row() {
+            ForEach(this.shortcuts, (s: string[]) => {
+              Column({ space: 8 }) {
+                Text(s[0].substring(0, 1)).fontSize(18).fontWeight(FontWeight.Bold).fontColor(s[1])
+                  .width(52).height(52).textAlign(TextAlign.Center).borderRadius(16)
+                  .backgroundColor(`${s[1]}1F`)
+                Text(s[0]).fontSize(12).fontColor(DesignTokens.ink).maxLines(1)
+              }.layoutWeight(1).alignItems(HorizontalAlign.Center)
+            }, (s: string[]) => s[0])
+          }.width('100%').padding({ left: 16, right: 16, top: 8, bottom: 8 })
+
+          Row() {
+            Text('每日推荐').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Blank().layoutWeight(1)
+            Text('更多 >').fontSize(13).fontColor(DesignTokens.mute)
+          }.width('100%').padding({ left: 16, right: 16, top: 24, bottom: 12 })
+
+          Column({ space: 10 }) {
+            ForEach(this.daily, (row: string[]) => {
+              Row({ space: 10 }) {
+                Text(row[1]).fontSize(11).fontWeight(FontWeight.Medium)
+                  .fontColor(row[2] === '1' ? '#FF3B30' : DesignTokens.mute)
+                  .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                  .backgroundColor(row[2] === '1' ? '#14FF3B30' : '#FFF2F2F7').borderRadius(4)
+                Text(row[0]).fontSize(15).fontColor(DesignTokens.ink).layoutWeight(1)
+              }
+              .width('100%').padding(12)
+              .backgroundColor(Color.White).borderRadius(12)
+            }, (row: string[]) => row[0])
+          }.width('100%').padding({ left: 16, right: 16 })
+
+          Row() {
+            Text('热门课程').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Blank().layoutWeight(1)
+            Text('更多 >').fontSize(13).fontColor(DesignTokens.mute)
+          }.width('100%').padding({ left: 16, right: 16, top: 24, bottom: 12 })
+
+          Column({ space: 10 }) {
+            ForEach(this.courses, (row: string[]) => {
+              Row({ space: 10 }) {
+                Column().width(56).height(56).borderRadius(8).backgroundColor('#1A0070F3')
+                Column({ space: 4 }) {
+                  Row({ space: 6 }) {
+                    Text(row[0]).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).maxLines(1).layoutWeight(1)
+                    if (row[2] === '1') {
+                      Text('V 会员专属').fontSize(10).fontWeight(FontWeight.Medium).fontColor('#FF9500')
+                        .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                        .backgroundColor('#14FF9500').borderRadius(4)
+                    }
+                  }.width('100%')
+                  Text(row[1]).fontSize(12).fontColor(DesignTokens.mute)
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              }
+              .width('100%').padding(12)
+              .backgroundColor(Color.White).borderRadius(12)
+            }, (row: string[]) => row[0])
+          }.width('100%').padding({ left: 16, right: 16, bottom: 24 })
+        }.width('100%')
+      }.layoutWeight(1).width('100%')
     }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
