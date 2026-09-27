@@ -1,6 +1,6 @@
 # Native shell + Mine Compose island
 
-- **Status:** Accepted (grill 2026-09-20)
+- **Status:** Accepted (grill 2026-09-20); §6 superseded by ADR 0003 (2026-09-27)
 - **Date:** 2026-09-20
 - **Glossary:** `CONTEXT.md`
 
@@ -15,7 +15,7 @@ Product sync from Flutter `my_ai_project` required a hard choice between shared 
 3. **Auth UI** (login/register/soft gates) is native, outside the island.
 4. **Hosting:** Native shell pushes a Compose container to enter the island; back pops island routes first, then dismisses the container to Mine root.
 5. **Visual SoT:** Flutter `my_ai_project` (screenshots + design tokens). Parity bar: ≤2% error vs SoT.
-6. **Phase 1:** Splash → privacy → tab shell + full Home/Chat/Community roots + native Mine root + Mine island; other features deferred with visible stubs on roots.
+6. **Phase 1:** Splash → privacy → tab shell + full Home/Chat/Community roots + native Mine root + Mine island; other features deferred with visible stubs on roots. **§6 scope cap superseded by ADR 0003 (Full Parity Phase)** — ownership elsewhere in this ADR still stands.
 7. **Tokens:** One shared token source consumed by all four UI stacks.
 8. **Legacy commonMain product Compose:** Keep temporarily as reference; main path does not depend on it; remove after native+island parity.
 

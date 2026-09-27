@@ -222,3 +222,18 @@ npx ruflo@latest doctor --fix
 > by default; `--ttl 0` to disable, `daemon status --all` to audit running daemons).
 
 **Agent tool** handles execution (agents, files, code, git). **MCP tools** handle coordination (swarm, memory, hooks). **CLI** is the same via Bash.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues via `gh` (`stvenfor/my_kmp_project`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five roles as label strings. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `CONTEXT.md` + `docs/adr/`. See `docs/agents/domain.md`.
+
