@@ -1772,39 +1772,73 @@ struct NativeScanPage: View {
 
 struct NativeStrategyPage: View {
     var onClose: () -> Void
-    private let scripts: [(String, String, String?)] = [
-        ("周末到店礼", "适合朋友圈 · 已用 128 次", "推荐"),
-        ("置换补贴海报", "适合群发 · 已用 56 次", nil),
-        ("新车到店速递", "适合视频号 · 已用 34 次", nil),
+    @State private var tab = 0
+    @State private var period = 4
+    private let tabs = ["推荐", "逆向", "趋势"]
+    private let periods = ["今年来", "近1周", "近1月", "近3月", "近1年"]
+    private let assets: [(String, String, Bool)] = [
+        ("A股", "+19.22%", true), ("中债", "+3.15%", true), ("黄金", "+8.76%", true),
+        ("港股", "+12.40%", true), ("美股", "+15.88%", true), ("原油", "-2.34%", false),
+        ("美元债", "-1.80%", false), ("商品", "+4.56%", true), ("现金", "+1.20%", true),
     ]
+    private let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+
     var body: some View {
         VStack(spacing: 0) {
-            navBar(title: "投资策略", onClose: onClose, dark: false)
+            navBar(title: "策略", onClose: onClose, dark: false)
             ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(Array(scripts.enumerated()), id: \.offset) { _, s in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text(s.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                                Spacer()
-                                if let badge = s.2 {
-                                    Text(badge, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
-                                        .padding(.horizontal, 8).padding(.vertical, 4)
-                                        .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                VStack(spacing: 16) {
+                    HStack(spacing: 32) {
+                        ForEach(Array(tabs.enumerated()), id: \.offset) { i, label in
+                            VStack(spacing: 8) {
+                                Text(label, font: .system(size: 16, weight: tab == i ? .semibold : .regular),
+                                     color: tab == i ? DesignTokens.ink : DesignTokens.body)
+                                Capsule()
+                                    .fill(tab == i ? DesignTokens.link : Color.clear)
+                                    .frame(width: 20, height: 3)
+                            }
+                            .onTapGesture { tab = i }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(Array(periods.enumerated()), id: \.offset) { i, p in
+                                    Text(p, font: .system(size: 12), color: period == i ? .white : DesignTokens.body)
+                                        .padding(.horizontal, 10).padding(.vertical, 6)
+                                        .background(period == i ? DesignTokens.link : DesignTokens.canvasSoft2, in: Capsule())
+                                        .onTapGesture { period = i }
                                 }
                             }
-                            Text(s.1, font: .system(size: 13), color: DesignTokens.body)
-                            Text("周末到店看新车，置换补贴进行中，欢迎预约试驾～", font: .system(size: 14), color: DesignTokens.ink)
-                                .padding(12)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
-                            Button("一键发圈") {}
-                                .buttonStyle(.borderedProminent)
-                                .tint(DesignTokens.link)
                         }
-                        .padding(16)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(Array(assets.enumerated()), id: \.offset) { _, a in
+                                VStack(spacing: 6) {
+                                    Text(a.0, font: .system(size: 13), color: DesignTokens.body)
+                                    Text(a.1, font: .system(size: 15, weight: .semibold),
+                                         color: a.2 ? Color(red: 1, green: 59/255, blue: 48/255) : Color(red: 52/255, green: 199/255, blue: 89/255))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(DesignTokens.canvasSoft2, in: RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
                     }
+                    .padding(16)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("\(tabs[tab])策略计划", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                        Text("基于当前行情的 mock 配置，切换 Tab 查看不同风格。", font: .system(size: 13), color: DesignTokens.body)
+                        ProgressView(value: 0.62)
+                            .tint(DesignTokens.link)
+                        Text("仓位 62%", font: .system(size: 12), color: DesignTokens.mute)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
                 }
                 .padding(16)
             }
@@ -1812,6 +1846,7 @@ struct NativeStrategyPage: View {
         }
     }
 }
+
 
 struct NativeCheckInMallPage: View {
     var onClose: () -> Void
@@ -2064,39 +2099,85 @@ struct NativeCheckInMallPage: View {
 
 struct NativeMusicPage: View {
     var onClose: () -> Void
-    @State private var playing: String? = nil
-    private let tracks = [("Night Drive", "3:28"), ("Showroom BGM", "2:51"), ("Weekend Cruise", "4:02")]
+    @State private var playingTitle: String? = nil
+    @State private var playingArtist: String = ""
+    /// Align Compose FlutterTracks
+    private let tracks: [(String, String)] = [
+        ("Ya Ali - DJMaza.Com", "DJMaza"),
+        ("Ek Do Teen - DJMaza.Info", "DJMaza"),
+        ("16 yeh dil diwana hai", "Classic"),
+        ("Shape of You", "Ed Sheeran"),
+        ("Blinding Lights", "The Weeknd"),
+        ("Levitating", "Dua Lipa"),
+    ]
     var body: some View {
-        VStack(spacing: 0) {
-            navBar(title: "音乐", onClose: onClose, dark: false)
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(Array(tracks.enumerated()), id: \.offset) { _, t in
-                        HStack {
-                            Image(systemName: playing == t.0 ? "pause.circle.fill" : "play.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(DesignTokens.link)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(t.0, font: .system(size: 16, weight: .medium), color: DesignTokens.ink)
-                                Text(t.1, font: .system(size: 12), color: DesignTokens.mute)
-                            }
-                            Spacer()
-                            if playing == t.0 {
-                                Text("播放中", font: .system(size: 12), color: DesignTokens.link)
-                            }
-                        }
-                        .padding(16)
-                        .background(DesignTokens.canvas)
-                        .onTapGesture { playing = playing == t.0 ? nil : t.0 }
-                        Divider().overlay(DesignTokens.hairline)
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                HStack {
+                    Button(action: onClose) {
+                        Text("‹", font: .system(size: 28), color: DesignTokens.link)
+                            .frame(width: 44, alignment: .leading)
+                    }
+                    Text("音频列表", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                        .frame(maxWidth: .infinity)
+                    if playingTitle != nil {
+                        Text("Now Playing", font: .system(size: 14), color: DesignTokens.link)
+                            .frame(width: 96, alignment: .trailing)
+                    } else {
+                        Color.clear.frame(width: 96)
                     }
                 }
-                .padding(16)
+                .padding(.horizontal, 8)
+                .frame(height: 44)
+                .background(DesignTokens.canvas)
+
+                ScrollView {
+                    VStack(spacing: 8) {
+                        ForEach(Array(tracks.enumerated()), id: \.offset) { _, t in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(t.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                                Text("By \(t.1)", font: .system(size: 12), color: DesignTokens.mute)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(16)
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
+                            .onTapGesture {
+                                playingTitle = t.0
+                                playingArtist = t.1
+                            }
+                        }
+                    }
+                    .padding(16)
+                    .padding(.bottom, playingTitle == nil ? 16 : 72)
+                }
+                .background(DesignTokens.canvasSoft2.ignoresSafeArea())
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+
+            if let title = playingTitle {
+                VStack(spacing: 0) {
+                    Divider().overlay(DesignTokens.hairline)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(title, font: .system(size: 14, weight: .medium), color: DesignTokens.ink)
+                                .lineLimit(1)
+                            Text(playingArtist, font: .system(size: 12), color: DesignTokens.mute)
+                        }
+                        Spacer()
+                        Button("关闭") {
+                            playingTitle = nil
+                            playingArtist = ""
+                        }
+                        .foregroundStyle(DesignTokens.body)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(DesignTokens.canvas)
+                }
+            }
         }
     }
 }
+
 
 struct NativeHomeworkStatsPage: View {
     var onClose: () -> Void

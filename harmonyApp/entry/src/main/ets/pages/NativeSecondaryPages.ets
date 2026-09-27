@@ -1787,51 +1787,93 @@ export struct NativeScanPane {
 @Component
 export struct NativeStrategyPane {
   onClose: () => void = () => {};
-  private scripts: string[][] = [
-    ['周末到店礼', '适合朋友圈 · 已用 128 次', '推荐'],
-    ['置换补贴海报', '适合群发 · 已用 56 次', ''],
-    ['新车到店速递', '适合视频号 · 已用 34 次', ''],
+  @State tab: number = 0;
+  @State period: number = 4;
+  private tabs: string[] = ['推荐', '逆向', '趋势'];
+  private periods: string[] = ['今年来', '近1周', '近1月', '近3月', '近1年'];
+  private assets: string[][] = [
+    ['A股', '+19.22%', '1'], ['中债', '+3.15%', '1'], ['黄金', '+8.76%', '1'],
+    ['港股', '+12.40%', '1'], ['美股', '+15.88%', '1'], ['原油', '-2.34%', '0'],
+    ['美元债', '-1.80%', '0'], ['商品', '+4.56%', '1'], ['现金', '+1.20%', '1'],
   ];
 
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('投资策略').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('策略').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
 
-      List() {
-        ForEach(this.scripts, (s: string[]) => {
-          ListItem() {
-            Column({ space: 8 }) {
-              Row() {
-                Text(s[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Blank().layoutWeight(1)
-                if (s[2].length > 0) {
-                  Text(s[2]).fontSize(11).fontColor(DesignTokens.link)
-                    .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                    .backgroundColor('#1A0070F3').borderRadius(12)
-                }
-              }.width('100%')
-              Text(s[1]).fontSize(13).fontColor(DesignTokens.body)
-              Text('周末到店看新车，置换补贴进行中，欢迎预约试驾～')
-                .fontSize(14).fontColor(DesignTokens.ink)
-                .padding(12).width('100%')
-                .backgroundColor(DesignTokens.canvasSoft2).borderRadius(8)
-              Button('一键发圈').backgroundColor(DesignTokens.link).width('100%')
+      Scroll() {
+        Column({ space: 16 }) {
+          Row({ space: 32 }) {
+            ForEach(this.tabs, (label: string, i: number) => {
+              Column({ space: 8 }) {
+                Text(label)
+                  .fontSize(16)
+                  .fontWeight(this.tab === i ? FontWeight.Medium : FontWeight.Regular)
+                  .fontColor(this.tab === i ? DesignTokens.ink : DesignTokens.body)
+                Row().width(20).height(3)
+                  .backgroundColor(this.tab === i ? DesignTokens.link : Color.Transparent)
+                  .borderRadius(2)
+              }.onClick(() => { this.tab = i; })
+            }, (label: string, i: number) => `${label}-${i}`)
+          }.justifyContent(FlexAlign.Center).width('100%')
+
+          Column({ space: 12 }) {
+            Row({ space: 8 }) {
+              ForEach(this.periods, (p: string, i: number) => {
+                Text(p)
+                  .fontSize(12)
+                  .fontColor(this.period === i ? Color.White : DesignTokens.body)
+                  .padding({ left: 10, right: 10, top: 6, bottom: 6 })
+                  .backgroundColor(this.period === i ? DesignTokens.link : DesignTokens.canvasSoft2)
+                  .borderRadius(12)
+                  .onClick(() => { this.period = i; })
+              }, (p: string, i: number) => `${p}-${i}`)
             }
-            .padding(16)
-            .margin({ bottom: 12 })
-            .backgroundColor(DesignTokens.canvas)
-            .borderRadius(12)
+
+            Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
+              ForEach(this.assets, (a: string[]) => {
+                Column({ space: 6 }) {
+                  Text(a[0]).fontSize(13).fontColor(DesignTokens.body)
+                  Text(a[1]).fontSize(15).fontWeight(FontWeight.Medium)
+                    .fontColor(a[2] === '1' ? '#FFFF3B30' : '#FF34C759')
+                }
+                .width('30%')
+                .padding({ top: 12, bottom: 12 })
+                .backgroundColor(DesignTokens.canvasSoft2)
+                .borderRadius(8)
+                .margin({ bottom: 8 })
+              })
+            }.width('100%')
           }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
+          .padding(16)
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
+          .width('100%')
+
+          Column({ space: 8 }) {
+            Text(`${this.tabs[this.tab]}策略计划`)
+              .fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Text('基于当前行情的 mock 配置，切换 Tab 查看不同风格。')
+              .fontSize(13).fontColor(DesignTokens.body)
+            Text('仓位 62%').fontSize(12).fontColor('#888888')
+          }
+          .alignItems(HorizontalAlign.Start)
+          .padding(16)
+          .width('100%')
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
+        }.padding(16)
+      }.layoutWeight(1).width('100%')
     }
-    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+    .width('100%').height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
 
 @Component
 export struct NativeCheckInMallPane {
@@ -2081,49 +2123,80 @@ interface CheckInTaskRow {
 @Component
 export struct NativeMusicPane {
   onClose: () => void = () => {};
-  @State playing: string = '';
+  @State playingTitle: string = '';
+  @State playingArtist: string = '';
   private tracks: string[][] = [
-    ['Night Drive', '3:28'],
-    ['Showroom BGM', '2:51'],
-    ['Weekend Cruise', '4:02'],
+    ['Ya Ali - DJMaza.Com', 'DJMaza'],
+    ['Ek Do Teen - DJMaza.Info', 'DJMaza'],
+    ['16 yeh dil diwana hai', 'Classic'],
+    ['Shape of You', 'Ed Sheeran'],
+    ['Blinding Lights', 'The Weeknd'],
+    ['Levitating', 'Dua Lipa'],
   ];
 
   build() {
-    Column() {
-      Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('音乐').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-        Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-
-      List() {
-        ForEach(this.tracks, (t: string[]) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Text(this.playing === t[0] ? '❚❚' : '▶')
-                .fontSize(18).fontColor(DesignTokens.link)
-                .width(28).height(28).textAlign(TextAlign.Center)
-              Column({ space: 4 }) {
-                Text(t[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(t[1]).fontSize(12).fontColor(DesignTokens.mute)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              if (this.playing === t[0]) {
-                Text('播放中').fontSize(12).fontColor(DesignTokens.link)
-              }
-            }
-            .padding(16)
-            .width('100%')
-            .backgroundColor(DesignTokens.canvas)
-            .onClick(() => {
-              this.playing = this.playing === t[0] ? '' : t[0];
-            })
+    Stack({ alignContent: Alignment.Bottom }) {
+      Column() {
+        Row() {
+          Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+          Text('音频列表').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            .layoutWeight(1).textAlign(TextAlign.Center)
+          if (this.playingTitle.length > 0) {
+            Text('Now Playing').fontSize(14).fontColor(DesignTokens.link)
+          } else {
+            Text('').width(80)
           }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
+        }.padding({ left: 8, right: 8, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+        List() {
+          ForEach(this.tracks, (t: string[]) => {
+            ListItem() {
+              Column({ space: 4 }) {
+                Text(t[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(`By ${t[1]}`).fontSize(12).fontColor('#888888')
+              }
+              .alignItems(HorizontalAlign.Start)
+              .padding(16)
+              .width('100%')
+              .backgroundColor(DesignTokens.canvas)
+              .borderRadius(8)
+              .margin({ bottom: 8 })
+              .onClick(() => {
+                this.playingTitle = t[0];
+                this.playingArtist = t[1];
+              })
+            }
+          })
+        }
+        .layoutWeight(1)
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 12, bottom: this.playingTitle.length > 0 ? 72 : 16 })
+      }
+      .width('100%').height('100%')
+      .backgroundColor(DesignTokens.canvasSoft2)
+
+      if (this.playingTitle.length > 0) {
+        Row() {
+          Column({ space: 2 }) {
+            Text(this.playingTitle).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              .maxLines(1)
+            Text(this.playingArtist).fontSize(12).fontColor('#888888')
+          }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+          Text('关闭').fontSize(13).fontColor(DesignTokens.body)
+            .onClick(() => {
+              this.playingTitle = '';
+              this.playingArtist = '';
+            })
+        }
+        .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+        .width('100%')
+        .backgroundColor(DesignTokens.canvas)
+      }
     }
-    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+    .width('100%').height('100%')
   }
 }
+
 
 @Component
 export struct NativeHomeworkStatsPane {
