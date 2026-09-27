@@ -1282,11 +1282,17 @@ export struct NativeWalletPane {
   onClose: () => void = () => {};
   @State amount: string = '';
   @State channel: number = 1;
+  @State bankName: string = '';
+  @State cardLast4: string = '';
   private flows: string[][] = [
     ['membership_pay', 'ref m2', '-30.00'],
     ['充值', 'ref alipay', '+100.00'],
     ['充值', 'ref alipay', '+1.00'],
   ];
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
 
   build() {
     Column() {
@@ -1294,7 +1300,7 @@ export struct NativeWalletPane {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
         Text('我的钱包').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
 
       Scroll() {
         Column({ space: 12 }) {
@@ -1305,13 +1311,13 @@ export struct NativeWalletPane {
           .alignItems(HorizontalAlign.Start)
           .padding(20)
           .width('100%')
-          .backgroundColor(DesignTokens.canvas)
+          .backgroundColor(Color.White)
           .borderRadius(12)
 
           Text('充值').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
           TextInput({ placeholder: '金额 0.01-50000', text: this.amount })
             .height(44)
-            .backgroundColor(DesignTokens.canvas)
+            .backgroundColor(Color.White)
             .border({ width: 1, color: DesignTokens.hairline })
             .borderRadius(8)
             .padding({ left: 12, right: 12 })
@@ -1323,7 +1329,7 @@ export struct NativeWalletPane {
               .fontColor(this.channel === 1 ? Color.White : DesignTokens.ink)
               .padding({ left: 12, right: 12, top: 8, bottom: 8 })
               .margin({ right: 8, bottom: 8 })
-              .backgroundColor(this.channel === 1 ? DesignTokens.link : DesignTokens.canvas)
+              .backgroundColor(this.channel === 1 ? DesignTokens.link : Color.White)
               .border({ width: 1, color: this.channel === 1 ? DesignTokens.link : DesignTokens.hairline })
               .borderRadius(8)
               .onClick(() => { this.channel = 1; })
@@ -1332,7 +1338,7 @@ export struct NativeWalletPane {
               .fontColor(this.channel === 2 ? Color.White : DesignTokens.ink)
               .padding({ left: 12, right: 12, top: 8, bottom: 8 })
               .margin({ right: 8, bottom: 8 })
-              .backgroundColor(this.channel === 2 ? DesignTokens.link : DesignTokens.canvas)
+              .backgroundColor(this.channel === 2 ? DesignTokens.link : Color.White)
               .border({ width: 1, color: this.channel === 2 ? DesignTokens.link : DesignTokens.hairline })
               .borderRadius(8)
               .onClick(() => { this.channel = 2; })
@@ -1341,23 +1347,68 @@ export struct NativeWalletPane {
               .fontColor(this.channel === 3 ? Color.White : DesignTokens.ink)
               .padding({ left: 12, right: 12, top: 8, bottom: 8 })
               .margin({ right: 8, bottom: 8 })
-              .backgroundColor(this.channel === 3 ? DesignTokens.link : DesignTokens.canvas)
+              .backgroundColor(this.channel === 3 ? DesignTokens.link : Color.White)
               .border({ width: 1, color: this.channel === 3 ? DesignTokens.link : DesignTokens.hairline })
               .borderRadius(8)
               .onClick(() => { this.channel = 3; })
+          }.width('100%')
+
+          Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(['10', '50', '100'], (a: string) => {
               Text(a)
                 .fontSize(13).fontColor(DesignTokens.ink)
                 .padding({ left: 16, right: 16, top: 8, bottom: 8 })
                 .margin({ right: 8, bottom: 8 })
-                .backgroundColor(DesignTokens.canvas)
+                .backgroundColor(Color.White)
                 .border({ width: 1, color: DesignTokens.hairline })
                 .borderRadius(8)
                 .onClick(() => { this.amount = a; })
             })
           }.width('100%')
 
-          Button('立即充值').backgroundColor(DesignTokens.link).width('100%')
+          Button('确认充值')
+            .width('100%')
+            .height(48)
+            .fontSize(15)
+            .fontWeight(FontWeight.Medium)
+            .fontColor(Color.White)
+            .backgroundColor(Color.Black)
+            .borderRadius(10)
+            .onClick(() => {
+              if (this.amount.trim().length === 0) {
+                this.flash('请输入金额');
+              } else {
+                this.flash(`确认充值 ¥${this.amount}（mock）`);
+              }
+            })
+
+          Text('银行卡').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+          TextInput({ placeholder: '银行名称', text: this.bankName })
+            .height(44)
+            .backgroundColor(Color.White)
+            .border({ width: 1, color: DesignTokens.hairline })
+            .borderRadius(8)
+            .padding({ left: 12, right: 12 })
+            .onChange((v: string) => { this.bankName = v; })
+          TextInput({ placeholder: '卡号后四位', text: this.cardLast4 })
+            .height(44)
+            .type(InputType.Number)
+            .backgroundColor(Color.White)
+            .border({ width: 1, color: DesignTokens.hairline })
+            .borderRadius(8)
+            .padding({ left: 12, right: 12 })
+            .onChange((v: string) => {
+              this.cardLast4 = v.replace(/[^0-9]/g, '').substring(0, 4);
+            })
+          Button('绑定银行卡')
+            .width('100%')
+            .height(48)
+            .fontColor(Color.White)
+            .backgroundColor(Color.Black)
+            .borderRadius(10)
+            .onClick(() => {
+              this.flash('绑定银行卡（mock）');
+            })
 
           Text('流水').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
           ForEach(this.flows, (f: string[]) => {
@@ -1368,11 +1419,11 @@ export struct NativeWalletPane {
               }.alignItems(HorizontalAlign.Start).layoutWeight(1)
               Text(f[2])
                 .fontSize(15).fontWeight(FontWeight.Medium)
-                .fontColor(f[2].startsWith('+') ? '#1A9933' : DesignTokens.ink)
+                .fontColor(f[2].startsWith('+') ? '#2E7D32' : '#E53935')
             }
             .padding(14)
             .width('100%')
-            .backgroundColor(DesignTokens.canvas)
+            .backgroundColor(Color.White)
             .borderRadius(10)
           })
         }.padding(16).width('100%')
@@ -1380,7 +1431,7 @@ export struct NativeWalletPane {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
+    .backgroundColor('#F5F5F5')
   }
 }
 

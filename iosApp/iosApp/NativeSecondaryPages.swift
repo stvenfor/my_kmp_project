@@ -1292,6 +1292,9 @@ struct NativeWalletPage: View {
     var onClose: () -> Void
     @State private var amount = ""
     @State private var channel = 1
+    @State private var bankName = ""
+    @State private var cardLast4 = ""
+    @State private var toastText: String? = nil
     private let flows = [
         ("membership_pay", "ref m2", "-30.00"),
         ("充值", "ref alipay", "+100.00"),
@@ -1299,68 +1302,115 @@ struct NativeWalletPage: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            navBar(title: "我的钱包", onClose: onClose, dark: false)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("余额（元）", font: .system(size: 14), color: DesignTokens.body)
-                        Text("71.00", font: .system(size: 32, weight: .semibold), color: DesignTokens.ink)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(20)
-                    .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-
-                    Text("充值", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
-                    TextField("金额 0.01-50000", text: $amount)
-                        .keyboardType(.decimalPad)
-                        .padding(12)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
-
-                    HStack(spacing: 8) {
-                        ForEach([(1, "支付宝"), (2, "微信"), (3, "银行卡")], id: \.0) { item in
-                            let sel = channel == item.0
-                            Text((sel ? "✓ " : "") + item.1, font: .system(size: 13), color: sel ? .white : DesignTokens.ink)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(sel ? DesignTokens.link : DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
-                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(sel ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
-                                .onTapGesture { channel = item.0 }
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                navBar(title: "我的钱包", onClose: onClose, dark: false)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("余额（元）", font: .system(size: 14), color: DesignTokens.body)
+                            Text("71.00", font: .system(size: 32, weight: .semibold), color: DesignTokens.ink)
                         }
-                        ForEach(["10", "50", "100"], id: \.self) { a in
-                            Text(a, font: .system(size: 13), color: DesignTokens.ink)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 8))
-                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
-                                .onTapGesture { amount = a }
-                        }
-                    }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(20)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
 
-                    Button("立即充值") {}
-                        .buttonStyle(.borderedProminent)
-                        .tint(DesignTokens.link)
-                        .frame(maxWidth: .infinity)
+                        Text("充值", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
+                        TextField("金额 0.01-50000", text: $amount)
+                            .keyboardType(.decimalPad)
+                            .padding(12)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
 
-                    Text("流水", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
-                    ForEach(Array(flows.enumerated()), id: \.offset) { _, f in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(f.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
-                                Text(f.1, font: .system(size: 12), color: DesignTokens.mute)
+                        HStack(spacing: 8) {
+                            ForEach([(1, "支付宝"), (2, "微信"), (3, "银行卡")], id: \.0) { item in
+                                let sel = channel == item.0
+                                Text((sel ? "✓ " : "") + item.1, font: .system(size: 13), color: sel ? .white : DesignTokens.ink)
+                                    .padding(.horizontal, 12).padding(.vertical, 8)
+                                    .background(sel ? DesignTokens.link : Color.white, in: RoundedRectangle(cornerRadius: 8))
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(sel ? DesignTokens.link : DesignTokens.hairline, lineWidth: 1))
+                                    .onTapGesture { channel = item.0 }
                             }
-                            Spacer()
-                            Text(f.2, font: .system(size: 15, weight: .semibold),
-                                  color: f.2.hasPrefix("+") ? Color(red: 0.1, green: 0.6, blue: 0.3) : DesignTokens.ink)
                         }
-                        .padding(14)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                        HStack(spacing: 8) {
+                            ForEach(["10", "50", "100"], id: \.self) { a in
+                                Text(a, font: .system(size: 13), color: DesignTokens.ink)
+                                    .padding(.horizontal, 16).padding(.vertical, 8)
+                                    .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
+                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
+                                    .onTapGesture { amount = a }
+                            }
+                        }
+
+                        Button("确认充值") {
+                            if amount.trimmingCharacters(in: .whitespaces).isEmpty {
+                                flash("请输入金额")
+                            } else {
+                                flash("确认充值 ¥\(amount)（mock）")
+                            }
+                        }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).frame(height: 48)
+                        .background(Color.black, in: RoundedRectangle(cornerRadius: 10))
+
+                        Text("银行卡", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
+                        TextField("银行名称", text: $bankName)
+                            .padding(12)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
+                        TextField("卡号后四位", text: $cardLast4)
+                            .keyboardType(.numberPad)
+                            .onChange(of: cardLast4) { _, v in
+                                cardLast4 = String(v.filter(\.isNumber).prefix(4))
+                            }
+                            .padding(12)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.hairline, lineWidth: 1))
+                        Button("绑定银行卡") {
+                            if bankName.isEmpty || cardLast4.count < 4 {
+                                flash("请填写银行与卡号后四位")
+                            } else {
+                                flash("已绑定 \(bankName) ****\(cardLast4)（mock）")
+                            }
+                        }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity).frame(height: 44)
+                        .background(DesignTokens.link, in: RoundedRectangle(cornerRadius: 10))
+
+                        Text("流水", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
+                        ForEach(Array(flows.enumerated()), id: \.offset) { _, f in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(f.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                                    Text(f.1, font: .system(size: 12), color: DesignTokens.mute)
+                                }
+                                Spacer()
+                                Text(f.2, font: .system(size: 15, weight: .semibold),
+                                      color: f.2.hasPrefix("+") ? Color(red: 0.18, green: 0.49, blue: 0.20) : Color(red: 0.90, green: 0.22, blue: 0.21))
+                            }
+                            .padding(14)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 10))
+                        }
                     }
+                    .padding(16)
                 }
-                .padding(16)
+                .background(Color(white: 0.96).ignoresSafeArea())
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
+        }
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
         }
     }
 }
