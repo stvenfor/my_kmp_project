@@ -1276,76 +1276,249 @@ struct NativeStrategyPage: View {
 
 struct NativeCheckInMallPage: View {
     var onClose: () -> Void
-    @State private var points = 0
+    @State private var points = 1280
+    @State private var streak = 3
     @State private var checkedToday = false
-    @State private var streak = 1
-    private let days = ["19", "20", "21", "22", "23", "24", "今天"]
-    private let gifts: [(String, String)] = [("洗车券 ×1", "200 积分"), ("香氛挂件", "500 积分"), ("定制马克杯", "800 积分")]
+    @State private var remind = false
+    @State private var checkingIn = false
+    @State private var toastText: String? = nil
+
+    private struct DayCell {
+        let label: String
+        let reward: Int
+        let signed: Bool
+        let isToday: Bool
+    }
+    private struct TaskRow {
+        let title: String
+        let points: Int
+        let action: String
+    }
+
+    private let headerBlue = DesignTokens.link
+    private let coinGold = Color(red: 0xF5/255, green: 0xA6/255, blue: 0x23/255)
+    private let calendar: [DayCell] = [
+        .init(label: "19", reward: 5, signed: true, isToday: false),
+        .init(label: "20", reward: 5, signed: true, isToday: false),
+        .init(label: "21", reward: 5, signed: true, isToday: false),
+        .init(label: "22", reward: 5, signed: false, isToday: false),
+        .init(label: "23", reward: 5, signed: false, isToday: false),
+        .init(label: "24", reward: 5, signed: false, isToday: false),
+        .init(label: "今天", reward: 10, signed: false, isToday: true),
+    ]
+    private let tasks: [TaskRow] = [
+        .init(title: "每日登录", points: 5, action: "领取"),
+        .init(title: "发一条动态", points: 10, action: "去完成"),
+        .init(title: "商城下单", points: 20, action: "去完成"),
+    ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 12) {
-                HStack {
-                    Button { onClose() } label: {
-                        Image(systemName: "chevron.left").foregroundStyle(.white)
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                // Flutter header chrome: nav + notice + stats
+                VStack(spacing: 0) {
+                    HStack {
+                        Button { onClose() } label: {
+                            Text("‹", font: .system(size: 28), color: .white)
+                                .frame(width: 44, alignment: .leading)
+                        }
+                        Text("签到商城", font: .system(size: 18, weight: .semibold), color: .white)
+                            .frame(maxWidth: .infinity)
+                        Color.clear.frame(width: 44, height: 1)
                     }
-                    Text("签到商城", font: .system(size: 17, weight: .semibold), color: .white)
-                    Spacer()
+                    .padding(.horizontal, 4)
+                    .frame(height: 44)
+
+                    HStack(spacing: 8) {
+                        Text("🔊").font(.system(size: 14))
+                        Text(
+                            "温馨提示：本页面只保留近3个月内的积分记录",
+                            font: .system(size: 12),
+                            color: .white
+                        )
+                        .lineLimit(1)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(red: 0x3A/255, green: 0x8E/255, blue: 0xE6/255), in: RoundedRectangle(cornerRadius: 4))
+                    .padding(.horizontal, 16)
+
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("我的积分", font: .system(size: 13), color: .white.opacity(0.8))
+                            Text("\(points)", font: .system(size: 32, weight: .bold), color: .white)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("连续签到", font: .system(size: 13), color: .white.opacity(0.8))
+                            HStack(alignment: .bottom, spacing: 4) {
+                                Text("\(streak)", font: .system(size: 32, weight: .bold), color: .white)
+                                Text("天", font: .system(size: 13), color: .white.opacity(0.8))
+                                    .padding(.bottom, 6)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
+                    .padding(.bottom, 16)
                 }
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("我的积分", font: .system(size: 13), color: .white.opacity(0.85))
-                        Text("\(points)", font: .system(size: 32, weight: .bold), color: .white)
-                    }
-                    Spacer()
-                    Button(checkedToday ? "已签到" : "立即签到") {
-                        guard !checkedToday else { return }
-                        checkedToday = true
-                        points += 10
-                        streak += 1
-                    }
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(red: 0.18, green: 0.42, blue: 1))
-                    .padding(.horizontal, 16).padding(.vertical, 10)
-                    .background(Color.white, in: Capsule())
-                }
-                HStack {
-                    ForEach(Array(days.enumerated()), id: \.offset) { i, d in
-                        VStack(spacing: 6) {
-                            Circle()
-                                .fill(i < streak || (i == days.count - 1 && checkedToday) ? Color.white : Color.white.opacity(0.25))
-                                .frame(width: 28, height: 28)
-                            Text(d, font: .system(size: 11), color: .white.opacity(0.9))
+                .background(headerBlue.ignoresSafeArea(edges: .top))
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Check-in card
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack(alignment: .center) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("连签可得更多积分", font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                    HStack(spacing: 0) {
+                                        Text("已连续签到 ", font: .system(size: 12), color: DesignTokens.body)
+                                        Text("\(streak)", font: .system(size: 12, weight: .semibold), color: headerBlue)
+                                        Text(" 天", font: .system(size: 12), color: DesignTokens.body)
+                                    }
+                                }
+                                Spacer()
+                                Button {
+                                    guard !checkedToday && !checkingIn else { return }
+                                    checkingIn = true
+                                    checkedToday = true
+                                    points += 10
+                                    streak += 1
+                                    checkingIn = false
+                                    flashToast("签到成功，+10积分")
+                                } label: {
+                                    Text(
+                                        checkedToday ? "已签到" : (checkingIn ? "签到中…" : "立即签到"),
+                                        font: .system(size: 14, weight: .semibold),
+                                        color: checkedToday ? DesignTokens.mute : .white
+                                    )
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        checkedToday ? Color(red: 0xF5/255, green: 0xF6/255, blue: 0xF8/255) : headerBlue,
+                                        in: Capsule()
+                                    )
+                                }
+                                .disabled(checkedToday || checkingIn)
+                            }
+
+                            HStack(spacing: 0) {
+                                ForEach(Array(calendar.enumerated()), id: \.offset) { _, day in
+                                    dayCell(day)
+                                }
+                            }
+
+                            HStack {
+                                Text("断签或者签完需重新开始", font: .system(size: 12), color: DesignTokens.mute)
+                                Spacer()
+                                Text("签到提醒", font: .system(size: 12), color: DesignTokens.body)
+                                Toggle("", isOn: $remind)
+                                    .labelsHidden()
+                                    .tint(headerBlue)
+                                    .scaleEffect(0.8)
+                            }
+                        }
+                        .padding(16)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+
+                        Text("成长任务", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                            .padding(.horizontal, 16)
+
+                        VStack(spacing: 0) {
+                            ForEach(Array(tasks.enumerated()), id: \.offset) { idx, task in
+                                if idx > 0 {
+                                    Divider().background(DesignTokens.hairline)
+                                }
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(task.title, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                                        Text("+\(task.points)积分", font: .system(size: 12), color: DesignTokens.body)
+                                    }
+                                    Spacer()
+                                    Button {
+                                        if task.action == "领取" {
+                                            points += task.points
+                                            flashToast("领取成功，+\(task.points)积分")
+                                        } else {
+                                            flashToast("去完成：\(task.title)")
+                                        }
+                                    } label: {
+                                        Text(task.action, font: .system(size: 13, weight: .semibold), color: headerBlue)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(headerBlue.opacity(0.1), in: Capsule())
+                                    }
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                            }
+                        }
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+
+                        Text("积分换礼", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                            .padding(.horizontal, 16)
+
+                        VStack(spacing: 16) {
+                            Text("🎁").font(.system(size: 64)).opacity(0.3)
+                            Text("暂无积分商品", font: .system(size: 14), color: DesignTokens.mute)
                         }
                         .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
                     }
+                    .padding(.bottom, 24)
                 }
+                .background(DesignTokens.canvasSoft2)
             }
-            .padding(16)
-            .background(Color(red: 0.18, green: 0.42, blue: 1).ignoresSafeArea(edges: .top))
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("积分换礼", font: .system(size: 16, weight: .bold), color: DesignTokens.ink)
-                    ForEach(Array(gifts.enumerated()), id: \.offset) { _, g in
-                        HStack {
-                            RoundedRectangle(cornerRadius: 8).fill(DesignTokens.canvasSoft2).frame(width: 56, height: 56)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(g.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
-                                Text(g.1, font: .system(size: 13), color: DesignTokens.body)
-                            }
-                            Spacer()
-                            Text("兑换", font: .system(size: 13, weight: .semibold), color: .white)
-                                .padding(.horizontal, 12).padding(.vertical, 8)
-                                .background(DesignTokens.link, in: Capsule())
-                        }
-                        .padding(12)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
-                    }
-                }
-                .padding(16)
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+                    .transition(.opacity)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+
+
+    @ViewBuilder
+    private func dayCell(_ day: DayCell) -> some View {
+        let signed = day.signed || (day.isToday && checkedToday)
+        let bg: Color = {
+            if signed { return headerBlue }
+            if day.isToday { return coinGold }
+            return Color(red: 0xF5/255, green: 0xF6/255, blue: 0xF8/255)
+        }()
+        let fg: Color = (signed || day.isToday) ? .white : DesignTokens.body
+        VStack(spacing: 4) {
+            VStack(spacing: 2) {
+                Text("+\(day.reward)", font: .system(size: 11, weight: .semibold), color: fg)
+                Text("›", font: .system(size: 10), color: fg.opacity(0.8))
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+            .background(bg, in: RoundedRectangle(cornerRadius: 8))
+            Text(
+                signed ? "已签" : day.label,
+                font: .system(size: 11),
+                color: signed ? headerBlue : DesignTokens.body
+            )
+            .lineLimit(1)
+        }
+        .padding(.horizontal, 2)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func flashToast(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
         }
     }
 }

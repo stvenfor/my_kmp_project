@@ -127,7 +127,6 @@ internal fun JetpackHomeRoot(
             },
         )
     }
-
     PullToRefreshBox(
         isRefreshing = refreshing,
         onRefresh = {

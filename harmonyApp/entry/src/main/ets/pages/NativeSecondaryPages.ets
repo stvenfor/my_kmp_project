@@ -1,3 +1,4 @@
+import { promptAction } from '@kit.ArkUI';
 import { DesignTokens } from './NativeShellShared';
 
 /** Flutter/Compose-aligned secondary pages for OHOS shell (ADR 0002). */
@@ -1343,86 +1344,246 @@ export struct NativeStrategyPane {
 @Component
 export struct NativeCheckInMallPane {
   onClose: () => void = () => {};
-  @State points: number = 0;
+  @State points: number = 1280;
+  @State streak: number = 3;
   @State checkedToday: boolean = false;
-  @State streak: number = 1;
-  private days: string[] = ['19', '20', '21', '22', '23', '24', '今天'];
-  private gifts: string[][] = [
-    ['洗车券 ×1', '200 积分'],
-    ['香氛挂件', '500 积分'],
-    ['定制马克杯', '800 积分'],
+  @State remind: boolean = false;
+  @State checkingIn: boolean = false;
+
+  private headerBlue: string = DesignTokens.link;
+  private coinGold: string = '#FFF5A623';
+  private dayGray: string = '#FFF5F6F8';
+  private calendar: CheckInDayCell[] = [
+    { label: '19', reward: 5, signed: true, isToday: false },
+    { label: '20', reward: 5, signed: true, isToday: false },
+    { label: '21', reward: 5, signed: true, isToday: false },
+    { label: '22', reward: 5, signed: false, isToday: false },
+    { label: '23', reward: 5, signed: false, isToday: false },
+    { label: '24', reward: 5, signed: false, isToday: false },
+    { label: '今天', reward: 10, signed: false, isToday: true },
   ];
+  private tasks: CheckInTaskRow[] = [
+    { title: '每日登录', points: 5, action: '领取' },
+    { title: '发一条动态', points: 10, action: '去完成' },
+    { title: '商城下单', points: 20, action: '去完成' },
+  ];
+
+  private dayBg(day: CheckInDayCell): string {
+    const signed = day.signed || (day.isToday && this.checkedToday);
+    if (signed) {
+      return this.headerBlue;
+    }
+    if (day.isToday) {
+      return this.coinGold;
+    }
+    return this.dayGray;
+  }
+
+  private dayFg(day: CheckInDayCell): ResourceColor {
+    const signed = day.signed || (day.isToday && this.checkedToday);
+    if (signed || day.isToday) {
+      return Color.White;
+    }
+    return DesignTokens.body;
+  }
+
+  private dayLabel(day: CheckInDayCell): string {
+    const signed = day.signed || (day.isToday && this.checkedToday);
+    return signed ? '已签' : day.label;
+  }
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
 
   build() {
     Column() {
-      Column({ space: 12 }) {
+      // Flutter header chrome: nav + notice + stats
+      Column() {
         Row() {
-          Text('‹').fontSize(22).fontColor(Color.White).onClick(() => this.onClose())
-          Text('签到商城').fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White)
-          Blank().layoutWeight(1)
-        }.width('100%')
+          Text('‹').fontSize(28).fontColor(Color.White)
+            .width(44).onClick(() => this.onClose())
+          Text('签到商城')
+            .fontSize(18).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            .layoutWeight(1).textAlign(TextAlign.Center)
+          Blank().width(44)
+        }.width('100%').height(44).padding({ left: 4, right: 4 })
+
+        Row({ space: 8 }) {
+          Text('🔊').fontSize(14)
+          Text('温馨提示：本页面只保留近3个月内的积分记录')
+            .fontSize(12).fontColor(Color.White).layoutWeight(1).maxLines(1)
+        }
+        .width('100%')
+        .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+        .margin({ left: 16, right: 16 })
+        .backgroundColor('#FF3A8EE6')
+        .borderRadius(4)
+
         Row() {
           Column({ space: 4 }) {
-            Text('我的积分').fontSize(13).fontColor('#D9FFFFFF')
+            Text('我的积分').fontSize(13).fontColor('#CCFFFFFF')
             Text(`${this.points}`).fontSize(32).fontWeight(FontWeight.Bold).fontColor(Color.White)
-          }.alignItems(HorizontalAlign.Start)
-          Blank().layoutWeight(1)
-          Text(this.checkedToday ? '已签到' : '立即签到')
-            .fontSize(14).fontWeight(FontWeight.Medium).fontColor('#2F6BFF')
-            .padding({ left: 16, right: 16, top: 10, bottom: 10 })
-            .backgroundColor(Color.White).borderRadius(20)
-            .onClick(() => {
-              if (this.checkedToday) {
-                return;
-              }
-              this.checkedToday = true;
-              this.points += 10;
-              this.streak += 1;
-            })
-        }.width('100%')
-        Row() {
-          ForEach(this.days, (d: string, i: number) => {
-            Column({ space: 6 }) {
-              Column()
-                .width(28).height(28).borderRadius(14)
-                .backgroundColor((i < this.streak || (i === this.days.length - 1 && this.checkedToday))
-                  ? Color.White : '#40FFFFFF')
-              Text(d).fontSize(11).fontColor('#E6FFFFFF')
-            }.layoutWeight(1).alignItems(HorizontalAlign.Center)
-          })
-        }.width('100%')
-      }
-      .padding(16)
-      .width('100%')
-      .backgroundColor('#2F6BFF')
-
-      List() {
-        ListItem() {
-          Text('积分换礼').fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
-            .padding({ bottom: 8 })
+          }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+          Column({ space: 4 }) {
+            Text('连续签到').fontSize(13).fontColor('#CCFFFFFF')
+            Row({ space: 4 }) {
+              Text(`${this.streak}`).fontSize(32).fontWeight(FontWeight.Bold).fontColor(Color.White)
+              Text('天').fontSize(13).fontColor('#CCFFFFFF').margin({ bottom: 6 })
+            }.alignItems(VerticalAlign.Bottom)
+          }.alignItems(HorizontalAlign.Start).layoutWeight(1)
         }
-        ForEach(this.gifts, (g: string[]) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Column().width(56).height(56).borderRadius(8).backgroundColor(DesignTokens.canvasSoft2)
+        .width('100%')
+        .padding({ left: 24, right: 24, top: 16, bottom: 16 })
+      }
+      .width('100%')
+      .backgroundColor(this.headerBlue)
+
+      Scroll() {
+        Column({ space: 16 }) {
+          // Check-in card
+          Column({ space: 16 }) {
+            Row() {
               Column({ space: 4 }) {
-                Text(g[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(g[1]).fontSize(13).fontColor(DesignTokens.body)
+                Text('连签可得更多积分')
+                  .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Row() {
+                  Text('已连续签到 ').fontSize(12).fontColor(DesignTokens.body)
+                  Text(`${this.streak}`).fontSize(12).fontWeight(FontWeight.Medium).fontColor(this.headerBlue)
+                  Text(' 天').fontSize(12).fontColor(DesignTokens.body)
+                }
               }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              Text('兑换').fontSize(13).fontWeight(FontWeight.Medium).fontColor(Color.White)
-                .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-                .backgroundColor(DesignTokens.link).borderRadius(16)
-            }
-            .padding(12)
-            .margin({ bottom: 12 })
-            .backgroundColor(DesignTokens.canvas)
-            .borderRadius(12)
+              Text(this.checkedToday ? '已签到' : (this.checkingIn ? '签到中…' : '立即签到'))
+                .fontSize(14).fontWeight(FontWeight.Medium)
+                .fontColor(this.checkedToday ? DesignTokens.mute : Color.White)
+                .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+                .backgroundColor(this.checkedToday ? '#FFF5F6F8' : this.headerBlue)
+                .borderRadius(20)
+                .onClick(() => {
+                  if (this.checkedToday || this.checkingIn) {
+                    return;
+                  }
+                  this.checkingIn = true;
+                  this.checkedToday = true;
+                  this.points += 10;
+                  this.streak += 1;
+                  this.checkingIn = false;
+                  this.flash('签到成功，+10积分');
+                })
+            }.width('100%')
+
+            Row() {
+              ForEach(this.calendar, (day: CheckInDayCell) => {
+                Column({ space: 4 }) {
+                  Column({ space: 2 }) {
+                    Text(`+${day.reward}`)
+                      .fontSize(11).fontWeight(FontWeight.Medium).fontColor(this.dayFg(day))
+                    Text('›').fontSize(10).fontColor(this.dayFg(day))
+                  }
+                  .width('100%')
+                  .aspectRatio(1)
+                  .justifyContent(FlexAlign.Center)
+                  .alignItems(HorizontalAlign.Center)
+                  .backgroundColor(this.dayBg(day))
+                  .borderRadius(8)
+                  Text(this.dayLabel(day))
+                    .fontSize(11)
+                    .fontColor((day.signed || (day.isToday && this.checkedToday)) ? this.headerBlue : DesignTokens.body)
+                    .maxLines(1)
+                }
+                .layoutWeight(1)
+                .padding({ left: 2, right: 2 })
+                .alignItems(HorizontalAlign.Center)
+              })
+            }.width('100%')
+
+            Row() {
+              Text('断签或者签完需重新开始').fontSize(12).fontColor(DesignTokens.mute).layoutWeight(1)
+              Text('签到提醒').fontSize(12).fontColor(DesignTokens.body).margin({ right: 8 })
+              Toggle({ type: ToggleType.Switch, isOn: this.remind })
+                .selectedColor(this.headerBlue)
+                .width(44).height(24)
+                .onChange((isOn: boolean) => { this.remind = isOn; })
+            }.width('100%').alignItems(VerticalAlign.Center)
           }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
+          .width('100%')
+          .padding(16)
+          .margin({ left: 16, right: 16, top: 16 })
+          .backgroundColor(Color.White)
+          .borderRadius(12)
+
+          Text('成长任务')
+            .fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            .margin({ left: 16 })
+
+          Column() {
+            ForEach(this.tasks, (task: CheckInTaskRow, idx: number) => {
+              if (idx > 0) {
+                Row().width('100%').height(0.5).backgroundColor(DesignTokens.hairline)
+              }
+              Row() {
+                Column({ space: 2 }) {
+                  Text(task.title).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text(`+${task.points}积分`).fontSize(12).fontColor(DesignTokens.body)
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                Text(task.action)
+                  .fontSize(13).fontWeight(FontWeight.Medium).fontColor(this.headerBlue)
+                  .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                  .backgroundColor('#1A0070F3')
+                  .borderRadius(14)
+                  .onClick(() => {
+                    if (task.action === '领取') {
+                      this.points += task.points;
+                      this.flash(`领取成功，+${task.points}积分`);
+                    } else {
+                      this.flash(`去完成：${task.title}`);
+                    }
+                  })
+              }
+              .width('100%')
+              .padding({ left: 14, right: 14, top: 12, bottom: 12 })
+            })
+          }
+          .width('100%')
+          .margin({ left: 16, right: 16 })
+          .backgroundColor(Color.White)
+          .borderRadius(12)
+
+          Text('积分换礼')
+            .fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            .margin({ left: 16 })
+
+          Column({ space: 16 }) {
+            Text('🎁').fontSize(64).fontColor('#4D888888')
+            Text('暂无积分商品').fontSize(14).fontColor(DesignTokens.mute)
+          }
+          .width('100%')
+          .padding({ top: 40, bottom: 40 })
+          .alignItems(HorizontalAlign.Center)
+        }
+        .width('100%')
+        .padding({ bottom: 24 })
+      }
+      .layoutWeight(1)
+      .width('100%')
+      .scrollBar(BarState.Off)
+      .align(Alignment.Top)
     }
     .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
+}
+
+interface CheckInDayCell {
+  label: string;
+  reward: number;
+  signed: boolean;
+  isToday: boolean;
+}
+
+interface CheckInTaskRow {
+  title: string;
+  points: number;
+  action: string;
 }
 
 @Component

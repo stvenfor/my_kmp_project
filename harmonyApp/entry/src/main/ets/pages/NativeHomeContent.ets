@@ -491,7 +491,7 @@ export struct NativeHomeContent {
 
       if (this.showCheckIn && this.isLoggedIn) {
         // Flutter `_DailyCheckInAlert`: hero gradient + white body + close circle.
-        Column() {
+        Stack({ alignContent: Alignment.Center }) {
           Column()
             .width('100%')
             .height('100%')
@@ -523,13 +523,14 @@ export struct NativeHomeContent {
                 colors: [['#FF1A8CFF', 0], ['#FF0070F3', 0.5], ['#FF0050C8', 1]],
               })
 
-              Column({ space: 0 }) {
+              Column() {
                 Text('每日签到')
                   .fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+                  .margin({ top: 20 })
                 Text('签到攒积分，可在签到页兑换好物')
                   .fontSize(13).fontColor(DesignTokens.body)
                   .textAlign(TextAlign.Center)
-                  .margin({ top: 8 })
+                  .margin({ top: 8, left: 20, right: 20 })
                 Text('已连续签到 3 天')
                   .fontSize(12).fontWeight(FontWeight.Medium).fontColor('#FFB7791F')
                   .padding({ left: 12, right: 12, top: 6, bottom: 6 })
@@ -537,7 +538,7 @@ export struct NativeHomeContent {
                   .borderRadius(20)
                   .margin({ top: 12 })
                 Button('立即签到 · +10积分')
-                  .width('100%')
+                  .width('80%')
                   .height(44)
                   .borderRadius(22)
                   .backgroundColor(DesignTokens.link)
@@ -548,18 +549,16 @@ export struct NativeHomeContent {
                   })
                 Text('稍后再说')
                   .fontSize(13).fontColor(DesignTokens.mute)
-                  .margin({ top: 10 })
+                  .margin({ top: 10, bottom: 20 })
                   .onClick(() => { this.ackCheckInDialog(); })
               }
               .width('100%')
-              .padding(20)
               .alignItems(HorizontalAlign.Center)
               .backgroundColor(Color.White)
             }
             .width('84%')
             .borderRadius(16)
             .clip(true)
-            .backgroundColor(Color.White)
 
             Text('✕')
               .fontSize(16).fontColor(Color.White)
@@ -569,7 +568,6 @@ export struct NativeHomeContent {
               .borderRadius(18)
               .onClick(() => { this.ackCheckInDialog(); })
           }
-          .width('100%')
           .justifyContent(FlexAlign.Center)
           .alignItems(HorizontalAlign.Center)
         }
