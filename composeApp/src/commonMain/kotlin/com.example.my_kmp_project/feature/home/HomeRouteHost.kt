@@ -1081,34 +1081,306 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
 
 @Composable
 private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
+    // Flutter DubbingHomePage sections + DubbingHomeMockData
+    val features = listOf("每日打卡", "影视单词", "经典剧场", "排行榜", "全部视频")
+    val recent = listOf(
+        "穿梭在迷宫的勇士" to "03:24",
+        "萌宠部落" to "02:18",
+        "完美的世界" to "04:05",
+        "小猪佩奇" to "01:56",
+    )
+    val expert = listOf(
+        Triple("英语启蒙课堂", "蓝儿老师Joyue", "跟读练习 · 初级"),
+        Triple("趣味配音挑战", "配音达人", "动画配音 · 中级"),
+        Triple("诵读之星", "朗读爱好者", "经典诵读"),
+        Triple("动画配音秀", "动画迷", "角色模仿"),
+    )
+    val editor = listOf(
+        Triple("经典动画配音", "跟佩奇一起快乐学英语", "AD"),
+        Triple("英语启蒙课堂", "零基础也能开口说", "New"),
+        Triple("趣味配音挑战", "模仿经典电影片段", ""),
+        Triple("每日跟读练习", "坚持打卡领奖励", "New"),
+    )
+    val albums = listOf(
+        "小猪佩奇" to "52集",
+        "冰雪奇缘" to "12集",
+        "狮子王" to "8集",
+        "海底总动员" to "16集",
+    )
+    val guess = listOf(
+        Triple("趣味英语配音", "6.8万播放", "05:12"),
+        Triple("经典电影片段", "9.2万播放", "03:45"),
+    )
+    val categories = listOf("推荐", "动画", "电影", "启蒙", "跟读")
+
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "配音", onBack = onBack, containerColor = DemoColors.PageBg)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        MineTopBar(title = "学英语", onBack = onBack, containerColor = DemoColors.PageBg)
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp),
+        ) {
+            Row(
+                Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                categories.forEachIndexed { i, label ->
+                    Text(
+                        label,
+                        fontWeight = if (i == 0) FontWeight.SemiBold else FontWeight.Normal,
+                        color = if (i == 0) DemoColors.TextPrimary else DemoColors.TextSecondary,
+                        fontSize = 15.sp,
+                    )
+                }
+            }
+            Box(
+                Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(DemoColors.Accent.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("身体的奥秘", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Banner · 萌宠部落 / 完美的世界", color = DemoColors.TextSecondary, fontSize = 12.sp)
+                }
+            }
+            Spacer(Modifier.height(12.dp))
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Accent.copy(alpha = 0.1f))
-                    .clickable(onClick = onOpenHotRank)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .padding(horizontal = 8.dp),
             ) {
-                Text("热配榜", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-                Text("查看 >", color = DemoColors.Accent)
-            }
-            HomeMockData.rankItemsForTab(0).take(5).forEach { item ->
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DemoColors.Background)
-                        .padding(14.dp),
-                ) {
-                    Text("${item.rank}. ${item.title}", fontWeight = FontWeight.Medium)
-                    Text(item.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                features.forEach { label ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                if (label == "排行榜") onOpenHotRank()
+                                else showPlatformToast(label)
+                            },
+                    ) {
+                        Box(
+                            Modifier
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(DemoColors.Accent.copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(label.take(1), color = DemoColors.Accent, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(6.dp))
+                        Text(label, fontSize = 11.sp, maxLines = 1)
+                    }
                 }
             }
+            DubbingSectionTitle("最近在学")
+            Row(
+                Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                recent.forEach { (title, dur) ->
+                    Column(
+                        Modifier
+                            .width(120.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .padding(10.dp),
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(72.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFE8F0FE)),
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 2)
+                        Text(dur, fontSize = 11.sp, color = DemoColors.TextSecondary)
+                    }
+                }
+            }
+            DubbingSectionTitle("新手赛场")
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                expert.forEach { (title, user, sub) ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFFFF3E0)),
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text("$user · $sub", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        }
+                    }
+                }
+            }
+            DubbingSectionTitle(
+                title = "热榜",
+                action = "查看 >",
+                onAction = onOpenHotRank,
+            )
+            Row(
+                Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                listOf("热度榜" to Color(0xFFFFE4EC), "热搜榜" to Color(0xFFE3F2FD)).forEach { (board, bg) ->
+                    Column(
+                        Modifier
+                            .width(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(bg)
+                            .clickable(onClick = onOpenHotRank)
+                            .padding(12.dp),
+                    ) {
+                        Text(board, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Spacer(Modifier.height(8.dp))
+                        HomeMockData.rankItemsForTab(0).take(3).forEach { item ->
+                            Text(
+                                "${item.rank}. ${item.title}",
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                modifier = Modifier.padding(vertical = 2.dp),
+                            )
+                        }
+                    }
+                }
+            }
+            DubbingSectionTitle("小编精选")
+            Row(
+                Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                editor.forEach { (title, sub, badge) ->
+                    Column(
+                        Modifier
+                            .width(140.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .padding(10.dp),
+                    ) {
+                        if (badge.isNotEmpty()) {
+                            Text(
+                                badge,
+                                fontSize = 10.sp,
+                                color = DemoColors.Accent,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        Text(title, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 2)
+                        Text(sub, fontSize = 11.sp, color = DemoColors.TextSecondary, maxLines = 2)
+                    }
+                }
+            }
+            DubbingSectionTitle(title = "专属为你", subtitle = "根据你的学习兴趣为你推荐")
+            Row(
+                Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                albums.forEach { (title, eps) ->
+                    Column(
+                        Modifier
+                            .width(110.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .padding(10.dp),
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(80.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFE8F5E9)),
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(title, fontWeight = FontWeight.Medium, fontSize = 13.sp)
+                        Text(eps, fontSize = 11.sp, color = DemoColors.TextSecondary)
+                    }
+                }
+            }
+            DubbingSectionTitle("猜你喜欢")
+            Column(
+                Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                guess.forEach { (title, plays, dur) ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF3E5F5)),
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text("$plays · $dur", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DubbingSectionTitle(
+    title: String,
+    subtitle: String? = null,
+    action: String? = null,
+    onAction: (() -> Unit)? = null,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            if (subtitle != null) {
+                Text(subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
+            }
+        }
+        if (action != null) {
+            Text(
+                action,
+                color = DemoColors.Accent,
+                fontSize = 13.sp,
+                modifier = Modifier.clickable { onAction?.invoke() },
+            )
         }
     }
 }
