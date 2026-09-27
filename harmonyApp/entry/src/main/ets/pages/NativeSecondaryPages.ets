@@ -2388,28 +2388,70 @@ export struct NativeGiftClaimPane {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
         Text('领取礼品卡').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
-      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+      }.padding(16).width('100%').backgroundColor('#FFF7F5F0')
 
-      Column({ space: 12 }) {
-        Text(this.claimed ? '已领取 · 卡号 GC-2026-001' : '完成课堂任务后可领取礼品卡')
-          .fontSize(15).fontColor(DesignTokens.ink)
-        Text(this.claimed ? '已领取' : '立即领取')
-          .fontSize(15).fontColor(Color.White)
-          .width('100%').textAlign(TextAlign.Center)
-          .padding({ top: 12, bottom: 12 })
-          .backgroundColor(this.claimed ? DesignTokens.mute : DesignTokens.link)
-          .borderRadius(8)
-          .onClick(() => {
-            if (this.claimed) {
-              return;
+      Scroll() {
+        Column({ space: 24 }) {
+          Column() {
+            Column() {
+              Row({ space: 8 }) {
+                Text('🦜').fontSize(14).width(28).height(28).textAlign(TextAlign.Center)
+                  .borderRadius(14).backgroundColor(Color.White)
+                Text('iHome').fontSize(13).fontColor(Color.White)
+              }
+              Blank().layoutWeight(1)
+              Text('Way to go ✨').fontSize(28).fontWeight(FontWeight.Bold).fontColor(Color.White)
+                .fontStyle(FontStyle.Italic).width('100%').textAlign(TextAlign.Center)
+              Blank().layoutWeight(1)
+              Row() {
+                Column({ space: 4 }) {
+                  Text('1天 AI SVIP').fontSize(14).fontColor(Color.White)
+                  Text('班级会员卡').fontSize(10).fontColor(Color.White)
+                    .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+                    .backgroundColor('#33FFFFFF').borderRadius(10)
+                }.alignItems(HorizontalAlign.Start)
+                Blank().layoutWeight(1)
+                Text('🧑‍🎓').fontSize(48)
+              }
             }
-            this.claimed = true;
-            this.flash('领取成功（mock）');
-          })
-      }.width('100%').padding(16).alignItems(HorizontalAlign.Start)
-      Blank().layoutWeight(1)
+            .width('100%').height(180).padding(16)
+            .linearGradient({
+              angle: 135,
+              colors: [['#1677FF', 0.0], ['#0958D9', 1.0]]
+            })
+            .borderRadius(12)
+          }.padding(16).backgroundColor(Color.White).borderRadius(16)
+
+          Column({ space: 12 }) {
+            Text('📎').fontSize(18).fontColor('#999999')
+            Text('乌克丽丽 同学：').fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Text('本次作业完成的很棒！老师送你一张体验卡，以资鼓励')
+              .fontSize(14).fontColor(DesignTokens.ink).lineHeight(22)
+            Column({ space: 4 }) {
+              Text('老坛酸菜').fontSize(14).fontColor(DesignTokens.ink)
+              Text('2026-05-20').fontSize(13).fontColor(DesignTokens.mute)
+            }.width('100%').alignItems(HorizontalAlign.End)
+          }
+          .width('100%')
+          .padding({ left: 20, right: 20, top: 24, bottom: 20 })
+          .backgroundColor(Color.White).borderRadius(4)
+
+          Text(this.claimed ? '已领取' : '立即领取')
+            .fontSize(16).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            .width('100%').height(48).textAlign(TextAlign.Center)
+            .borderRadius(24)
+            .backgroundColor(this.claimed ? DesignTokens.mute : '#34C759')
+            .onClick(() => {
+              if (this.claimed) {
+                return;
+              }
+              this.claimed = true;
+              this.flash('领取成功，可在背包中查看');
+            })
+        }.width('100%').padding(16)
+      }.layoutWeight(1).width('100%')
     }
-    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+    .width('100%').height('100%').backgroundColor('#FFF7F5F0')
   }
 }
 

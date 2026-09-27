@@ -2328,28 +2328,82 @@ struct NativeGiftClaimPage: View {
     var onClose: () -> Void
     @State private var claimed = false
     @State private var toastText: String? = nil
+    private let noteBg = Color(red: 0.97, green: 0.96, blue: 0.94)
+    private let green = Color(red: 0.20, green: 0.78, blue: 0.35)
 
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
                 navBar(title: "领取礼品卡", onClose: onClose, dark: false)
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(claimed ? "已领取 · 卡号 GC-2026-001" : "完成课堂任务后可领取礼品卡",
-                          font: .system(size: 15), color: DesignTokens.ink)
-                    Button(claimed ? "已领取" : "立即领取") {
-                        guard !claimed else { return }
-                        claimed = true
-                        flash("领取成功（mock）")
+                ScrollView {
+                    VStack(spacing: 24) {
+                        VStack {
+                            ZStack(alignment: .topLeading) {
+                                LinearGradient(
+                                    colors: [Color(red: 0.086, green: 0.467, blue: 1), Color(red: 0.035, green: 0.345, blue: 0.851)],
+                                    startPoint: .topLeading, endPoint: .bottomTrailing
+                                )
+                                VStack(alignment: .leading, spacing: 0) {
+                                    HStack(spacing: 8) {
+                                        Text("🦜").frame(width: 28, height: 28)
+                                            .background(Circle().fill(Color.white))
+                                        Text("iHome", font: .system(size: 13), color: .white)
+                                    }
+                                    Spacer()
+                                    Text("Way to go ✨", font: .system(size: 28, weight: .bold).italic(), color: .white)
+                                        .frame(maxWidth: .infinity)
+                                    Spacer()
+                                    HStack(alignment: .bottom) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text("1天 AI SVIP", font: .system(size: 14), color: .white)
+                                            Text("班级会员卡", font: .system(size: 10), color: .white)
+                                                .padding(.horizontal, 8).padding(.vertical, 2)
+                                                .background(Color.white.opacity(0.2), in: Capsule())
+                                        }
+                                        Spacer()
+                                        Text("🧑‍🎓", font: .system(size: 48))
+                                    }
+                                }
+                                .padding(16)
+                            }
+                            .frame(height: 180)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        .padding(16)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
+
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("📎", font: .system(size: 18), color: Color(white: 0.6))
+                            Text("乌克丽丽 同学：", font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                            Text("本次作业完成的很棒！老师送你一张体验卡，以资鼓励",
+                                  font: .system(size: 14), color: DesignTokens.ink)
+                            HStack {
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 4) {
+                                    Text("老坛酸菜", font: .system(size: 14), color: DesignTokens.ink)
+                                    Text("2026-05-20", font: .system(size: 13), color: DesignTokens.mute)
+                                }
+                            }
+                        }
+                        .padding(EdgeInsets(top: 24, leading: 20, bottom: 20, trailing: 20))
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 4))
+
+                        Button(claimed ? "已领取" : "立即领取") {
+                            guard !claimed else { return }
+                            claimed = true
+                            flash("领取成功，可在背包中查看")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(green)
+                        .disabled(claimed)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .clipShape(Capsule())
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.link)
-                    .disabled(claimed)
-                    .frame(maxWidth: .infinity)
-                    Spacer()
+                    .padding(16)
                 }
-                .padding(16)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .background(noteBg.ignoresSafeArea())
             if let toastText {
                 Text(toastText, font: .system(size: 14), color: .white)
                     .padding(.horizontal, 16).padding(.vertical, 10)
