@@ -2075,7 +2075,13 @@ struct Index {
       }
 
       if (this.nativePane === 'data_analytics') {
-        NativeDataAnalyticsPane({ onClose: (): void => { this.nativePane = ''; } })
+        NativeDataAnalyticsPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
       }
 
       if (this.nativePane === 'business_card') {

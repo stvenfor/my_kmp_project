@@ -224,9 +224,9 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
       ], '新建跟进');
     case '/home/data_analytics':
       return page(path, '数据分析', '本周门店经营概览', [
-        row('1', '进店客流', '328 · 环比 +12%'),
-        row('2', '成交台数', '17 · 环比 +2'),
-        row('3', '线索转化', '6.8% · 持平'),
+        row('1', '本周线索转化', 'PV 12840 · 转化 119 · 12.4%', '精选'),
+        row('2', '试驾到店', 'PV 4520 · 转化 86'),
+        row('3', '直播线索异常', '点击骤降 · 需排查投放', '异常'),
       ], '');
     case '/home/live_commerce':
       // Flutter homeLiveCommerce → HomeClubTabContent (same body as Club)

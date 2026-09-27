@@ -3842,30 +3842,57 @@ struct NativeHotRankPage: View {
 
 struct NativeDataAnalyticsPage: View {
     var onClose: () -> Void
-    private let rows: [(String, String)] = [
-        ("本周成交", "12 台"),
-        ("进店客流", "286"),
-        ("试驾转化", "18.4%"),
-        ("售后进厂", "64"),
+    var onOpen: ((String) -> Void)? = nil
+    private let primary = Color(red: 0, green: 0.439, blue: 0.953)
+    /// Align Compose HomeSecondaryMock.analyticsRecords
+    private let items: [(title: String, subtitle: String, pv: Int, clicks: Int, converts: Int, featured: Bool, anomaly: Bool)] = [
+        ("本周线索转化", "门店线索漏斗 · 高意向优先", 12840, 962, 119, true, false),
+        ("试驾到店", "预约试驾 → 到店完成", 4520, 610, 86, false, false),
+        ("直播线索异常", "点击骤降 · 需排查投放", 2100, 42, 3, false, true),
     ]
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "数据分析", onClose: onClose, dark: false)
+            HStack {
+                Text("已加载 \(items.count) / 共 \(items.count) · 第 1 页", font: .system(size: 13), color: DesignTokens.mute)
+                Spacer()
+                Text("gRPC", font: .system(size: 11, weight: .bold), color: primary)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(primary.opacity(0.08), in: Capsule())
+            }
+            .padding(.horizontal, 14).padding(.vertical, 10)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(white: 0.918), lineWidth: 1))
+            .padding(.horizontal, 12).padding(.top, 12)
+
             ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(r.0, font: .system(size: 13), color: DesignTokens.body)
-                            Text(r.1, font: .system(size: 22, weight: .semibold), color: DesignTokens.ink)
+                VStack(spacing: 8) {
+                    ForEach(Array(items.enumerated()), id: \.offset) { _, row in
+                        let rate = row.clicks > 0 ? Double(row.converts) * 100.0 / Double(row.clicks) : 0
+                        let cue = row.anomaly ? Color.red : (row.featured ? Color.orange : Color.clear)
+                        HStack(spacing: 0) {
+                            Rectangle().fill(cue).frame(width: 4)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(row.title, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                                Text(row.subtitle, font: .system(size: 12), color: DesignTokens.mute)
+                                HStack {
+                                    Text("PV \(row.pv)", font: .system(size: 12), color: DesignTokens.mute)
+                                    Text("点击 \(row.clicks)", font: .system(size: 12), color: DesignTokens.mute)
+                                    Text("转化 \(row.converts)", font: .system(size: 12), color: DesignTokens.mute)
+                                    Spacer()
+                                    Text(String(format: "%.1f%%", rate), font: .system(size: 13, weight: .bold), color: primary)
+                                }
+                                .padding(.top, 6)
+                            }
+                            .padding(14)
                         }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
+                        .onTapGesture { onOpen?("/home/data_analytics/detail") }
                     }
                 }
-                .padding(16)
+                .padding(12)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .background(Color(white: 0.96).ignoresSafeArea())
         }
     }
 }

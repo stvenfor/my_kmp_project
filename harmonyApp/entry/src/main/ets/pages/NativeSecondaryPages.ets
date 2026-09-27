@@ -3824,32 +3824,71 @@ export struct NativeHotRankPane {
 @Component
 export struct NativeDataAnalyticsPane {
   onClose: () => void = () => {};
-  private rows: string[][] = [
-    ['本周成交', '12 台'],
-    ['进店客流', '286'],
-    ['试驾转化', '18.4%'],
-    ['售后进厂', '64'],
+  onOpen: (path: string) => void = (_p: string) => {};
+  private primary: string = '#0070F3';
+  // title, subtitle, pv, clicks, converts, featured, anomaly
+  private items: string[][] = [
+    ['本周线索转化', '门店线索漏斗 · 高意向优先', '12840', '962', '119', '1', '0'],
+    ['试驾到店', '预约试驾 → 到店完成', '4520', '610', '86', '0', '0'],
+    ['直播线索异常', '点击骤降 · 需排查投放', '2100', '42', '3', '0', '1'],
   ];
+
+  private rateText(clicks: string, converts: string): string {
+    const c = Number(clicks);
+    const v = Number(converts);
+    if (c <= 0) {
+      return '0.0%';
+    }
+    return `${(v * 100 / c).toFixed(1)}%`;
+  }
+
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
         Text('数据分析').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      Grid() {
-        ForEach(this.rows, (r: string[]) => {
-          GridItem() {
-            Column({ space: 8 }) {
-              Text(r[0]).fontSize(13).fontColor(DesignTokens.body)
-              Text(r[1]).fontSize(22).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-            }.alignItems(HorizontalAlign.Start).padding(16).width('100%')
-            .backgroundColor(DesignTokens.canvas).borderRadius(12)
-          }
-        })
-      }.columnsTemplate('1fr 1fr').columnsGap(12).rowsGap(12).padding(16).width('100%')
-      Blank().layoutWeight(1)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
+
+      Row() {
+        Text(`已加载 ${this.items.length} / 共 ${this.items.length} · 第 1 页`)
+          .fontSize(13).fontColor(DesignTokens.mute).layoutWeight(1)
+        Text('gRPC').fontSize(11).fontWeight(FontWeight.Bold).fontColor(this.primary)
+          .padding({ left: 8, right: 8, top: 4, bottom: 4 })
+          .backgroundColor('#140070F3').borderRadius(999)
+      }
+      .width('100%')
+      .padding({ left: 14, right: 14, top: 10, bottom: 10 })
+      .backgroundColor(Color.White).borderRadius(12)
+      .border({ width: 1, color: '#FFEAEAEA' })
+      .margin({ left: 12, right: 12, top: 12 })
+
+      List() {
+        ForEach(this.items, (row: string[], i: number) => {
+          ListItem() {
+            Row() {
+              Column()
+                .width(4).height(96)
+                .backgroundColor(row[6] === '1' ? '#E53935' : (row[5] === '1' ? '#FF9500' : Color.Transparent))
+              Column({ space: 4 }) {
+                Text(row[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(row[1]).fontSize(12).fontColor(DesignTokens.mute)
+                Row() {
+                  Text(`PV ${row[2]}`).fontSize(12).fontColor(DesignTokens.mute)
+                  Text(`点击 ${row[3]}`).fontSize(12).fontColor(DesignTokens.mute).margin({ left: 12 })
+                  Text(`转化 ${row[4]}`).fontSize(12).fontColor(DesignTokens.mute).margin({ left: 12 })
+                  Blank().layoutWeight(1)
+                  Text(this.rateText(row[3], row[4])).fontSize(13).fontWeight(FontWeight.Bold).fontColor(this.primary)
+                }.width('100%').margin({ top: 6 })
+              }.alignItems(HorizontalAlign.Start).layoutWeight(1).padding(14)
+            }
+            .width('100%')
+            .backgroundColor(Color.White).borderRadius(8)
+            .onClick(() => this.onOpen('/home/data_analytics/detail'))
+          }.padding({ bottom: 8 })
+        }, (row: string[], i: number) => `a_${i}_${row[0]}`)
+      }.layoutWeight(1).width('100%').padding(12)
+    }.width('100%').height('100%').backgroundColor('#FFF5F5F5')
   }
 }
 

@@ -165,9 +165,9 @@ enum NativeFeatureCatalog {
         },
         "/home/data_analytics": {
             .init(id: "/home/data_analytics", title: "数据分析", subtitle: "本周门店经营概览", rows: [
-                .init(id: "1", title: "进店客流", detail: "328 · 环比 +12%", badge: nil),
-                .init(id: "2", title: "成交台数", detail: "17 · 环比 +2", badge: nil),
-                .init(id: "3", title: "线索转化", detail: "6.8% · 持平", badge: nil),
+                .init(id: "1", title: "本周线索转化", detail: "PV 12840 · 转化 119 · 12.4%", badge: "精选"),
+                .init(id: "2", title: "试驾到店", detail: "PV 4520 · 转化 86", badge: nil),
+                .init(id: "3", title: "直播线索异常", detail: "点击骤降 · 需排查投放", badge: "异常"),
             ], primaryAction: nil)
         },
         "/home/live_commerce": {
@@ -556,7 +556,7 @@ struct NativeFeatureHost: View {
         } else if path == "/home/hot_rank_detail" {
             NativeHotRankPage(onClose: onClose)
         } else if path == "/home/data_analytics" {
-            NativeDataAnalyticsPage(onClose: onClose)
+            NativeDataAnalyticsPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/mine/business_card" || pathOrLabel == "电子名片" {
             NativeBusinessCardPage(onClose: onClose)
         } else {
