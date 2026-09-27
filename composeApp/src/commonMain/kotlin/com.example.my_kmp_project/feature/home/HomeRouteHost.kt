@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.feature.mine.MineRoutes
 
@@ -130,8 +131,14 @@ internal fun HomeRouteHost(
         )
         HomeRoutes.HotRankDetail -> HotRankDetailScreen(onBack = onBack)
         HomeRoutes.LifeService -> LifeServiceScreen(onBack = onBack)
-        HomeRoutes.LiveCommerce -> LiveCommerceScreen(onBack = onBack)
-        HomeRoutes.Club -> ClubScreen(onBack = onBack)
+        HomeRoutes.LiveCommerce -> LiveCommerceScreen(
+            onBack = onBack,
+            onJoin = { onNavigate(AppRoutePath.community) },
+        )
+        HomeRoutes.Club -> ClubScreen(
+            onBack = onBack,
+            onJoin = { onNavigate(AppRoutePath.community) },
+        )
         HomeRoutes.UsedCar -> UsedCarListScreen(
             onBack = onBack,
             onItem = { onNavigate(HomeRoutes.UsedCarDetail) },
@@ -598,18 +605,18 @@ private fun LifeSectionHeader(title: String) {
 }
 
 @Composable
-private fun LiveCommerceScreen(onBack: () -> Unit) {
+private fun LiveCommerceScreen(onBack: () -> Unit, onJoin: () -> Unit = {}) {
     // Flutter wires 直播带货 → HomeClubTabContent (same as Club)
-    ClubContentBody(title = "直播带货", onBack = onBack)
+    ClubContentBody(title = "直播带货", onBack = onBack, onJoin = onJoin)
 }
 
 @Composable
-private fun ClubScreen(onBack: () -> Unit) {
-    ClubContentBody(title = "Club", onBack = onBack)
+private fun ClubScreen(onBack: () -> Unit, onJoin: () -> Unit = {}) {
+    ClubContentBody(title = "Club", onBack = onBack, onJoin = onJoin)
 }
 
 @Composable
-private fun ClubContentBody(title: String, onBack: () -> Unit) {
+private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Unit = {}) {
     // Flutter: HomeClubTabContent
     var filter by remember { mutableStateOf(0) }
     val filters = listOf("最新", "嘉宾分享", "资料")
@@ -672,7 +679,7 @@ private fun ClubContentBody(title: String, onBack: () -> Unit) {
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
                     .background(DemoColors.Accent)
-                    .clickable { showPlatformToast("加入 Club") }
+                    .clickable(onClick = onJoin)
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 fontSize = 14.sp,
             )

@@ -2401,7 +2401,7 @@ export struct NativeGiftClaimPane {
               }
               Blank().layoutWeight(1)
               Text('Way to go ✨').fontSize(28).fontWeight(FontWeight.Bold).fontColor(Color.White)
-                .fontStyle(FontStyle.Italic).width('100%').textAlign(TextAlign.Center)
+                .width('100%').textAlign(TextAlign.Center)
               Blank().layoutWeight(1)
               Row() {
                 Column({ space: 4 }) {
