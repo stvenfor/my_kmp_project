@@ -289,54 +289,90 @@ struct NativeLearningReportPage: View {
     private let records = HomeNativeMock.reportRecords
 
     var body: some View {
-        VStack(spacing: 0) {
-            navBar(title: "学习报告", onClose: onClose, dark: true)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("今日高光", font: .system(size: 16, weight: .semibold), color: Color(white: 0.95))
-                    ForEach(highlights, id: \.0) { h in
-                        HStack(spacing: 12) {
-                            Text(h.0).font(.system(size: 28))
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(h.1, font: .system(size: 15, weight: .semibold), color: .white)
-                                Text(h.2, font: .system(size: 12), color: Color(white: 0.55))
-                            }
-                            Spacer()
-                            Text(h.3, font: .system(size: 14), color: Color(red: 1, green: 0.54, blue: 0.2))
-                        }
-                        .padding(14)
-                        .background(Color(red: 0.07, green: 0.1, blue: 0.12), in: RoundedRectangle(cornerRadius: 14))
-                    }
-                    Text("学习记录", font: .system(size: 16, weight: .semibold), color: Color(white: 0.95))
-                        .padding(.top, 8)
-                    VStack(spacing: 0) {
-                        ForEach(Array(records.enumerated()), id: \.offset) { index, r in
-                            HStack(spacing: 12) {
-                                Text(r.0).font(.system(size: 22))
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(r.1, font: .system(size: 15, weight: .semibold), color: .white)
-                                    Text(r.2, font: .system(size: 12), color: Color(white: 0.55))
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                navBar(title: "学习报告", onClose: onClose, dark: true)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("今日高光", font: .system(size: 16, weight: .semibold), color: Color(white: 0.95))
+                        VStack(spacing: 0) {
+                            ForEach(Array(highlights.enumerated()), id: \.offset) { index, h in
+                                HStack(spacing: 12) {
+                                    Text(h.0).font(.system(size: 28))
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(h.1, font: .system(size: 15, weight: .semibold), color: .white)
+                                        Text(h.2, font: .system(size: 12), color: Color(white: 0.55))
+                                    }
+                                    Spacer()
+                                    Text(h.3, font: .system(size: 14), color: Color(red: 1, green: 0.54, blue: 0.2))
                                 }
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 2) {
-                                    Text(r.3, font: .system(size: 11), color: Color(white: 0.45))
-                                    Text(r.4, font: .system(size: 12), color: r.5 ? Color(red: 1, green: 0.54, blue: 0.2) : Color(white: 0.55))
+                                .padding(14)
+                                if index != highlights.count - 1 {
+                                    Divider().overlay(Color(white: 0.16))
                                 }
                             }
-                            .padding(14)
-                            if index != records.count - 1 {
-                                Divider().overlay(Color(white: 0.16))
+                        }
+                        .background(Color(red: 0.07, green: 0.10, blue: 0.12), in: RoundedRectangle(cornerRadius: 14))
+
+                        Text("今日学习记录", font: .system(size: 16, weight: .semibold), color: Color(white: 0.95))
+                        VStack(spacing: 0) {
+                            ForEach(Array(records.enumerated()), id: \.offset) { index, r in
+                                HStack(spacing: 12) {
+                                    Text(r.0).font(.system(size: 22))
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(r.1, font: .system(size: 15, weight: .semibold), color: .white)
+                                        Text(r.2, font: .system(size: 12), color: Color(white: 0.55))
+                                    }
+                                    Spacer()
+                                    VStack(alignment: .trailing, spacing: 4) {
+                                        Text(r.3, font: .system(size: 11), color: Color(white: 0.45))
+                                        Text(r.4, font: .system(size: 12), color: r.5 ? Color(red: 1, green: 0.54, blue: 0.2) : Color(white: 0.55))
+                                    }
+                                }
+                                .padding(14)
+                                if index != records.count - 1 {
+                                    Divider().overlay(Color(white: 0.16))
+                                }
                             }
                         }
+                        .background(Color(red: 0.09, green: 0.09, blue: 0.12), in: RoundedRectangle(cornerRadius: 14))
                     }
-                    .background(Color(red: 0.09, green: 0.09, blue: 0.12), in: RoundedRectangle(cornerRadius: 14))
+                    .padding(16)
+                    .padding(.bottom, 100)
                 }
-                .padding(16)
+            }
+
+            VStack(alignment: .trailing, spacing: 10) {
+                Text("👨‍👩‍👧 家长助手", font: .system(size: 12), color: Color(white: 0.55))
+                    .padding(.horizontal, 12).padding(.vertical, 8)
+                    .background(Color(red: 0.14, green: 0.15, blue: 0.19), in: Capsule())
+                    .padding(.trailing, 16)
+
+                HStack(spacing: 10) {
+                    Text("👑").font(.system(size: 28))
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("开通会员，解锁全部内容", font: .system(size: 14, weight: .semibold), color: .white)
+                        Text("全量剧集 · AI外教不限时 · 专属勋章", font: .system(size: 11), color: Color(white: 0.55))
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Text("立即开通", font: .system(size: 13, weight: .semibold), color: .white)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(Color(red: 0.90, green: 0.32, blue: 0), in: Capsule())
+                }
+                .padding(14)
+                .background(
+                    LinearGradient(colors: [Color(red: 0.16, green: 0.09, blue: 0.06), Color(red: 0.10, green: 0.07, blue: 0.06)], startPoint: .leading, endPoint: .trailing),
+                    in: RoundedRectangle(cornerRadius: 16)
+                )
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
             }
         }
         .background(Color(red: 0.04, green: 0.05, blue: 0.07).ignoresSafeArea())
     }
 }
+
 
 struct NativePurchaseCalculatorPage: View {
     var onClose: () -> Void

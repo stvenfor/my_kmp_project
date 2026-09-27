@@ -269,66 +269,117 @@ export struct NativeAllServicesPane {
 @Component
 export struct NativeLearningReportPane {
   onClose: () => void = () => {};
+  private highlights: string[][] = [
+    ['🎬', '《哈利波特》第3章', '视频配音 · 刚刚发布', '100'],
+    ['🏆', '解锁「45天」打卡勋章', '里程碑达成 · 太棒了！', '🎉'],
+    ['🎵', '"Wingardium Leviosa!"', '满分句子 · 可播放原声', '▶'],
+  ];
+  private records: string[][] = [
+    ['🎬', '视频配音', '哈利波特 第3章', '18:32', '已发布'],
+    ['⚔️', '配音闯关', 'Level 8 · 3关', '17:10', '15 min'],
+    ['📚', '同步练', 'PEP 五年级上册 Unit 3', '16:45', '8 min'],
+    ['🤖', 'AI 外教', '自由对话 · Tom老师', '15:20', '12 min'],
+    ['🎧', '听力练习', '英美绕口令 · 5题', '14:00', '5 min'],
+  ];
 
   build() {
-    Column() {
-      Row() {
-        Text('‹').fontSize(22).fontColor(Color.White).onClick(() => this.onClose())
-        Text('学习报告').fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White).margin({ left: 8 })
-      }.padding(16).width('100%').backgroundColor('#0B0C11')
+    Stack({ alignContent: Alignment.Bottom }) {
+      Column() {
+        Row() {
+          Text('‹').fontSize(22).fontColor(Color.White).onClick(() => this.onClose())
+          Text('学习报告').fontSize(17).fontWeight(FontWeight.Medium).fontColor(Color.White).margin({ left: 8 })
+          Blank().layoutWeight(1)
+        }.padding(16).width('100%').backgroundColor('#0B0C11')
 
-      Scroll() {
-        Column({ space: 12 }) {
-          Text('今日高光').fontSize(16).fontWeight(FontWeight.Medium).fontColor('#F5F6F8').width('100%')
-          ForEach([
-            ['🎬', '《哈利波特》第3章', '视频配音 · 刚刚发布', '100'],
-            ['🏆', '解锁「45天」打卡勋章', '里程碑达成 · 太棒了！', '🎉'],
-            ['🎵', '"Wingardium Leviosa!"', '满分句子 · 可播放原声', '▶'],
-          ], (h: string[]) => {
-            Row({ space: 12 }) {
-              Text(h[0]).fontSize(28)
-              Column() {
-                Text(h[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(Color.White)
-                Text(h[2]).fontSize(12).fontColor('#8B9099').margin({ top: 4 })
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              Text(h[3]).fontSize(14).fontColor('#FF8A34')
+        Scroll() {
+          Column({ space: 16 }) {
+            Text('今日高光').fontSize(16).fontWeight(FontWeight.Medium).fontColor('#F5F6F8').width('100%')
+            Column() {
+              ForEach(this.highlights, (h: string[]) => {
+                Row({ space: 12 }) {
+                  Text(h[0]).fontSize(28)
+                  Column({ space: 4 }) {
+                    Text(h[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                    Text(h[2]).fontSize(12).fontColor('#8B9099')
+                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                  Text(h[3]).fontSize(14).fontColor('#FFFF8A34')
+                }.padding(14).width('100%')
+              })
             }
-            .padding(14).width('100%')
-            .backgroundColor('#121A1F').borderRadius(14)
-          })
+            .width('100%')
+            .backgroundColor('#121A1F')
+            .borderRadius(16)
+            .border({ width: 1, color: '#1E3330' })
 
-          Text('学习记录').fontSize(16).fontWeight(FontWeight.Medium).fontColor('#F5F6F8').width('100%').margin({ top: 8 })
-          Column() {
-            ForEach([
-              ['🎬', '视频配音', '哈利波特 第3章', '18:32', '已发布'],
-              ['⚔️', '配音闯关', 'Level 8 · 3关', '17:10', '15 min'],
-              ['📚', '同步练', 'PEP 五年级上册 Unit 3', '16:45', '8 min'],
-              ['🤖', 'AI 外教', '自由对话 · Tom老师', '15:20', '12 min'],
-            ], (r: string[], index: number) => {
-              Row({ space: 12 }) {
-                Text(r[0]).fontSize(22)
-                Column() {
-                  Text(r[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(Color.White)
-                  Text(r[2]).fontSize(12).fontColor('#8B9099').margin({ top: 2 })
-                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-                Column() {
-                  Text(r[3]).fontSize(11).fontColor('#6B7078')
-                  Text(r[4]).fontSize(12).fontColor(index === 0 ? '#FF8A34' : '#8B9099')
-                }.alignItems(HorizontalAlign.End)
-              }.padding(14).width('100%')
-              if (index < 3) {
-                Divider().color('#2A2D35').strokeWidth(0.5)
-              }
-            })
-          }.width('100%').backgroundColor('#17161F').borderRadius(14)
-        }.padding(16).width('100%')
-      }.layoutWeight(1).width('100%').backgroundColor('#0B0C11')
+            Text('今日学习记录').fontSize(16).fontWeight(FontWeight.Medium).fontColor('#F5F6F8').width('100%')
+            Column({ space: 10 }) {
+              ForEach(this.records, (r: string[]) => {
+                Row({ space: 12 }) {
+                  Text(r[0]).fontSize(22)
+                  Column({ space: 4 }) {
+                    Text(r[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                    Text(r[2]).fontSize(12).fontColor('#8B9099')
+                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                  Column({ space: 4 }) {
+                    Text(r[3]).fontSize(11).fontColor('#6B7078')
+                    Text(r[4]).fontSize(12).fontColor(r[4] === '已发布' ? '#FFFF8A34' : '#8B9099')
+                  }.alignItems(HorizontalAlign.End)
+                }
+                .padding(12)
+                .width('100%')
+                .backgroundColor('#242630')
+                .borderRadius(12)
+              })
+            }
+            .padding(12)
+            .width('100%')
+            .backgroundColor('#17161F')
+            .borderRadius(16)
+          }.padding({ left: 16, right: 16, top: 12, bottom: 120 })
+        }.layoutWeight(1).width('100%')
+      }.width('100%').height('100%')
+
+      Column({ space: 10 }) {
+        Row() {
+          Text('👨‍👩‍👧 家长助手').fontSize(12).fontColor('#8B9099')
+        }
+        .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+        .backgroundColor('#242630')
+        .borderRadius(20)
+        .alignSelf(ItemAlign.End)
+        .margin({ right: 16 })
+
+        Row({ space: 10 }) {
+          Text('👑').fontSize(28)
+          Column({ space: 4 }) {
+            Text('开通会员，解锁全部内容')
+              .fontSize(14).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            Text('全量剧集 · AI外教不限时 · 专属勋章')
+              .fontSize(11).fontColor('#8B9099').maxLines(1)
+          }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+          Text('立即开通')
+            .fontSize(13).fontWeight(FontWeight.Medium).fontColor(Color.White)
+            .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+            .backgroundColor('#FFE65100')
+            .borderRadius(20)
+        }
+        .padding(14)
+        .width('100%')
+        .borderRadius(16)
+        .border({ width: 1, color: '#3D2A20' })
+        .linearGradient({
+          angle: 90,
+          colors: [['#2A1810', 0], ['#1A1210', 1]],
+        })
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, bottom: 12 })
     }
-    .width('100%')
-    .height('100%')
+    .width('100%').height('100%')
     .backgroundColor('#0B0C11')
   }
 }
+
 
 @Component
 export struct NativePurchaseCalculatorPane {
