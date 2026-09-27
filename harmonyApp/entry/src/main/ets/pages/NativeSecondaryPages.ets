@@ -407,6 +407,92 @@ export struct NativePurchaseCalculatorPane {
 }
 
 @Component
+export struct NativeMallOrdersPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_path: string) => {};
+  @State tab: string = '全部';
+  private tabs: string[] = ['全部', '待支付', '已支付', '已取消'];
+  private all: string[][] = [
+    ['MO-1001', '店庆纪念马克杯', '2', '79.80', '待支付'],
+    ['MO-0998', '电子礼品卡 50 元', '1', '50.00', '已支付'],
+    ['MO-0992', '品牌帆布袋', '1', '29.00', '已取消'],
+  ];
+
+  private filtered(): string[][] {
+    if (this.tab === '待支付') {
+      return this.all.filter((o: string[]) => o[4] === '待支付');
+    }
+    if (this.tab === '已支付') {
+      return this.all.filter((o: string[]) => o[4] === '已支付' || o[4] === '待发货');
+    }
+    if (this.tab === '已取消') {
+      return this.all.filter((o: string[]) => o[4] === '已取消');
+    }
+    return this.all;
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('我的订单').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Row() {
+        ForEach(this.tabs, (t: string) => {
+          Column({ space: 6 }) {
+            Text(t)
+              .fontSize(14)
+              .fontWeight(this.tab === t ? FontWeight.Medium : FontWeight.Normal)
+              .fontColor(this.tab === t ? DesignTokens.link : DesignTokens.body)
+            Row()
+              .width(28).height(2)
+              .backgroundColor(this.tab === t ? DesignTokens.link : Color.Transparent)
+          }
+          .layoutWeight(1)
+          .padding({ top: 12, bottom: 12 })
+          .alignItems(HorizontalAlign.Center)
+          .onClick(() => { this.tab = t; })
+        })
+      }.width('100%').backgroundColor(DesignTokens.canvas)
+
+      if (this.filtered().length === 0) {
+        Column() {
+          Blank()
+          Text('暂无订单').fontSize(15).fontColor(DesignTokens.body)
+          Blank()
+        }.width('100%').layoutWeight(1).alignItems(HorizontalAlign.Center)
+      } else {
+        List() {
+          ForEach(this.filtered(), (o: string[]) => {
+            ListItem() {
+              Row({ space: 12 }) {
+                Column().width(64).height(64).borderRadius(8).backgroundColor(DesignTokens.canvasSoft2)
+                Column({ space: 4 }) {
+                  Text(o[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text(`×${o[2]} · ¥${o[3]}`).fontSize(13).fontColor(DesignTokens.body)
+                  Text(o[0]).fontSize(12).fontColor(DesignTokens.mute)
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                Text(o[4])
+                  .fontSize(13).fontWeight(FontWeight.Medium)
+                  .fontColor(o[4] === '待支付' ? DesignTokens.link : DesignTokens.body)
+              }
+              .padding(12)
+              .margin({ bottom: 10 })
+              .backgroundColor(DesignTokens.canvas)
+              .borderRadius(10)
+              .onClick(() => this.onOpen('/mall/detail'))
+            }
+          })
+        }.layoutWeight(1).width('100%').padding(16)
+      }
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
 export struct NativeFriendPane {
   onClose: () => void = () => {};
   onOpenChat: () => void = () => {};
@@ -456,24 +542,6 @@ export struct NativeFriendPane {
   @Builder
   SectionLabel(text: string) {
     Text(text).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-  }
-
-  @Builder
-  FriendRow(name: string, subtitle: string) {
-    Row({ space: 12 }) {
-      Text(name.substring(name.length - 1))
-        .width(44).height(44).textAlign(TextAlign.Center)
-        .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(22)
-      Column({ space: 2 }) {
-        Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-        Text(subtitle).fontSize(13).fontColor(DesignTokens.body)
-      }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-      if (subtitle === '请求添加你为好友') {
-        // trailing filled by callers with accept/reject — placeholder slot unused
-      }
-    }
-    .width('100%')
-    .padding({ left: 14, right: 14, top: 12, bottom: 12 })
   }
 
   build() {

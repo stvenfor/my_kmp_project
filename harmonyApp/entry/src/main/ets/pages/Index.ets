@@ -20,6 +20,7 @@ import {
   NativeLearningReportPane,
   NativePurchaseCalculatorPane,
   NativeFriendPane,
+  NativeMallOrdersPane,
   NativeCommunitySearchPane,
   NativeCommunityPublishPane,
   NativeCommunityCommentPane,
@@ -1862,6 +1863,16 @@ struct Index {
 
       if (this.nativePane === 'community_image_preview') {
         NativeCommunityImagePreviewPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      if (this.nativePane === 'mall_orders') {
+        NativeMallOrdersPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
       }
 
       if (this.nativePane === 'mall') {

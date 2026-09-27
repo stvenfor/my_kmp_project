@@ -402,6 +402,81 @@ struct NativePurchaseCalculatorPage: View {
     }
 }
 
+struct NativeMallOrdersPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    @State private var tab = "全部"
+    private let tabs = ["全部", "待支付", "已支付", "已取消"]
+    private let all: [(String, String, Int, String, String)] = [
+        ("MO-1001", "店庆纪念马克杯", 2, "79.80", "待支付"),
+        ("MO-0998", "电子礼品卡 50 元", 1, "50.00", "已支付"),
+        ("MO-0992", "品牌帆布袋", 1, "29.00", "已取消"),
+    ]
+
+    private var filtered: [(String, String, Int, String, String)] {
+        switch tab {
+        case "待支付": return all.filter { $0.4 == "待支付" }
+        case "已支付": return all.filter { $0.4 == "已支付" || $0.4 == "待发货" }
+        case "已取消": return all.filter { $0.4 == "已取消" }
+        default: return all
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            navBar(title: "我的订单", onClose: onClose, dark: false)
+            HStack(spacing: 0) {
+                ForEach(tabs, id: \.self) { t in
+                    let sel = tab == t
+                    VStack(spacing: 6) {
+                        Text(t, font: .system(size: 14, weight: sel ? .semibold : .regular),
+                              color: sel ? DesignTokens.link : DesignTokens.body)
+                        Capsule()
+                            .fill(sel ? DesignTokens.link : Color.clear)
+                            .frame(width: 28, height: 2)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .contentShape(Rectangle())
+                    .onTapGesture { tab = t }
+                }
+            }
+            .background(DesignTokens.canvas)
+
+            if filtered.isEmpty {
+                Spacer()
+                Text("暂无订单", font: .system(size: 15), color: DesignTokens.body)
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(Array(filtered.enumerated()), id: \.offset) { _, o in
+                            HStack(spacing: 12) {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(DesignTokens.canvasSoft2)
+                                    .frame(width: 64, height: 64)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(o.1, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                                    Text("×\(o.2) · ¥\(o.3)", font: .system(size: 13), color: DesignTokens.body)
+                                    Text(o.0, font: .system(size: 12), color: DesignTokens.mute)
+                                }
+                                Spacer()
+                                Text(o.4, font: .system(size: 13, weight: .medium),
+                                      color: o.4 == "待支付" ? DesignTokens.link : DesignTokens.body)
+                            }
+                            .padding(12)
+                            .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
+                            .onTapGesture { onOpen?("/mall/detail") }
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+        }
+        .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+    }
+}
+
 struct NativeFriendPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
