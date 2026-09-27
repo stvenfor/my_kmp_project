@@ -405,42 +405,186 @@ struct NativePurchaseCalculatorPage: View {
 struct NativeFriendPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
-    private let friends = [
-        ("王同学", "请求添加你为好友", "新"),
-        ("李老师", "请求添加你为好友", "新"),
-        ("林林", "一周前", ""),
-        ("客服小助手", "昨天", ""),
+    @State private var query = ""
+    @State private var searchHits: [(String, String)] = []
+    @State private var incoming: [(String, String)] = [
+        ("i1", "王同学"),
+        ("i2", "李老师"),
+    ]
+    @State private var friends: [(String, String, String)] = [
+        ("1", "小明", "刚刚在线"),
+        ("2", "阿哲", "三天前"),
+        ("3", "林林", "一周前"),
+        ("4", "客服小助手", "昨天"),
+    ]
+    @State private var toastText: String? = nil
+    private let directory: [(String, String)] = [
+        ("新同学小周", "同校"),
+        ("外教 Anna", "口语"),
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            navBar(title: "通讯录", onClose: onClose, dark: false)
-            List {
-                ForEach(Array(friends.enumerated()), id: \.offset) { _, f in
-                    HStack {
-                        Circle()
-                            .fill(DesignTokens.link.opacity(0.15))
-                            .frame(width: 44, height: 44)
-                            .overlay(Text(String(f.0.suffix(1))).foregroundStyle(DesignTokens.link))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(f.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                            Text(f.1, font: .system(size: 13), color: DesignTokens.body)
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                HStack {
+                    Button { onClose() } label: {
+                        Text("‹", font: .system(size: 28), color: DesignTokens.link)
+                            .frame(width: 44, alignment: .leading)
+                    }
+                    Text("通讯录", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+                        .frame(maxWidth: .infinity)
+                    Button {
+                        flash("建群成功（mock）· 请到聊天 Tab")
+                    } label: {
+                        Text("建群", font: .system(size: 15, weight: .medium), color: DesignTokens.link)
+                    }
+                    .frame(width: 44, alignment: .trailing)
+                }
+                .padding(.horizontal, 8)
+                .frame(height: 44)
+                .background(DesignTokens.canvas)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            TextField("搜索好友", text: $query)
+                                .font(.system(size: 15))
+                            Button {
+                                let q = query.trimmingCharacters(in: .whitespaces)
+                                if q.isEmpty {
+                                    searchHits = []
+                                } else {
+                                    searchHits = directory.filter { $0.0.contains(q) }
+                                    if searchHits.isEmpty { flash("未找到用户") }
+                                }
+                            } label: {
+                                Text("搜索", font: .system(size: 14, weight: .medium), color: DesignTokens.link)
+                            }
                         }
-                        Spacer()
-                        if !f.2.isEmpty {
-                            Text(f.2, font: .system(size: 11), color: DesignTokens.link)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(DesignTokens.link.opacity(0.12), in: Capsule())
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+
+                        if !searchHits.isEmpty {
+                            sectionLabel("搜索结果")
+                            groupedCard {
+                                ForEach(Array(searchHits.enumerated()), id: \.offset) { i, hit in
+                                    friendRow(name: hit.0, subtitle: hit.1) {
+                                        Button { flash("已发送好友申请") } label: {
+                                            Text("加好友", font: .system(size: 13, weight: .semibold), color: .white)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 6)
+                                                .background(DesignTokens.link, in: Capsule())
+                                        }
+                                    }
+                                    if i < searchHits.count - 1 {
+                                        Divider().padding(.leading, 70)
+                                    }
+                                }
+                            }
+                        }
+
+                        sectionLabel("新的朋友（\(incoming.count)）")
+                        groupedCard {
+                            ForEach(Array(incoming.enumerated()), id: \.element.0) { i, req in
+                                friendRow(name: req.1, subtitle: "请求添加你为好友") {
+                                    HStack(spacing: 8) {
+                                        Button {
+                                            friends.append((req.0, req.1, "刚刚"))
+                                            incoming.removeAll { $0.0 == req.0 }
+                                            flash("已添加")
+                                        } label: {
+                                            Text("接受", font: .system(size: 13, weight: .semibold), color: .white)
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 6)
+                                                .background(DesignTokens.link, in: Capsule())
+                                        }
+                                        Button {
+                                            incoming.removeAll { $0.0 == req.0 }
+                                        } label: {
+                                            Text("拒绝", font: .system(size: 13), color: DesignTokens.mute)
+                                        }
+                                    }
+                                }
+                                if i < incoming.count - 1 {
+                                    Divider().padding(.leading, 70)
+                                }
+                            }
+                        }
+
+                        sectionLabel("好友（\(friends.count)）")
+                        groupedCard {
+                            if friends.isEmpty {
+                                Text("暂无好友", font: .system(size: 14), color: DesignTokens.mute)
+                                    .padding(16)
+                            } else {
+                                ForEach(Array(friends.enumerated()), id: \.element.0) { i, row in
+                                    friendRow(name: row.1, subtitle: row.2) {
+                                        EmptyView()
+                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        onOpen?("/chat")
+                                    }
+                                    if i < friends.count - 1 {
+                                        Divider().padding(.leading, 70)
+                                    }
+                                }
+                            }
                         }
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture { onOpen?("/chat") }
+                    .padding(16)
+                    .padding(.bottom, 28)
                 }
             }
-            .listStyle(.plain)
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
         }
-        .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+    }
+
+    private func sectionLabel(_ text: String) -> some View {
+        Text(text, font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
+    }
+
+    private func groupedCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            content()
+        }
+        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func friendRow<Trailing: View>(
+        name: String,
+        subtitle: String,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        HStack(spacing: 12) {
+            Text(String(name.suffix(1)), font: .system(size: 16, weight: .semibold), color: DesignTokens.link)
+                .frame(width: 44, height: 44)
+                .background(DesignTokens.link.opacity(0.15), in: Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                Text(subtitle, font: .system(size: 13), color: DesignTokens.body)
+            }
+            Spacer(minLength: 0)
+            trailing()
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
+        }
     }
 }
 

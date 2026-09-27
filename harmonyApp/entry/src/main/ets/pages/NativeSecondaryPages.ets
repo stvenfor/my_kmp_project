@@ -410,45 +410,184 @@ export struct NativePurchaseCalculatorPane {
 export struct NativeFriendPane {
   onClose: () => void = () => {};
   onOpenChat: () => void = () => {};
+  @State query: string = '';
+  @State searchHits: string[][] = [];
+  @State incoming: string[][] = [
+    ['i1', '王同学'],
+    ['i2', '李老师'],
+  ];
+  @State friends: string[][] = [
+    ['1', '小明', '刚刚在线'],
+    ['2', '阿哲', '三天前'],
+    ['3', '林林', '一周前'],
+    ['4', '客服小助手', '昨天'],
+  ];
+  private directory: string[][] = [
+    ['新同学小周', '同校'],
+    ['外教 Anna', '口语'],
+  ];
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
+  private runSearch() {
+    const q = this.query.trim();
+    if (q.length === 0) {
+      this.searchHits = [];
+      return;
+    }
+    this.searchHits = this.directory.filter((d: string[]) => d[0].indexOf(q) >= 0);
+    if (this.searchHits.length === 0) {
+      this.flash('未找到用户');
+    }
+  }
+
+  private accept(req: string[]) {
+    this.friends = this.friends.concat([[req[0], req[1], '刚刚']]);
+    this.incoming = this.incoming.filter((r: string[]) => r[0] !== req[0]);
+    this.flash('已添加');
+  }
+
+  private reject(req: string[]) {
+    this.incoming = this.incoming.filter((r: string[]) => r[0] !== req[0]);
+  }
+
+  @Builder
+  SectionLabel(text: string) {
+    Text(text).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+  }
+
+  @Builder
+  FriendRow(name: string, subtitle: string) {
+    Row({ space: 12 }) {
+      Text(name.substring(name.length - 1))
+        .width(44).height(44).textAlign(TextAlign.Center)
+        .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(22)
+      Column({ space: 2 }) {
+        Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text(subtitle).fontSize(13).fontColor(DesignTokens.body)
+      }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+      if (subtitle === '请求添加你为好友') {
+        // trailing filled by callers with accept/reject — placeholder slot unused
+      }
+    }
+    .width('100%')
+    .padding({ left: 14, right: 14, top: 12, bottom: 12 })
+  }
 
   build() {
     Column() {
       Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('通讯录').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
-      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+        Text('‹').fontSize(28).fontColor(DesignTokens.link)
+          .width(44).onClick(() => this.onClose())
+        Text('通讯录')
+          .fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+          .layoutWeight(1).textAlign(TextAlign.Center)
+        Text('建群').fontSize(15).fontColor(DesignTokens.link)
+          .width(44).textAlign(TextAlign.End)
+          .onClick(() => this.flash('建群成功（mock）· 请到聊天 Tab'))
+      }
+      .width('100%').height(44).padding({ left: 8, right: 8 })
+      .backgroundColor(DesignTokens.canvas)
 
-      List() {
-        ForEach([
-          ['王同学', '请求添加你为好友', '新'],
-          ['李老师', '请求添加你为好友', '新'],
-          ['林林', '一周前', ''],
-          ['客服小助手', '昨天', ''],
-        ], (f: string[]) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Text(f[0].substring(f[0].length - 1))
-                .width(44).height(44).textAlign(TextAlign.Center)
-                .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(22)
-              Column() {
-                Text(f[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(f[1]).fontSize(13).fontColor(DesignTokens.body).margin({ top: 2 })
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              if (f[2].length > 0) {
-                Text(f[2]).fontSize(11).fontColor(DesignTokens.link)
-                  .padding({ left: 8, right: 8, top: 3, bottom: 3 })
-                  .backgroundColor('#1F0070F3').borderRadius(10)
-              }
-            }
-            .padding(16).width('100%')
-            .onClick(() => this.onOpenChat())
+      Scroll() {
+        Column({ space: 16 }) {
+          Row() {
+            TextInput({ placeholder: '搜索好友', text: this.query })
+              .layoutWeight(1).height(40).backgroundColor(Color.Transparent)
+              .onChange((v: string) => { this.query = v; })
+            Text('搜索').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+              .onClick(() => this.runSearch())
           }
-        })
-      }.layoutWeight(1).width('100%')
+          .width('100%')
+          .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+          .backgroundColor(Color.White)
+          .borderRadius(12)
+
+          if (this.searchHits.length > 0) {
+            this.SectionLabel('搜索结果')
+            Column() {
+              ForEach(this.searchHits, (hit: string[], i: number) => {
+                if (i > 0) {
+                  Row().width('100%').height(0.5).backgroundColor(DesignTokens.hairline).margin({ left: 70 })
+                }
+                Row({ space: 12 }) {
+                  Text(hit[0].substring(hit[0].length - 1))
+                    .width(44).height(44).textAlign(TextAlign.Center)
+                    .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(22)
+                  Column({ space: 2 }) {
+                    Text(hit[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                    Text(hit[1]).fontSize(13).fontColor(DesignTokens.body)
+                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                  Text('加好友')
+                    .fontSize(13).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                    .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                    .backgroundColor(DesignTokens.link).borderRadius(14)
+                    .onClick(() => this.flash('已发送好友申请'))
+                }.width('100%').padding({ left: 14, right: 14, top: 12, bottom: 12 })
+              })
+            }.width('100%').backgroundColor(Color.White).borderRadius(12)
+          }
+
+          this.SectionLabel(`新的朋友（${this.incoming.length}）`)
+          Column() {
+            ForEach(this.incoming, (req: string[], i: number) => {
+              if (i > 0) {
+                Row().width('100%').height(0.5).backgroundColor(DesignTokens.hairline).margin({ left: 70 })
+              }
+              Row({ space: 12 }) {
+                Text(req[1].substring(req[1].length - 1))
+                  .width(44).height(44).textAlign(TextAlign.Center)
+                  .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(22)
+                Column({ space: 2 }) {
+                  Text(req[1]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text('请求添加你为好友').fontSize(13).fontColor(DesignTokens.body)
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                Text('接受')
+                  .fontSize(13).fontWeight(FontWeight.Medium).fontColor(Color.White)
+                  .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+                  .backgroundColor(DesignTokens.link).borderRadius(14)
+                  .onClick(() => this.accept(req))
+                Text('拒绝').fontSize(13).fontColor(DesignTokens.mute)
+                  .margin({ left: 8 })
+                  .onClick(() => this.reject(req))
+              }.width('100%').padding({ left: 14, right: 14, top: 12, bottom: 12 })
+            })
+          }.width('100%').backgroundColor(Color.White).borderRadius(12)
+
+          this.SectionLabel(`好友（${this.friends.length}）`)
+          Column() {
+            if (this.friends.length === 0) {
+              Text('暂无好友').fontSize(14).fontColor(DesignTokens.mute).padding(16)
+            } else {
+              ForEach(this.friends, (row: string[], i: number) => {
+                if (i > 0) {
+                  Row().width('100%').height(0.5).backgroundColor(DesignTokens.hairline).margin({ left: 70 })
+                }
+                Row({ space: 12 }) {
+                  Text(row[1].substring(row[1].length - 1))
+                    .width(44).height(44).textAlign(TextAlign.Center)
+                    .fontColor(DesignTokens.link).backgroundColor('#260070F3').borderRadius(22)
+                  Column({ space: 2 }) {
+                    Text(row[1]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                    Text(row[2]).fontSize(13).fontColor(DesignTokens.body)
+                  }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+                }
+                .width('100%')
+                .padding({ left: 14, right: 14, top: 12, bottom: 12 })
+                .onClick(() => this.onOpenChat())
+              })
+            }
+          }.width('100%').backgroundColor(Color.White).borderRadius(12)
+        }
+        .width('100%')
+        .padding(16)
+        .padding({ bottom: 28 })
+      }
+      .layoutWeight(1).width('100%').scrollBar(BarState.Off)
     }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(DesignTokens.canvasSoft2)
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
 
