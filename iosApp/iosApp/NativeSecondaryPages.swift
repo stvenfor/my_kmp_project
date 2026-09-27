@@ -3555,42 +3555,111 @@ struct NativeAddressesPage: View {
 
 struct NativeDubbingFeedPage: View {
     var onClose: () -> Void
-    private let items: [(String, String, String)] = [
-        ("小王子 · 片段 3", "难度初级 · 女声", "热"),
-        ("飞屋环游记 · OP", "难度中级 · 男声", ""),
-        ("穿条纹睡衣的男孩", "难度高级 · 男声", "新"),
+    var onOpen: ((String) -> Void)? = nil
+    private let categories = ["推荐", "动画", "电影", "启蒙", "跟读"]
+    private let features = ["每日打卡", "影视单词", "经典剧场", "排行榜", "全部视频"]
+    private let recent = [("穿梭在迷宫的勇士", "03:24"), ("萌宠部落", "02:18"), ("完美的世界", "04:05"), ("小猪佩奇", "01:56")]
+    private let expert = [
+        ("英语启蒙课堂", "蓝儿老师Joyue · 跟读练习 · 初级"),
+        ("趣味配音挑战", "配音达人 · 动画配音 · 中级"),
+        ("诵读之星", "朗读爱好者 · 经典诵读"),
     ]
     var body: some View {
         VStack(spacing: 0) {
-            navBar(title: "配音", onClose: onClose, dark: false)
-            ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(Array(items.enumerated()), id: \.offset) { _, it in
-                        HStack {
-                            RoundedRectangle(cornerRadius: 8).fill(DesignTokens.canvasSoft2).frame(width: 56, height: 56)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(it.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
-                                Text(it.1, font: .system(size: 13), color: DesignTokens.body)
-                            }
-                            Spacer()
-                            if !it.2.isEmpty {
-                                Text(it.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
-                                    .padding(.horizontal, 8).padding(.vertical, 4)
-                                    .background(DesignTokens.link.opacity(0.12), in: Capsule())
-                            }
-                        }
-                        .padding(16).background(DesignTokens.canvas)
-                        Divider().overlay(DesignTokens.hairline)
+            navBar(title: "学英语", onClose: onClose, dark: false)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(Array(categories.enumerated()), id: \.offset) { i, label in
+                        Text(label, font: .system(size: 15, weight: i == 0 ? .semibold : .regular),
+                              color: i == 0 ? DesignTokens.ink : DesignTokens.mute)
                     }
                 }
-                .padding(16)
-                Button("开始配音") {}
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.link)
-                    .padding(.bottom, 24)
+                .padding(.horizontal, 16).padding(.vertical, 8)
+            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(DesignTokens.link.opacity(0.15))
+                        .frame(height: 120)
+                        .overlay(alignment: .leading) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("身体的奥秘", font: .system(size: 18, weight: .bold), color: DesignTokens.ink)
+                                Text("Banner · 萌宠部落 / 完美的世界", font: .system(size: 12), color: DesignTokens.mute)
+                            }
+                            .padding(16)
+                        }
+                        .padding(.horizontal, 16)
+
+                    HStack(spacing: 0) {
+                        ForEach(features, id: \.self) { label in
+                            VStack(spacing: 6) {
+                                Text(String(label.prefix(1)), font: .system(size: 16, weight: .bold), color: DesignTokens.link)
+                                    .frame(width: 44, height: 44)
+                                    .background(DesignTokens.link.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                                Text(label, font: .system(size: 11), color: DesignTokens.ink).lineLimit(1)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .onTapGesture {
+                                if label == "排行榜" { onOpen?("/home/hot_rank_detail") }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 8)
+
+                    sectionTitle("最近在学")
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(Array(recent.enumerated()), id: \.offset) { _, it in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.91, green: 0.94, blue: 0.996)).frame(height: 72)
+                                    Text(it.0, font: .system(size: 13, weight: .medium), color: DesignTokens.ink).lineLimit(2)
+                                    Text(it.1, font: .system(size: 11), color: DesignTokens.mute)
+                                }
+                                .frame(width: 120)
+                                .padding(10)
+                                .background(Color.white, in: RoundedRectangle(cornerRadius: 10))
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                    }
+
+                    sectionTitle("新手赛场")
+                    VStack(spacing: 8) {
+                        ForEach(Array(expert.enumerated()), id: \.offset) { _, it in
+                            HStack(spacing: 10) {
+                                RoundedRectangle(cornerRadius: 8).fill(Color(red: 1, green: 0.953, blue: 0.878)).frame(width: 48, height: 48)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(it.0, font: .system(size: 14, weight: .semibold), color: DesignTokens.ink)
+                                    Text(it.1, font: .system(size: 12), color: DesignTokens.mute)
+                                }
+                                Spacer()
+                            }
+                            .padding(12)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 10))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+
+                    Text("进入配音视频专区", font: .system(size: 15, weight: .semibold), color: DesignTokens.link)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(DesignTokens.link.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(DesignTokens.link.opacity(0.2)))
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 24)
+                }
             }
             .background(DesignTokens.canvasSoft2.ignoresSafeArea())
         }
+    }
+
+    private func sectionTitle(_ title: String) -> some View {
+        HStack {
+            Text(title, font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
+            Spacer()
+            Text("更多 >", font: .system(size: 13), color: DesignTokens.mute)
+        }
+        .padding(.horizontal, 16).padding(.top, 12)
     }
 }
 

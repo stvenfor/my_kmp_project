@@ -552,7 +552,7 @@ struct NativeFeatureHost: View {
         } else if path == "/mine/addresses" {
             NativeAddressesPage(onClose: onClose)
         } else if path == "/home/dubbing_feed" {
-            NativeDubbingFeedPage(onClose: onClose)
+            NativeDubbingFeedPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/hot_rank_detail" {
             NativeHotRankPage(onClose: onClose)
         } else if path == "/home/data_analytics" {

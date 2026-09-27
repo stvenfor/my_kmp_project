@@ -2061,7 +2061,13 @@ struct Index {
       }
 
       if (this.nativePane === 'dubbing') {
-        NativeDubbingFeedPane({ onClose: (): void => { this.nativePane = ''; } })
+        NativeDubbingFeedPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
       }
 
       if (this.nativePane === 'hot_rank') {

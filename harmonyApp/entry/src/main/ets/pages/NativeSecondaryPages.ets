@@ -3563,37 +3563,110 @@ export struct NativeAddressesPane {
 @Component
 export struct NativeDubbingFeedPane {
   onClose: () => void = () => {};
-  private items: string[][] = [
-    ['小王子 · 片段 3', '难度初级 · 女声', '热'],
-    ['飞屋环游记 · OP', '难度中级 · 男声', ''],
-    ['穿条纹睡衣的男孩', '难度高级 · 男声', '新'],
+  onOpen: (path: string) => void = (_p: string) => {};
+  private categories: string[] = ['推荐', '动画', '电影', '启蒙', '跟读'];
+  private features: string[] = ['每日打卡', '影视单词', '经典剧场', '排行榜', '全部视频'];
+  private recent: string[][] = [
+    ['穿梭在迷宫的勇士', '03:24'],
+    ['萌宠部落', '02:18'],
+    ['完美的世界', '04:05'],
+    ['小猪佩奇', '01:56'],
+  ];
+  private expert: string[][] = [
+    ['英语启蒙课堂', '蓝儿老师Joyue · 跟读练习 · 初级'],
+    ['趣味配音挑战', '配音达人 · 动画配音 · 中级'],
+    ['诵读之星', '朗读爱好者 · 经典诵读'],
   ];
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('配音').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('学英语').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      List() {
-        ForEach(this.items, (it: string[]) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Column().width(56).height(56).borderRadius(8).backgroundColor(DesignTokens.canvasSoft2)
-              Column({ space: 4 }) {
-                Text(it[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(it[1]).fontSize(13).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              if (it[2].length > 0) {
-                Text(it[2]).fontSize(11).fontColor(DesignTokens.link)
-                  .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                  .backgroundColor('#1A0070F3').borderRadius(12)
-              }
-            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Row({ space: 16 }) {
+          ForEach(this.categories, (label: string, i: number) => {
+            Text(label)
+              .fontSize(15)
+              .fontWeight(i === 0 ? FontWeight.Medium : FontWeight.Regular)
+              .fontColor(i === 0 ? DesignTokens.ink : DesignTokens.mute)
+          }, (label: string, i: number) => `c_${i}`)
+        }.padding({ left: 16, right: 16, top: 8, bottom: 8 })
+      }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).width('100%')
+
+      Scroll() {
+        Column({ space: 12 }) {
+          Column({ space: 4 }) {
+            Text('身体的奥秘').fontSize(18).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+            Text('Banner · 萌宠部落 / 完美的世界').fontSize(12).fontColor(DesignTokens.mute)
           }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
-      Button('开始配音').backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
+          .width('100%').height(120).padding(16).alignItems(HorizontalAlign.Start)
+          .justifyContent(FlexAlign.Center)
+          .backgroundColor('#260070F3').borderRadius(12)
+          .margin({ left: 16, right: 16 })
+
+          Row() {
+            ForEach(this.features, (label: string) => {
+              Column({ space: 6 }) {
+                Text(label.substring(0, 1)).fontSize(16).fontWeight(FontWeight.Bold).fontColor(DesignTokens.link)
+                  .width(44).height(44).textAlign(TextAlign.Center).borderRadius(12).backgroundColor('#1A0070F3')
+                Text(label).fontSize(11).fontColor(DesignTokens.ink).maxLines(1)
+              }
+              .layoutWeight(1).alignItems(HorizontalAlign.Center)
+              .onClick(() => {
+                if (label === '排行榜') {
+                  this.onOpen('/home/hot_rank_detail');
+                }
+              })
+            }, (label: string) => label)
+          }.width('100%').padding({ left: 8, right: 8 })
+
+          Row() {
+            Text('最近在学').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Blank().layoutWeight(1)
+            Text('更多 >').fontSize(13).fontColor(DesignTokens.mute)
+          }.width('100%').padding({ left: 16, right: 16, top: 12 })
+
+          Scroll() {
+            Row({ space: 10 }) {
+              ForEach(this.recent, (it: string[]) => {
+                Column({ space: 6 }) {
+                  Column().width('100%').height(72).borderRadius(8).backgroundColor('#E8F0FE')
+                  Text(it[0]).fontSize(13).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).maxLines(2)
+                  Text(it[1]).fontSize(11).fontColor(DesignTokens.mute)
+                }.width(120).padding(10).backgroundColor(Color.White).borderRadius(10)
+              }, (it: string[]) => it[0])
+            }.padding({ left: 16, right: 16 })
+          }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).width('100%')
+
+          Row() {
+            Text('新手赛场').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Blank().layoutWeight(1)
+            Text('更多 >').fontSize(13).fontColor(DesignTokens.mute)
+          }.width('100%').padding({ left: 16, right: 16, top: 12 })
+
+          Column({ space: 8 }) {
+            ForEach(this.expert, (it: string[]) => {
+              Row({ space: 10 }) {
+                Column().width(48).height(48).borderRadius(8).backgroundColor('#FFF3E0')
+                Column({ space: 2 }) {
+                  Text(it[0]).fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                  Text(it[1]).fontSize(12).fontColor(DesignTokens.mute)
+                }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+              }.width('100%').padding(12).backgroundColor(Color.White).borderRadius(10)
+            }, (it: string[]) => it[0])
+          }.width('100%').padding({ left: 16, right: 16 })
+
+          Text('进入配音视频专区')
+            .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
+            .width('100%').textAlign(TextAlign.Center)
+            .padding({ top: 14, bottom: 14 })
+            .backgroundColor('#140070F3').borderRadius(12)
+            .margin({ left: 16, right: 16, bottom: 24 })
+        }.width('100%')
+      }.layoutWeight(1).width('100%')
     }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
