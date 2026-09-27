@@ -2090,10 +2090,56 @@ struct NativeHomeworkStatsPage: View {
                     Button("课堂视频 →") { onOpen?("/classroom/video") }
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(DesignTokens.link)
+                    Button("领取礼品卡 →") { onOpen?("/classroom/gift/claim") }
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(DesignTokens.link)
                 }
                 .padding(16)
             }
             .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeGiftClaimPage: View {
+    var onClose: () -> Void
+    @State private var claimed = false
+    @State private var toastText: String? = nil
+
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            VStack(spacing: 0) {
+                navBar(title: "领取礼品卡", onClose: onClose, dark: false)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(claimed ? "已领取 · 卡号 GC-2026-001" : "完成课堂任务后可领取礼品卡",
+                          font: .system(size: 15), color: DesignTokens.ink)
+                    Button(claimed ? "已领取" : "立即领取") {
+                        guard !claimed else { return }
+                        claimed = true
+                        flash("领取成功（mock）")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.link)
+                    .disabled(claimed)
+                    .frame(maxWidth: .infinity)
+                    Spacer()
+                }
+                .padding(16)
+            }
+            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            if let toastText {
+                Text(toastText, font: .system(size: 14), color: .white)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(Color.black.opacity(0.78), in: Capsule())
+                    .padding(.bottom, 40)
+            }
+        }
+    }
+
+    private func flash(_ text: String) {
+        toastText = text
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            if toastText == text { toastText = nil }
         }
     }
 }

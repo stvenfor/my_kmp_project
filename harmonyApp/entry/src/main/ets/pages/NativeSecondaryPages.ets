@@ -2134,7 +2134,51 @@ export struct NativeHomeworkStatsPane {
           Text('课堂视频 →').fontSize(15).fontColor(DesignTokens.link)
             .onClick(() => this.onOpen('/classroom/video'))
         }
+        ListItem() {
+          Text('领取礼品卡 →').fontSize(15).fontColor(DesignTokens.link)
+            .onClick(() => this.onOpen('/classroom/gift/claim'))
+        }
       }.layoutWeight(1).width('100%').padding(16)
+    }
+    .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeGiftClaimPane {
+  onClose: () => void = () => {};
+  @State claimed: boolean = false;
+
+  private flash(msg: string) {
+    promptAction.showToast({ message: msg });
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('领取礼品卡').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Column({ space: 12 }) {
+        Text(this.claimed ? '已领取 · 卡号 GC-2026-001' : '完成课堂任务后可领取礼品卡')
+          .fontSize(15).fontColor(DesignTokens.ink)
+        Text(this.claimed ? '已领取' : '立即领取')
+          .fontSize(15).fontColor(Color.White)
+          .width('100%').textAlign(TextAlign.Center)
+          .padding({ top: 12, bottom: 12 })
+          .backgroundColor(this.claimed ? DesignTokens.mute : DesignTokens.link)
+          .borderRadius(8)
+          .onClick(() => {
+            if (this.claimed) {
+              return;
+            }
+            this.claimed = true;
+            this.flash('领取成功（mock）');
+          })
+      }.width('100%').padding(16).alignItems(HorizontalAlign.Start)
+      Blank().layoutWeight(1)
     }
     .width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }

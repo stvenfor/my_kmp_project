@@ -474,6 +474,8 @@ struct NativeFeatureHost: View {
             NativeHomeworkDetailPage(title: "作业点评", detail: "教师评语：语速适中，注意连读。", onClose: onClose)
         } else if path == "/classroom/video" {
             NativeHomeworkDetailPage(title: "课堂视频", detail: "播放头 mock · 非 short 链路", onClose: onClose)
+        } else if path == "/classroom/gift/claim" {
+            NativeGiftClaimPage(onClose: onClose)
         } else if path == "/classroom/my_class" {
             NativeClassroomPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/used_car" {

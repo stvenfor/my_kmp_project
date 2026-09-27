@@ -40,6 +40,7 @@ import {
   NativeMusicPane,
   NativeClassroomPane,
   NativeHomeworkDetailPane,
+  NativeGiftClaimPane,
   NativeHomeworkStatsPane,
   NativeUsedCarPane,
   NativeNewCarFollowPane,
