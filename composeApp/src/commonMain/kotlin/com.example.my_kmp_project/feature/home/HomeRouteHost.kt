@@ -1389,7 +1389,7 @@ private fun DubbingSectionTitle(
 private fun HotRankDetailScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "热配榜", onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = "热榜", onBack = onBack, containerColor = DemoColors.PageBg)
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),

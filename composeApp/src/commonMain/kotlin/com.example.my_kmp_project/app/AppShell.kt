@@ -434,6 +434,39 @@ private fun MainShell() {
                         )
                         AppRoute.Scan -> ScanScreen(
                             onBack = { clearShellRoute() },
+                            onScanResult = { payload ->
+                                val parsed = DeepLinkRouter.accept(payload)
+                                when {
+                                    parsed == null &&
+                                        (payload.startsWith("http://") || payload.startsWith("https://")) -> {
+                                        shellRoute = AppRoute.InAppWeb(payload)
+                                        tabChrome.updateBottomBarVisible(false)
+                                    }
+                                    parsed?.route == AppRoutePath.web -> {
+                                        shellRoute = AppRoute.InAppWeb(
+                                            webUrlFromDeepLink(payload, OfflineWebFixtureUrl),
+                                        )
+                                        tabChrome.updateBottomBarVisible(false)
+                                    }
+                                    parsed?.tab != null -> {
+                                        clearShellRoute()
+                                        selectTab(parsed.tab)
+                                    }
+                                    parsed?.route == AppRoutePath.friend -> {
+                                        shellRoute = AppRoute.Friend
+                                        tabChrome.updateBottomBarVisible(false)
+                                    }
+                                    parsed?.route?.startsWith("/mall") == true ||
+                                        parsed?.route?.startsWith("/pay") == true -> {
+                                        // Soft-auth secondary routes: stash deeplink for next consume.
+                                        clearShellRoute()
+                                        if (parsed.route.startsWith("/pay")) {
+                                            shellRoute = AppRoute.Membership
+                                            tabChrome.updateBottomBarVisible(false)
+                                        }
+                                    }
+                                }
+                            },
                         )
                         AppRoute.Media -> MediaEntryScreen(
                             onBack = { clearShellRoute() },
