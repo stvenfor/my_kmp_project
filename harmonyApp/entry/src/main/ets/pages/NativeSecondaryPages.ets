@@ -2904,67 +2904,88 @@ export struct NativeStoreQrPane {
 export struct NativeQaPane {
   onClose: () => void = () => {};
   private qs: string[][] = [
-    ['双擎和汽油怎么选？', '待回复 · 3 人围观'],
-    ['置换补贴怎么算？', '已回复 · 12 人围观'],
-    ['保养套餐有哪些？', '待回复 · 1 人围观'],
+    ['全款和贷款怎么选？', '已解答 · 顾问回复'],
+    ['置换能抵多少？', '待回复 · 客户追问'],
+    ['保养周期多久一次？', '已解答 · 知识库'],
   ];
+
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('选买问答').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('选买问答').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
       List() {
         ForEach(this.qs, (q: string[]) => {
           ListItem() {
-            Row() {
-              Column({ space: 4 }) {
-                Text(q[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(q[1]).fontSize(13).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              Text('去回答').fontSize(13).fontColor(DesignTokens.link)
-            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
+            Column({ space: 6 }) {
+              Text(q[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(q[1]).fontSize(13).fontColor(DesignTokens.body)
+            }
+            .alignItems(HorizontalAlign.Start)
+            .padding(14)
+            .width('100%')
+            .backgroundColor(DesignTokens.canvas)
+            .borderRadius(10)
+            .margin({ bottom: 10 })
           }
         })
       }.layoutWeight(1).width('100%').padding(16)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+    }
+    .width('100%').height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
 
 @Component
 export struct NativePosterPane {
   onClose: () => void = () => {};
   @State picked: number = 0;
-  private templates: string[] = ['秋季置换季', '周末到店礼', '新车上市'];
+  private templates: string[] = ['置换专场', '专卖精选', '估价引流', '到店礼'];
+
   build() {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('商家海报').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('商家海报').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      List() {
+
+      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceBetween }) {
         ForEach(this.templates, (name: string, i: number) => {
-          ListItem() {
-            Row({ space: 12 }) {
-              Column().width(72).height(96).borderRadius(8).backgroundColor('#260070F3')
-              Column({ space: 6 }) {
-                Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text('模板 · 可编辑文案').fontSize(13).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              if (this.picked === i) {
-                Text('✓').fontSize(16).fontColor(DesignTokens.link)
-              }
+          Column({ space: 8 }) {
+            Column() {
+              Text(name).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
             }
-            .padding(12).margin({ bottom: 12 })
-            .backgroundColor(DesignTokens.canvas).borderRadius(12)
-            .onClick(() => { this.picked = i; })
+            .width('100%').height(120)
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor('#1A0070F3')
+            .borderRadius(10)
+            Text(this.picked === i ? '已选用' : '选用模板')
+              .fontSize(13)
+              .fontColor(this.picked === i ? DesignTokens.link : DesignTokens.body)
           }
-        }, (name: string, i: number) => `${i}_${name}`)
-      }.layoutWeight(1).width('100%').padding(16)
-      Button('生成海报').backgroundColor(DesignTokens.link).width('90%').margin({ bottom: 24 })
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+          .width('48%')
+          .padding(10)
+          .margin({ bottom: 12 })
+          .backgroundColor(DesignTokens.canvas)
+          .borderRadius(12)
+          .border({
+            width: this.picked === i ? 1.5 : 0.5,
+            color: this.picked === i ? DesignTokens.link : DesignTokens.hairline,
+          })
+          .onClick(() => { this.picked = i; })
+        }, (name: string, i: number) => `${name}-${i}`)
+      }
+      .padding(16)
+      .layoutWeight(1)
+      .width('100%')
+    }
+    .width('100%').height('100%')
+    .backgroundColor(DesignTokens.canvasSoft2)
   }
 }
 

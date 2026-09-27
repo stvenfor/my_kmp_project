@@ -2867,27 +2867,25 @@ struct NativeStoreQrPage: View {
 
 struct NativeQaPage: View {
     var onClose: () -> Void
+    /// Align Compose BuyQaScreen
     private let qs: [(String, String)] = [
-        ("双擎和汽油怎么选？", "待回复 · 3 人围观"),
-        ("置换补贴怎么算？", "已回复 · 12 人围观"),
-        ("保养套餐有哪些？", "待回复 · 1 人围观"),
+        ("全款和贷款怎么选？", "已解答 · 顾问回复"),
+        ("置换能抵多少？", "待回复 · 客户追问"),
+        ("保养周期多久一次？", "已解答 · 知识库"),
     ]
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "选买问答", onClose: onClose, dark: false)
             ScrollView {
-                VStack(spacing: 0) {
+                VStack(spacing: 10) {
                     ForEach(Array(qs.enumerated()), id: \.offset) { _, q in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(q.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
-                                Text(q.1, font: .system(size: 13), color: DesignTokens.body)
-                            }
-                            Spacer()
-                            Text("去回答", font: .system(size: 13), color: DesignTokens.link)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(q.0, font: .system(size: 15, weight: .semibold), color: DesignTokens.ink)
+                            Text(q.1, font: .system(size: 13), color: DesignTokens.body)
                         }
-                        .padding(16).background(DesignTokens.canvas)
-                        Divider().overlay(DesignTokens.hairline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
                     }
                 }
                 .padding(16)
@@ -2897,36 +2895,37 @@ struct NativeQaPage: View {
     }
 }
 
+
 struct NativePosterPage: View {
     var onClose: () -> Void
     @State private var picked = 0
-    private let templates = ["秋季置换季", "周末到店礼", "新车上市"]
+    /// Align Compose PosterScreen
+    private let templates = ["置换专场", "专卖精选", "估价引流", "到店礼"]
+    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
     var body: some View {
         VStack(spacing: 0) {
             navBar(title: "商家海报", onClose: onClose, dark: false)
             ScrollView {
-                VStack(spacing: 12) {
+                LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(Array(templates.enumerated()), id: \.offset) { i, name in
-                        HStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(DesignTokens.link.opacity(0.15))
-                                .frame(width: 72, height: 96)
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(name, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                                Text("模板 · 可编辑文案", font: .system(size: 13), color: DesignTokens.body)
-                            }
-                            Spacer()
-                            if picked == i {
-                                Image(systemName: "checkmark.circle.fill").foregroundStyle(DesignTokens.link)
-                            }
+                        VStack(spacing: 8) {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(DesignTokens.link.opacity(0.12))
+                                .frame(height: 120)
+                                .overlay(
+                                    Text(name, font: .system(size: 16, weight: .semibold), color: DesignTokens.link)
+                                )
+                            Text(picked == i ? "已选用" : "选用模板", font: .system(size: 13),
+                                 color: picked == i ? DesignTokens.link : DesignTokens.body)
                         }
-                        .padding(12)
+                        .padding(10)
                         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(picked == i ? DesignTokens.link : DesignTokens.hairline, lineWidth: picked == i ? 1.5 : 0.5)
+                        )
                         .onTapGesture { picked = i }
                     }
-                    Button("生成海报") {}
-                        .buttonStyle(.borderedProminent)
-                        .tint(DesignTokens.link)
                 }
                 .padding(16)
             }
