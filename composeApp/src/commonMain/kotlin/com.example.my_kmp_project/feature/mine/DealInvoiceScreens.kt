@@ -130,15 +130,47 @@ internal fun DealInvoiceDemoScreen(
                 item {
                     Column(
                         Modifier
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
                             .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
                             .background(Color.White)
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(verticalAlignment = Alignment.Top) {
+                            Column(Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        summary.displayName,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp,
+                                        color = Color(0xFF1A1A1A),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f, fill = false),
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        summary.positionLabel,
+                                        color = Color.White,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(Color(0xFF3B8CFF))
+                                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                                    )
+                                }
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    summary.storeName,
+                                    fontSize = 13.sp,
+                                    color = DemoColors.TextSecondary,
+                                )
+                            }
                             Box(
                                 Modifier
-                                    .width(48.dp)
-                                    .height(48.dp)
+                                    .width(52.dp)
+                                    .height(52.dp)
                                     .clip(CircleShape)
                                     .background(Color(0xFF3B8CFF).copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center,
@@ -147,25 +179,11 @@ internal fun DealInvoiceDemoScreen(
                                     summary.displayName.take(1).uppercase(),
                                     color = Color(0xFF3B8CFF),
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp,
-                                )
-                            }
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    summary.displayName,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp,
-                                    color = DemoColors.TextPrimary,
-                                )
-                                Text(
-                                    "${summary.positionLabel} · ${summary.storeName}",
-                                    fontSize = 12.sp,
-                                    color = DemoColors.TextSecondary,
+                                    fontSize = 20.sp,
                                 )
                             }
                         }
-                        Spacer(Modifier.height(14.dp))
+                        Spacer(Modifier.height(16.dp))
                         Row(Modifier.fillMaxWidth()) {
                             StatCell("已上传", summary.uploaded, Modifier.weight(1f))
                             StatCell("待审核", summary.pendingReview, Modifier.weight(1f))
