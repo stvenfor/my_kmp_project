@@ -2859,36 +2859,83 @@ export struct NativeWebPane {
 export struct NativeAfterSalesPane {
   onClose: () => void = () => {};
   onOpen: (path: string) => void = (_p: string) => {};
-  private rows: string[][] = [
-    ['京 A·12345 · 小保养', '完成 · 2026-09-20', '完成'],
-    ['京 C·54321 · 四轮定位', '进行中', '进行中'],
-    ['京 B·99887 · 钣喷', '待进厂 · 明天 09:00', '预约'],
+  private accent: string = '#FF9500';
+  private deep: string = '#E67E22';
+  private appointments: string[][] = [
+    ['陈先生 · 保养', '今日 14:00 · 工位 A2'],
+    ['周女士 · 钣喷', '今日 16:30 · 工位 B1'],
+  ];
+  private records: string[][] = [
+    ['工单 AS-441', '保养套餐 · 进行中'],
+    ['工单 AS-438', '索赔 · 待配件'],
   ];
   build() {
     Column() {
       Row() {
-        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
-        Text('售后专区').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+        Text('‹').fontSize(22).fontColor('#1A1A1A').onClick(() => this.onClose())
+        Text('售后专区').fontSize(17).fontWeight(FontWeight.Medium).fontColor('#1A1A1A')
         Blank().layoutWeight(1)
-        Text('新建工单').fontSize(14).fontColor(DesignTokens.link).onClick(() => this.onOpen('/home/after_sales/create'))
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
-      List() {
-        ForEach(this.rows, (r: string[]) => {
-          ListItem() {
+        Text('新建').fontSize(14).fontWeight(FontWeight.Medium).fontColor(this.accent)
+          .onClick(() => this.onOpen('/home/after_sales/create'))
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(Color.White)
+
+      Scroll() {
+        Column() {
+          Column() {
+            Row({ space: 12 }) {
+              Text('修').fontSize(16).fontWeight(FontWeight.Bold).fontColor(Color.White)
+                .width(40).height(40).textAlign(TextAlign.Center).borderRadius(12).backgroundColor('#2EFFFFFF')
+              Column({ space: 2 }) {
+                Text('维修保养档案').fontSize(18).fontWeight(FontWeight.Bold).fontColor(Color.White)
+                Text('当前店服务记录与预约跟进').fontSize(13).fontColor('#D9FFFFFF')
+              }.alignItems(HorizontalAlign.Start)
+            }
             Row() {
-              Column({ space: 4 }) {
-                Text(r[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
-                Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
-              }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-              Text(r[2]).fontSize(11).fontColor(DesignTokens.link)
-                .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                .backgroundColor('#1A0070F3').borderRadius(12)
-            }.padding(16).width('100%').backgroundColor(DesignTokens.canvas)
-            .onClick(() => this.onOpen('/home/after_sales/detail'))
+              Column() {
+                Text(`${this.records.length}`).fontSize(22).fontWeight(FontWeight.Bold).fontColor(Color.White)
+                Text('记录').fontSize(12).fontColor('#D9FFFFFF')
+              }.layoutWeight(1).alignItems(HorizontalAlign.Center)
+              Column().width(1).height(28).backgroundColor('#40FFFFFF')
+              Column() {
+                Text(`${this.appointments.length}`).fontSize(22).fontWeight(FontWeight.Bold).fontColor(Color.White)
+                Text('待预约').fontSize(12).fontColor('#D9FFFFFF')
+              }.layoutWeight(1).alignItems(HorizontalAlign.Center)
+            }.width('100%').margin({ top: 16 })
           }
-        })
-      }.layoutWeight(1).width('100%').padding(16)
-    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+          .width('100%')
+          .padding({ left: 18, right: 18, top: 18, bottom: 16 })
+          .linearGradient({ angle: 135, colors: [[this.deep, 0.0], [this.accent, 1.0]] })
+          .borderRadius(16)
+          .margin({ left: 16, right: 16, top: 12, bottom: 4 })
+
+          Text('待处理预约').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            .margin({ left: 20, right: 20, top: 8, bottom: 8 })
+          ForEach(this.appointments, (a: string[]) => {
+            Column({ space: 4 }) {
+              Text(a[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(a[1]).fontSize(13).fontColor(DesignTokens.body)
+            }
+            .width('100%').padding(14).alignItems(HorizontalAlign.Start)
+            .backgroundColor(Color.White).borderRadius(10)
+            .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+            .onClick(() => this.onOpen('/home/after_sales/create'))
+          }, (a: string[]) => a[0])
+
+          Text('维修保养记录').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            .margin({ left: 20, right: 20, top: 12, bottom: 8 })
+          ForEach(this.records, (r: string[]) => {
+            Column({ space: 4 }) {
+              Text(r[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(r[1]).fontSize(13).fontColor(DesignTokens.body)
+            }
+            .width('100%').padding(14).alignItems(HorizontalAlign.Start)
+            .backgroundColor(Color.White).borderRadius(10)
+            .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+            .onClick(() => this.onOpen('/home/after_sales/detail'))
+          }, (r: string[]) => r[0])
+        }.width('100%').padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor('#FFF5F5F5')
   }
 }
 

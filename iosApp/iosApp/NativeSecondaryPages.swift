@@ -2846,42 +2846,93 @@ struct NativeWebPage: View {
 struct NativeAfterSalesPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
-    private let rows: [(String, String, String)] = [
-        ("京 A·12345 · 小保养", "完成 · 2026-09-20", "完成"),
-        ("京 C·54321 · 四轮定位", "进行中", "进行中"),
-        ("京 B·99887 · 钣喷", "待进厂 · 明天 09:00", "预约"),
+    private let accent = Color(red: 1, green: 0.584, blue: 0)
+    private let deep = Color(red: 0.902, green: 0.494, blue: 0.133)
+    /// Align Compose HomeSecondaryMock
+    private let appointments: [(String, String)] = [
+        ("陈先生 · 保养", "今日 14:00 · 工位 A2"),
+        ("周女士 · 钣喷", "今日 16:30 · 工位 B1"),
+    ]
+    private let records: [(String, String)] = [
+        ("工单 AS-441", "保养套餐 · 进行中"),
+        ("工单 AS-438", "索赔 · 待配件"),
     ]
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.link) }
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(DesignTokens.ink) }
                 Text("售后专区", font: .system(size: 17, weight: .semibold), color: DesignTokens.ink)
                 Spacer()
-                Button("新建工单") { onOpen?("/home/after_sales/create") }
-                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(DesignTokens.link)
+                Button("新建") { onOpen?("/home/after_sales/create") }
+                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(accent)
             }
-            .padding(.horizontal, 16).padding(.vertical, 12).background(DesignTokens.canvas)
+            .padding(.horizontal, 16).padding(.vertical, 12).background(Color.white)
+
             ScrollView {
-                VStack(spacing: 0) {
-                    ForEach(Array(rows.enumerated()), id: \.offset) { _, r in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(r.0, font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
-                                Text(r.1, font: .system(size: 13), color: DesignTokens.body)
+                VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(spacing: 12) {
+                            Text("修", font: .system(size: 16, weight: .bold), color: .white)
+                                .frame(width: 40, height: 40)
+                                .background(Color.white.opacity(0.18), in: RoundedRectangle(cornerRadius: 12))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("维修保养档案", font: .system(size: 18, weight: .bold), color: .white)
+                                Text("当前店服务记录与预约跟进", font: .system(size: 13), color: .white.opacity(0.85))
                             }
-                            Spacer()
-                            Text(r.2, font: .system(size: 11, weight: .medium), color: DesignTokens.link)
-                                .padding(.horizontal, 8).padding(.vertical, 4)
-                                .background(DesignTokens.link.opacity(0.12), in: Capsule())
                         }
-                        .padding(16).background(DesignTokens.canvas)
+                        HStack {
+                            VStack {
+                                Text("\(records.count)", font: .system(size: 22, weight: .bold), color: .white)
+                                Text("记录", font: .system(size: 12), color: .white.opacity(0.85))
+                            }
+                            .frame(maxWidth: .infinity)
+                            Rectangle().fill(Color.white.opacity(0.25)).frame(width: 1, height: 28)
+                            VStack {
+                                Text("\(appointments.count)", font: .system(size: 22, weight: .bold), color: .white)
+                                Text("待预约", font: .system(size: 12), color: .white.opacity(0.85))
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(.top, 16)
+                    }
+                    .padding(EdgeInsets(top: 18, leading: 18, bottom: 16, trailing: 18))
+                    .background(
+                        LinearGradient(colors: [deep, accent], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: RoundedRectangle(cornerRadius: 16)
+                    )
+                    .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 4)
+
+                    Text("待处理预约", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                        .padding(.horizontal, 20).padding(.top, 8).padding(.bottom, 8)
+                    ForEach(Array(appointments.enumerated()), id: \.offset) { _, a in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(a.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                            Text(a.1, font: .system(size: 13), color: DesignTokens.body)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 10))
+                        .padding(.horizontal, 16).padding(.vertical, 5)
+                        .onTapGesture { onOpen?("/home/after_sales/create") }
+                    }
+
+                    Text("维修保养记录", font: .system(size: 16, weight: .semibold), color: DesignTokens.ink)
+                        .padding(.horizontal, 20).padding(.top, 12).padding(.bottom, 8)
+                    ForEach(Array(records.enumerated()), id: \.offset) { _, r in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(r.0, font: .system(size: 15, weight: .medium), color: DesignTokens.ink)
+                            Text(r.1, font: .system(size: 13), color: DesignTokens.body)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 10))
+                        .padding(.horizontal, 16).padding(.vertical, 5)
                         .onTapGesture { onOpen?("/home/after_sales/detail") }
-                        Divider().overlay(DesignTokens.hairline)
                     }
                 }
-                .padding(16)
+                .padding(.bottom, 24)
             }
-            .background(DesignTokens.canvasSoft2.ignoresSafeArea())
+            .background(Color(white: 0.96).ignoresSafeArea())
         }
     }
 }
