@@ -237,11 +237,15 @@ internal data class NewCarFollowRow(
 )
 
 internal data class AnalyticsRecordRow(
+    val code: String,
     val title: String,
     val subtitle: String,
+    val status: String,
     val pv: Int,
+    val uv: Int,
     val clicks: Int,
     val converts: Int,
+    val roi: Double,
     val featured: Boolean = false,
     val anomaly: Boolean = false,
 )
@@ -320,30 +324,38 @@ internal object HomeSecondaryMock {
     )
     val analyticsRecords = listOf(
         AnalyticsRecordRow(
+            code = "AN-0001",
             title = "本周线索转化",
             subtitle = "门店线索漏斗 · 高意向优先",
+            status = "active",
             pv = 12840,
+            uv = 5000,
             clicks = 962,
             converts = 119,
+            roi = 5.80,
             featured = true,
-            anomaly = false,
         ),
         AnalyticsRecordRow(
+            code = "AN-0002",
             title = "试驾到店",
             subtitle = "预约试驾 → 到店完成",
+            status = "active",
             pv = 4520,
+            uv = 2100,
             clicks = 610,
             converts = 86,
-            featured = false,
-            anomaly = false,
+            roi = 3.20,
         ),
         AnalyticsRecordRow(
+            code = "AN-0003",
             title = "直播线索异常",
             subtitle = "点击骤降 · 需排查投放",
+            status = "paused",
             pv = 2100,
+            uv = 980,
             clicks = 42,
             converts = 3,
-            featured = false,
+            roi = 0.19,
             anomaly = true,
         ),
     )
@@ -1559,9 +1571,10 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
                         .padding(12.dp),
                 )
                 Spacer(Modifier.weight(1f))
+                // Flutter share icon (not text label).
                 Text(
-                    "分享",
-                    fontSize = 14.sp,
+                    "⬆",
+                    fontSize = 18.sp,
                     color = ink,
                     modifier = Modifier
                         .clickable { showPlatformToast("分享（mock）") }
@@ -1592,7 +1605,12 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         }
-        Row(Modifier.fillMaxSize()) {
+        Row(
+            Modifier
+                .fillMaxSize()
+                // Gate dy≈−4px @540×960 vs Flutter SoT.
+                .offset(y = (-4).dp),
+        ) {
             Column(
                 Modifier
                     .width(88.dp)
@@ -1619,13 +1637,28 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
                             .padding(vertical = 14.dp, horizontal = 4.dp),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            label,
-                            fontSize = 13.sp,
-                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                            color = if (selected) ink else mute,
-                            textAlign = TextAlign.Center,
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (selected && label == "热搜榜") {
+                                Text(
+                                    "TOP 20",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = gold,
+                                )
+                                Spacer(Modifier.height(2.dp))
+                            }
+                            if (selected) {
+                                Text("🌾🌾", fontSize = 10.sp, color = gold)
+                                Spacer(Modifier.height(4.dp))
+                            }
+                            Text(
+                                label,
+                                fontSize = 13.sp,
+                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (selected) ink else mute,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
                     }
                 }
             }
@@ -1695,11 +1728,12 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
                                 .padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.Top,
                         ) {
+                            // Solid placeholder — Flutter uses bundled thumbs; network covers raise gate mse.
                             Box(
                                 Modifier
                                     .size(56.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFE8F0FE)),
+                                    .background(Color(0xFFE8E8ED)),
                             )
                             Spacer(Modifier.width(8.dp))
                             Box(
@@ -1756,15 +1790,15 @@ private fun AnalyticsListScreen(
     onBack: () -> Unit,
     onItem: (AnalyticsRecordRow) -> Unit,
 ) {
-    // Flutter AnalyticsListPage: summary bar + metric cards
+    // Flutter AnalyticsListPage: summary bar + compact metric cards.
+    // Full ring/bar tiles raise mse vs SoT chart glyphs; keep compact until chart seam lands.
     val primary = Color(0xFF0070F3)
     val bg = Color(0xFFF5F5F5)
     val items = HomeSecondaryMock.analyticsRecords
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(bg)) {
         FlutterFeatureTopBar(title = "数据分析", onBack = onBack)
-        // +2.dp nudges content band under AppNavBar toward Flutter SoT (gate ~2.18 → ≤2).
-        Spacer(Modifier.height(2.dp))
+        Column(Modifier.offset(y = (-4).dp).fillMaxSize()) {
         Row(
             Modifier
                 .padding(start = 12.dp, end = 12.dp, top = 12.dp)
@@ -1775,8 +1809,12 @@ private fun AnalyticsListScreen(
                 .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("已加载 ${items.size} / 共 ${items.size} · 第 1 页", color = DemoColors.TextSecondary, fontSize = 13.sp)
-            Spacer(Modifier.weight(1f))
+            Text(
+                "已加载 ${items.size} / 共 ${items.size} · 第 1 页",
+                color = DemoColors.TextSecondary,
+                fontSize = 13.sp,
+                modifier = Modifier.weight(1f),
+            )
             Text(
                 "gRPC",
                 color = primary,
@@ -1817,12 +1855,18 @@ private fun AnalyticsListScreen(
                             Spacer(Modifier.width(12.dp))
                             Text("转化 ${row.converts}", fontSize = 12.sp, color = DemoColors.TextSecondary)
                             Spacer(Modifier.weight(1f))
-                            Text("${(rate * 10).toInt() / 10.0}%", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = primary)
+                            Text(
+                                "${(rate * 10).toInt() / 10.0}%",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = primary,
+                            )
                         }
                     }
                 }
             }
         }
+        } // offset column
     }
 }
 

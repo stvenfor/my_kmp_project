@@ -1,17 +1,17 @@
 {
   "home_data_analytics": {
-    "mse_pct": 2.1809,
-    "mad_pct": 5.29,
+    "mse_pct": 2.1415,
+    "mad_pct": 4.7869,
     "pass_": false,
     "bar_mse_pct": 2.0,
-    "flutter": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_data_analytics.flutter.png",
-    "kmp": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_data_analytics.kmp.png",
-    "heat": "openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_data_analytics.heat.png"
+    "flutter": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_data_analytics.flutter.png",
+    "kmp": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_data_analytics.kmp.png",
+    "heat": "/Users/mac/Desktop/github/my_kmp_project/openspec/changes/parity-flutter-to-kmp/notes/evidence/home/Android/home_data_analytics.heat.png"
   },
   "meta": {
     "gate": "mse_pct<=2.0",
     "roi": "top=0.04,bot=0.9,resize=540x960",
-    "measured_at": "2026-09-27T11:37Z",
+    "measured_at": "2026-09-28T01:14Z",
     "script": "scripts/screenshot_diff_gate.py",
     "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
   }
