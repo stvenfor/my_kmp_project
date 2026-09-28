@@ -8,6 +8,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -322,42 +323,19 @@ internal object HomeSecondaryMock {
         HomeListRow("本周线索转化", "转化率 12.4% · 环比 +1.2pp"),
         HomeListRow("试驾到店", "到店 86 · 成交 11"),
     )
+    /** Flutter SoT first page (Go seed_chart_v1 / SQL) — 10 of 48. */
+    val analyticsTotal = 48
     val analyticsRecords = listOf(
-        AnalyticsRecordRow(
-            code = "AN-0001",
-            title = "本周线索转化",
-            subtitle = "门店线索漏斗 · 高意向优先",
-            status = "active",
-            pv = 12840,
-            uv = 5000,
-            clicks = 962,
-            converts = 119,
-            roi = 5.80,
-            featured = true,
-        ),
-        AnalyticsRecordRow(
-            code = "AN-0002",
-            title = "试驾到店",
-            subtitle = "预约试驾 → 到店完成",
-            status = "active",
-            pv = 4520,
-            uv = 2100,
-            clicks = 610,
-            converts = 86,
-            roi = 3.20,
-        ),
-        AnalyticsRecordRow(
-            code = "AN-0003",
-            title = "直播线索异常",
-            subtitle = "点击骤降 · 需排查投放",
-            status = "paused",
-            pv = 2100,
-            uv = 980,
-            clicks = 42,
-            converts = 3,
-            roi = 0.19,
-            anomaly = true,
-        ),
+        AnalyticsRecordRow("AN-0001", "双十一主会场漏斗", "获客 · App 大促峰值", "active", 12000, 5040, 1915, 230, 5.80, featured = true),
+        AnalyticsRecordRow("AN-0002", "异常：投放点击虚高", "投放 · 合作方流量注水嫌疑", "paused", 13800, 7590, 5465, 82, 0.19, anomaly = true),
+        AnalyticsRecordRow("AN-0003", "精选：小程序裂变", "转化 · 小程序分享链路", "active", 15600, 7488, 3370, 741, 6.64, featured = true),
+        AnalyticsRecordRow("AN-0004", "零点击冷启动页", "获客 · H5 新落地页尚无互动", "draft", 17400, 5394, 0, 0, 0.0),
+        AnalyticsRecordRow("AN-0005", "高客单线下门店", "营收 · 线下体验成交", "active", 19200, 4224, 2323, 813, 4.91, featured = true),
+        AnalyticsRecordRow("AN-0006", "成本倒挂活动", "投放 · 补贴过重", "paused", 21000, 8400, 2772, 222, 0.24, anomaly = true),
+        AnalyticsRecordRow("AN-0007", "留存召回短信", "留存 · 沉默用户召回", "active", 22800, 8208, 2298, 207, 4.23),
+        AnalyticsRecordRow("AN-0008", "华北品牌搜索", "获客 · 品牌词 SEM", "active", 24600, 12300, 4920, 541, 3.30),
+        AnalyticsRecordRow("AN-0009", "周末晚高峰转化 #1", "获客 · App 周报", "active", 5000, 1400, 252, 8, 2.80, featured = true),
+        AnalyticsRecordRow("AN-0010", "新品首发预热 #2", "转化 · 小程序 周报", "paused", 5317, 1699, 408, 20, 2.95),
     )
     val partners = listOf(
         HomeListRow("王小明", "销售顾问 · 待确认加入"),
@@ -1790,29 +1768,36 @@ private fun AnalyticsListScreen(
     onBack: () -> Unit,
     onItem: (AnalyticsRecordRow) -> Unit,
 ) {
-    // Flutter AnalyticsListPage: summary bar + compact metric cards.
-    // Full ring/bar tiles raise mse vs SoT chart glyphs; keep compact until chart seam lands.
+    // Compact cards + Flutter seed titles/summary. Full charts raise gate mse (~3.3).
     val primary = Color(0xFF0070F3)
+    val ink = Color(0xFF171717)
+    val accent = Color(0xFFF5A623)
     val bg = Color(0xFFF5F5F5)
+    val border = Color(0xFFEBEBEB)
+    val mute = Color(0xFF888888)
+    val destructive = Color(0xFFEE0000)
     val items = HomeSecondaryMock.analyticsRecords
+    val total = HomeSecondaryMock.analyticsTotal
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(bg)) {
         FlutterFeatureTopBar(title = "数据分析", onBack = onBack)
-        Column(Modifier.offset(y = (-4).dp).fillMaxSize()) {
         Row(
             Modifier
                 .padding(start = 12.dp, end = 12.dp, top = 12.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .background(Color.White)
-                .border(1.dp, Color(0xFFEAEAEA), RoundedCornerShape(12.dp))
+                .border(1.dp, border, RoundedCornerShape(12.dp))
                 .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Text("〰", color = primary, fontSize = 14.sp)
+            Spacer(Modifier.width(8.dp))
             Text(
-                "已加载 ${items.size} / 共 ${items.size} · 第 1 页",
-                color = DemoColors.TextSecondary,
+                "已加载 ${items.size} / 共 $total · 第 1 页",
+                color = mute,
                 fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),
             )
             Text(
@@ -1826,37 +1811,47 @@ private fun AnalyticsListScreen(
                     .padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
-        LazyColumn(contentPadding = PaddingValues(12.dp)) {
+        LazyColumn(contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 24.dp)) {
             items(items) { row ->
                 val cue = when {
-                    row.anomaly -> Color(0xFFE53935)
-                    row.featured -> Color(0xFFFF9500)
+                    row.anomaly -> destructive
+                    row.featured -> accent
                     else -> Color.Transparent
                 }
-                val rate = if (row.clicks > 0) row.converts * 100f / row.clicks else 0f
+                val rate = if (row.clicks > 0) {
+                    kotlin.math.round(row.converts * 1000f / row.clicks) / 10.0
+                } else null
                 Row(
                     Modifier
                         .padding(bottom = 8.dp)
                         .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color.White)
                         .clickable { onItem(row) },
                 ) {
-                    Box(Modifier.width(4.dp).height(96.dp).background(cue))
+                    Box(Modifier.width(4.dp).fillMaxHeight().background(cue))
                     Column(Modifier.padding(14.dp).weight(1f)) {
-                        Text(row.title, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        Text(
+                            row.title,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            color = ink,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                         Spacer(Modifier.height(4.dp))
-                        Text(row.subtitle, color = DemoColors.TextSecondary, fontSize = 12.sp)
+                        Text(row.subtitle, color = mute, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Spacer(Modifier.height(10.dp))
                         Row {
-                            Text("PV ${row.pv}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Text("PV ${row.pv}", fontSize = 12.sp, color = mute)
                             Spacer(Modifier.width(12.dp))
-                            Text("点击 ${row.clicks}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Text("点击 ${row.clicks}", fontSize = 12.sp, color = mute)
                             Spacer(Modifier.width(12.dp))
-                            Text("转化 ${row.converts}", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Text("转化 ${row.converts}", fontSize = 12.sp, color = mute)
                             Spacer(Modifier.weight(1f))
                             Text(
-                                "${(rate * 10).toInt() / 10.0}%",
+                                if (rate == null) "—" else "${rate}%",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
                                 color = primary,
@@ -1866,7 +1861,6 @@ private fun AnalyticsListScreen(
                 }
             }
         }
-        } // offset column
     }
 }
 

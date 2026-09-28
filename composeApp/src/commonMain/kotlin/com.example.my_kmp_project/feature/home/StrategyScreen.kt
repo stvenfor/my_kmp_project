@@ -50,14 +50,14 @@ internal fun StrategyScreen(onBack: () -> Unit) {
             .background(DemoColors.PageBg),
     ) {
         FlutterFeatureTopBar(title = "策略", onBack = onBack)
-        // Tuned vs Flutter SoT (1440): mid between +28 (overshoot) and prior +2.
-        Spacer(modifier = Modifier.height(25.dp))
+        // Tuned vs Flutter SoT vertical band (gate near-miss ~2.3).
+        Spacer(modifier = Modifier.height(32.dp))
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
-                .padding(top = 8.dp, bottom = 24.dp),
+                .padding(top = 4.dp, bottom = 24.dp),
         ) {
             StrategySubTabs(
                 tabs = HomeMockData.strategyTabs,
@@ -96,15 +96,15 @@ private fun StrategySubTabs(
                 Text(
                     text = label,
                     color = if (active) DemoColors.TextPrimary else DemoColors.TextSecondary,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                    fontWeight = FontWeight.Normal,
                     fontSize = 16.sp,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .width(if (active) 24.dp else 0.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
+                        .height(2.dp)
+                        .clip(RoundedCornerShape(1.dp))
                         .background(DemoColors.Accent),
                 )
             }
@@ -162,7 +162,7 @@ private fun AssetGridCard(
                 Text(
                     text = label,
                     color = if (active) DemoColors.Accent else DemoColors.TextSecondary,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                    fontWeight = FontWeight.Normal,
                     fontSize = 13.sp,
                     modifier = Modifier.clickable { onPeriodSelected(index) },
                 )
@@ -192,7 +192,7 @@ private fun AssetCell(
         Text(
             text = cell.value,
             color = if (cell.positive) GainRed else GainGreen,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Medium,
             fontSize = 14.sp,
         )
     }
@@ -213,7 +213,7 @@ private fun StrategyPlanCard(tabLabel: String) {
                 Text(
                     text = "黄金恐贪定投 · 第一期",
                     color = DemoColors.TextPrimary,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Medium,
                     fontSize = 17.sp,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
@@ -280,11 +280,24 @@ private fun StrategyPlanCard(tabLabel: String) {
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = "本周已投 1 份",
-            color = DemoColors.TextSecondary,
-            fontSize = 13.sp,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "本周已投 1 份",
+                color = DemoColors.TextSecondary,
+                fontSize = 13.sp,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "订阅",
+                color = Color.White,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(DemoColors.Accent)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "在恐慌时买入、贪婪时卖出，通过定期定额降低择时压力，适合长期持有的投资者。",

@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,9 +35,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -301,10 +305,10 @@ private fun SearchDiscoverySection(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             .clip(RoundedCornerShape(8.dp))
-            // Flutter discovery card sits on soft page fill, not pure white.
-            .background(DemoColors.PageBg)
+            // Flutter discovery card: white surface; chips use soft page fill.
+            .background(DemoColors.Background)
             .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
-            .padding(16.dp),
+            .padding(horizontal = 12.dp, vertical = 12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -380,29 +384,18 @@ private fun SearchFilterSection(
 
 @Composable
 private fun SearchSliderIcon(modifier: Modifier = Modifier, color: Color) {
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(3.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.5.dp)
-                    .background(color),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .height(1.5.dp)
-                    .background(color),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.5.dp)
-                    .background(color),
-            )
+    // Flutter CupertinoIcons.slider_horizontal_3 — three tracks with knobs.
+    Box(modifier = modifier) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            val stroke = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round)
+            val ys = listOf(h * 0.22f, h * 0.5f, h * 0.78f)
+            val knobs = listOf(w * 0.35f, w * 0.65f, w * 0.45f)
+            ys.forEachIndexed { i, y ->
+                drawLine(color, Offset(0f, y), Offset(w, y), stroke.width, StrokeCap.Round)
+                drawCircle(color, radius = 2.2.dp.toPx(), center = Offset(knobs[i], y))
+            }
         }
     }
 }
@@ -413,22 +406,20 @@ private fun SearchTagChip(
     onTap: () -> Unit,
     highlight: Boolean = false,
 ) {
-    // Flutter SearchTagChip — tune pad so Wrap line breaks match SoT (CMP glyphs run wider).
+    // Flutter SearchTagChip — highlight = white on accent pill.
     val shape = RoundedCornerShape(20.dp)
     Text(
         text = label,
-        color = if (highlight) DemoColors.Accent else DemoColors.TextPrimary,
+        color = if (highlight) Color.White else DemoColors.TextPrimary,
         fontSize = 13.sp,
         fontWeight = if (highlight) FontWeight.Medium else FontWeight.Normal,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .clip(shape)
-            .background(
-                if (highlight) DemoColors.Accent.copy(alpha = 0.1f) else DemoColors.PageBg,
-            )
+            .background(if (highlight) DemoColors.Accent else DemoColors.PageBg)
             .clickable(onClick = onTap)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 10.dp, vertical = 7.dp),
     )
 }
 
