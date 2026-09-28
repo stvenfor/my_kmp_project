@@ -19,12 +19,14 @@ enum DesignTokens {
 }
 
 extension Text {
+    /// Must use `verbatim:` — plain `Text(content)` resolves back to this init (default `color`) and stack-overflows.
     init(_ content: String, color: Color) {
-        self = Text(content).foregroundColor(color)
+        self = Text(verbatim: content).foregroundColor(color)
     }
 
-    init(_ content: String, font: Font, color: Color) {
-        self = Text(content).font(font).foregroundColor(color)
+    /// `color` defaults so `Text("…", font:)` call sites compile.
+    init(_ content: String, font: Font, color: Color = .primary) {
+        self = Text(verbatim: content).font(font).foregroundColor(color)
     }
 }
 

@@ -394,13 +394,23 @@ internal fun MembershipScreen(
                 shape = RoundedCornerShape(24.dp),
             ) {
                 Text(
-                    "¥${"%.2f".format(payable)} 立即开通",
+                    "¥${formatTwoDecimals(payable)} 立即开通",
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                 )
             }
         }
     }
+}
+
+/** KMP-safe 2-decimal format (no JVM String.format). */
+private fun formatTwoDecimals(value: Double): String {
+    val cents = kotlin.math.round(value * 100.0).toLong()
+    val sign = if (cents < 0) "-" else ""
+    val a = if (cents < 0) -cents else cents
+    val whole = a / 100
+    val frac = (a % 100).toString().padStart(2, '0')
+    return "$sign$whole.$frac"
 }
 
 @Composable
