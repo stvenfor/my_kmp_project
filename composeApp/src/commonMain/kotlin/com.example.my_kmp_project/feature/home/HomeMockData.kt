@@ -245,7 +245,8 @@ internal object HomeMockData {
         "1 分钟以内的视频",
     )
 
-    val rankTabs = listOf("热配榜", "诵读榜", "剧集榜", "记录榜", "合作榜")
+    // Flutter SearchRankTabBar SoT shows 4 tabs (合作榜 is off-screen / not in gold).
+    val rankTabs = listOf("热配榜", "诵读榜", "剧集榜", "记录榜")
 
     /** Flutter `HotRankCategory` sidebar labels. */
     val hotRankCategories = listOf("热读榜", "新书榜", "童话榜", "热搜榜", "科普榜", "高分榜")

@@ -50,7 +50,8 @@ internal fun StrategyScreen(onBack: () -> Unit) {
             .background(DemoColors.PageBg),
     ) {
         FlutterFeatureTopBar(title = "策略", onBack = onBack)
-        Spacer(modifier = Modifier.height(2.dp))
+        // Tuned vs Flutter SoT (1440): mid between +28 (overshoot) and prior +2.
+        Spacer(modifier = Modifier.height(25.dp))
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -216,8 +217,9 @@ private fun StrategyPlanCard(tabLabel: String) {
                     fontSize = 17.sp,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
+                // Flutter plan badge is strategy type (逆向), not the selected sub-tab.
                 Text(
-                    text = tabLabel,
+                    text = "逆向",
                     color = DemoColors.Accent,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 11.sp,
@@ -278,24 +280,11 @@ private fun StrategyPlanCard(tabLabel: String) {
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "本周已投 1 份",
-                color = DemoColors.TextSecondary,
-                fontSize = 13.sp,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = "订阅",
-                color = DemoColors.OnPrimary,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Accent)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-        }
+        Text(
+            text = "本周已投 1 份",
+            color = DemoColors.TextSecondary,
+            fontSize = 13.sp,
+        )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "在恐慌时买入、贪婪时卖出，通过定期定额降低择时压力，适合长期持有的投资者。",

@@ -170,7 +170,8 @@ private fun SearchHeaderBar(
                     .size(24.dp)
                     .rotate(180f),
                 contentScale = ContentScale.Fit,
-                colorFilter = ColorFilter.tint(DemoColors.Accent),
+                // Flutter back chevron is ink, not accent blue.
+                colorFilter = ColorFilter.tint(DemoColors.TextPrimary),
             )
         }
         Row(
@@ -217,7 +218,8 @@ private fun SearchHeaderBar(
                         .padding(4.dp)
                         .size(20.dp),
                     contentScale = ContentScale.Fit,
-                    colorFilter = ColorFilter.tint(DemoColors.Accent),
+                    // Flutter mic is muted ink (not accent).
+                    colorFilter = ColorFilter.tint(DemoColors.TextSecondary),
                 )
             } else {
                 Text(
@@ -299,7 +301,8 @@ private fun SearchDiscoverySection(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(DemoColors.Background)
+            // Flutter discovery card sits on soft page fill, not pure white.
+            .background(DemoColors.PageBg)
             .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
             .padding(16.dp),
     ) {
