@@ -1,0 +1,18 @@
+{
+  "cap-kmp-as": {
+    "mse_pct": 2.1745,
+    "mad_pct": 7.3215,
+    "pass_": false,
+    "bar_mse_pct": 2.0,
+    "flutter": ".scratch/as-gate-try/cap-kmp-as.flutter.png",
+    "kmp": ".scratch/as-gate-try/cap-kmp-as.kmp.png",
+    "heat": ".scratch/as-gate-try/cap-kmp-as.heat.png"
+  },
+  "meta": {
+    "gate": "mse_pct<=2.0",
+    "roi": "top=0.04,bot=0.9,resize=540x960",
+    "measured_at": "2026-09-27T10:13Z",
+    "script": "scripts/screenshot_diff_gate.py",
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
+  }
+}

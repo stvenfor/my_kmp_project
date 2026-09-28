@@ -141,3 +141,6 @@ agentdb.rvf.lock
 *.rvf.lock
 ruvector.db
 ruvector.db-*
+
+# Local Xcode DerivedData under scratch (never commit)
+.scratch/ios-dd/

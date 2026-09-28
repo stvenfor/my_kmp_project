@@ -1,0 +1,18 @@
+{
+  "home_life_service_0.9": {
+    "mse_pct": 2.8993,
+    "mad_pct": 5.8967,
+    "pass_": false,
+    "bar_mse_pct": 2.0,
+    "flutter": "/Users/mac/Desktop/github/my_kmp_project/.scratch/domain-caps/gate-tmp/home_life_service_0.9.flutter.png",
+    "kmp": "/Users/mac/Desktop/github/my_kmp_project/.scratch/domain-caps/gate-tmp/home_life_service_0.9.kmp.png",
+    "heat": "/Users/mac/Desktop/github/my_kmp_project/.scratch/domain-caps/gate-tmp/home_life_service_0.9.heat.png"
+  },
+  "meta": {
+    "gate": "mse_pct<=2.0",
+    "roi": "top=0.04,bot=0.9,resize=540x960",
+    "measured_at": "2026-09-27T10:01Z",
+    "script": "scripts/screenshot_diff_gate.py",
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
+  }
+}
