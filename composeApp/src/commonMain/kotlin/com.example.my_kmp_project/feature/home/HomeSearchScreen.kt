@@ -49,8 +49,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.home_banner_bg
 import my_kmp_project.composeapp.generated.resources.home_search_icon_clear_history
 import my_kmp_project.composeapp.generated.resources.home_search_icon_refresh
 import my_kmp_project.composeapp.generated.resources.home_search_microphone
@@ -174,8 +176,8 @@ private fun SearchHeaderBar(
                     .size(24.dp)
                     .rotate(180f),
                 contentScale = ContentScale.Fit,
-                // Flutter back chevron is ink, not accent blue.
-                colorFilter = ColorFilter.tint(DemoColors.TextPrimary),
+                // Flutter SoT back chevron is accent.
+                colorFilter = ColorFilter.tint(DemoColors.Accent),
             )
         }
         Row(
@@ -222,9 +224,9 @@ private fun SearchHeaderBar(
                         .padding(4.dp)
                         .size(20.dp),
                     contentScale = ContentScale.Fit,
-                    // Flutter mic is muted ink (not accent).
-                    colorFilter = ColorFilter.tint(DemoColors.TextSecondary),
-                )
+                    // Flutter SoT: mic is accent blue.
+                colorFilter = ColorFilter.tint(DemoColors.Accent),
+            )
             } else {
                 Text(
                     text = "✕",
@@ -287,8 +289,18 @@ private fun SearchHistorySection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // Flutter history: plain text flow (no pills).
             history.forEach { tag ->
-                SearchTagChip(label = tag, onTap = { onTagTap(tag) })
+                Text(
+                    text = tag,
+                    color = DemoColors.TextPrimary,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .clickable { onTagTap(tag) }
+                        .padding(vertical = 4.dp, horizontal = 2.dp),
+                )
             }
         }
     }
@@ -375,8 +387,18 @@ private fun SearchFilterSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // Flutter filter: plain text, no chip chrome.
             tags.forEach { tag ->
-                SearchTagChip(label = tag, onTap = { onTagTap(tag) })
+                Text(
+                    text = tag,
+                    color = DemoColors.TextPrimary,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .clickable { onTagTap(tag) }
+                        .padding(vertical = 4.dp, horizontal = 2.dp),
+                )
             }
         }
     }
@@ -406,18 +428,20 @@ private fun SearchTagChip(
     onTap: () -> Unit,
     highlight: Boolean = false,
 ) {
-    // Flutter SearchTagChip — highlight = white on accent pill.
+    // Flutter SearchTagChip highlight: soft accent fill + accent ink (not solid white-on-blue).
     val shape = RoundedCornerShape(20.dp)
     Text(
         text = label,
-        color = if (highlight) Color.White else DemoColors.TextPrimary,
+        color = if (highlight) DemoColors.Accent else DemoColors.TextPrimary,
         fontSize = 13.sp,
         fontWeight = if (highlight) FontWeight.Medium else FontWeight.Normal,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .clip(shape)
-            .background(if (highlight) DemoColors.Accent else DemoColors.PageBg)
+            .background(
+                if (highlight) DemoColors.Accent.copy(alpha = 0.12f) else DemoColors.PageBg,
+            )
             .clickable(onClick = onTap)
             .padding(horizontal = 10.dp, vertical = 7.dp),
     )
@@ -484,13 +508,20 @@ private fun RankListRow(item: SearchRankItem) {
             modifier = Modifier.width(24.dp),
         )
         Spacer(modifier = Modifier.width(12.dp))
-        // Soft gray cover matching archived Flutter SoT (picsum unavailable).
         Box(
             modifier = Modifier
                 .size(72.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(DemoColors.PageBg),
-        )
+        ) {
+            PlatformNetworkImage(
+                url = item.coverUrl,
+                contentDescription = item.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                placeholder = Res.drawable.home_banner_bg,
+            )
+        }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

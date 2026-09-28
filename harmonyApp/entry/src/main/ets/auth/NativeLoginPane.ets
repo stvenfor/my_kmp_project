@@ -35,12 +35,12 @@ export struct NativeLoginPane {
   private greeting(): string {
     const h = new Date().getHours();
     if (h < 12) {
-      return '早上好，欢迎使用i车商';
+      return '早上好，欢迎使用iHome';
     }
     if (h < 18) {
-      return '下午好，欢迎使用i车商';
+      return '下午好，欢迎使用iHome';
     }
-    return '晚上好，欢迎使用i车商';
+    return '晚上好，欢迎使用iHome';
   }
 
   private syncKotlinSession(session: AuthSession): void {

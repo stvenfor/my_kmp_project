@@ -1022,9 +1022,8 @@ struct Index {
   @Builder
   SplashPane() {
     Column() {
-      Text('i车商')
-        .fontSize(32)
-        .fontWeight(FontWeight.Medium)
+      Text('正在进入应用...')
+        .fontSize(18)
         .fontColor(DesignTokens.ink)
     }
     .width('100%')

@@ -38,9 +38,9 @@ struct NativeLoginView: View {
 
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        if hour < 12 { return "早上好，欢迎使用i车商" }
-        if hour < 18 { return "下午好，欢迎使用i车商" }
-        return "晚上好，欢迎使用i车商"
+        if hour < 12 { return "早上好，欢迎使用iHome" }
+        if hour < 18 { return "下午好，欢迎使用iHome" }
+        return "晚上好，欢迎使用iHome"
     }
 
     private var canSubmit: Bool {

@@ -50,7 +50,7 @@ Parent spec: #1
 |-------|--------------------------|-------|--------|-------|
 | `/` splash | shell-core | native | packet-pass | Android hard gate done (`shell/Android/*.diff.json` PASS); iOS/OHOS open-path via native shell |
 | `/main` | shell-core | native | packet-pass | same |
-| `/home` | tab-home | native | packet-pass | `shell/Android/home.diff.json` PASS (mse≈0.33) |
+| `/home` | tab-home | native | packet-pass | `shell/Android/home.diff.json` PASS (mse≈0.33); shared `HomeScreen` synced to Jetpack/Flutter (greeting/banner/todos/store-switch/metrics tabs/check-in) |
 | `/chat` | tab-chat | native | packet-pass | `shell/Android/chat.diff.json` PASS (mse≈0.29) |
 | `/community` | tab-community | native | packet-pass | `shell/Android/community.diff.json` PASS (mse≈0.63) |
 | `/mine` | tab-mine-root | native | packet-pass | `shell/Android/mine.diff.json` PASS (mse≈0.0) |
@@ -68,16 +68,16 @@ Parent spec: #1
 
 | Route | Domain ticket | Track | Status | Notes |
 |-------|---------------|-------|--------|-------|
-| `/home/search` | home-discover | native-cutover | wip | discovery white card + accent highlight pill + slider knobs; gate FAIL mse=3.3378 — `home/Android/home_search.diff.json` |
+| `/home/search` | home-discover | native-cutover | wip | discovery soft-highlight + history/filter plain text; was FAIL mse=3.3378 — `home/Android/home_search.diff.json` (re-gate pending) |
 | `/home/all_services` | home-discover | native-cutover | pass | gate PASS mse=1.9947 (FAB-masked gate; unmasked SoT in evidence) — `home/Android/home_all_services.diff.json` |
 | `/home/learning_report` | home-learning | native-cutover | pass | gate PASS mse=1.385 — `home/Android/home_learning_report.diff.json` |
 | `/home/check_in_mall` | home-checkin | native-cutover | pass | gate PASS mse=1.6161 — `home/Android/home_check_in_mall.diff.json` |
 | `/home/dubbing_feed` | home-dubbing | native-cutover | wip | gate FAIL mse=6.4712 — `home/Android/home_dubbing_feed.diff.json` |
-| `/home/strategy` | home-strategy | native-cutover | wip | lighter type + 订阅 row; gate FAIL mse=2.3323 — `home/Android/home_strategy.diff.json` (gauge still deferred) |
+| `/home/strategy` | home-strategy | native-cutover | wip | Canvas 恐贪半环 gauge + progress/tab chrome; was FAIL mse=2.3323 — `home/Android/home_strategy.diff.json` (re-gate pending) |
 | `/home/hot_rank_detail` | home-hot-rank | native-cutover | pass | gate PASS mse=1.8644 — `home/Android/home_hot_rank_detail.diff.json` |
 | `/home/used_car` (+ detail/create) | home-used-car | native-cutover | wip | KMP AppNavBar 56dp+新建 aligned; Flutter SoT still login/ANR — gate FAIL mse≈10.2 vs login SoT — `home/Android/home_used_car.diff.json` |
 | `/home/ledger` (+ detail) | home-ledger | native-cutover | pass | gate PASS mse=1.3707 — `home/Android/home_ledger.diff.json` |
-| `/home/data_analytics` (+ detail) | home-analytics | native-cutover | wip | seed 10/48 titles; compact cards; gate FAIL mse=2.6871 — `home/Android/home_data_analytics.diff.json` (chart cutover blocked ≈3.3+) |
+| `/home/data_analytics` (+ detail) | home-analytics | native-cutover | wip | seed 10/48 + Vico bars (2.3 multiplatform) / Canvas ring on Android·iOS; OHOS stub; gate not re-run — `home/Android/home_data_analytics.diff.json` |
 | `/home/life_service` | home-life | native-cutover | pass | gate PASS mse=1.998 — `home/Android/home_life_service.diff.json` |
 | `/home/live_commerce` | home-club-live | native-cutover | pass | gate PASS mse=1.7173 — `home/Android/home_live_commerce.diff.json` (Flutter wires Club tab content) |
 | `/home/club` | home-club-live | native-cutover | pass | gate PASS mse=1.653 — `home/Android/home_club.diff.json` |

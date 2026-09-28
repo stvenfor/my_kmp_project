@@ -393,7 +393,10 @@ private fun MainShell() {
                             onBack = { authOverlay = AuthOverlay.Login },
                         )
                         AuthOverlay.None -> when (tab) {
-                            MainTab.Home -> HomeScreen()
+                            MainTab.Home -> HomeScreen(
+                                loggedIn = loggedIn,
+                                displayName = AccountFacade.current().displayName,
+                            )
                             MainTab.Chat -> ChatScreen(
                                 onOpenFriends = {
                                     shellRoute = AppRoute.Friend

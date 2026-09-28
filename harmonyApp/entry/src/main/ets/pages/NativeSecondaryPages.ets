@@ -178,12 +178,51 @@ export struct NativeAllServicesPane {
     ];
   }
 
-  private tools(): ServiceItem[] {
+  private catalogSections(): { title: string; items: ServiceItem[] }[] {
     return [
-      { id: 'calc', label: '购车计算器', asset: $r('app.media.home_all_services_calculator') },
-      { id: 'used', label: '二手车', asset: $r('app.media.home_all_services_used_car') },
-      { id: 'after', label: '售后专区', asset: $r('app.media.home_all_services_after_sales_area') },
-      { id: 'all', label: '全部功能', asset: $r('app.media.home_all_services_all_functions') },
+      {
+        title: '线索服务',
+        items: [
+          { id: 'intro', label: '引导动画', asset: $r('app.media.home_all_services_smart_online_marketing') },
+          { id: 'hotel', label: '酒店预订', asset: $r('app.media.home_all_services_customer_profile') },
+          { id: 'filters', label: '酒店筛选', asset: $r('app.media.home_all_services_smart_sale') },
+          { id: 'fitness', label: '健身应用', asset: $r('app.media.home_all_services_new_car_deal') },
+          { id: 'glass', label: '玻璃卡片', asset: $r('app.media.home_all_services_online_customer_acquisition') },
+          { id: 'running', label: '跑步数据', asset: $r('app.media.home_all_services_new_car_in_store') },
+          { id: 'wave', label: '波浪动画', asset: $r('app.media.home_all_services_smart_number') },
+        ],
+      },
+      {
+        title: '营销服务',
+        items: [
+          { id: 'diary', label: '我的日记', asset: $r('app.media.home_all_services_exhibition_hall_shooting') },
+          { id: 'design', label: '设计课程', asset: $r('app.media.home_all_services_marketing') },
+          { id: 'training', label: '训练计划', asset: $r('app.media.home_all_services_intelligence_task') },
+          { id: 'workout', label: '训练视图', asset: $r('app.media.home_all_services_v_store') },
+          { id: 'diet', label: '地中海饮食', asset: $r('app.media.home_all_services_small_video') },
+          { id: 'course', label: '课程详情', asset: $r('app.media.home_all_services_business_poster') },
+        ],
+      },
+      {
+        title: '教学服务',
+        items: [
+          { id: 'classroom', label: '班级教学', asset: $r('app.media.home_all_services_intelligence_task') },
+          { id: 'dubbing', label: '配音首页', asset: $r('app.media.home_all_services_dubbing_home') },
+          { id: 'videos', label: '视频列表', asset: $r('app.media.home_all_services_small_video') },
+          { id: 'works', label: '作品列表', asset: $r('app.media.home_all_services_exhibition_hall_shooting') },
+        ],
+      },
+      {
+        title: '其他服务',
+        items: [
+          { id: 'analytics', label: '数据分析', asset: $r('app.media.home_all_services_smart_sale') },
+          { id: 'membership', label: '会员续费', asset: $r('app.media.home_all_services_marketing') },
+          { id: 'help', label: '帮助中心', asset: $r('app.media.home_all_services_after_sales_area') },
+          { id: 'feedback', label: '意见反馈', asset: $r('app.media.home_all_services_calculator') },
+          { id: 'drawer', label: '侧滑导航', asset: $r('app.media.home_all_services_service_management') },
+          { id: 'music', label: '音频列表', asset: $r('app.media.home_all_services_used_car') },
+        ],
+      },
     ];
   }
 
@@ -253,10 +292,12 @@ export struct NativeAllServicesPane {
             this.ServiceGrid(this.visibleFavorites().length > 0 ? this.visibleFavorites() : this.favorites().slice(0, 3), true)
           }.width('100%').padding(12).backgroundColor(DesignTokens.canvas).borderRadius(12)
 
-          Text('车商工具').fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
-          Column() {
-            this.ServiceGrid(this.tools(), false)
-          }.width('100%').padding(12).backgroundColor(DesignTokens.canvas).borderRadius(12)
+          ForEach(this.catalogSections(), (section: { title: string; items: ServiceItem[] }) => {
+            Text(section.title).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).width('100%')
+            Column() {
+              this.ServiceGrid(section.items, false)
+            }.width('100%').padding(12).backgroundColor(DesignTokens.canvas).borderRadius(12)
+          })
         }.padding(16).width('100%')
       }.layoutWeight(1).width('100%')
     }

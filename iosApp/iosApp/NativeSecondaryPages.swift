@@ -4193,11 +4193,20 @@ enum HomeNativeMock {
             .init(id: "diet", label: "地中海饮食", asset: "home_all_services_small_video"),
             .init(id: "course", label: "课程详情", asset: "home_all_services_business_poster"),
         ]),
-        .init(title: "车商工具", items: [
-            .init(id: "calc", label: "购车计算器", asset: "home_all_services_calculator"),
-            .init(id: "used", label: "二手车", asset: "home_all_services_used_car"),
-            .init(id: "after", label: "售后专区", asset: "home_all_services_after_sales_area"),
-            .init(id: "all", label: "全部功能", asset: "home_all_services_all_functions"),
+        // Flutter AllServicesData catalog (教学服务 / 其他服务).
+        .init(title: "教学服务", items: [
+            .init(id: "classroom", label: "班级教学", asset: "home_all_services_intelligence_task"),
+            .init(id: "dubbing", label: "配音首页", asset: "home_all_services_dubbing_home"),
+            .init(id: "videos", label: "视频列表", asset: "home_all_services_small_video"),
+            .init(id: "works", label: "作品列表", asset: "home_all_services_exhibition_hall_shooting"),
+        ]),
+        .init(title: "其他服务", items: [
+            .init(id: "analytics", label: "数据分析", asset: "home_all_services_smart_sale"),
+            .init(id: "membership", label: "会员续费", asset: "home_all_services_marketing"),
+            .init(id: "help", label: "帮助中心", asset: "home_all_services_after_sales_area"),
+            .init(id: "feedback", label: "意见反馈", asset: "home_all_services_calculator"),
+            .init(id: "drawer", label: "侧滑导航", asset: "home_all_services_service_management"),
+            .init(id: "music", label: "音频列表", asset: "home_all_services_used_car"),
         ]),
     ]
 

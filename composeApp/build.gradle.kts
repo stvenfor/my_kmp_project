@@ -110,6 +110,16 @@ kotlin {
     }
 
     sourceSets {
+        // Vico charts: Android + iOS only (CPF 无 Vico/KoalaPlot ohos 产物)
+        val chartsVicoMain = sourceSets.create("chartsVicoMain").apply {
+            dependsOn(commonMain.get())
+            dependencies {
+                // Vico 2.3 transitive Compose is stock 1.9.2; project CMP (compose.*) wins via commonMain.
+                implementation(libs.vico.compose)
+            }
+        }
+        sourceSets.getByName("androidMain").dependsOn(chartsVicoMain)
+
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
@@ -142,6 +152,7 @@ kotlin {
         if (!androidOnly) {
             val iosMain = sourceSets.create("iosMain").apply {
                 dependsOn(commonMain.get())
+                dependsOn(chartsVicoMain)
             }
             iosMain.dependencies {
                 implementation(libs.coil.compose)
@@ -173,7 +184,6 @@ kotlin {
         }
     }
 }
-
 
 android {
     namespace = "com.example.my_kmp_project"                     

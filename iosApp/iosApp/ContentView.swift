@@ -426,7 +426,7 @@ private struct SplashView: View {
     var body: some View {
         ZStack {
             DesignTokens.canvasSoft2.ignoresSafeArea()
-            Text("i车商", font: .largeTitle.weight(.semibold), color: DesignTokens.ink)
+            Text("正在进入应用...", font: .title3, color: DesignTokens.ink)
         }
     }
 }

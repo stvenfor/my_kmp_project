@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,11 +15,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,15 +29,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 private val GainRed = Color(0xFFFF3B30)
 private val GainGreen = Color(0xFF34C759)
+private val GaugeGreen = Color(0xFF34C759)
+private val GaugeYellow = Color(0xFFF5A623)
+private val GaugeOrange = Color(0xFFFF9500)
+private val GaugeRed = Color(0xFFFF3B30)
 
 @Composable
 internal fun StrategyScreen(onBack: () -> Unit) {
@@ -50,14 +64,12 @@ internal fun StrategyScreen(onBack: () -> Unit) {
             .background(DemoColors.PageBg),
     ) {
         FlutterFeatureTopBar(title = "策略", onBack = onBack)
-        // Tuned vs Flutter SoT vertical band (gate near-miss ~2.3).
-        Spacer(modifier = Modifier.height(32.dp))
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
-                .padding(top = 4.dp, bottom = 24.dp),
+                .padding(top = 12.dp, bottom = 24.dp),
         ) {
             StrategySubTabs(
                 tabs = HomeMockData.strategyTabs,
@@ -70,7 +82,7 @@ internal fun StrategyScreen(onBack: () -> Unit) {
                 onPeriodSelected = { periodIndex = it },
             )
             Spacer(modifier = Modifier.height(16.dp))
-            StrategyPlanCard(tabLabel = HomeMockData.strategyTabs.getOrElse(selectedTab) { "推荐" })
+            StrategyPlanCard()
         }
     }
 }
@@ -96,15 +108,15 @@ private fun StrategySubTabs(
                 Text(
                     text = label,
                     color = if (active) DemoColors.TextPrimary else DemoColors.TextSecondary,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
                     fontSize = 16.sp,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .width(if (active) 24.dp else 0.dp)
-                        .height(2.dp)
-                        .clip(RoundedCornerShape(1.dp))
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(1.5.dp))
                         .background(DemoColors.Accent),
                 )
             }
@@ -139,14 +151,9 @@ private fun AssetGridCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 row.forEach { cell ->
-                    AssetCell(
-                        cell = cell,
-                        modifier = Modifier.weight(1f),
-                    )
+                    AssetCell(cell = cell, modifier = Modifier.weight(1f))
                 }
-                repeat(3 - row.size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
+                repeat(3 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -162,7 +169,7 @@ private fun AssetGridCard(
                 Text(
                     text = label,
                     color = if (active) DemoColors.Accent else DemoColors.TextSecondary,
-                    fontWeight = FontWeight.Normal,
+                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
                     fontSize = 13.sp,
                     modifier = Modifier.clickable { onPeriodSelected(index) },
                 )
@@ -199,7 +206,7 @@ private fun AssetCell(
 }
 
 @Composable
-private fun StrategyPlanCard(tabLabel: String) {
+private fun StrategyPlanCard() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -213,11 +220,10 @@ private fun StrategyPlanCard(tabLabel: String) {
                 Text(
                     text = "黄金恐贪定投 · 第一期",
                     color = DemoColors.TextPrimary,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                // Flutter plan badge is strategy type (逆向), not the selected sub-tab.
                 Text(
                     text = "逆向",
                     color = DemoColors.Accent,
@@ -237,8 +243,11 @@ private fun StrategyPlanCard(tabLabel: String) {
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Row(verticalAlignment = Alignment.Bottom) {
-            Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "-11.35%",
                     color = GainGreen,
@@ -247,38 +256,17 @@ private fun StrategyPlanCard(tabLabel: String) {
                 )
                 Text(text = "本期收益率", color = DemoColors.TextSecondary, fontSize = 13.sp)
             }
-            Spacer(modifier = Modifier.weight(1f))
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "恐贪指数", color = DemoColors.TextSecondary, fontSize = 11.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "63 中立",
-                    color = DemoColors.TextPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                )
-            }
+            // Flutter Fear & Greed semicircle gauge (was deferred → text-only near-miss).
+            FearGreedGauge(
+                score = 63,
+                label = "中立",
+                size = 96.dp,
+            )
         }
         Spacer(modifier = Modifier.height(20.dp))
         Text(text = "定投进度", color = DemoColors.TextSecondary, fontSize = 13.sp)
         Spacer(modifier = Modifier.height(8.dp))
-        Box(contentAlignment = Alignment.Center) {
-            LinearProgressIndicator(
-                progress = { 36f / 50f },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(24.dp)
-                    .clip(RoundedCornerShape(6.dp)),
-                color = DemoColors.Accent,
-                trackColor = DemoColors.PageBg,
-            )
-            Text(
-                text = "36 / 50",
-                color = DemoColors.TextPrimary,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp,
-            )
-        }
+        InvestProgressBar(current = 36, total = 50)
         Spacer(modifier = Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -305,5 +293,118 @@ private fun StrategyPlanCard(tabLabel: String) {
             fontSize = 13.sp,
             lineHeight = 20.sp,
         )
+    }
+}
+
+/** Flutter-style filled progress with centered caption. */
+@Composable
+private fun InvestProgressBar(current: Int, total: Int) {
+    val frac = (current.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(24.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(DemoColors.PageBg),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(frac)
+                .height(24.dp)
+                .background(DemoColors.Accent),
+        )
+        Text(
+            text = "$current / $total",
+            color = DemoColors.TextPrimary,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 12.sp,
+            modifier = Modifier.align(Alignment.Center),
+        )
+    }
+}
+
+/**
+ * Flutter 恐贪指数 semicircle: green→yellow→red track + needle + center score.
+ * Canvas-only (Vico 2.x has no gauge; CPF 无 chart fork).
+ */
+@Composable
+private fun FearGreedGauge(
+    score: Int,
+    label: String,
+    size: Dp,
+) {
+    val clamped = score.coerceIn(0, 100)
+    val frac = clamped / 100f
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = "恐贪指数", color = DemoColors.TextSecondary, fontSize = 11.sp)
+        Spacer(modifier = Modifier.height(4.dp))
+        Box(
+            modifier = Modifier.size(size),
+            contentAlignment = Alignment.Center,
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val stroke = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
+                val pad = stroke.width / 2f + 2.dp.toPx()
+                val diam = (this.size.minDimension - pad * 2f).coerceAtLeast(1f)
+                val topLeft = Offset(
+                    (this.size.width - diam) / 2f,
+                    (this.size.height - diam) / 2f + diam * 0.12f,
+                )
+                val arcSize = Size(diam, diam)
+                // Upper semicircle: 180° (left) → 0° (right) via top (CCW = negative sweep).
+                val colors = listOf(GaugeGreen, GaugeYellow, GaugeOrange, GaugeRed)
+                val segments = colors.size
+                val sweepPer = -180f / segments
+                colors.forEachIndexed { i, c ->
+                    drawArc(
+                        color = c,
+                        startAngle = 180f + sweepPer * i,
+                        sweepAngle = sweepPer,
+                        useCenter = false,
+                        topLeft = topLeft,
+                        size = arcSize,
+                        style = stroke,
+                    )
+                }
+                // Needle tip on arc.
+                val needleAngleDeg = 180f + (-180f * frac)
+                val rad = needleAngleDeg * PI / 180.0
+                val cx = topLeft.x + diam / 2f
+                val cy = topLeft.y + diam / 2f
+                val r = diam / 2f
+                val tip = Offset(
+                    cx + (r * cos(rad)).toFloat(),
+                    cy + (r * sin(rad)).toFloat(),
+                )
+                drawLine(
+                    color = DemoColors.TextPrimary,
+                    start = Offset(cx, cy),
+                    end = tip,
+                    strokeWidth = 2.5.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
+                drawCircle(color = DemoColors.TextPrimary, radius = 3.5.dp.toPx(), center = Offset(cx, cy))
+                drawCircle(color = Color.White, radius = 1.8.dp.toPx(), center = Offset(cx, cy))
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(top = size * 0.28f),
+            ) {
+                Text(
+                    text = "$clamped",
+                    color = DemoColors.TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    lineHeight = 18.sp,
+                )
+                Text(
+                    text = label,
+                    color = DemoColors.TextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+        }
     }
 }

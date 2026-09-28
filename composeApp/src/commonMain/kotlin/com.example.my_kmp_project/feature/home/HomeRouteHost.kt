@@ -1763,12 +1763,21 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
     }
 }
 
+private fun analyticsUvLabel(uv: Int): String =
+    if (uv >= 1000) {
+        val k = uv / 1000.0
+        val s = ((k * 10).toInt() / 10.0).toString()
+        "UV ${s}k"
+    } else {
+        "UV $uv"
+    }
+
 @Composable
 private fun AnalyticsListScreen(
     onBack: () -> Unit,
     onItem: (AnalyticsRecordRow) -> Unit,
 ) {
-    // Compact cards + Flutter seed titles/summary. Full charts raise gate mse (~3.3).
+    // Flutter AnalyticsListPage: summary + ring/bars tiles (Canvas ≈ wys_chart; CPF 无 Vico/KoalaPlot).
     val primary = Color(0xFF0070F3)
     val ink = Color(0xFF171717)
     val accent = Color(0xFFF5A623)
@@ -1818,44 +1827,94 @@ private fun AnalyticsListScreen(
                     row.featured -> accent
                     else -> Color.Transparent
                 }
-                val rate = if (row.clicks > 0) {
-                    kotlin.math.round(row.converts * 1000f / row.clicks) / 10.0
-                } else null
+                val rateFrac = if (row.clicks > 0) {
+                    (row.converts.toFloat() / row.clicks.toFloat()).coerceIn(0f, 1f)
+                } else {
+                    null
+                }
+                val (statusFg, statusBg) = when (row.status) {
+                    "active" -> primary to primary.copy(alpha = 0.10f)
+                    "paused" -> accent to accent.copy(alpha = 0.14f)
+                    else -> mute to Color(0xFFF0F0F0)
+                }
                 Row(
                     Modifier
                         .padding(bottom = 8.dp)
                         .fillMaxWidth()
                         .height(IntrinsicSize.Min)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(12.dp))
                         .background(Color.White)
+                        .border(1.dp, border, RoundedCornerShape(12.dp))
                         .clickable { onItem(row) },
                 ) {
                     Box(Modifier.width(4.dp).fillMaxHeight().background(cue))
                     Column(Modifier.padding(14.dp).weight(1f)) {
-                        Text(
-                            row.title,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
-                            color = ink,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                row.title,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp,
+                                color = ink,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                row.status,
+                                color = statusFg,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(statusBg)
+                                    .padding(horizontal = 8.dp, vertical = 3.dp),
+                            )
+                        }
                         Spacer(Modifier.height(4.dp))
                         Text(row.subtitle, color = mute, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Spacer(Modifier.height(10.dp))
-                        Row {
-                            Text("PV ${row.pv}", fontSize = 12.sp, color = mute)
-                            Spacer(Modifier.width(12.dp))
-                            Text("点击 ${row.clicks}", fontSize = 12.sp, color = mute)
-                            Spacer(Modifier.width(12.dp))
-                            Text("转化 ${row.converts}", fontSize = 12.sp, color = mute)
-                            Spacer(Modifier.weight(1f))
-                            Text(
-                                if (rate == null) "—" else "${rate}%",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = primary,
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            Modifier.fillMaxWidth().height(72.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            AnalyticsConversionRing(rate = rateFrac, size = 64.dp)
+                            Spacer(Modifier.width(16.dp))
+                            AnalyticsMiniBars(
+                                pv = row.pv.toFloat(),
+                                uv = row.uv.toFloat(),
+                                clicks = row.clicks.toFloat(),
+                                converts = row.converts.toFloat(),
+                                modifier = Modifier.weight(1f).height(64.dp),
                             )
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                analyticsUvLabel(row.uv),
+                                color = primary,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(primary.copy(alpha = 0.08f))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "ROI ${row.roi}",
+                                color = accent,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(accent.copy(alpha = 0.12f))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Text(row.code, color = mute, fontSize = 11.sp)
+                            Spacer(Modifier.width(4.dp))
+                            Text("›", color = mute, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
