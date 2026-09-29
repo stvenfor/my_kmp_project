@@ -4,10 +4,8 @@ import com.example.my_kmp_project.core.network.DemoApiHosts
 import com.example.my_kmp_project.core.network.NetworkCodes
 import com.example.my_kmp_project.core.network.NetworkConfig
 import com.example.my_kmp_project.getPlatform
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * Flutter `UserAuthApi` path / body contracts (my_go_study).
@@ -17,7 +15,88 @@ internal object AuthApiPaths {
     const val REGISTER = "/api/v1/user/register"
     const val SEND_PHONE_OTP = "/api/v1/user/phone/otp/send"
     const val VERIFY_PHONE_OTP = "/api/v1/user/phone/otp/verify"
+    const val HUAWEI_LOGIN = "/api/v1/user/huawei/login"
     const val LOGOUT = "/api/v1/user/logout"
+}
+
+@Serializable
+internal data class AuthPasswordLoginRequest(
+    val username: String,
+    val password: String,
+    @SerialName("device_id") val deviceId: String,
+    val platform: String,
+)
+
+@Serializable
+internal data class AuthPhoneOtpSendRequest(
+    val phone: String,
+)
+
+@Serializable
+internal data class AuthPhoneOtpVerifyRequest(
+    val phone: String,
+    val otp: String,
+    @SerialName("device_id") val deviceId: String,
+    val platform: String,
+)
+
+@Serializable
+internal data class AuthRegisterRequest(
+    val username: String,
+    val password: String,
+    val email: String,
+    @SerialName("device_id") val deviceId: String,
+    val platform: String,
+)
+
+@Serializable
+internal data class AuthHuaweiLoginRequest(
+    val code: String,
+    @SerialName("device_id") val deviceId: String,
+    val platform: String = "android",
+)
+
+@Serializable
+internal data class AuthUserDto(
+    val id: String = "",
+    @SerialName("user_id") val userIdAlt: String = "",
+    val username: String = "",
+    @SerialName("user_name") val userNameAlt: String = "",
+    val email: String = "",
+    val phone: String = "",
+) {
+    val resolvedId: String get() = id.ifBlank { userIdAlt }
+    val resolvedUsername: String get() = username.ifBlank { userNameAlt }
+}
+
+@Serializable
+internal data class AuthLoginData(
+    val token: String = "",
+    @SerialName("refresh_token") val refreshToken: String = "",
+    @SerialName("session_id") val sessionId: String = "",
+    val user: AuthUserDto? = null,
+)
+
+@Serializable
+internal data class AuthRegisterData(
+    val token: String? = null,
+    @SerialName("refresh_token") val refreshToken: String? = null,
+    @SerialName("session_id") val sessionId: String? = null,
+    val user: AuthUserDto? = null,
+    val id: String = "",
+    val username: String = "",
+    val email: String = "",
+) {
+    val hasSession: Boolean get() = !token.isNullOrBlank()
+
+    fun resolvedUserId(): String =
+        user?.resolvedId?.ifBlank { null } ?: id
+
+    fun resolvedUsername(): String =
+        user?.resolvedUsername?.ifBlank { null } ?: username
+
+    fun resolvedEmail(): String =
+        user?.email?.ifBlank { null } ?: email
 }
 
 internal data class AuthLoginPayload(
@@ -27,6 +106,7 @@ internal data class AuthLoginPayload(
     val userId: String = "",
     val username: String = "",
     val email: String = "",
+    val phone: String = "",
 )
 
 internal data class AuthRegisterPayload(
@@ -39,6 +119,29 @@ internal data class AuthRegisterPayload(
 ) {
     val hasSession: Boolean get() = !token.isNullOrBlank()
 }
+
+internal fun AuthLoginData.toPayload(): AuthLoginPayload {
+    val u = user
+    return AuthLoginPayload(
+        token = token,
+        refreshToken = refreshToken,
+        sessionId = sessionId,
+        userId = u?.resolvedId.orEmpty(),
+        username = u?.resolvedUsername.orEmpty(),
+        email = u?.email.orEmpty(),
+        phone = u?.phone.orEmpty(),
+    )
+}
+
+internal fun AuthRegisterData.toPayload(): AuthRegisterPayload =
+    AuthRegisterPayload(
+        token = token,
+        refreshToken = refreshToken,
+        sessionId = sessionId,
+        userId = resolvedUserId(),
+        username = resolvedUsername(),
+        email = resolvedEmail(),
+    )
 
 internal object AuthPhoneUtils {
     private val chinaMobile = Regex("^1[3-9]\\d{9}$")
@@ -162,36 +265,3 @@ internal fun isConnectionFailure(text: String): Boolean {
     )
     return keywords.any { text.contains(it, ignoreCase = true) }
 }
-
-internal fun parseAuthLoginPayload(el: JsonElement?): AuthLoginPayload? {
-    val obj = el as? JsonObject ?: return null
-    val user = obj["user"] as? JsonObject
-    return AuthLoginPayload(
-        token = obj.string("token"),
-        refreshToken = obj.string("refresh_token"),
-        sessionId = obj.string("session_id"),
-        userId = user?.string("id").orEmpty(),
-        username = user?.string("username").orEmpty(),
-        email = user?.string("email").orEmpty(),
-    )
-}
-
-internal fun parseAuthRegisterPayload(el: JsonElement?): AuthRegisterPayload? {
-    if (el == null) return null
-    val obj = el as? JsonObject ?: return null
-    val userObj = (obj["user"] as? JsonObject) ?: obj
-    val token = obj.string("token").ifBlank { null }
-    val refresh = obj.string("refresh_token").ifBlank { null }
-    val session = obj.string("session_id").ifBlank { null }
-    return AuthRegisterPayload(
-        token = token,
-        refreshToken = refresh,
-        sessionId = session,
-        userId = userObj.string("id"),
-        username = userObj.string("username"),
-        email = userObj.string("email"),
-    )
-}
-
-private fun JsonObject.string(key: String): String =
-    (this[key] as? JsonPrimitive)?.contentOrNull.orEmpty()

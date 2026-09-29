@@ -34,11 +34,17 @@ ktor = "3.3.3-0.3.0"
 
 # Key-value session (Android/iOS; no OHOS variant — keep off ohosMain)
 multiplatformSettings = "1.3.0"
-# Coil (Android/iOS only — no ohosArm64; keep off commonMain/ohosMain)
-coil = "3.3.0"
+# CPF OH line (ohosArm64). Plain 3.3.0 has no ohos variant — see adopt-cpf-coil-image.
+# Keep off commonMain/ohosX64 (no ohosX64 klib); wire via imageCoilMain.
+coil = "3.3.0-0.3.0"
+# Stock Central only — CPF coil-network-okhttp:3.3.0-0.3.0 is metadata-only (no androidJvm).
+coil-okhttp = "3.3.0"
 # Vico charts (Android/iOS CMP multiplatform; CPF 无 ohos 适配 — keep off commonMain/ohosMain)
 # 2.3.0 对齐 Compose 1.9.2；3.x 会拉 Compose 1.10+/1.12 与本仓 AGP 8.6/CMP 冲突
 vico = "2.3.0"
+# CPF OH line (ohosArm64). Plain 0.8.4 has no ohos variant — see adopt-cpf-uuid.
+# Keep off commonMain/ohosX64 (no ohosX64 klib); wire via uuidCpfMain.
+uuid = "0.8.4-1.0.0"
 
 # Android camera scan (WebView uses framework WebView — no extra dep)
 camerax = "1.4.2"
@@ -88,14 +94,17 @@ ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 # ----- multiplatform-settings (Android/iOS via accountSettingsMain; not on OHOS) -----
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 
-# ----- Coil (Android/iOS only; not on OHOS) -----
+# ----- Coil (CPF 3.3.0-0.3.0 compose/ktor3 for android/ios/ohosArm64; okhttp stays stock 3.3.0) -----
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
-coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil-okhttp" }
 coil-network-ktor3 = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 # ----- Vico (Android/iOS via chartsVicoMain; not on OHOS) -----
 # Artifact is still named multiplatform in 2.x; 3.x renamed it to compose.
 vico-compose = { module = "com.patrykandpatrick.vico:multiplatform", version.ref = "vico" }
+
+# ----- UUID (CPF 0.8.4-1.0.0 for android/ios/ohosArm64 via uuidCpfMain; no ohosX64) -----
+uuid = { module = "com.benasher44:uuid", version.ref = "uuid" }
 
 # ----- Android CameraX + ML Kit barcode (androidMain only) -----
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }

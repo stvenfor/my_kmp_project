@@ -37,9 +37,34 @@ internal data class CommunityFeedItem(
     val previewComments: List<CommunityFeedComment> = emptyList(),
 )
 
+internal data class CommunityUserHit(
+    val userId: String,
+    val nickname: String,
+    val avatar: String,
+    val isFollowed: Boolean = false,
+)
+
+internal data class CommunityTopicHit(
+    val name: String,
+    val heat: Int,
+)
+
+internal data class CommunitySearchAllResult(
+    val q: String,
+    val posts: List<CommunityFeedItem>,
+    val topics: List<CommunityTopicHit>,
+    val users: List<CommunityUserHit>,
+)
+
+/** Process-wide engine so feed / search / comment / publish share one seed. */
+internal object CommunityMockStore {
+    val engine: MockCommunityEngine by lazy { MockCommunityEngine() }
+}
+
 /**
  * Flutter `MockPostRepository` port — seed (Random 42 / 35 posts), tabs
- * (`latest`/`hot`/`following`), toggleLike, createPost, follow set.
+ * (`latest`/`hot`/`following`), toggleLike, createPost, follow set,
+ * searchPosts / searchUsers / searchTopics, addComment.
  */
 internal class MockCommunityEngine {
     private val posts = mutableListOf<CommunityFeedItem>()
@@ -171,10 +196,111 @@ internal class MockCommunityEngine {
         return commentsByPost[postId].orEmpty().toList()
     }
 
+    /** Flutter MockPostRepository.addComment */
+    fun addComment(
+        postId: String,
+        content: String,
+        replyToNickname: String? = null,
+    ): CommunityFeedComment? {
+        ensureSeed()
+        val body = content.trim()
+        if (body.isEmpty()) return null
+        val index = posts.indexOfFirst { it.id == postId }
+        if (index < 0) return null
+        commentSeq++
+        val comment = CommunityFeedComment(
+            id = "c_new_$commentSeq",
+            postId = postId,
+            nickname = "我",
+            avatar = avatarUrl(12),
+            content = body,
+            createAtMs = nowMs(),
+            replyToNickname = replyToNickname,
+        )
+        val list = commentsByPost.getOrPut(postId) { mutableListOf() }
+        list.add(0, comment)
+        val post = posts[index]
+        val previews = (listOf(comment) + post.previewComments).take(2)
+        posts[index] = post.copy(
+            commentCount = post.commentCount + 1,
+            previewComments = previews,
+        )
+        notifyListeners()
+        return comment
+    }
+
+    fun searchPosts(q: String, page: Int = 0, pageSize: Int = 10): List<CommunityFeedItem> {
+        ensureSeed()
+        val query = q.trim()
+        val filtered = if (query.isEmpty()) {
+            posts.toList()
+        } else {
+            posts.filter { it.content.contains(query, ignoreCase = true) }
+        }
+        return pageSlice(filtered, page, pageSize)
+    }
+
+    fun searchUsers(q: String, page: Int = 0, pageSize: Int = 10): List<CommunityUserHit> {
+        ensureSeed()
+        val query = q.trim()
+        val users = posts
+            .map {
+                CommunityUserHit(
+                    userId = it.userId,
+                    nickname = it.nickname,
+                    avatar = it.avatar,
+                    isFollowed = followedUserIds.contains(it.userId),
+                )
+            }
+            .distinctBy { it.userId }
+        val filtered = if (query.isEmpty()) {
+            users
+        } else {
+            users.filter { it.nickname.contains(query, ignoreCase = true) }
+        }
+        return pageSlice(filtered, page, pageSize)
+    }
+
+    fun searchTopics(q: String, page: Int = 0, pageSize: Int = 10): List<CommunityTopicHit> {
+        val query = q.trim()
+        val filtered = if (query.isEmpty()) {
+            mockTopics
+        } else {
+            mockTopics.filter { it.name.contains(query, ignoreCase = true) }
+        }
+        return pageSlice(filtered, page, pageSize)
+    }
+
+    fun searchAll(q: String, pageSize: Int = 5): CommunitySearchAllResult =
+        CommunitySearchAllResult(
+            q = q.trim(),
+            posts = searchPosts(q, page = 0, pageSize = pageSize),
+            topics = searchTopics(q, page = 0, pageSize = pageSize),
+            users = searchUsers(q, page = 0, pageSize = pageSize),
+        )
+
+    fun defaultPostId(): String {
+        ensureSeed()
+        return posts.firstOrNull()?.id ?: "post_0"
+    }
+
     fun metaLabel(post: CommunityFeedItem): String =
         "${formatPublishTime(post.publishAtMs)} · ${post.source}"
 
     companion object {
+        private val mockTopics = listOf(
+            CommunityTopicHit("Flutter开发", 1280),
+            CommunityTopicHit("户外", 860),
+            CommunityTopicHit("门店探店", 640),
+            CommunityTopicHit("学习打卡", 420),
+        )
+
+        private fun <T> pageSlice(source: List<T>, page: Int, pageSize: Int): List<T> {
+            val start = page * pageSize
+            if (start >= source.size) return emptyList()
+            return source.subList(start, min(start + pageSize, source.size))
+        }
+
         private val sampleContents = listOf(
             "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev",
             "周末 hiking，天气太好了！#户外",

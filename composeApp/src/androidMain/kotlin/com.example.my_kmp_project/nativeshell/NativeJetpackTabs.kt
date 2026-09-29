@@ -52,10 +52,10 @@ import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.feature.chat.ChatDetailDeepLinkArgs
 import com.example.my_kmp_project.feature.chat.ImConversation
 import com.example.my_kmp_project.feature.chat.ImEngine
-import com.example.my_kmp_project.feature.chat.MockImEngine
+import com.example.my_kmp_project.feature.chat.ImEngineStore
+import com.example.my_kmp_project.feature.community.CommunityMockStore
 import com.example.my_kmp_project.feature.community.CommunityPublishBus
 import com.example.my_kmp_project.feature.community.CommunityRoutes
-import com.example.my_kmp_project.feature.community.MockCommunityEngine
 import com.example.my_kmp_project.feature.content.ContentRoutes
 import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineHomeContent
@@ -88,7 +88,7 @@ internal fun JetpackChatRoot(
     onMissingDetailConsumed: () -> Unit = {},
     onDetailVisibilityChanged: (Boolean) -> Unit = {},
 ) {
-    val engine = remember { MockImEngine(seedDemo = true) }
+    val engine = remember { ImEngineStore.engine }
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf<String?>(null) }
@@ -839,7 +839,7 @@ internal fun JetpackCommunityRoot(
     onPreviewImages: (List<String>, Int) -> Unit = { _, _ -> },
     onPlayVideo: (String) -> Unit = {},
 ) {
-    val engine = remember { MockCommunityEngine() }
+    val engine = remember { CommunityMockStore.engine }
     var filter by remember { mutableStateOf("最新") }
     var revision by remember { mutableIntStateOf(0) }
     val published = remember { CommunityPublishBus.lastPublishedBody }
@@ -982,7 +982,7 @@ internal fun JetpackCommunityRoot(
                         onPreviewImages = onPreviewImages,
                         onPlayVideo = { onPlayVideo(post.videoUrl ?: it) },
                         onOpenConvention = { onOpen("社区公约") },
-                        onOpenComment = { onOpen("评论") },
+                        onOpenComment = { onOpen("/community/comment?postId=${post.id}") },
                     )
                 }
             }
@@ -1275,17 +1275,14 @@ internal fun JetpackMineRoot(
         onLogoutClick = onLogout,
         onOpenSettings = onOpenSettings,
         onOpenPersonalized = onOpenPersonalized,
-        snackbar = { label ->
-            if (label == "切换门店" || label == "切换店铺" || label == "请先登录") {
-                showPlatformToast(label)
+        onNavigate = { raw ->
+            if (raw == "请先登录") {
+                showPlatformToast("请先登录")
             } else {
-                val routeable = MineRoutes.fromLabel(label) != null ||
-                    HomeRoutes.fromLabel(label) != null ||
-                    ContentRoutes.fromLabel(label) != null ||
-                    CommunityRoutes.fromLabel(label) != null
-                if (routeable) onDeferred(label)
-                else showPlatformToast(label)
+                // Paths + Chinese labels → NativeAndroidMain.openDeferred / ProductRouteDispatch.
+                onDeferred(raw)
             }
         },
+        snackbar = { label -> showPlatformToast(label) },
     )
 }

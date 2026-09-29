@@ -72,11 +72,9 @@ internal object ClassroomRoutes {
 private data class HomeworkRow(val id: String, val title: String, val type: String, val due: String)
 
 private object ClassroomHwMock {
-    val rows = listOf(
-        HomeworkRow("h1", "语法练习 3", "书面", "今日 23:59"),
-        HomeworkRow("h2", "配音作业 · 致橡树", "配音", "明日 18:00"),
-        HomeworkRow("h3", "听力精听", "听力", "本周六"),
-    )
+    val rows = ClassroomLogicModels.homeworkRows.map {
+        HomeworkRow(it.id, it.title, it.type, it.due)
+    }
 }
 
 @Composable
@@ -111,7 +109,14 @@ internal fun ClassroomRouteHost(
             Res.drawable.classroom_gift_claim_body,
             "领取礼品卡",
             onBack,
-        ) { showPlatformToast("领取礼品卡（mock）") }
+        ) {
+            val card = ClassroomLogicModels.giftCard
+            if (ClassroomGiftClaimStore.claim()) {
+                showPlatformToast("领取成功：${card.duration}（${card.cardType}）")
+            } else {
+                showPlatformToast("已领取，可在背包中查看")
+            }
+        }
         ClassroomRoutes.VideoDetail -> ClassroomSoTPage(
             Res.drawable.classroom_video_detail_body,
             "课堂视频",

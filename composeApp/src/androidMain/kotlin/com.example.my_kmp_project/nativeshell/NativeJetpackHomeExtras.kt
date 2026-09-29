@@ -30,68 +30,19 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeMockData
 import com.example.my_kmp_project.feature.home.HomeServiceAssets
+import com.example.my_kmp_project.feature.home.HomeTodoCardStrip
 
 /**
- * Flutter `HomeTodoCardStrip` — no section title; 2-col white cards.
- * When todo API empty, parent hides this composable.
+ * Flutter `HomeTodoCardStrip` — shared size-aware Large/Medium/Small + pager.
+ * When todo API empty, strip hides itself.
  */
 @Composable
 internal fun JetpackTodoStrip(onDeferred: (String) -> Unit) {
-    val cards = HomeMockData.quickActions
-    if (cards.isEmpty()) return
-    Column(
-        Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-            .fillMaxWidth(),
-    ) {
-        cards.chunked(2).forEach { row ->
-            Row(
-                Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                row.forEach { action ->
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(DemoColors.Background)
-                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
-                            .clickable { onDeferred(action.title) }
-                            .padding(12.dp),
-                    ) {
-                        Text(
-                            action.title,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            color = DemoColors.TextPrimary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            action.subtitle,
-                            fontSize = 12.sp,
-                            color = DemoColors.TextSecondary,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            action.actionLabel,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = DemoColors.Accent,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(DemoColors.Accent.copy(alpha = 0.1f))
-                                .padding(horizontal = 10.dp, vertical = 4.dp),
-                        )
-                    }
-                }
-                if (row.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-    }
+    HomeTodoCardStrip(
+        onOpen = { card ->
+            onDeferred(card.actionRoute.ifBlank { card.title })
+        },
+    )
 }
 
 /** Flutter `HomeServiceGrid` — title 服务推荐 + 全部 › */

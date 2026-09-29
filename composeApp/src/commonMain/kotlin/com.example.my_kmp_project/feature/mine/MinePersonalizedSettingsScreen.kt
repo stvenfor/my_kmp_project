@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.loadString
 import com.example.my_kmp_project.core.platform.saveString
@@ -68,9 +67,9 @@ internal fun MinePersonalizedSettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DemoColors.PageBg),
+            .background(MineTheme.Background),
     ) {
-        MineTopBar(title = "个性化设置", onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = "个性化设置", onBack = onBack, containerColor = MineTheme.Background)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -110,14 +109,14 @@ internal fun MinePersonalizedSettingsScreen(
                         ) {
                             Text(
                                 text = option,
-                                color = DemoColors.TextPrimary,
-                                fontSize = 15.sp,
+                                color = MineTheme.LabelPrimary,
+                                fontSize = MineTheme.BodySize,
                                 modifier = Modifier.weight(1f),
                             )
                             if (option == eyeProtection) {
                                 Text(
                                     text = "✓",
-                                    color = DemoColors.Accent,
+                                    color = MineTheme.Accent,
                                     fontWeight = FontWeight.Bold,
                                 )
                             }

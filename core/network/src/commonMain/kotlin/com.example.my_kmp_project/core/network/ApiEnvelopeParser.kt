@@ -1,28 +1,13 @@
 package com.example.my_kmp_project.core.network
 
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonPrimitive
-
-/**
- * Optional business-code callbacks.
- * Defaults are no-op so existing UI is not interrupted.
- */
-public data class NetworkBusinessHandlers(
-    val onInvalidAuth: ((NetworkError.Business) -> Unit)? = null,
-    val onInvalidMember: ((NetworkError.Business) -> Unit)? = null,
-    val onBusy: ((NetworkError.Business) -> Unit)? = null,
-    val onInvalidAccount: ((NetworkError.Business) -> Unit)? = null,
-)
+import kotlinx.serialization.json.decodeFromJsonElement
 
 /**
  * Shared `{ code, message, data }` envelope parser for Ktor and OHOS transport.
- * - business `code` may be int or string
- * - HTTP 401 without business code → [NetworkCodes.EXPIRE_TOKEN]
+ *
+ * Standard shape is decoded via [@Serializable] [ApiEnvelope]. Non-envelope bodies
+ * (e.g. OAuth HTTP 401) use [Envelope Fallback] only — not a second business parser.
  */
 public object ApiEnvelopeParser {
     fun <T> parse(
@@ -32,14 +17,15 @@ public object ApiEnvelopeParser {
         businessHandlers: NetworkBusinessHandlers? = null,
         httpStatus: Int? = null,
     ): ApiResponse<T> {
-        val element = runCatching { NetworkJson.parseToJsonElement(raw) }.getOrNull()
-        val obj = element as? JsonObject
+        val envelope = runCatching {
+            NetworkJson.decodeFromString(ApiEnvelope.serializer(), raw)
+        }.getOrNull()
 
-        // Gateway HTTP 401 with OAuth-style body: {"error":"...","error_description":"..."}
+        // Gateway HTTP 401 with OAuth-style body (no business code).
         if (httpStatus == NetworkCodes.EXPIRE_TOKEN) {
-            val businessCode = obj?.let { parseCode(it["code"]) }
+            val businessCode = envelope?.code
             if (businessCode == null) {
-                val message = obj?.let { oauthOrMessage(it) }
+                val message = envelope?.oauthOrMessage()
                     ?: "已退出登录，请重新登录"
                 val err = NetworkError.TokenExpired(message)
                 onTokenExpired?.onTokenExpired(err)
@@ -51,7 +37,7 @@ public object ApiEnvelopeParser {
             }
         }
 
-        if (obj == null) {
+        if (envelope == null) {
             return ApiResponse(
                 code = httpStatus?.takeIf { it >= 400 } ?: NetworkCodes.NOT_NETWORK,
                 message = "响应格式错误",
@@ -59,12 +45,12 @@ public object ApiEnvelopeParser {
             )
         }
 
-        val code = parseCode(obj["code"])
+        val code = envelope.code
             ?: httpStatus?.takeIf { it >= 400 }
             ?: NetworkCodes.NOT_NETWORK
-        val message = obj["message"]?.jsonPrimitive?.contentOrNull
-            ?: oauthOrMessage(obj)
-        val dataElement = obj["data"]?.takeUnless { it is JsonNull }
+        val message = envelope.message?.takeIf { it.isNotBlank() }
+            ?: envelope.oauthOrMessage()
+        val dataElement = envelope.dataOrNull()
 
         when (code) {
             NetworkCodes.EXPIRE_TOKEN -> {
@@ -97,15 +83,13 @@ public object ApiEnvelopeParser {
         )
     }
 
-    private fun parseCode(el: JsonElement?): Int? {
-        val p = el as? JsonPrimitive ?: return null
-        p.intOrNull?.let { return it }
-        return p.contentOrNull?.toIntOrNull()
-    }
+    private fun ApiEnvelope.oauthOrMessage(): String? =
+        errorDescription?.takeIf { it.isNotBlank() }
+            ?: error?.takeIf { it.isNotBlank() }
+}
 
-    private fun oauthOrMessage(obj: JsonObject): String? {
-        obj["error_description"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
-            ?.let { return it }
-        return obj["error"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
-    }
+/** Decode `data` with the shared [NetworkJson]; null/blank → null. */
+public inline fun <reified T> decodeEnvelopeData(el: JsonElement?): T? {
+    if (el == null) return null
+    return runCatching { NetworkJson.decodeFromJsonElement<T>(el) }.getOrNull()
 }

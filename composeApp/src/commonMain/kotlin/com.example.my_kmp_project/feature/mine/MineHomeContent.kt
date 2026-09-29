@@ -54,30 +54,33 @@ internal fun MineHomeContent(
     @Suppress("UNUSED_PARAMETER") onLogoutClick: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenPersonalized: () -> Unit,
+    onNavigate: (String) -> Unit = {},
     snackbar: (String) -> Unit,
 ) {
+    MinePrefsStore.version
     val base = MineCatalog.profile(loggedIn, displayName)
-    var selectedStoreId by remember { mutableStateOf(MineStoreCatalog.defaultStoreId) }
-    var storeName by remember(loggedIn) {
-        mutableStateOf(if (loggedIn) MineStoreCatalog.resolveName(selectedStoreId) else base.storeName)
-    }
+    val selectedStoreId = MinePrefsStore.selectedStoreId
     var showSwitchStore by remember { mutableStateOf(false) }
-    val profile = base.copy(storeName = if (loggedIn) storeName else base.storeName)
+    val storeName = if (loggedIn) MinePrefsStore.storeName() else base.storeName
+    val stats = if (loggedIn) MinePrefsStore.statsForStore(selectedStoreId) else MineCatalog.guestStats
+    val profile = base.copy(storeName = storeName, stats = stats)
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
     val navOpacity = with(density) {
         (scrollState.value / MineNavFadeExtent.toPx()).coerceIn(0f, 1f)
     }
-    val onOpenProfile = { snackbar("个人资料") }
-    val onCalendar = { snackbar("签到日历") }
+    val gate: (String) -> Unit = { route ->
+        if (!loggedIn) onNavigate("请先登录") else onNavigate(route)
+    }
+    val onOpenProfile = { gate(MineRoutes.Profile) }
+    val onCalendar = { gate(MineRoutes.CheckIn) }
 
     if (showSwitchStore && loggedIn) {
         SwitchStoreDialog(
             selectedId = selectedStoreId,
             onDismiss = { showSwitchStore = false },
             onPicked = { store ->
-                selectedStoreId = store.id
-                storeName = store.name
+                MinePrefsStore.switchStore(store.id)
                 showSwitchStore = false
                 showPlatformToast("已切换到 ${store.name}")
             },
@@ -127,39 +130,28 @@ internal fun MineHomeContent(
             Spacer(modifier = Modifier.height(8.dp))
             QuickServicesSection(
                 onTap = { service ->
-                    when (service.id) {
-                        "mall" -> snackbar("商城")
-                        "wallet" -> snackbar("我的钱包")
-                        "order" -> snackbar("我的订单")
-                        else -> snackbar(service.label)
-                    }
+                    val route = MineRoutes.fromLabel(service.label)
+                    if (route != null) gate(route) else snackbar(service.label)
                 },
             )
             FunctionSection(
+                entries = MinePrefsStore.orderedFunctions(),
                 onTap = { item ->
-                    // Labels must match MineRoutes.fromLabel / HomeRoutes.fromLabel
-                    when (item.id) {
-                        "sms" -> snackbar("短信模板")
-                        "calculator" -> snackbar("购车计算器")
-                        "used_car" -> snackbar("二手车")
-                        "ledger" -> snackbar("收支")
-                        "short_video" -> snackbar("小视频")
-                        "after_sales" -> snackbar("售后专区")
-                        "qr_pay" -> snackbar("店铺收款码")
-                        "qa" -> snackbar("选买问答")
-                        "poster" -> snackbar("商家海报")
-                        else -> snackbar(item.title)
-                    }
+                    val route = MineRoutes.fromLabel(item.title)
+                    if (route != null) gate(route) else snackbar(item.title)
                 },
-                onReorderHint = { snackbar("长按拖动顺序（即将支持）") },
+                onReorderHint = {
+                    // Persist current catalog order as explicit prefs write (drag UI later).
+                    MinePrefsStore.reorderFunctions(MinePrefsStore.functionOrderIds())
+                    snackbar("功能区顺序已保存")
+                },
             )
             MenuSection(
                 onSettings = onOpenSettings,
                 onOther = { item ->
-                    when (item.id) {
-                        "address" -> snackbar("地址管理")
-                        else -> snackbar(item.label)
-                    }
+                    val route = MineRoutes.fromLabel(item.label)
+                    if (route != null) gate(route)
+                    else snackbar(item.label) // Flutter toast-only rows
                 },
             )
         }
@@ -257,7 +249,7 @@ private fun MineCollapsedNavBar(
                 onClick = if (loggedIn) onOpenProfile else onLoginClick,
             )
         }
-        HorizontalDivider(thickness = 0.5.dp, color = MineTheme.Separator)
+        HorizontalDivider(thickness = MineTheme.Hairline, color = MineTheme.Separator)
     }
 }
 
@@ -481,6 +473,7 @@ private fun QuickServicesSection(onTap: (MineQuickService) -> Unit) {
 
 @Composable
 private fun FunctionSection(
+    entries: List<MineFunctionEntry> = MineCatalog.functions,
     onTap: (MineFunctionEntry) -> Unit,
     onReorderHint: () -> Unit,
 ) {
@@ -516,7 +509,7 @@ private fun FunctionSection(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            MineCatalog.functions.chunked(2).forEach { row ->
+            entries.chunked(2).forEach { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -554,14 +547,14 @@ private fun FunctionCard(
             )
             .clip(RoundedCornerShape(MineTheme.RadiusMd))
             .background(MineTheme.Surface)
-            .border(0.5.dp, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
+            .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
             .clickable(onClick = onTap)
             .padding(16.dp),
     ) {
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(MineTheme.RadiusLg))
                 .background(item.accentColor),
             contentAlignment = Alignment.Center,
         ) {
@@ -615,7 +608,7 @@ private fun MenuSection(
             if (index > 0) {
                 HorizontalDivider(
                     modifier = Modifier.padding(start = 52.dp),
-                    thickness = 0.5.dp,
+                    thickness = MineTheme.Hairline,
                     color = MineTheme.Separator,
                 )
             }

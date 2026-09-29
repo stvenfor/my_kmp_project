@@ -76,4 +76,16 @@ class ApiEnvelopeParserTest {
         assertEquals(NetworkCodes.OK, resp.code)
         assertTrue(resp.isSuccess)
     }
+
+    @Test
+    fun typed_object_data_via_decodeEnvelopeData() {
+        @kotlinx.serialization.Serializable
+        data class Sample(val token: String = "", val nested: Int = 0)
+
+        val raw = """{"code":200,"message":"ok","data":{"token":"abc","nested":1}}"""
+        val resp = ApiEnvelopeParser.parse(raw, parseData = { decodeEnvelopeData<Sample>(it) })
+        assertEquals(NetworkCodes.OK, resp.code)
+        assertEquals("abc", resp.data?.token)
+        assertEquals(1, resp.data?.nested)
+    }
 }

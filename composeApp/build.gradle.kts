@@ -118,7 +118,23 @@ kotlin {
                 implementation(libs.vico.compose)
             }
         }
+        // CPF Coil: android + ios + ohosArm64 (no ohosX64 klib — placeholder actual there)
+        val imageCoilMain = sourceSets.create("imageCoilMain").apply {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.coil.compose)
+            }
+        }
+        // CPF uuid: android + ios + ohosArm64 (no ohosX64 klib — stub actual there)
+        val uuidCpfMain = sourceSets.create("uuidCpfMain").apply {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.uuid)
+            }
+        }
         sourceSets.getByName("androidMain").dependsOn(chartsVicoMain)
+        sourceSets.getByName("androidMain").dependsOn(imageCoilMain)
+        sourceSets.getByName("androidMain").dependsOn(uuidCpfMain)
 
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
@@ -126,7 +142,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.collection)
-            implementation(libs.coil.compose)
             implementation(libs.coil.network.okhttp)
             implementation(libs.androidx.camera.core)
             implementation(libs.androidx.camera.camera2)
@@ -153,9 +168,10 @@ kotlin {
             val iosMain = sourceSets.create("iosMain").apply {
                 dependsOn(commonMain.get())
                 dependsOn(chartsVicoMain)
+                dependsOn(imageCoilMain)
+                dependsOn(uuidCpfMain)
             }
             iosMain.dependencies {
-                implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor3)
             }
             listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
@@ -170,6 +186,11 @@ kotlin {
             }
             val ohosArm64Main by getting {
                 dependsOn(ohosMain)
+                dependsOn(imageCoilMain)
+                dependsOn(uuidCpfMain)
+                dependencies {
+                    implementation(libs.coil.network.ktor3)
+                }
             }
             val ohosX64Main by getting {
                 dependsOn(ohosMain)

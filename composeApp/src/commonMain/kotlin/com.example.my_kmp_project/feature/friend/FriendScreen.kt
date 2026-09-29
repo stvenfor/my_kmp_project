@@ -59,41 +59,19 @@ private data class IncomingRequest(
 )
 
 /**
- * Flutter [FriendPage] SoT mock — matches Android evidence `friend.flutter.png`
- * (search bar + 好友 count trailing + single 测试乙 row; empty 新的朋友).
+ * Friend list + detail — logic aligned with MockIm seed peers (logic-first).
+ * Accept / 发消息 → [FriendDirectory.ensureChat] → shared [ImEngineStore].
  */
 private object FriendMockData {
-    val friends = listOf(
-        FriendItem(
-            id = "test_yi",
-            name = "测试乙",
-            phoneMasked = "134****0001",
-            avatarUrl = "https://picsum.photos/seed/friend_test_yi/150/150",
-            remark = "同事",
-        ),
-    )
-    val directory = listOf(
-        FriendItem(
-            id = "9",
-            name = "新同学小周",
-            phoneMasked = "138****0009",
-            avatarUrl = "https://picsum.photos/seed/friend_9/150/150",
-            remark = "同校",
-        ),
-        FriendItem(
-            id = "10",
-            name = "外教 Anna",
-            phoneMasked = "139****0010",
-            avatarUrl = "https://picsum.photos/seed/friend_10/150/150",
-            remark = "口语",
-        ),
-    )
+    val friends = FriendDirectory.seedFriends.map { it.toFriendItem() }
+    val directory = FriendDirectory.directory.map { it.toFriendItem() }
 }
 
 @Composable
 internal fun FriendScreen(onBack: () -> Unit) {
     var selectedId by remember { mutableStateOf<String?>(null) }
-    val selected = selectedId?.let { id -> FriendMockData.friends.firstOrNull { it.id == id } }
+    var friendList by remember { mutableStateOf(FriendMockData.friends) }
+    val selected = selectedId?.let { id -> friendList.firstOrNull { it.id == id } }
 
     if (selected != null) {
         ReportMainTabRoot(isRoot = false)
@@ -101,7 +79,8 @@ internal fun FriendScreen(onBack: () -> Unit) {
     } else {
         ReportMainTabRoot(isRoot = false)
         FriendListContent(
-            friends = FriendMockData.friends,
+            friends = friendList,
+            onFriendsChange = { friendList = it },
             onBack = onBack,
             onOpen = { selectedId = it },
         )
@@ -111,6 +90,7 @@ internal fun FriendScreen(onBack: () -> Unit) {
 @Composable
 private fun FriendListContent(
     friends: List<FriendItem>,
+    onFriendsChange: (List<FriendItem>) -> Unit,
     onBack: () -> Unit,
     onOpen: (String) -> Unit,
 ) {
@@ -118,7 +98,7 @@ private fun FriendListContent(
     var searchHits by remember { mutableStateOf<List<FriendItem>>(emptyList()) }
     // Flutter SoT capture: incoming empty → no「新的朋友」section.
     var incoming by remember { mutableStateOf<List<IncomingRequest>>(emptyList()) }
-    var friendList by remember { mutableStateOf(friends) }
+    val friendList = friends
 
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(
@@ -130,7 +110,11 @@ private fun FriendListContent(
                     if (friendList.isEmpty()) {
                         showPlatformToast("请先添加好友再建群")
                     } else {
-                        showPlatformToast("建群成功（mock）· 请到聊天 Tab")
+                        val id = FriendDirectory.ensureGroupChat(
+                            memberPeerIds = friendList.map { it.id },
+                            title = friendList.take(3).joinToString("、") { it.name } + "的群聊",
+                        )
+                        showPlatformToast("建群成功 · $id")
                     }
                 }) {
                     Text("建群", color = DemoColors.Accent, fontWeight = FontWeight.SemiBold)
@@ -208,7 +192,12 @@ private fun FriendListContent(
                                 subtitle = hit.phoneMasked.ifBlank { hit.id },
                                 avatarUrl = hit.avatarUrl,
                                 trailing = {
-                                    PillButton("加好友") { showPlatformToast("已发送好友申请") }
+                                        PillButton("加好友") {
+                                            FriendDirectory.ensureChat(hit.id, hit.name)
+                                            onFriendsChange((friendList + hit).distinctBy { it.id })
+                                            searchHits = emptyList()
+                                            showPlatformToast("已添加并创建会话")
+                                        }
                                 },
                             )
                             if (i < searchHits.lastIndex) {
@@ -243,11 +232,14 @@ private fun FriendListContent(
                                         }
                                         Spacer(Modifier.width(8.dp))
                                         PillButton("同意") {
-                                            friendList = friendList + FriendItem(
-                                                req.id, req.name, req.phoneMasked, req.avatarUrl, "新朋友",
+                                            FriendDirectory.ensureChat(req.id, req.name)
+                                            onFriendsChange(
+                                                friendList + FriendItem(
+                                                    req.id, req.name, req.phoneMasked, req.avatarUrl, "新朋友",
+                                                ),
                                             )
                                             incoming = incoming.filterNot { it.id == req.id }
-                                            showPlatformToast("已添加")
+                                            showPlatformToast("已添加并创建会话")
                                         }
                                     }
                                 },
@@ -444,6 +436,15 @@ private fun FriendDetailScreen(friend: FriendItem, onBack: () -> Unit) {
             }
             if (friend.remark.isNotBlank()) {
                 Text(friend.remark, color = DemoColors.TextPrimary, fontSize = 15.sp)
+            }
+            TextButton(
+                onClick = {
+                    val id = FriendDirectory.ensureChat(friend.id, friend.name)
+                    showPlatformToast("已打开会话 $id")
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("发消息", color = DemoColors.Accent, fontWeight = FontWeight.SemiBold)
             }
         }
     }

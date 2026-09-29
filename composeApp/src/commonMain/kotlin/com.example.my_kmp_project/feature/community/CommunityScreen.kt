@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,130 +20,73 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
-private data class CommunityPost(
-    val id: String,
-    val author: String,
-    val timeLabel: String,
-    val body: String,
-    val imageLabel: String?,
-    val likeCount: Int = 0,
-    val commentPreview: String? = null,
-)
-
-private enum class CommunityRoute {
-    Feed,
-    Publish,
-    Preview,
-}
-
 /**
- * Community tab — visual structure closer to Flutter `module_community`
- * (large title, grouped cards, like/comment chrome). Soft auth gate is owned by shell.
+ * Community tab — bound to [CommunityMockStore] (Flutter MockPostRepository tabs /
+ * like / comment / publish), matching Android [JetpackCommunityRoot] logic.
  */
 @Composable
 internal fun CommunityScreen() {
-    var route by remember { mutableStateOf(CommunityRoute.Feed) }
-    var previewLabel by remember { mutableStateOf<String?>(null) }
-    var posts by remember {
-        mutableStateOf(
-            listOf(
-                CommunityPost(
-                    id = "p1",
-                    author = "张三",
-                    timeLabel = "7分钟前 · 来自 iPhone",
-                    body = "今天去了 @张三 推荐的咖啡店，环境不错。\n#Flutter开发\n欢迎访问：https://flutter.dev",
-                    imageLabel = "视频",
-                    likeCount = 158,
-                    commentPreview = "李四：说得对！",
-                ),
-                CommunityPost(
-                    id = "p2",
-                    author = "李四",
-                    timeLabel = "42分钟前 · 来自 Android",
-                    body = "周末 hiking，天气太好了！#户外",
-                    imageLabel = "照片",
-                    likeCount = 77,
-                ),
-                CommunityPost(
-                    id = "p3",
-                    author = "王五",
-                    timeLabel = "61分钟前 · 来自 iPhone",
-                    body = "刚读完一本好书，推荐 @李四 也看看。",
-                    imageLabel = null,
-                    likeCount = 12,
-                ),
-            ),
-        )
-    }
-    var postSeq by remember { mutableStateOf(10) }
+    var destination by remember { mutableStateOf<String?>(null) }
+    val engine = remember { CommunityMockStore.engine }
+    var revision by remember { mutableIntStateOf(0) }
+    var feedTab by remember { mutableIntStateOf(0) }
 
-    when (route) {
-        CommunityRoute.Feed -> {
+    DisposableEffect(engine) {
+        val unsub = engine.observe { revision++ }
+        onDispose { unsub() }
+    }
+
+    when (val dest = destination) {
+        null -> {
             ReportMainTabRoot(isRoot = true)
+            val tabKey = when (feedTab) {
+                1 -> "hot"
+                2 -> "following"
+                else -> "latest"
+            }
+            val posts = remember(feedTab, revision) { engine.posts(tab = tabKey) }
             CommunityFeedContent(
                 posts = posts,
-                onPublish = { route = CommunityRoute.Publish },
-                onPreviewImage = { label ->
-                    previewLabel = label
-                    route = CommunityRoute.Preview
+                feedTab = feedTab,
+                onFeedTab = { feedTab = it },
+                onPublish = { destination = CommunityRoutes.Publish },
+                onSearch = { destination = CommunityRoutes.Search },
+                onToggleLike = { post -> engine.toggleLike(post.id, liked = !post.isLiked) },
+                onOpenComment = { post ->
+                    destination = "${CommunityRoutes.Comment}?postId=${post.id}"
                 },
-                onToggleLike = { id ->
-                    posts = posts.map { p ->
-                        if (p.id == id) p.copy(likeCount = p.likeCount + 1) else p
+                metaLabel = { engine.metaLabel(it) },
+            )
+        }
+        else -> {
+            CommunityRouteHost(
+                route = dest,
+                onBack = {
+                    destination = when {
+                        dest == CommunityRoutes.TopicSelect -> CommunityRoutes.Publish
+                        dest.startsWith(CommunityRoutes.Comment) -> null
+                        else -> null
                     }
                 },
-            )
-        }
-        CommunityRoute.Publish -> {
-            ReportMainTabRoot(isRoot = false)
-            PublishScreen(
-                onCancel = { route = CommunityRoute.Feed },
-                onSubmit = { body, imageLabel ->
-                    postSeq += 1
-                    posts = listOf(
-                        CommunityPost(
-                            id = "p$postSeq",
-                            author = "我",
-                            timeLabel = "刚刚",
-                            body = body,
-                            imageLabel = imageLabel,
-                            likeCount = 0,
-                        ),
-                    ) + posts
-                    route = CommunityRoute.Feed
-                },
-            )
-        }
-        CommunityRoute.Preview -> {
-            ReportMainTabRoot(isRoot = false)
-            ImagePreviewScreen(
-                label = previewLabel.orEmpty(),
-                onDismiss = {
-                    previewLabel = null
-                    route = CommunityRoute.Feed
-                },
+                onNavigate = { next -> destination = next },
             )
         }
     }
@@ -150,11 +94,16 @@ internal fun CommunityScreen() {
 
 @Composable
 private fun CommunityFeedContent(
-    posts: List<CommunityPost>,
+    posts: List<CommunityFeedItem>,
+    feedTab: Int,
+    onFeedTab: (Int) -> Unit,
     onPublish: () -> Unit,
-    onPreviewImage: (String) -> Unit,
-    onToggleLike: (String) -> Unit,
+    onSearch: () -> Unit,
+    onToggleLike: (CommunityFeedItem) -> Unit,
+    onOpenComment: (CommunityFeedItem) -> Unit,
+    metaLabel: (CommunityFeedItem) -> String,
 ) {
+    val feedTabs = listOf("最新", "热门", "关注")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -195,6 +144,7 @@ private fun CommunityFeedContent(
                 .clip(RoundedCornerShape(12.dp))
                 .background(DemoColors.Background)
                 .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                .clickable(onClick = onSearch)
                 .padding(horizontal = 14.dp),
             contentAlignment = Alignment.CenterStart,
         ) {
@@ -204,8 +154,6 @@ private fun CommunityFeedContent(
                 fontSize = 13.sp,
             )
         }
-        var feedTab by remember { mutableIntStateOf(0) }
-        val feedTabs = listOf("最新", "热门", "关注")
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -220,33 +168,30 @@ private fun CommunityFeedContent(
                     color = if (selected) DemoColors.TextPrimary else DemoColors.TextSecondary,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                     fontSize = 15.sp,
-                    modifier = Modifier.clickable { feedTab = index },
+                    modifier = Modifier.clickable { onFeedTab(index) },
                 )
             }
         }
         if (posts.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(text = "暂无动态", color = DemoColors.TextSecondary, fontSize = 15.sp)
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = if (feedTab == 2) "还没有关注的人，去搜索关注吧" else "暂无动态",
+                    color = DemoColors.TextSecondary,
+                    fontSize = 15.sp,
+                )
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 8.dp,
-                    bottom = 24.dp,
-                ),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(posts, key = { it.id }) { post ->
-                    PostCard(
+                    EnginePostCard(
                         post = post,
-                        onPreviewImage = onPreviewImage,
-                        onLike = { onToggleLike(post.id) },
+                        meta = metaLabel(post),
+                        onLike = { onToggleLike(post) },
+                        onComment = { onOpenComment(post) },
                     )
                 }
             }
@@ -255,10 +200,11 @@ private fun CommunityFeedContent(
 }
 
 @Composable
-private fun PostCard(
-    post: CommunityPost,
-    onPreviewImage: (String) -> Unit,
+private fun EnginePostCard(
+    post: CommunityFeedItem,
+    meta: String,
     onLike: () -> Unit,
+    onComment: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -268,10 +214,7 @@ private fun PostCard(
             .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
             .padding(start = 16.dp, top = 14.dp, end = 12.dp, bottom = 14.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top,
-        ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -280,7 +223,7 @@ private fun PostCard(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = post.author.take(1),
+                    text = post.nickname.take(1),
                     color = DemoColors.Accent,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
@@ -289,200 +232,56 @@ private fun PostCard(
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = post.author,
+                    text = post.nickname,
                     color = DemoColors.TextPrimary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
                 )
-                Text(
-                    text = post.timeLabel,
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                )
+                Text(text = meta, color = DemoColors.TextSecondary, fontSize = 12.sp)
             }
-            Text(text = "···", color = DemoColors.TextSecondary, fontSize = 18.sp)
         }
         Spacer(modifier = Modifier.height(10.dp))
         Text(
-            text = post.body,
+            text = post.content,
             color = DemoColors.TextPrimary,
             fontSize = 15.sp,
-            lineHeight = 22.sp,
+            maxLines = 6,
+            overflow = TextOverflow.Ellipsis,
         )
-        val imageLabel = post.imageLabel
-        if (imageLabel != null) {
-            Spacer(modifier = Modifier.height(12.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.PageBg)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
-                    .clickable { onPreviewImage(imageLabel) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(text = imageLabel, color = DemoColors.TextSecondary, fontSize = 13.sp)
-            }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable(onClick = onLike),
-        ) {
-            Text(text = "♡", color = DemoColors.Danger, fontSize = 18.sp)
-            Spacer(modifier = Modifier.width(6.dp))
+        if (post.images.isNotEmpty() || post.videoCoverUrl != null) {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = if (post.likeCount > 0) "${post.likeCount}" else "赞",
-                color = DemoColors.TextSecondary,
-                fontSize = 13.sp,
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "💬", fontSize = 14.sp)
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(text = "评论", color = DemoColors.TextSecondary, fontSize = 13.sp)
-        }
-        val preview = post.commentPreview
-        if (preview != null) {
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = preview,
-                color = DemoColors.TextSecondary,
-                fontSize = 13.sp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.PageBg)
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                text = if (post.videoCoverUrl != null) "视频" else "图片 ×${post.images.size}",
+                color = DemoColors.Muted,
+                fontSize = 12.sp,
             )
         }
-    }
-}
-
-@Composable
-internal fun PublishScreen(
-    onCancel: () -> Unit,
-    onSubmit: (body: String, imageLabel: String?) -> Unit = { _, _ -> },
-) {
-    var body by remember { mutableStateOf("") }
-    var attachCover by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DemoColors.PageBg),
-    ) {
-        MineTopBar(
-            title = "发布动态",
-            onBack = onCancel,
-            containerColor = DemoColors.PageBg,
-            actions = {
-                TextButton(onClick = onCancel) {
-                    Text(text = "取消", color = DemoColors.TextSecondary, fontSize = 15.sp)
-                }
-            },
-        )
-        Column(modifier = Modifier.padding(16.dp)) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Background)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
-                    .padding(14.dp),
-            ) {
-                if (body.isEmpty()) {
-                    Text("分享新鲜事…", color = DemoColors.TextSecondary, fontSize = 15.sp)
-                }
-                BasicTextField(
-                    value = body,
-                    onValueChange = {
-                        body = it
-                        error = null
-                    },
-                    textStyle = TextStyle(color = DemoColors.TextPrimary, fontSize = 15.sp),
-                    cursorBrush = SolidColor(DemoColors.Accent),
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Background)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
-                    .clickable { attachCover = !attachCover }
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+        if (post.previewComments.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            post.previewComments.take(2).forEach { c ->
                 Text(
-                    text = if (attachCover) "已添加封面" else "添加图片 / 视频",
-                    color = DemoColors.TextPrimary,
-                    fontSize = 15.sp,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = if (attachCover) "移除" else "添加",
-                    color = DemoColors.Accent,
-                    fontSize = 14.sp,
-                )
-            }
-            if (error != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = error!!, color = DemoColors.Danger, fontSize = 13.sp)
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Accent)
-                    .clickable {
-                        val trimmed = body.trim()
-                        if (trimmed.isEmpty()) {
-                            error = "请输入内容"
-                            return@clickable
-                        }
-                        onSubmit(trimmed, if (attachCover) "封面图 · 本地发布" else null)
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "发布",
-                    color = DemoColors.OnPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
+                    "${c.nickname}：${c.content}",
+                    color = DemoColors.TextSecondary,
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
-    }
-}
-
-@Composable
-internal fun ImagePreviewScreen(
-    label: String,
-    onDismiss: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DemoColors.PageBg),
-    ) {
-        MineTopBar(title = "预览", onBack = onDismiss, containerColor = DemoColors.PageBg)
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(DemoColors.Background)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = label.ifBlank { "媒体预览" }, color = DemoColors.TextSecondary, fontSize = 15.sp)
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+            Text(
+                text = if (post.isLiked) "已赞 ${post.likeCount}" else "赞 ${post.likeCount}",
+                color = if (post.isLiked) DemoColors.Accent else DemoColors.TextSecondary,
+                fontSize = 13.sp,
+                modifier = Modifier.clickable(onClick = onLike),
+            )
+            Text(
+                text = "评论 ${post.commentCount}",
+                color = DemoColors.TextSecondary,
+                fontSize = 13.sp,
+                modifier = Modifier.clickable(onClick = onComment),
+            )
         }
     }
 }

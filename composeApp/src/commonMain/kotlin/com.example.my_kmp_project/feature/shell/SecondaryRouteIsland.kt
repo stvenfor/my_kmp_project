@@ -17,11 +17,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
-import com.example.my_kmp_project.core.router.AppRoutePath
+import com.example.my_kmp_project.core.router.ProductRouteDispatch
+import com.example.my_kmp_project.core.router.ProductRouteHost
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.community.CommunityRoutes
-import com.example.my_kmp_project.feature.content.ContentRoutes
-import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineRouteHost
 import com.example.my_kmp_project.feature.mine.MineRoutes
 
@@ -34,48 +32,29 @@ import com.example.my_kmp_project.feature.mine.MineRoutes
  */
 object SecondaryRouteResolver {
     fun resolve(titleOrPath: String): String? {
-        val raw = titleOrPath.trim()
-        if (raw.isEmpty()) return null
-        val toastOnlyPaths = setOf(
-            "/mine/business_card",
-            "/mine/invite",
-            "/mine/business",
-            "/mine/reminders",
-            "/mine/reminder",
-            "/mine/fan_group",
-            "/mine/feedback",
-        )
-        if (raw.startsWith("/")) {
-            val canon = MineRoutes.canonicalize(raw)
-            if (canon in toastOnlyPaths) return null
-            return canon
+        val target = ProductRouteDispatch.resolve(titleOrPath) ?: return null
+        if (target.host == ProductRouteHost.Toast) return null
+        if (target.host != ProductRouteHost.Mine && target.host != ProductRouteHost.Unknown) {
+            // Non-Mine labels resolve elsewhere; island only keeps Mine paths.
+            return if (ProductRouteDispatch.hostForPath(target.path) == ProductRouteHost.Mine) {
+                target.path
+            } else {
+                null
+            }
         }
-        when (raw) {
-            "电子名片", "商务合作", "好友", "粉丝群", "帮助中心",
-            "意见反馈", "提醒事项", "邀请好友", "头像", "请先登录",
-            "切换门店", "切换店铺", "个人资料",
-            "全部服务", "更多", "扫一扫", "H5 调试", "内嵌网页", "消息",
-            -> return null
-            "订单中心" -> return MineRoutes.MallOrders
-            "会员续费" -> return MineRoutes.Membership
+        return when (target.host) {
+            ProductRouteHost.Mine -> target.path
+            ProductRouteHost.Unknown -> {
+                val raw = titleOrPath.trim()
+                if (raw.startsWith("/")) MineRoutes.canonicalize(raw) else null
+            }
+            else -> null
         }
-        MineRoutes.fromLabel(raw)?.let { return it }
-        // Non-Mine labels resolve for shell routers, but must not open this island.
-        HomeRoutes.fromLabel(raw)?.let { return it }
-        CommunityRoutes.fromLabel(raw)?.let { return it }
-        ContentRoutes.fromLabel(raw)?.let { return it }
-        return null
     }
 
     /** Mine Compose Island ownership (settings / profile / addresses / membership / mall children). */
-    fun isMineIslandOwned(route: String): Boolean {
-        val r = MineRoutes.canonicalize(route.trim())
-        if (r.startsWith("/mine") || r.startsWith("/settings") || r == AppRoutePath.settings) return true
-        if (r == "/pay/membership" || r.startsWith("/pay/membership")) return true
-        // Commerce children reachable from MineRouteHost stack (not primary native hosts).
-        if (r.startsWith("/mall") || r.startsWith("/wallet") || r.startsWith("/pay")) return true
-        return false
-    }
+    fun isMineIslandOwned(route: String): Boolean =
+        ProductRouteDispatch.hostForPath(route) == ProductRouteHost.Mine
 }
 
 @Composable

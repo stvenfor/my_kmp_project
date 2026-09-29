@@ -8,10 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
+/** ohosX64: no CPF Coil variant — local placeholder only. */
 @Composable
 internal actual fun PlatformNetworkImage(
     url: String?,
@@ -20,24 +20,14 @@ internal actual fun PlatformNetworkImage(
     placeholder: DrawableResource,
     contentDescription: String?,
 ) {
-    val placeholderPainter = painterResource(placeholder)
-    if (url.isNullOrBlank()) {
-        Box(modifier = modifier.background(Color(0xFFF0F0F0))) {
-            Image(
-                painter = placeholderPainter,
-                contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = contentScale,
-            )
-        }
-        return
+    Box(modifier = modifier.background(Color(0xFFF0F0F0))) {
+        Image(
+            painter = painterResource(placeholder),
+            contentDescription = contentDescription,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = contentScale,
+        )
     }
-    AsyncImage(
-        model = secureNetworkImageUrl(url),
-        contentDescription = contentDescription,
-        modifier = modifier,
-        contentScale = contentScale,
-        placeholder = placeholderPainter,
-        error = placeholderPainter,
-    )
+    @Suppress("UNUSED_EXPRESSION")
+    url
 }

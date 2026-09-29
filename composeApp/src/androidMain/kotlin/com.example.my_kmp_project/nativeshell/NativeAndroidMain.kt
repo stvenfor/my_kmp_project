@@ -44,14 +44,16 @@ import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.router.AppRoutes
 import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.core.router.MainTab
+import com.example.my_kmp_project.core.router.ProductRouteDispatch
+import com.example.my_kmp_project.core.router.ProductRouteHost
+import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
+import com.example.my_kmp_project.core.router.webUrlFromDeepLink
 import com.example.my_kmp_project.feature.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.LoginOtpScreen
 import com.example.my_kmp_project.feature.auth.LoginPasswordScreen
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
-import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
-import com.example.my_kmp_project.core.router.webUrlFromDeepLink
 import com.example.my_kmp_project.feature.chat.ChatDetailDeepLinkArgs
 import com.example.my_kmp_project.feature.chat.chatDetailArgsFromDeepLink
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
@@ -255,22 +257,44 @@ internal fun NativeAndroidMain() {
     }
 
     fun openPendingRoute(route: String) {
-        when {
-            route.startsWith("/settings/deal_invoice") ||
-                route.startsWith("/mine") ||
-                route.startsWith("/mall") ||
-                route.startsWith("/wallet") ||
-                route.startsWith("/pay") ||
-                route == "/settings" -> openMineRoute(route)
-            route.startsWith("/home/") -> openHomeRoute(route)
-            route.startsWith("/community/") -> openCommunityRoute(route)
-            route.startsWith("/ai") ||
-                route.startsWith("/video") ||
-                route.startsWith("/classroom") ||
-                route.startsWith("/live") ||
-                route.startsWith("/friend") ||
-                route.startsWith("/music") ||
-                route.startsWith("/media") -> openContentRoute(route)
+        val target = ProductRouteDispatch.resolve(route) ?: return
+        when (target.host) {
+            ProductRouteHost.Mine -> openMineRoute(target.path)
+            ProductRouteHost.Home -> openHomeRoute(target.path)
+            ProductRouteHost.Community -> openCommunityRoute(target.path)
+            ProductRouteHost.Content -> openContentRoute(target.path)
+            ProductRouteHost.AllServices -> {
+                overlay = ShellOverlay.AllServices
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Web -> {
+                webUrl = OfflineWebFixtureUrl
+                overlay = ShellOverlay.InAppWeb
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Tab -> {
+                val nextTab = when (target.path) {
+                    AppRoutePath.chat -> MainTab.Chat
+                    AppRoutePath.community -> MainTab.Community
+                    AppRoutePath.mine -> MainTab.Mine
+                    else -> MainTab.Home
+                }
+                selectTab(nextTab)
+            }
+            ProductRouteHost.Toast -> showPlatformToast(target.toastMessage ?: route)
+            ProductRouteHost.Scan -> {
+                overlay = ShellOverlay.Scan
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Auth -> {
+                authOverlay = AuthOverlay.Login
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Unknown -> {
+                deferredTitle = route
+                overlay = ShellOverlay.UnmappedEntry
+                bottomBarVisible = false
+            }
         }
     }
 
@@ -298,79 +322,92 @@ internal fun NativeAndroidMain() {
     }
 
     fun openDeferred(title: String) {
-        // Flutter MineController toast-only — never navigable secondary routes.
-        when (title) {
-            "切换门店", "切换店铺" -> {
-                showPlatformToast("请在「我的」页头点击门店名称切换")
-                return
+        val target = ProductRouteDispatch.resolve(title) ?: return
+        when (target.host) {
+            ProductRouteHost.Toast -> {
+                showPlatformToast(target.toastMessage ?: title)
             }
-            "电子名片", "商务合作", "提醒事项", "邀请好友", "粉丝群",
-            "意见反馈", "帮助中心", "头像", "请先登录" -> {
-                showPlatformToast(title)
-                return
-            }
-        }
-        val homeMapped = HomeRoutes.fromLabel(title)
-        val communityMapped = CommunityRoutes.fromLabel(title)
-        val mineMapped = MineRoutes.fromLabel(title)
-        val contentMapped = ContentRoutes.fromLabel(title)
-        when {
-            title == "全部服务" || title == "更多" -> {
+            ProductRouteHost.AllServices -> {
                 overlay = ShellOverlay.AllServices
                 bottomBarVisible = false
             }
-            title == "消息" -> {
-                val target = MainTab.Chat
-                if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
-                    AuthGate.rememberPending(target)
-                    authOverlay = AuthOverlay.Login
-                    bottomBarVisible = false
-                } else {
-                    tab = target
-                    keptTabs = keptTabs + target
-                }
-            }
-            title == "扫一扫" -> {
+            ProductRouteHost.Scan -> {
                 overlay = ShellOverlay.Scan
                 bottomBarVisible = false
             }
-            title.startsWith("http://") || title.startsWith("https://") || title == "H5 调试" || title == "内嵌网页" -> {
+            ProductRouteHost.Web -> {
                 webUrl = if (title.startsWith("http")) title else OfflineWebFixtureUrl
                 overlay = ShellOverlay.InAppWeb
                 bottomBarVisible = false
             }
-            mineMapped != null -> {
-                when {
-                    mineMapped == HomeRoutes.UsedCar ||
-                        mineMapped == HomeRoutes.CheckInMall ||
-                        mineMapped == HomeRoutes.Ledger ||
-                        mineMapped == HomeRoutes.AfterSales ||
-                        mineMapped == HomeRoutes.DataAnalytics ->
-                        openWithSoftAuth(mineMapped) { openHomeRoute(it) }
-                    mineMapped == MineRoutes.Classroom ||
-                        mineMapped == MineRoutes.ShortVideo ->
-                        openWithSoftAuth(mineMapped) { openContentRoute(it) }
-                    else -> openWithSoftAuth(mineMapped) { openMineRoute(it) }
-                }
+            ProductRouteHost.Auth -> {
+                authOverlay = AuthOverlay.Login
+                bottomBarVisible = false
             }
-            homeMapped != null -> {
-                if (
-                    homeMapped == MineRoutes.DealInvoiceDemo ||
-                    homeMapped == MineRoutes.DealInvoiceUpload
-                ) {
-                    openWithSoftAuth(homeMapped) { openMineRoute(it) }
-                } else {
-                    openWithSoftAuth(homeMapped) { openHomeRoute(it) }
+            ProductRouteHost.Tab -> {
+                val nextTab = when (target.path) {
+                    AppRoutePath.chat -> MainTab.Chat
+                    AppRoutePath.community -> MainTab.Community
+                    AppRoutePath.mine -> MainTab.Mine
+                    else -> MainTab.Home
                 }
+                selectTab(nextTab)
             }
-            communityMapped != null -> openCommunityRoute(communityMapped)
-            contentMapped != null -> openWithSoftAuth(contentMapped) { openContentRoute(it) }
-            else -> {
-                // Out-of-scope / unmapped label only — never for in-scope RoutePath.
+            ProductRouteHost.Home -> openWithSoftAuth(target.path) { openHomeRoute(it) }
+            ProductRouteHost.Mine -> openWithSoftAuth(target.path) { openMineRoute(it) }
+            ProductRouteHost.Community -> openCommunityRoute(target.path)
+            ProductRouteHost.Content -> openWithSoftAuth(target.path) { openContentRoute(it) }
+            ProductRouteHost.Unknown -> {
                 deferredTitle = title
                 overlay = ShellOverlay.UnmappedEntry
                 bottomBarVisible = false
             }
+        }
+    }
+
+    /** Intra-overlay navigate: pick host by Flutter RoutePath prefix (not stack-stuck). */
+    fun navigateSecondary(next: String) {
+        val target = ProductRouteDispatch.resolve(next) ?: return
+        when (target.host) {
+            ProductRouteHost.Toast -> showPlatformToast(target.toastMessage ?: next)
+            ProductRouteHost.AllServices -> {
+                overlay = ShellOverlay.AllServices
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Web -> {
+                webUrl = if (next.startsWith("http")) next else OfflineWebFixtureUrl
+                overlay = ShellOverlay.InAppWeb
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Scan -> {
+                overlay = ShellOverlay.Scan
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Home -> {
+                when (overlay) {
+                    ShellOverlay.HomeRoute -> pushHomeRoute(target.path)
+                    else -> openHomeRoute(target.path)
+                }
+            }
+            ProductRouteHost.Mine -> {
+                when (overlay) {
+                    ShellOverlay.MineRoute -> pushMineRoute(target.path)
+                    else -> openMineRoute(target.path)
+                }
+            }
+            ProductRouteHost.Community -> openCommunityRoute(target.path)
+            ProductRouteHost.Content -> {
+                when (overlay) {
+                    ShellOverlay.ContentRoute -> pushContentRoute(target.path)
+                    else -> openContentRoute(target.path)
+                }
+            }
+            ProductRouteHost.Tab -> openDeferred(target.path)
+            ProductRouteHost.Auth -> {
+                authOverlay = AuthOverlay.Login
+                bottomBarVisible = false
+            }
+            ProductRouteHost.Unknown -> openDeferred(next)
         }
     }
 
@@ -524,14 +561,14 @@ internal fun NativeAndroidMain() {
             HomeRouteHost(
                 route = route,
                 onBack = { popHomeRoute() },
-                onNavigate = { pushHomeRoute(it) },
+                onNavigate = { navigateSecondary(it) },
             )
         }
         ShellOverlay.CommunityRoute -> {
             CommunityRouteHost(
                 route = communityRoute ?: CommunityRoutes.Search,
                 onBack = { closeOverlay() },
-                onNavigate = { openCommunityRoute(it) },
+                onNavigate = { navigateSecondary(it) },
                 previewUrls = communityPreviewUrls,
                 previewIndex = communityPreviewIndex,
                 videoUrl = communityVideoUrl,
@@ -541,14 +578,22 @@ internal fun NativeAndroidMain() {
             MineRouteHost(
                 route = mineRoute ?: MineRoutes.Mall,
                 onBack = { popMineRoute() },
-                onNavigate = { pushMineRoute(it) },
+                onNavigate = { next ->
+                    if (next == "logout") {
+                        AuthRepository.logout()
+                        softAuth.clearLocalSession()
+                        closeOverlay()
+                    } else {
+                        navigateSecondary(next)
+                    }
+                },
             )
         }
         ShellOverlay.ContentRoute -> {
             ContentRouteHost(
                 route = contentRoute ?: ContentRoutes.MediaEntry,
                 onBack = { popContentRoute() },
-                onNavigate = { pushContentRoute(it) },
+                onNavigate = { navigateSecondary(it) },
             )
         }
         ShellOverlay.Membership -> {

@@ -16,8 +16,8 @@ internal fun secureNetworkImageUrl(url: String?): String? {
 }
 
 /**
- * Platform network image.
- * Android/iOS: Coil; OHOS: local placeholder (no Coil ohosArm64).
+ * Shared network-image API for feature UI.
+ * Android / iOS / ohosArm64: CPF Coil via imageCoilMain; ohosX64: local placeholder.
  */
 @Composable
 internal expect fun PlatformNetworkImage(

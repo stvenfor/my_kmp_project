@@ -49,7 +49,7 @@ import com.example.my_kmp_project.core.ui.ReportMainTabRoot
  */
 @Composable
 internal fun ChatScreen(
-    engine: ImEngine = remember { MockImEngine(seedDemo = true) },
+    engine: ImEngine = remember { ImEngineStore.engine },
     /** Flutter square_pencil → [RoutePath.friend] / 通讯录. */
     onOpenFriends: () -> Unit = {},
 ) {
@@ -75,6 +75,7 @@ internal fun ChatScreen(
             messages = remember(selected.id, revision) { engine.messages(selected.id) },
             onBack = { selectedConversationId = null },
             onSend = { text -> engine.sendText(selected.id, text) },
+            onRecall = { msgId -> engine.recallMessage(selected.id, msgId) },
         )
     } else {
         ReportMainTabRoot(isRoot = true)
@@ -314,8 +315,10 @@ internal fun ChatDetailScreen(
     messages: List<ImMessage>,
     onBack: () -> Unit,
     onSend: (String) -> Unit = {},
+    onRecall: (String) -> Boolean = { false },
 ) {
     var draft by remember { mutableStateOf("") }
+    var recallTarget by remember { mutableStateOf<ImMessage?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -336,17 +339,54 @@ internal fun ChatDetailScreen(
             contentPadding = PaddingValues(bottom = 8.dp),
         ) {
             items(messages, key = { it.id }) { msg ->
-                if (msg.type == ImMessageType.Time) {
-                    Text(
-                        msg.body,
-                        fontSize = 12.sp,
-                        color = DemoColors.Muted,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                    )
-                } else {
-                    MessageBubble(message = msg)
+                when (msg.type) {
+                    ImMessageType.Time, ImMessageType.System -> {
+                        Text(
+                            msg.body,
+                            fontSize = 12.sp,
+                            color = DemoColors.Muted,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    else -> {
+                        MessageBubble(
+                            message = msg,
+                            onLongPress = {
+                                if (msg.canRecall) recallTarget = msg
+                            },
+                        )
+                    }
                 }
+            }
+        }
+        if (recallTarget != null) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(DemoColors.Background)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("撤回这条消息？", fontSize = 13.sp, color = DemoColors.TextSecondary, modifier = Modifier.weight(1f))
+                Text(
+                    "取消",
+                    color = DemoColors.Muted,
+                    modifier = Modifier.clickable { recallTarget = null }.padding(8.dp),
+                )
+                Text(
+                    "撤回",
+                    color = DemoColors.Accent,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .clickable {
+                            val id = recallTarget?.id
+                            if (id != null) onRecall(id)
+                            recallTarget = null
+                        }
+                        .padding(8.dp),
+                )
             }
         }
         Row(
@@ -395,7 +435,7 @@ internal fun ChatDetailScreen(
 }
 
 @Composable
-private fun MessageBubble(message: ImMessage) {
+private fun MessageBubble(message: ImMessage, onLongPress: () -> Unit = {}) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (message.isSelf) Arrangement.End else Arrangement.Start,
@@ -409,6 +449,7 @@ private fun MessageBubble(message: ImMessage) {
                     .widthIn(max = 280.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(if (message.isSelf) DemoColors.Accent else DemoColors.Background)
+                    .clickable(onClick = onLongPress)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
             )
             val status = message.statusLabel()

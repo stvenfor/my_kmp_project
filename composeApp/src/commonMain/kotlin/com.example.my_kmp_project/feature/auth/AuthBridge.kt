@@ -110,6 +110,24 @@ object AuthBridge {
         }
     }
 
+    fun loginWithHuaweiCode(
+        code: String,
+        deviceId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        scope.launch {
+            val result = AuthRepository.loginWithHuaweiCode(code, deviceId)
+            deliver(result, onSuccess, onError)
+        }
+    }
+
+    fun token(): String = AccountFacade.current().token
+
+    fun userId(): String = AccountFacade.current().userId.orEmpty()
+
+    fun phone(): String = AccountFacade.current().phone.orEmpty()
+
     private suspend fun deliver(
         result: Result<Unit>,
         onSuccess: () -> Unit,

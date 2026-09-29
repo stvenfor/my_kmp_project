@@ -2,9 +2,10 @@ import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { util } from '@kit.ArkTS';
 
-const PREF_NAME = 'auth_session';
-
-export interface AuthSession {
+/**
+ * Shell display cache for logged-in chrome (name / token mirror).
+ * Account Session SoT is Kotlin [AccountFacade]; do not treat this as authority for BFF.
+ */
   token: string;
   refreshToken: string;
   sessionId: string;

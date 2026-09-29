@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,10 +25,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,9 +46,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.style.TextOverflow
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
@@ -81,7 +86,10 @@ internal object MineRoutes {
     const val CheckIn = "/home/check_in_mall"
     const val SmsTemplates = "/mine/sms_templates"
     const val ShopQr = "/mine/shop_qr"
-    const val BuyQa = "/mine/buy_qa"
+    /** Flutter `RoutePath.mineHttpTest` (选买问答). */
+    const val HttpTest = "/mine/http_test"
+    /** @deprecated alias — prefer [HttpTest]. */
+    const val BuyQa = HttpTest
     const val Poster = "/mine/poster"
     const val Settings = "/settings"
     const val SettingsLegacy = "/mine/settings"
@@ -107,7 +115,7 @@ internal object MineRoutes {
         "售后", "售后专区" -> HomeRoutes.AfterSales
         "小视频" -> ShortVideo
         "店铺收款码", "收款码" -> ShopQr
-        "选买问答" -> BuyQa
+        "选买问答" -> HttpTest
         "商家海报", "海报" -> Poster
         "地址管理", "地址", "收货地址" -> Addresses
         "个人资料", "资料" -> Profile
@@ -132,7 +140,7 @@ internal object MineRoutes {
     fun canonicalize(route: String): String = when (route) {
         "/mine/sms_template" -> SmsTemplates
         "/mine/store_qr" -> ShopQr
-        "/mine/qa" -> BuyQa
+        "/mine/qa", "/mine/buy_qa" -> HttpTest
         "/mine/business" -> Cooperation
         "/mine/reminders" -> Reminder
         // Do NOT map business_card / friend → Invite (crash + wrong page).
@@ -164,17 +172,27 @@ internal fun MineRouteHost(
         route == MineRoutes.Wallet -> WalletScreen(onBack = onBack, onPay = { onNavigate(MineRoutes.Pay) })
         route == MineRoutes.Pay -> PayCheckoutScreen(onBack = onBack)
         route == MineRoutes.Membership -> MembershipScreen(onBack = onBack)
-        route == MineRoutes.Profile -> ProfileEditScreen(onBack = onBack)
+        route == MineRoutes.Profile -> ProfileEditScreen(
+            onBack = onBack,
+            onLoggedOut = { onNavigate("logout") },
+        )
         route == MineRoutes.Addresses -> AddressListScreen(
             onBack = onBack,
-            onEdit = { onNavigate(MineRoutes.AddressEdit) },
+            onCreate = {
+                AddressMockStore.selectForEdit(null)
+                onNavigate(MineRoutes.AddressEdit)
+            },
+            onEdit = { id ->
+                AddressMockStore.selectForEdit(id)
+                onNavigate(MineRoutes.AddressEdit)
+            },
         )
         route == MineRoutes.AddressEdit -> AddressEditScreen(onBack = onBack)
         route == MineRoutes.Calculator -> PurchaseCalculatorScreen(onBack = onBack)
         route == MineRoutes.CheckIn -> CheckInShortcutScreen(onBack = onBack)
         route == MineRoutes.SmsTemplates -> SmsTemplateScreen(onBack = onBack)
         route == MineRoutes.ShopQr -> ShopQrScreen(onBack = onBack)
-        route == MineRoutes.BuyQa -> BuyQaScreen(onBack = onBack)
+        route == MineRoutes.HttpTest || route == "/mine/buy_qa" -> BuyQaScreen(onBack = onBack)
         route == MineRoutes.Poster -> PosterScreen(onBack = onBack)
         route == MineRoutes.Settings || route == MineRoutes.SettingsLegacy -> MineSettingsScreen(
             onBack = onBack,
@@ -500,7 +518,7 @@ private fun WalletFlutterNavBar(title: String, onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .background(Color.White),
+            .background(MineTheme.Surface),
     ) {
         Box(
             Modifier
@@ -512,70 +530,313 @@ private fun WalletFlutterNavBar(title: String, onBack: () -> Unit) {
                 onClick = onBack,
                 modifier = Modifier.align(Alignment.CenterStart),
             ) {
-                Text("‹", fontSize = 28.sp, color = DemoColors.TextPrimary)
+                Text("‹", fontSize = 28.sp, color = MineTheme.LabelPrimary)
             }
             Text(
                 title,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = DemoColors.TextPrimary,
+                color = MineTheme.LabelPrimary,
                 modifier = Modifier.align(Alignment.Center),
             )
         }
-        HorizontalDivider(thickness = 0.5.dp, color = DemoColors.Divider)
+        HorizontalDivider(thickness = MineTheme.Hairline, color = MineTheme.Separator)
     }
 }
 
 @Composable
 private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
-    // Flutter WalletPage Material chrome diverges from CMP; SoT body bitmap under
-    // Flutter-height AppNavBar passes Screenshot Diff Gate. Pay SDK stays gap-registry.
+    WalletMockStore.version
+    var amount by remember { mutableStateOf("") }
+    var bank by remember { mutableStateOf("") }
+    var last4 by remember { mutableStateOf("") }
+    // Flutter WalletPage: 支付宝=1 / 微信=2 / 银行卡=3
+    var channel by remember { mutableStateOf(1) }
+    val cards = WalletMockStore.cards()
+    val ledger = WalletMockStore.ledger()
+    val defaultCardId = cards.firstOrNull { it.isDefault }?.cardId
+    val cardShape = RoundedCornerShape(MineTheme.RadiusMd)
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
         WalletFlutterNavBar(title = "我的钱包", onBack = onBack)
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            Image(
-                painter = painterResource(Res.drawable.wallet_body),
-                contentDescription = "我的钱包：余额、充值、银行卡、流水",
-                modifier = Modifier
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(
+                Modifier
                     .fillMaxWidth()
-                    .clickable { onPay() },
-                contentScale = ContentScale.FillWidth,
-            )
+                    .clip(cardShape)
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .padding(horizontal = 16.dp, vertical = 20.dp),
+            ) {
+                Text("余额（元）", color = MineTheme.LabelTertiary, fontSize = MineTheme.CaptionSize)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    WalletMockStore.balanceYuan(),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MineTheme.LabelPrimary,
+                )
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(cardShape)
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("充值", fontWeight = FontWeight.SemiBold, fontSize = MineTheme.HeadlineSize, color = MineTheme.LabelPrimary)
+                BasicTextField(
+                    value = amount,
+                    onValueChange = { amount = it },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(cardShape)
+                        .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                        .padding(12.dp),
+                    decorationBox = { inner ->
+                        if (amount.isEmpty()) {
+                            Text("请输入金额", color = MineTheme.LabelTertiary, fontSize = MineTheme.BodySize)
+                        }
+                        inner()
+                    },
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("10", "50", "100").forEach { quick ->
+                        Text(
+                            "¥$quick",
+                            color = MineTheme.Accent,
+                            fontSize = 13.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .border(MineTheme.Hairline, MineTheme.Accent, RoundedCornerShape(16.dp))
+                                .clickable { amount = quick }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(1 to "支付宝", 2 to "微信", 3 to "银行卡").forEach { (id, label) ->
+                        val selected = channel == id
+                        Text(
+                            label,
+                            color = if (selected) Color.White else MineTheme.LabelPrimary,
+                            fontSize = 13.sp,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(if (selected) MineTheme.Accent else MineTheme.FillSecondary)
+                                .clickable { channel = id }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        )
+                    }
+                }
+                Text(
+                    "确认充值",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(MineTheme.Accent)
+                        .clickable {
+                            val err = WalletMockStore.validateRecharge(amount)
+                            if (err != null) {
+                                showPlatformToast(err)
+                            } else {
+                                val ok = WalletMockStore.recharge(amount, channel, defaultCardId)
+                                if (ok != null) {
+                                    amount = ""
+                                    showPlatformToast("充值成功")
+                                } else {
+                                    showPlatformToast("充值失败")
+                                }
+                            }
+                        }
+                        .padding(vertical = 12.dp),
+                )
+                Text(
+                    "去支付模块",
+                    color = MineTheme.Accent,
+                    fontSize = 13.sp,
+                    modifier = Modifier.clickable(onClick = onPay).padding(top = 4.dp),
+                )
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(cardShape)
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("银行卡", fontWeight = FontWeight.SemiBold, fontSize = MineTheme.HeadlineSize, color = MineTheme.LabelPrimary)
+                cards.forEach { card ->
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(card.display, fontSize = MineTheme.CaptionSize, color = MineTheme.LabelPrimary)
+                            if (card.isDefault) {
+                                Text("默认", color = MineTheme.Accent, fontSize = 12.sp)
+                            }
+                        }
+                        if (!card.isDefault) {
+                            Text(
+                                "设默认",
+                                color = MineTheme.Accent,
+                                fontSize = 13.sp,
+                                modifier = Modifier.clickable {
+                                    WalletMockStore.setDefaultCard(card.cardId)
+                                    showPlatformToast("已设为默认卡")
+                                },
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            "解绑",
+                            color = MineTheme.LabelTertiary,
+                            fontSize = 13.sp,
+                            modifier = Modifier.clickable {
+                                WalletMockStore.deleteCard(card.cardId)
+                                showPlatformToast("已解绑")
+                            },
+                        )
+                    }
+                }
+                BasicTextField(
+                    value = bank,
+                    onValueChange = { bank = it },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(cardShape)
+                        .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                        .padding(12.dp),
+                    decorationBox = { inner ->
+                        if (bank.isEmpty()) Text("银行名", color = MineTheme.LabelTertiary, fontSize = MineTheme.BodySize)
+                        inner()
+                    },
+                )
+                BasicTextField(
+                    value = last4,
+                    onValueChange = { if (it.length <= 4) last4 = it.filter { c -> c.isDigit() } },
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(cardShape)
+                        .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                        .padding(12.dp),
+                    decorationBox = { inner ->
+                        if (last4.isEmpty()) Text("卡号后四位", color = MineTheme.LabelTertiary, fontSize = MineTheme.BodySize)
+                        inner()
+                    },
+                )
+                Text(
+                    "绑定银行卡",
+                    color = MineTheme.Accent,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(22.dp))
+                        .border(MineTheme.Hairline, MineTheme.Accent, RoundedCornerShape(22.dp))
+                        .clickable {
+                            val err = WalletMockStore.validateBindCard(bank, last4)
+                            if (err != null) showPlatformToast(err)
+                            else if (WalletMockStore.bindCard(bank, last4) != null) {
+                                bank = ""
+                                last4 = ""
+                                showPlatformToast("绑卡成功")
+                            }
+                        }
+                        .padding(vertical = 12.dp),
+                )
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(cardShape)
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .padding(16.dp),
+            ) {
+                Text("流水", fontWeight = FontWeight.SemiBold, fontSize = MineTheme.HeadlineSize, color = MineTheme.LabelPrimary)
+                Spacer(Modifier.height(8.dp))
+                if (ledger.isEmpty()) {
+                    Text("暂无流水", color = MineTheme.LabelTertiary, fontSize = MineTheme.CaptionSize)
+                } else {
+                    ledger.take(10).forEach { e ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                            Column(Modifier.weight(1f)) {
+                                Text(e.reasonLabel, fontSize = MineTheme.CaptionSize, color = MineTheme.LabelPrimary)
+                                Text(
+                                    "余额 ¥${e.balanceFen / 100}.${(e.balanceFen % 100).toString().padStart(2, '0')}",
+                                    fontSize = 12.sp,
+                                    color = MineTheme.LabelTertiary,
+                                )
+                            }
+                            Text(
+                                e.deltaYuan,
+                                color = if (e.deltaFen >= 0) Color(0xFF16A34A) else Color(0xFFEE0000),
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun ProfileEditScreen(onBack: () -> Unit) {
-    // Flutter MineProfilePage: avatar + 基本信息 + 退出登录; 右上保存
-    var name by remember { mutableStateOf("qa_user") }
-    var dirty by remember { mutableStateOf(false) }
-    val phone = "138****5172"
+private fun ProfileEditScreen(onBack: () -> Unit, onLoggedOut: () -> Unit = {}) {
+    val saved = remember { MineProfileLogic.sessionNickname() }
+    var name by remember { mutableStateOf(saved) }
+    var savedNick by remember { mutableStateOf(saved) }
+    var pendingAvatar by remember { mutableStateOf(false) }
+    val dirty = MineProfileLogic.isDirty(name, savedNick, pendingAvatar)
+    val phone = MineProfileLogic.sessionPhoneMasked()
+    val cardShape = RoundedCornerShape(MineTheme.RadiusMd)
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MineTheme.Background)
             .verticalScroll(rememberScrollState()),
     ) {
         MineTopBar(
             title = "个人资料",
             onBack = onBack,
-            containerColor = Color.White,
+            containerColor = MineTheme.Surface,
             actions = {
                 TextButton(
                     onClick = {
-                        if (!dirty) return@TextButton
-                        showPlatformToast("已保存")
-                        dirty = false
+                        val err = MineProfileLogic.validateSave(name, dirty)
+                        if (err != null) {
+                            showPlatformToast(err)
+                            return@TextButton
+                        }
+                        MineProfileLogic.saveNickname(name)
+                        savedNick = name.trim()
+                        pendingAvatar = false
+                        showPlatformToast("资料已保存")
                         onBack()
                     },
                     enabled = dirty,
                 ) {
                     Text(
                         "保存",
-                        color = if (dirty) DemoColors.Accent else DemoColors.Muted,
+                        color = if (dirty) MineTheme.Accent else MineTheme.LabelTertiary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
                     )
@@ -590,33 +851,47 @@ private fun ProfileEditScreen(onBack: () -> Unit) {
                         .width(104.dp)
                         .height(104.dp)
                         .clip(RoundedCornerShape(52.dp))
-                        .background(Color(0xFFE0E0E0))
-                        .clickable { showPlatformToast("更换头像（开发中）") },
+                        .background(MineTheme.FillSecondary)
+                        .clickable {
+                            pendingAvatar = true
+                            showPlatformToast("头像已选择（待上传，平台 gap）")
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Q", fontSize = 40.sp, fontWeight = FontWeight.Bold, color = DemoColors.Muted)
+                    Icon(
+                        imageVector = MineIcons.Person,
+                        contentDescription = null,
+                        tint = MineTheme.LabelTertiary,
+                        modifier = Modifier.size(48.dp),
+                    )
                 }
                 Box(
                     Modifier
                         .width(32.dp)
                         .height(32.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(DemoColors.Accent)
+                        .background(MineTheme.Accent)
                         .border(2.5.dp, Color.White, RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("📷", fontSize = 12.sp)
+                    Icon(
+                        imageVector = MineIcons.Info,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp),
+                    )
                 }
             }
             Spacer(Modifier.height(10.dp))
-            Text("轻触更换头像", color = DemoColors.Muted, fontSize = 13.sp)
+            Text("轻触更换头像", color = MineTheme.LabelTertiary, fontSize = 13.sp)
         }
         Spacer(Modifier.height(32.dp))
         Text(
             "基本信息",
-            color = DemoColors.Muted,
+            color = MineTheme.LabelTertiary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
+            letterSpacing = 0.4.sp,
             modifier = Modifier.padding(horizontal = 20.dp),
         )
         Spacer(Modifier.height(8.dp))
@@ -624,8 +899,9 @@ private fun ProfileEditScreen(onBack: () -> Unit) {
             Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White),
+                .clip(cardShape)
+                .background(MineTheme.Surface)
+                .border(MineTheme.Hairline, MineTheme.Separator, cardShape),
         ) {
             Row(
                 Modifier
@@ -633,29 +909,27 @@ private fun ProfileEditScreen(onBack: () -> Unit) {
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("昵称", fontSize = 15.sp, modifier = Modifier.width(72.dp))
+                Text("昵称", fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary, modifier = Modifier.width(72.dp))
                 BasicTextField(
                     value = name,
-                    onValueChange = {
-                        name = it
-                        dirty = true
-                    },
-                    textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                    onValueChange = { name = it },
+                    textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary, textAlign = TextAlign.End),
                     singleLine = true,
                     modifier = Modifier.weight(1f),
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                             if (name.isEmpty()) {
-                                Text("请输入昵称", color = DemoColors.Muted, fontSize = 15.sp)
+                                Text("请输入昵称", color = MineTheme.LabelTertiary, fontSize = MineTheme.BodySize)
                             }
                             inner()
                         }
                     },
                 )
+                Text("›", fontSize = 18.sp, color = MineTheme.LabelTertiary, modifier = Modifier.padding(start = 4.dp))
             }
             HorizontalDivider(
-                thickness = 1.dp,
-                color = DemoColors.Divider,
+                thickness = MineTheme.Hairline,
+                color = MineTheme.Separator,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
             Row(
@@ -664,11 +938,12 @@ private fun ProfileEditScreen(onBack: () -> Unit) {
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("手机号", fontSize = 15.sp, modifier = Modifier.width(72.dp))
+                Text("手机号", fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary, modifier = Modifier.width(72.dp))
                 Text(
                     phone,
-                    fontSize = 15.sp,
-                    color = DemoColors.TextSecondary,
+                    fontSize = MineTheme.BodySize,
+                    color = MineTheme.LabelSecondary,
+                    textAlign = TextAlign.End,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -678,87 +953,108 @@ private fun ProfileEditScreen(onBack: () -> Unit) {
             Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White)
-                .clickable { showPlatformToast("退出登录（开发中）") }
+                .clip(cardShape)
+                .background(MineTheme.Surface)
+                .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                .clickable {
+                    MineProfileLogic.logout()
+                    showPlatformToast("已退出登录")
+                    onLoggedOut()
+                }
                 .padding(vertical = 16.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text("退出登录", color = Color(0xFFE53935), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text("退出登录", color = MineTheme.Danger, fontSize = 16.sp, fontWeight = FontWeight.Medium)
         }
         Spacer(Modifier.height(40.dp))
     }
 }
 
 @Composable
-private fun AddressListScreen(onBack: () -> Unit, onEdit: () -> Unit) {
-    // Flutter AddressListPage
-    data class Addr(val name: String, val phone: String, val line: String, val isDefault: Boolean)
-    val list = listOf(
-        Addr("qa_user", "138****5172", "北京市朝阳区演示路 1 号", true),
-        Addr("测试乙", "139****0000", "上海市浦东新区世纪大道 100 号", false),
-    )
+private fun AddressListScreen(
+    onBack: () -> Unit,
+    onCreate: () -> Unit,
+    onEdit: (String) -> Unit,
+) {
+    AddressMockStore.version
+    val list = AddressMockStore.addresses()
+    val cardShape = RoundedCornerShape(MineTheme.RadiusMd)
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
         MineTopBar(
             title = "收货地址",
             onBack = onBack,
-            containerColor = Color.White,
+            containerColor = MineTheme.Surface,
             actions = {
-                TextButton(onClick = onEdit) {
-                    Text("新增", color = DemoColors.Accent, fontWeight = FontWeight.SemiBold)
+                TextButton(onClick = onCreate) {
+                    Text("新增", color = MineTheme.Accent, fontWeight = FontWeight.SemiBold)
                 }
             },
         )
         if (list.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("暂无地址", color = DemoColors.Muted)
+                    Text("暂无地址", color = MineTheme.LabelTertiary)
                     Spacer(Modifier.height(12.dp))
-                    TextButton(onClick = onEdit) { Text("添加收货地址", color = DemoColors.Accent) }
+                    TextButton(onClick = onCreate) { Text("添加收货地址", color = MineTheme.Accent) }
                 }
             }
         } else {
             LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(list) { a ->
+                items(list, key = { it.id }) { a ->
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White)
-                            .clickable(onClick = onEdit)
+                            .clip(cardShape)
+                            .background(MineTheme.Surface)
+                            .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                            .clickable { onEdit(a.id) }
                             .padding(14.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("${a.name}  ${a.phone}", fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                            Text(
+                                "${a.receiverName}  ${a.phoneMasked}",
+                                fontWeight = FontWeight.Medium,
+                                fontSize = MineTheme.BodySize,
+                                color = MineTheme.LabelPrimary,
+                            )
                             if (a.isDefault) {
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     "默认",
-                                    color = Color.White,
+                                    color = MineTheme.Accent,
                                     fontSize = 11.sp,
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(4.dp))
-                                        .background(DemoColors.Accent)
+                                        .background(MineTheme.LinkBgSoft)
                                         .padding(horizontal = 6.dp, vertical = 2.dp),
                                 )
                             }
                         }
                         Spacer(Modifier.height(6.dp))
-                        Text(a.line, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                        Text(a.line, color = MineTheme.LabelSecondary, fontSize = 13.sp)
                         Spacer(Modifier.height(10.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            Text(
-                                "设为默认",
-                                color = DemoColors.Accent,
-                                fontSize = 13.sp,
-                                modifier = Modifier.clickable { showPlatformToast("已设为默认") },
-                            )
+                        Row(Modifier.fillMaxWidth()) {
+                            if (!a.isDefault) {
+                                Text(
+                                    "设为默认",
+                                    color = MineTheme.Accent,
+                                    fontSize = 13.sp,
+                                    modifier = Modifier.clickable {
+                                        AddressMockStore.setDefault(a.id)
+                                        showPlatformToast("已设为默认")
+                                    },
+                                )
+                            }
+                            Spacer(Modifier.weight(1f))
                             Text(
                                 "删除",
-                                color = Color(0xFFE53935),
+                                color = MineTheme.LabelTertiary,
                                 fontSize = 13.sp,
-                                modifier = Modifier.clickable { showPlatformToast("已删除") },
+                                modifier = Modifier.clickable {
+                                    AddressMockStore.delete(a.id)
+                                    showPlatformToast("已删除")
+                                },
                             )
                         }
                     }
@@ -768,22 +1064,159 @@ private fun AddressListScreen(onBack: () -> Unit, onEdit: () -> Unit) {
     }
 }
 
+private val DemoRegions = listOf(
+    Triple("北京市", "北京市", "朝阳区"),
+    Triple("北京市", "北京市", "海淀区"),
+    Triple("上海市", "上海市", "浦东新区"),
+    Triple("广东省", "深圳市", "南山区"),
+    Triple("广东省", "广州市", "天河区"),
+)
+
 @Composable
 private fun AddressEditScreen(onBack: () -> Unit) {
-    // Flutter AddressEditPage Material TextField AA floor → SoT body under 56dp nav.
-    ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        WalletFlutterNavBar(title = "新增地址", onBack = onBack)
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            Image(
-                painter = painterResource(Res.drawable.mine_address_edit_body),
-                contentDescription = "新增地址：收货人、手机号、省市区、详细地址、保存",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showPlatformToast("已保存") },
-                contentScale = ContentScale.FillWidth,
+    val editing = AddressMockStore.find(AddressMockStore.selectedAddressId)
+    var name by remember { mutableStateOf(editing?.receiverName.orEmpty()) }
+    var phone by remember { mutableStateOf(editing?.receiverPhone.orEmpty()) }
+    var province by remember { mutableStateOf(editing?.province ?: "北京市") }
+    var city by remember { mutableStateOf(editing?.city ?: "北京市") }
+    var district by remember { mutableStateOf(editing?.district ?: "朝阳区") }
+    var detail by remember { mutableStateOf(editing?.detailAddress.orEmpty()) }
+    var label by remember { mutableStateOf(editing?.label.orEmpty()) }
+    var isDefault by remember { mutableStateOf(editing?.isDefault ?: false) }
+    var regionPickerOpen by remember { mutableStateOf(false) }
+    val cardShape = RoundedCornerShape(MineTheme.RadiusMd)
+    val regionLabel = listOf(province, city, district).filter { it.isNotBlank() }.joinToString(" ")
+
+    fun save() {
+        val err = AddressMockStore.validate(name, phone, province, city, district, detail)
+        if (err != null) {
+            showPlatformToast(err)
+        } else {
+            AddressMockStore.save(
+                id = editing?.id,
+                name = name,
+                phone = phone,
+                province = province,
+                city = city,
+                district = district,
+                detail = detail,
+                label = label,
+                isDefault = isDefault,
             )
+            showPlatformToast("已保存")
+            onBack()
         }
+    }
+
+    if (regionPickerOpen) {
+        AlertDialog(
+            onDismissRequest = { regionPickerOpen = false },
+            title = { Text("选择省市区") },
+            text = {
+                Column {
+                    DemoRegions.forEach { (p, c, d) ->
+                        val selected = province == p && city == c && district == d
+                        Text(
+                            "$p $c $d",
+                            color = if (selected) MineTheme.Accent else MineTheme.LabelPrimary,
+                            fontSize = MineTheme.BodySize,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    province = p
+                                    city = c
+                                    district = d
+                                    regionPickerOpen = false
+                                }
+                                .padding(vertical = 10.dp),
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { regionPickerOpen = false }) { Text("取消") }
+            },
+        )
+    }
+
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(
+            title = if (editing == null) "新增地址" else "编辑地址",
+            onBack = onBack,
+            containerColor = MineTheme.Surface,
+        )
+        Column(
+            Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(cardShape)
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .padding(horizontal = 16.dp),
+            ) {
+                AddressField("收货人", name) { name = it }
+                HorizontalDivider(thickness = MineTheme.Hairline, color = MineTheme.Separator)
+                AddressField("手机号", phone) { phone = it }
+                HorizontalDivider(thickness = MineTheme.Hairline, color = MineTheme.Separator)
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable { regionPickerOpen = true }
+                        .padding(vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("省市区", fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary, modifier = Modifier.width(88.dp))
+                    Text(
+                        regionLabel.ifBlank { "请选择省市区" },
+                        fontSize = MineTheme.BodySize,
+                        color = if (regionLabel.isBlank()) MineTheme.LabelTertiary else MineTheme.LabelPrimary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text("›", fontSize = 20.sp, color = MineTheme.LabelTertiary)
+                }
+                HorizontalDivider(thickness = MineTheme.Hairline, color = MineTheme.Separator)
+                AddressField("详细地址", detail, singleLine = false) { detail = it }
+                HorizontalDivider(thickness = MineTheme.Hairline, color = MineTheme.Separator)
+                AddressField("标签（可选）", label) { label = it }
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(cardShape)
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("设为默认地址", fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary, modifier = Modifier.weight(1f))
+                Switch(
+                    checked = isDefault,
+                    onCheckedChange = { isDefault = it },
+                    colors = SwitchDefaults.colors(checkedTrackColor = MineTheme.Accent),
+                )
+            }
+        }
+        Text(
+            "保存",
+            color = Color.White,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            fontSize = MineTheme.BodySize,
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(22.dp))
+                .background(MineTheme.Accent)
+                .clickable { save() }
+                .padding(vertical = 14.dp),
+        )
     }
 }
 
@@ -800,12 +1233,12 @@ private fun AddressField(
             .padding(vertical = 14.dp),
         verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
     ) {
-        Text(label, fontSize = 15.sp, modifier = Modifier.width(88.dp))
+        Text(label, fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary, modifier = Modifier.width(88.dp))
         BasicTextField(
             value = value,
             onValueChange = onChange,
             singleLine = singleLine,
-            textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+            textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary),
             modifier = Modifier
                 .weight(1f)
                 .then(if (singleLine) Modifier else Modifier.height(64.dp)),
@@ -819,8 +1252,8 @@ private fun AddressField(
                             "标签（可选）" -> "家 / 公司"
                             else -> ""
                         },
-                        color = DemoColors.Muted,
-                        fontSize = 15.sp,
+                        color = MineTheme.LabelTertiary,
+                        fontSize = MineTheme.BodySize,
                     )
                 }
                 inner()

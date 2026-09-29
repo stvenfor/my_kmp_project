@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.network.DemoApiHosts
 import com.example.my_kmp_project.core.network.NetEnvironment
@@ -38,8 +37,9 @@ import com.example.my_kmp_project.core.platform.showPlatformToast
 internal fun MineSettingsScreen(
     onBack: () -> Unit,
 ) {
-    var darkMode by remember { mutableStateOf(false) }
-    var localeZh by remember { mutableStateOf(true) }
+    MinePrefsStore.version
+    val darkMode = MinePrefsStore.darkMode
+    val localeZh = MinePrefsStore.localeZh
     var envPickerOpen by remember { mutableStateOf(false) }
     var langPickerOpen by remember { mutableStateOf(false) }
     var envLabel by remember {
@@ -55,7 +55,7 @@ internal fun MineSettingsScreen(
                 Column {
                     TextButton(
                         onClick = {
-                            localeZh = true
+                            MinePrefsStore.setLocaleZh(true)
                             langPickerOpen = false
                             showPlatformToast("已切换为简体中文")
                         },
@@ -63,12 +63,12 @@ internal fun MineSettingsScreen(
                     ) {
                         Text(
                             text = if (localeZh) "简体中文  ✓" else "简体中文",
-                            color = DemoColors.TextPrimary,
+                            color = MineTheme.LabelPrimary,
                         )
                     }
                     TextButton(
                         onClick = {
-                            localeZh = false
+                            MinePrefsStore.setLocaleZh(false)
                             langPickerOpen = false
                             showPlatformToast("Switched to English")
                         },
@@ -76,7 +76,7 @@ internal fun MineSettingsScreen(
                     ) {
                         Text(
                             text = if (!localeZh) "English  ✓" else "English",
-                            color = DemoColors.TextPrimary,
+                            color = MineTheme.LabelPrimary,
                         )
                     }
                 }
@@ -92,9 +92,9 @@ internal fun MineSettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DemoColors.PageBg),
+            .background(MineTheme.Background),
     ) {
-        MineTopBar(title = "设置", onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = "设置", onBack = onBack, containerColor = MineTheme.Background)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -104,7 +104,7 @@ internal fun MineSettingsScreen(
         ) {
             Text(
                 text = "通用",
-                color = DemoColors.Muted,
+                color = MineTheme.LabelTertiary,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
             )
@@ -149,8 +149,8 @@ internal fun MineSettingsScreen(
                     subtitle = "切换浅色 / 深色主题",
                     checked = darkMode,
                     onCheckedChange = {
-                        darkMode = it
-                        showPlatformToast(if (it) "深色模式（本地预览）" else "浅色模式（本地预览）")
+                        MinePrefsStore.setDarkMode(it)
+                        showPlatformToast(if (it) "深色模式已保存" else "浅色模式已保存")
                     },
                 )
                 MineInsetDivider()
@@ -164,7 +164,7 @@ internal fun MineSettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "示例",
-                color = DemoColors.Muted,
+                color = MineTheme.LabelTertiary,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
             )
@@ -187,27 +187,27 @@ internal fun MineAboutScreen(onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DemoColors.PageBg),
+            .background(MineTheme.Background),
     ) {
-        MineTopBar(title = "关于", onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(title = "关于", onBack = onBack, containerColor = MineTheme.Background)
         Column(modifier = Modifier.padding(16.dp)) {
             MineGroupedCard {
                 Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
                     Text(
                         text = "My AI · KMP 三端壳（Android / iOS / HarmonyOS）。",
-                        color = DemoColors.TextPrimary,
-                        fontSize = 15.sp,
+                        color = MineTheme.LabelPrimary,
+                        fontSize = MineTheme.BodySize,
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "默认 host：${DemoApiHosts.TEST}",
-                        color = DemoColors.TextSecondary,
+                        color = MineTheme.LabelSecondary,
                         fontSize = 13.sp,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "当前：${NetworkConfig.effectiveBaseUrl()}",
-                        color = DemoColors.Muted,
+                        color = MineTheme.LabelTertiary,
                         fontSize = 12.sp,
                     )
                 }

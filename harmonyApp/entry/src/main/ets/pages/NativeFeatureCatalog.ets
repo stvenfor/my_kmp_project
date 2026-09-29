@@ -78,7 +78,7 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['小视频', '/video/short'],
   ['短视频', '/video/short'],
   ['店铺收款码', '/mine/store_qr'],
-  ['选买问答', '/mine/qa'],
+  ['选买问答', '/mine/http_test'],
   ['商家海报', '/mine/poster'],
   // Flutter MineController toast-only — do NOT map:
   // 切换门店/电子名片/商务合作/提醒事项/邀请好友/粉丝群/意见反馈/帮助中心

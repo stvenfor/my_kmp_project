@@ -29,6 +29,8 @@ internal interface ImEngine {
         lastMessage: String = "",
         unreadCount: Int = 0,
     ): String
+    /** Flutter recall within 3 minutes — replaces bubble with system tip. */
+    fun recallMessage(conversationId: String, messageId: String): Boolean
     fun observe(listener: () -> Unit): () -> Unit
     fun filterConversations(query: String): List<ImConversation>
 }
@@ -140,6 +142,10 @@ internal object ChatTimeFormat {
  *
  * Default [seedDemo]=true matches Flutter when Rong SDK is not ready (`enableSeed: true`).
  */
+internal object ImEngineStore {
+    val engine: ImEngine by lazy { MockImEngine(seedDemo = true) }
+}
+
 internal class MockImEngine(
     seedDemo: Boolean = true,
 ) : ImEngine {
@@ -266,6 +272,38 @@ internal class MockImEngine(
 
     override fun sendCustom(conversationId: String, title: String): ImMessage? =
         sendPipeline(conversationId, ImMessageType.Custom, title) { "[自定义消息]" }
+
+    override fun recallMessage(conversationId: String, messageId: String): Boolean {
+        ensureSeed()
+        val list = messagesByConversation[conversationId] ?: return false
+        val idx = list.indexOfFirst { it.id == messageId }
+        if (idx < 0) return false
+        val msg = list[idx]
+        if (!msg.canRecall) return false
+        list[idx] = msg.copy(
+            type = ImMessageType.System,
+            body = "你撤回了一条消息",
+            sendStatus = ImSendStatus.Success,
+            readStatus = ImReadStatus.Read,
+        )
+        val convIdx = conversationState.indexOfFirst { it.id == conversationId }
+        if (convIdx >= 0) {
+            val preview = list.firstOrNull {
+                it.type != ImMessageType.Time && it.type != ImMessageType.System
+            }?.let {
+                when (it.type) {
+                    ImMessageType.Image -> "[图片]"
+                    ImMessageType.Voice -> "[语音]"
+                    ImMessageType.Custom -> "[自定义消息]"
+                    else -> it.body
+                }
+            } ?: "你撤回了一条消息"
+            conversationState[convIdx] = conversationState[convIdx].copy(lastMessage = preview)
+            sortConversations()
+        }
+        notifyListeners()
+        return true
+    }
 
     private fun sendPipeline(
         conversationId: String,

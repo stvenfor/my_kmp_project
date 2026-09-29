@@ -44,7 +44,11 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.router.AppRoute
 import com.example.my_kmp_project.core.router.LocalAppNavigator
+import com.example.my_kmp_project.core.router.ProductRouteDispatch
+import com.example.my_kmp_project.core.router.ProductRouteHost
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import com.example.my_kmp_project.feature.content.ContentRouteHost
+import com.example.my_kmp_project.feature.mine.MineRouteHost
 import com.example.my_kmp_project.feature.mine.SwitchStoreDialog
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -65,43 +69,70 @@ internal fun HomeScreen(
     var destination by remember { mutableStateOf<String?>(null) }
     val navigator = LocalAppNavigator.current
 
+    fun go(raw: String) {
+        val target = ProductRouteDispatch.resolve(raw) ?: return
+        when (target.host) {
+            ProductRouteHost.Toast -> showPlatformToast(target.toastMessage ?: raw)
+            ProductRouteHost.Web -> navigator?.navigate(AppRoute.InAppWeb(OfflineWebFixtureUrl))
+            ProductRouteHost.Scan -> navigator?.navigate(AppRoute.Scan)
+            ProductRouteHost.Content -> when (target.path) {
+                "/friend" -> navigator?.navigate(AppRoute.Friend)
+                "/live", "/live/room" -> navigator?.navigate(AppRoute.Live)
+                "/classroom/my_class", "/classroom" -> navigator?.navigate(AppRoute.Classroom)
+                "/media/entry" -> navigator?.navigate(AppRoute.Media)
+                else -> destination = target.path
+            }
+            ProductRouteHost.AllServices -> destination = "services"
+            ProductRouteHost.Home, ProductRouteHost.Mine, ProductRouteHost.Community ->
+                destination = target.path
+            ProductRouteHost.Tab -> showPlatformToast("请切换底部 Tab")
+            ProductRouteHost.Auth -> showPlatformToast("请先登录")
+            ProductRouteHost.Unknown -> destination = raw
+        }
+    }
+
     when (val dest = destination) {
         null -> HomeRootContent(
             loggedIn = loggedIn,
             displayName = displayName,
-            onNavigate = { route ->
-                when (route) {
-                    "web" -> navigator?.navigate(AppRoute.InAppWeb(OfflineWebFixtureUrl))
-                    "services" -> destination = "services"
-                    "media" -> navigator?.navigate(AppRoute.Media)
-                    "scan" -> navigator?.navigate(AppRoute.Scan)
-                    "friend" -> navigator?.navigate(AppRoute.Friend)
-                    "live" -> navigator?.navigate(AppRoute.Live)
-                    "classroom" -> navigator?.navigate(AppRoute.Classroom)
-                    "请先登录" -> showPlatformToast("请先登录")
-                    else -> destination = route
-                }
+            onNavigate = ::go,
+        )
+        "services" -> AllServicesScreen(
+            onBack = { destination = null },
+            onOpen = { label ->
+                destination = null
+                go(label)
             },
         )
-        "search" -> HomeSearchScreen(onBack = { destination = null })
-        "report" -> LearningReportScreen(onBack = { destination = null })
-        "strategy" -> StrategyScreen(onBack = { destination = null })
-        "services" -> AllServicesScreen(onBack = { destination = null })
         else -> {
-            if (HomeRoutes.fromLabel(dest) != null || dest.startsWith("/home/")) {
-                HomeRouteHost(
-                    route = HomeRoutes.fromLabel(dest) ?: dest,
+            when (ProductRouteDispatch.hostForPath(dest)) {
+                ProductRouteHost.Home -> HomeRouteHost(
+                    route = dest,
                     onBack = { destination = null },
-                    onNavigate = { destination = it },
+                    onNavigate = { go(it) },
                 )
-            } else {
-                AllServicesScreen(onBack = { destination = null })
+                ProductRouteHost.Content -> ContentRouteHost(
+                    route = dest,
+                    onBack = { destination = null },
+                    onNavigate = { go(it) },
+                )
+                ProductRouteHost.Mine -> MineRouteHost(
+                    route = dest,
+                    onBack = { destination = null },
+                    onNavigate = { go(it) },
+                )
+                else -> HomeRouteHost(
+                    route = dest,
+                    onBack = { destination = null },
+                    onNavigate = { go(it) },
+                )
             }
         }
     }
 }
 
 @Composable
+@OptIn(ExperimentalTime::class)
 private fun HomeRootContent(
     loggedIn: Boolean,
     displayName: String?,
@@ -113,15 +144,28 @@ private fun HomeRootContent(
     var showSwitchStore by remember { mutableStateOf(false) }
     var storeName by remember { mutableStateOf(HomeMockData.storeName) }
     var showCheckIn by remember { mutableStateOf(false) }
-    var checkInAcked by remember { mutableStateOf(false) }
     val greeting = remember(displayName) { flutterStyleGreeting(displayName) }
+    // Read for recomposition when points / dialog ack change.
+    HomePointsStore.version
 
     LaunchedEffect(Unit) {
         delay(50)
         showTodos = true
     }
-    LaunchedEffect(loggedIn, checkInAcked) {
-        if (!loggedIn || checkInAcked) return@LaunchedEffect
+    LaunchedEffect(loggedIn, HomePointsStore.checkedInToday, HomePointsStore.dialogAckDate) {
+        val today = run {
+            @OptIn(ExperimentalTime::class)
+            val now = Clock.System.now().toString().take(10) // YYYY-MM-DD from Instant ISO
+            now
+        }
+        // Prefer calendar-like yyyy-mm-dd; Instant.toString is ISO-8601 starting with date.
+        val should = HomePointsStore.shouldShowDialog(
+            isLoggedIn = loggedIn,
+            checkedInToday = HomePointsStore.checkedInToday,
+            ackDate = HomePointsStore.dialogAckDate,
+            todayLocal = today,
+        )
+        if (!should) return@LaunchedEffect
         delay(400)
         showCheckIn = true
     }
@@ -139,16 +183,21 @@ private fun HomeRootContent(
     }
 
     if (showCheckIn && loggedIn) {
+        @OptIn(ExperimentalTime::class)
+        val today = Clock.System.now().toString().take(10)
         DailyCheckInDialog(
-            todayReward = 10,
-            streak = 3,
+            todayReward = HomePointsStore.todayReward,
+            streak = HomePointsStore.streak,
             onCheckIn = {
-                checkInAcked = true
-                showPlatformToast("签到成功，+10积分")
+                val res = HomePointsStore.checkIn()
+                HomePointsStore.markDialogAcked(today)
+                if (res != null) {
+                    showPlatformToast("签到成功，+${res.points}积分")
+                }
                 showCheckIn = false
             },
             onDismiss = {
-                checkInAcked = true
+                HomePointsStore.markDialogAcked(today)
                 showCheckIn = false
             },
         )
@@ -166,26 +215,25 @@ private fun HomeRootContent(
             item { GreetingSection(greeting = greeting) }
             item {
                 HomeSearchBarRow(
-                    onSearch = { onNavigate("search") },
-                    onScan = { onNavigate("scan") },
+                    onSearch = { onNavigate(HomeRoutes.Search) },
+                    onScan = { onNavigate("扫一扫") },
                 )
             }
             item { BannerSection() }
             item {
                 FeatureGrid(
-                    onFeature = { label ->
-                        when (label) {
-                            "更多" -> onNavigate("services")
-                            else -> onNavigate(label)
-                        }
-                    },
+                    onFeature = { label -> onNavigate(label) },
                 )
             }
             if (showTodos) {
                 item {
-                    QuickActionsSection(
-                        onAction = { title ->
-                            onNavigate(HomeRoutes.fromLabel(title) ?: title)
+                    HomeTodoCardStrip(
+                        onOpen = { card ->
+                            onNavigate(
+                                card.actionRoute.ifBlank {
+                                    HomeRoutes.fromLabel(card.title) ?: card.title
+                                },
+                            )
                         },
                     )
                 }
@@ -206,14 +254,14 @@ private fun HomeRootContent(
                 HubEntryCard(
                     title = "投资策略",
                     subtitle = "资产九宫格 · 恐贪定投 · 趋势策略",
-                    onClick = { onNavigate("strategy") },
+                    onClick = { onNavigate(HomeRoutes.Strategy) },
                 )
             }
             item {
                 ServiceGridSection(
                     onService = { label ->
                         // Flutter HomeServiceGrid: only「更多」/「全部」opens AllServices.
-                        if (label == "更多" || label == "全部") onNavigate("services")
+                        if (label == "更多" || label == "全部") onNavigate(HomeRoutes.AllServices)
                     },
                 )
             }
@@ -223,7 +271,7 @@ private fun HomeRootContent(
                 HubEntryCard(
                     title = "学习报告",
                     subtitle = "今日高光 · 学习记录",
-                    onClick = { onNavigate("report") },
+                    onClick = { onNavigate(HomeRoutes.LearningReport) },
                 )
             }
             item { ToolsSection(onNavigate = onNavigate) }
@@ -250,7 +298,7 @@ private fun GreetingSection(greeting: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(top = 16.dp),
+            .padding(top = 24.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Text(
@@ -268,6 +316,7 @@ private fun GreetingSection(greeting: String) {
                 .background(DemoColors.Accent.copy(alpha = 0.1f))
                 .padding(horizontal = 12.dp, vertical = 6.dp),
         ) {
+            // Flutter Icons.notifications_none_rounded (glyph stand-in)
             Text("◌", color = DemoColors.Accent, fontSize = 14.sp, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.width(4.dp))
             Text(
@@ -394,65 +443,6 @@ private fun visibleHomeFeatures(items: List<HomeFeatureItem>): List<HomeFeatureI
     val head = items.filter { it.label != "更多" }
         .take(if (more.isEmpty()) maxItems else maxItems - 1)
     return if (more.isEmpty()) head else head + more.last()
-}
-
-@Composable
-private fun QuickActionsSection(onAction: (String) -> Unit) {
-    val cards = HomeMockData.quickActions
-    if (cards.isEmpty()) return
-    Column(
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-            .fillMaxWidth(),
-    ) {
-        cards.chunked(2).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                row.forEach { action ->
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(DemoColors.Background)
-                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
-                            .clickable { onAction(action.title) }
-                            .padding(12.dp),
-                    ) {
-                        Text(
-                            action.title,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            color = DemoColors.TextPrimary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            action.subtitle,
-                            fontSize = 12.sp,
-                            color = DemoColors.TextSecondary,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            action.actionLabel,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = DemoColors.Accent,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(DemoColors.Accent.copy(alpha = 0.1f))
-                                .padding(horizontal = 10.dp, vertical = 4.dp),
-                        )
-                    }
-                }
-                if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
-            }
-        }
-    }
 }
 
 @Composable

@@ -1,8 +1,9 @@
 package com.example.my_kmp_project.core.account
 
+import com.example.my_kmp_project.core.network.NetworkJson
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 @Serializable
 public data class AccountUserSnapshot(
@@ -34,8 +35,6 @@ public data class AccountUserSnapshot(
         }
 
     companion object {
-        private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
-
         fun fromSession(session: AccountSession): AccountUserSnapshot? {
             if (!session.isLoggedIn) return null
             return AccountUserSnapshot(
@@ -50,9 +49,10 @@ public data class AccountUserSnapshot(
             )
         }
 
-        fun encode(snapshot: AccountUserSnapshot): String = json.encodeToString(snapshot)
+        fun encode(snapshot: AccountUserSnapshot): String =
+            NetworkJson.encodeToString(snapshot)
 
         fun decode(raw: String): AccountUserSnapshot? =
-            runCatching { json.decodeFromString<AccountUserSnapshot>(raw) }.getOrNull()
+            runCatching { NetworkJson.decodeFromString<AccountUserSnapshot>(raw) }.getOrNull()
     }
 }

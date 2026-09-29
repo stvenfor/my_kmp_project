@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,9 +84,11 @@ internal object CommunityRoutes {
     }
 }
 
-/** In-memory feed prepend for publish success (Android shell reads via callback). */
+/** In-memory publish bridge — topic pick + last publish for feed ingest. */
 internal object CommunityPublishBus {
     var lastPublishedBody: String? = null
+    var lastMediaType: String = "none"
+    var pendingTopic: String? = null
 }
 
 @Composable
@@ -102,8 +105,11 @@ internal fun CommunityRouteHost(
             onBack = onBack,
             onPickTopic = { onNavigate(CommunityRoutes.TopicSelect) },
             onOpenConvention = { onNavigate(CommunityRoutes.Convention) },
-            onPublished = { body ->
+            onPublished = { body, mediaType ->
+                CommunityMockStore.engine.createPost(body, mediaType = mediaType, source = "来自 Android")
                 CommunityPublishBus.lastPublishedBody = body
+                CommunityPublishBus.lastMediaType = mediaType
+                CommunityPublishBus.pendingTopic = null
                 showPlatformToast("发布成功")
                 onBack()
             },
@@ -112,8 +118,9 @@ internal fun CommunityRouteHost(
         CommunityRoutes.Convention -> CommunityConventionScreen(onBack = onBack)
         CommunityRoutes.TopicSelect -> CommunityTopicSelectScreen(
             onBack = onBack,
-            onPick = {
-                showPlatformToast("已选 #$it")
+            onPick = { name ->
+                CommunityPublishBus.pendingTopic = name
+                showPlatformToast("已选 #$name")
                 onBack()
             },
         )
@@ -128,10 +135,16 @@ internal fun CommunityRouteHost(
             coverUrl = videoUrl ?: "https://picsum.photos/seed/video_0/640/360",
             onBack = onBack,
         )
-        CommunityRoutes.Comment -> CommunityCommentScreen(onBack = onBack)
+        CommunityRoutes.Comment -> CommunityCommentScreen(
+            postId = CommunityMockStore.engine.defaultPostId(),
+            onBack = onBack,
+        )
         else -> {
             if (route.startsWith("/community/comment")) {
-                CommunityCommentScreen(onBack = onBack)
+                val id = route.substringAfter("postId=", missingDelimiterValue = "")
+                    .substringBefore('&')
+                    .ifBlank { CommunityMockStore.engine.defaultPostId() }
+                CommunityCommentScreen(postId = id, onBack = onBack)
             } else {
                 ReportMainTabRoot(isRoot = false)
                 Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
@@ -148,13 +161,18 @@ private fun CommunityPublishScreen(
     onBack: () -> Unit,
     onPickTopic: () -> Unit,
     onOpenConvention: () -> Unit,
-    onPublished: (String) -> Unit,
+    onPublished: (body: String, mediaType: String) -> Unit,
 ) {
     ReportMainTabRoot(isRoot = false)
     var body by remember { mutableStateOf("") }
     var mediaType by remember { mutableStateOf("none") } // none | image | video
-    var topic by remember { mutableStateOf<String?>(null) }
+    var topic by remember { mutableStateOf(CommunityPublishBus.pendingTopic) }
     var showConvention by remember { mutableStateOf(false) }
+
+    // Pick up topic when returning from TopicSelect.
+    LaunchedEffect(CommunityPublishBus.pendingTopic) {
+        topic = CommunityPublishBus.pendingTopic
+    }
 
     // Flutter CommunityConventionDialog.maybeShow — once per local calendar day.
     LaunchedEffect(Unit) {
@@ -263,7 +281,7 @@ private fun CommunityPublishScreen(
                             showPlatformToast("请输入内容")
                         } else {
                             val text = if (topic != null) "$body\n#$topic" else body
-                            onPublished(text)
+                            onPublished(text, mediaType)
                         }
                     }
                     .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -358,7 +376,46 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     var query by remember { mutableStateOf("") }
     var tab by remember { mutableStateOf(0) }
+    var revision by remember { mutableStateOf(0) }
     val tabs = listOf("全部", "动态", "话题", "用户")
+    val engine = CommunityMockStore.engine
+    DisposableEffect(engine) {
+        val unsub = engine.observe { revision++ }
+        onDispose { unsub() }
+    }
+    val all = remember(query, revision) { engine.searchAll(query) }
+    val postsOnly = remember(query, revision) { engine.searchPosts(query) }
+    val topicsOnly = remember(query, revision) { engine.searchTopics(query) }
+    val usersOnly = remember(query, revision) { engine.searchUsers(query) }
+
+    @Composable
+    fun UserFollowRow(u: CommunityUserHit) {
+        Row(
+            Modifier.fillMaxWidth().padding(vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(u.nickname, fontSize = 14.sp, modifier = Modifier.weight(1f))
+            Text(
+                if (u.isFollowed) "已关注" else "关注",
+                color = if (u.isFollowed) DemoColors.Muted else Color(0xFF1677FF),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(14.dp))
+                    .border(
+                        0.5.dp,
+                        if (u.isFollowed) DemoColors.Divider else Color(0xFF1677FF),
+                        RoundedCornerShape(14.dp),
+                    )
+                    .clickable {
+                        if (u.isFollowed) engine.unfollowUser(u.userId)
+                        else engine.followUser(u.userId)
+                        showPlatformToast(if (u.isFollowed) "已取消关注" else "已关注")
+                    }
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            )
+        }
+    }
 
     Column(Modifier.fillMaxSize().background(DemoColors.Background)) {
         MineTopBar(title = "搜索", onBack = onBack, containerColor = DemoColors.Background)
@@ -417,25 +474,51 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
             }
         }
         HorizontalDivider(thickness = 0.5.dp, color = DemoColors.Divider)
-        Column(Modifier.padding(16.dp)) {
+        LazyColumn(
+            Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             val q = query.trim()
-            if (q.isEmpty()) {
-                Text("热门话题", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                Spacer(Modifier.height(12.dp))
-                Text("暂无热门话题", color = DemoColors.Muted, fontSize = 14.sp)
+            if (q.isEmpty() && tab == 0) {
+                item {
+                    Text("热门话题", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
+                items(engine.searchTopics("")) { topic ->
+                    Text(
+                        "#${topic.name} · ${topic.heat}",
+                        color = Color(0xFF1677FF),
+                        fontSize = 14.sp,
+                    )
+                }
             } else {
                 when (tab) {
-                    0, 1 -> {
-                        Text("动态", fontWeight = FontWeight.SemiBold)
-                        Text("匹配动态：$q …", color = DemoColors.TextSecondary, modifier = Modifier.padding(vertical = 8.dp))
+                    0 -> {
+                        item { Text("动态 ${all.posts.size}", fontWeight = FontWeight.SemiBold) }
+                        items(all.posts, key = { it.id }) { post ->
+                            Text(post.content.lineSequence().firstOrNull().orEmpty(), fontSize = 14.sp)
+                        }
+                        item { Text("话题 ${all.topics.size}", fontWeight = FontWeight.SemiBold) }
+                        items(all.topics) { t -> Text("#${t.name}", color = Color(0xFF1677FF)) }
+                        item { Text("用户 ${all.users.size}", fontWeight = FontWeight.SemiBold) }
+                        items(all.users, key = { it.userId }) { u ->
+                            UserFollowRow(u)
+                        }
+                    }
+                    1 -> {
+                        item { Text("动态 ${postsOnly.size}", fontWeight = FontWeight.SemiBold) }
+                        items(postsOnly, key = { it.id }) { post ->
+                            Text(post.content.lineSequence().firstOrNull().orEmpty(), fontSize = 14.sp)
+                        }
                     }
                     2 -> {
-                        Text("话题", fontWeight = FontWeight.SemiBold)
-                        Text("#$q", color = Color(0xFF1677FF), modifier = Modifier.padding(vertical = 8.dp))
+                        item { Text("话题 ${topicsOnly.size}", fontWeight = FontWeight.SemiBold) }
+                        items(topicsOnly) { t -> Text("#${t.name}", color = Color(0xFF1677FF)) }
                     }
                     else -> {
-                        Text("用户", fontWeight = FontWeight.SemiBold)
-                        Text("用户 · $q", modifier = Modifier.padding(vertical = 8.dp))
+                        item { Text("用户 ${usersOnly.size}", fontWeight = FontWeight.SemiBold) }
+                        items(usersOnly, key = { it.userId }) { u ->
+                            UserFollowRow(u)
+                        }
                     }
                 }
             }
@@ -615,18 +698,15 @@ private fun CommunityVideoPlayScreen(coverUrl: String, onBack: () -> Unit) {
 }
 
 @Composable
-private fun CommunityCommentScreen(onBack: () -> Unit) {
+private fun CommunityCommentScreen(postId: String, onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
+    val engine = CommunityMockStore.engine
     var draft by remember { mutableStateOf("") }
-    var comments by remember {
-        mutableStateOf(
-            listOf(
-                "李四" to "说得对！周末一起去门店看看",
-                "赵六" to "同感 +1，双擎确实省油",
-                "客服小助手" to "欢迎到店试驾，预约通道已开放",
-            ),
-        )
+    var revision by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        engine.observe { revision++ }
     }
+    val comments = remember(postId, revision) { engine.comments(postId) }
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(title = "评论 ${comments.size}", onBack = onBack)
         LazyColumn(
@@ -634,7 +714,7 @@ private fun CommunityCommentScreen(onBack: () -> Unit) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(comments) { (name, body) ->
+            items(comments, key = { it.id }) { c ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(
                         Modifier
@@ -644,14 +724,24 @@ private fun CommunityCommentScreen(onBack: () -> Unit) {
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            name.take(1),
+                            c.nickname.take(1),
                             color = DemoColors.Accent,
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp,
                         )
                     }
                     Column {
-                        Text(name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = DemoColors.TextPrimary)
+                        Text(
+                            c.nickname,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = DemoColors.TextPrimary,
+                        )
+                        val body = if (c.replyToNickname != null) {
+                            "回复 ${c.replyToNickname}：${c.content}"
+                        } else {
+                            c.content
+                        }
                         Text(body, fontSize = 14.sp, color = DemoColors.TextSecondary)
                     }
                 }
@@ -688,9 +778,13 @@ private fun CommunityCommentScreen(onBack: () -> Unit) {
                     if (text.isEmpty()) {
                         showPlatformToast("请输入评论")
                     } else {
-                        comments = listOf("我" to text) + comments
-                        draft = ""
-                        showPlatformToast("评论成功")
+                        val added = engine.addComment(postId, text)
+                        if (added == null) {
+                            showPlatformToast("评论失败")
+                        } else {
+                            draft = ""
+                            showPlatformToast("评论成功")
+                        }
                     }
                 },
             ) { Text("发送", color = DemoColors.Accent) }

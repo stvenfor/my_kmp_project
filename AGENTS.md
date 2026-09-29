@@ -49,6 +49,8 @@ Ruflo MCP (Cursor): `.cursor/mcp.json` → `npx -y ruflo@latest mcp start`. Heal
 |------------|---------|---------|
 | `networkKtorMain` | android + ios + ohosArm64 | Ktor client (OHOS: CIO; x64 still cinterop) |
 | `accountSettingsMain` | android + ios | `multiplatform-settings` session KV |
+| `imageCoilMain` | android + ios + ohosArm64 | CPF Coil network images (`PlatformNetworkImage`; ohosX64 placeholder) |
+| `uuidCpfMain` | android + ios + ohosArm64 | CPF `com.benasher44:uuid` (`AppUuid`; ohosX64 stub) |
 
 Package root: `com.example.my_kmp_project`.
 
@@ -116,6 +118,10 @@ After changing Kotlin/Compose shared code for Harmony, publish again before DevE
 Release OHOS links set `optimized = false` to avoid OOM in DevirtualizationAnalysis; leave that unless you have measured headroom.
 
 OHOS HTTP: **ohosArm64** = CPF Ktor `3.3.3-0.3.0` + **CIO** (HTTPS gate passed). **ohosX64** = `net_http` cinterop fallback (no published Ktor ohosX64 klib). See `openspec/changes/adopt-cpf-ktor-ohos/`.
+
+OHOS images: **ohosArm64** = CPF Coil `3.3.0-0.3.0` via `imageCoilMain` + `coil-network-ktor3`. **ohosX64** = placeholder only (no Coil ohosX64 klib). See `openspec/changes/adopt-cpf-coil-image/`.
+
+OHOS UUID: **ohosArm64** = CPF `com.benasher44:uuid:0.8.4-1.0.0` via `uuidCpfMain` (`AppUuid`). **ohosX64** = stub actual (no uuid ohosX64 klib). See `openspec/changes/adopt-cpf-uuid/`.
 
 ## Conventions
 

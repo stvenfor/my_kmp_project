@@ -45,20 +45,28 @@ _Avoid_: 任意 gap 未 ready 就否定全部页面验收、用假 Success 冒�
 _Avoid_: 只修 KMP 已有 Catalog、把 Flutter 有而 KMP 无的入口当范围外
 
 **Screenshot Diff Gate（截图 Diff 门禁）**:
-全量对齐期硬门禁：Android 同机/同分辨率对照 Flutter Android SoT，误差 ≤ UI Parity Bar（≤2%）。iOS/Harmony 不做同级硬门禁，以可打开 + 人工/抽样对照为辅。
-_Avoid_: 三端强制同机 diff、无 Android 证据却宣称像素验收通过
+Android 同机/同分辨率对照 Flutter Android SoT，误差 ≤ UI Parity Bar（≤2%）。**Logic-first 阶段（进行中）**：降级为可选回归，不挡 `logic-pass`。阶段结束后再恢复为硬门禁。工具与历史证据保留。
+_Avoid_: 逻辑阶段仍以 mse 挡合并、删掉 diff 工具、无 Android 证据却宣称像素验收通过
+
+**Logic Acceptance Packet（逻辑验收包）**:
+**当前硬验收**：Android / iOS / Harmony 均可打开主路径（含 Soft Auth）；主交互与 Flutter 同级（Shared Presentation Logic / mock 深度）；`commonTest` 或可复现脚本覆盖关键行为；platform-gap 表已更新。不要求 Screenshot Diff Gate。
+_Avoid_: 只改 SoT 位图/像素皮、无行为证据却勾完成、假 Success 冒充真支付
 
 **Route Acceptance Packet（路由验收包）**:
-单个路由勾完成须同时满足：Android / iOS / Harmony 均可打开主路径；Android 过 Screenshot Diff Gate；主交互与 Flutter 同级（含 Shared Presentation Logic 与允许的 mock）；platform-gap 表已更新该能力状态。
+完整包 = Logic Acceptance Packet +（阶段结束后）Android Screenshot Diff Gate。Logic-first 阶段勾完成以 Logic Acceptance Packet 为准，inventory 记 `logic-pass`；历史 `packet-pass` 保留。
 _Avoid_: 仅 Android diff 即合入、三端未通就勾完成、逻辑未对齐只改皮
+
+**logic-pass（逻辑通过）**:
+Parity Inventory 状态：本路由已过 Logic Acceptance Packet；不表示像素门禁已再跑。可与历史 `packet-pass` 并存。
+_Avoid_: 用 logic-pass 冒充像素完成、把历史 packet-pass 清成未完成仅因暂缓 diff
 
 **Native-First Cutover（原生优先切流）**:
 非 Mine 页从 Legacy SecondaryRouteIsland 迁出时：先接通各端 Native Shell UI 为主路径并过验收包，再删除岛内对应路由；禁止先把岛内 CMP 像素修满再整体搬原生（避免双份 UI 劳动）。
 _Avoid_: 先修岛再迁、长期双开且无删除点
 
 **Parity Domain Ticket（对齐域票）**:
-全量对齐期的实现单位：同一小域 2–4 个相关路由为一票（含三端打开、Android Screenshot Diff Gate、同级逻辑/mock、gap 表更新）。Mine Compose Island 与 Native-First Cutover **两轨并行**，共用 Parity Inventory。
-_Avoid_: 一路由一票过碎、整轨一张大票、岛与壳强行串行无阻塞边却互相等待
+全量对齐期的实现单位：同一小域 2–4 个相关路由为一票。Logic-first 阶段票面验收 = 三端打开 + Logic Acceptance Packet + gap 表；**不**要求 Screenshot Diff Gate。Mine Compose Island 与 Native-First Cutover **两轨并行**，共用 Parity Inventory。
+_Avoid_: 一路由一票过碎、整轨一张大票、岛与壳强行串行无阻塞边却互相等待、逻辑阶段仍以像素 diff 挡票
 
 **Parity Inventory Record（对齐清单记录）**:
 仓内 markdown 为清单草稿 SoT；开票时同步到 GitHub（epic/子票）。二者冲突时以已确认的 GitHub 子票范围为准并回写仓内表。
@@ -75,6 +83,18 @@ _Avoid_: Android 全走共享 CMP、把 Jetpack 与 CMP 混称为同一种而不
 **Auth UI（认证 UI）**:
 登录、注册，以及聊天/社区等处的未登录门闸，均属 Native Shell UI，不进入「我的」Compose 岛。
 _Avoid_: 把登录注册默认放进 Mine Compose Island
+
+**Kotlin-Owned BFF JSON（Kotlin 独占 BFF JSON）**:
+对 BFF 的请求体与响应（含标准 `{code,message,data}` 信封）一律在共享 Kotlin 中用 kotlinx-serialization 编解码；Native Shell UI 只负责像素与平台 SDK，不解析 BFF JSON。
+_Avoid_: ArkTS/Swift 手解 BFF、壳内平行 AuthApiClient、把「Harmony 另搞一套 JSON」当成平台必然
+
+**Envelope Fallback（信封兜底）**:
+当响应不是标准业务信封（例如网关 HTTP 401 的 OAuth `error`/`error_description`）时，仅在 Kotlin 网络层做薄适配；不构成第二套业务字段解析。
+_Avoid_: 强制一切响应都能 decode 成标准信封、在壳层再解析异常体
+
+**Account Session SoT（会话真相源）**:
+登录会话以共享 Kotlin 会话层为唯一权威；壳层只读或经 Bridge 写入，不维护平行权威 token 存储。
+_Avoid_: ArkTS SessionStore 与 Kotlin 双权威、登录成功只写壳不写 Kotlin
 
 **Mine Island Hosting（我的岛宿主导航）**:
 从「我的」主页进入二级时，由原生壳 push 一个 Compose 容器页承载岛；岛内自管二级/三级跳转；系统返回先弹出岛内页，栈尽再关闭容器回到「我的」主页。

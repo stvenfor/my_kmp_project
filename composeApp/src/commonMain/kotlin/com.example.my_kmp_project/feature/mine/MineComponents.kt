@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.core.design.DemoColors
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.settings_personalized_settings_chevron_right
 import org.jetbrains.compose.resources.painterResource
@@ -45,7 +44,7 @@ internal fun MineGroupedCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(MineTheme.RadiusMd))
             .background(MineTheme.Surface)
-            .border(0.5.dp, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd)),
+            .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd)),
     ) {
         content()
     }
@@ -55,7 +54,7 @@ internal fun MineGroupedCard(
 internal fun MineSectionHeader(label: String) {
     Text(
         text = label,
-        color = Color(0xFF999999),
+        color = MineTheme.LabelTertiary,
         fontSize = 13.sp,
         modifier = Modifier.padding(start = 4.dp, top = 20.dp, end = 4.dp, bottom = 8.dp),
     )
@@ -73,7 +72,7 @@ internal fun MineNavRow(
     destructive: Boolean = false,
     onClick: (() -> Unit)?,
 ) {
-    val titleColor = if (destructive) DemoColors.Danger else DemoColors.TextPrimary
+    val titleColor = if (destructive) MineTheme.Danger else MineTheme.LabelPrimary
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -83,11 +82,11 @@ internal fun MineNavRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = title, color = titleColor, fontSize = 15.sp)
+                Text(text = title, color = titleColor, fontSize = MineTheme.BodySize)
                 if (showHelp && onHelp != null) {
                     Text(
                         text = "?",
-                        color = DemoColors.Muted,
+                        color = MineTheme.LabelTertiary,
                         fontSize = 13.sp,
                         modifier = Modifier
                             .padding(start = 6.dp)
@@ -101,7 +100,7 @@ internal fun MineNavRow(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = subtitle,
-                    color = DemoColors.Muted,
+                    color = MineTheme.LabelTertiary,
                     fontSize = 12.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -114,14 +113,14 @@ internal fun MineNavRow(
                     .padding(end = 8.dp)
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(DemoColors.Danger),
+                    .background(MineTheme.Danger),
             )
         }
         if (trailingText != null) {
             Text(
                 text = trailingText,
-                color = Color(0xFF666666),
-                fontSize = 15.sp,
+                color = MineTheme.LabelSecondary,
+                fontSize = MineTheme.BodySize,
             )
             Spacer(modifier = Modifier.width(4.dp))
         }
@@ -155,14 +154,14 @@ internal fun MineSwitchRow(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = title,
-                    color = Color(0xFF333333),
-                    fontSize = 16.sp,
+                    color = MineTheme.LabelPrimary,
+                    fontSize = MineTheme.BodySize,
                     modifier = Modifier.weight(1f, fill = false),
                 )
                 if (showHelp && onHelp != null) {
                     Text(
                         text = "?",
-                        color = DemoColors.Muted,
+                        color = MineTheme.LabelTertiary,
                         fontSize = 13.sp,
                         modifier = Modifier
                             .padding(start = 6.dp)
@@ -175,7 +174,7 @@ internal fun MineSwitchRow(
             if (!subtitle.isNullOrBlank()) {
                 Text(
                     text = subtitle,
-                    color = DemoColors.Muted,
+                    color = MineTheme.LabelTertiary,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(top = 2.dp),
                 )
@@ -185,7 +184,7 @@ internal fun MineSwitchRow(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedTrackColor = DemoColors.Accent,
+                checkedTrackColor = MineTheme.Accent,
                 checkedThumbColor = Color.White,
             ),
         )
@@ -196,8 +195,8 @@ internal fun MineSwitchRow(
 internal fun MineInsetDivider() {
     HorizontalDivider(
         modifier = Modifier.padding(start = 16.dp),
-        thickness = 0.5.dp,
-        color = Color(0xFFEEEEEE),
+        thickness = MineTheme.Hairline,
+        color = MineTheme.Separator,
     )
 }
 

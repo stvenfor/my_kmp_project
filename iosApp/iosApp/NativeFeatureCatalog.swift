@@ -108,7 +108,7 @@ enum NativeRouteResolver {
         "购车计算器": "/mine/purchase_calculator",
         "小视频": "/video/short", "短视频": "/video/short",
         "店铺收款码": "/mine/store_qr",
-        "选买问答": "/mine/qa",
+        "选买问答": "/mine/http_test",
         "商家海报": "/mine/poster",
         // Flutter MineController toast-only — do NOT map:
         // 商务门店/电子名片/商务合作/提醒事项/邀请好友/粉丝群/意见反馈/帮助中心
@@ -403,6 +403,11 @@ enum NativeFeatureCatalog {
                 .init(id: "1", title: "收款码", detail: "展示给客户扫码支付", badge: nil),
             ], primaryAction: "保存到相册")
         },
+        "/mine/http_test": {
+            .init(id: "/mine/http_test", title: "选买问答", subtitle: "在线解答客户问题", rows: [
+                .init(id: "1", title: "双擎和汽油怎么选？", detail: "待回复 · 3 人围观", badge: "待回"),
+            ], primaryAction: "去回答")
+        },
         "/mine/qa": {
             .init(id: "/mine/qa", title: "选买问答", subtitle: "在线解答客户问题", rows: [
                 .init(id: "1", title: "双擎和汽油怎么选？", detail: "待回复 · 3 人围观", badge: "待回"),
@@ -555,7 +560,7 @@ struct NativeFeatureHost: View {
             NativeSmsTemplatePage(onClose: onClose)
         } else if path == "/mine/store_qr" {
             NativeStoreQrPage(onClose: onClose)
-        } else if path == "/mine/qa" {
+        } else if path == "/mine/qa" || path == "/mine/http_test" {
             NativeQaPage(onClose: onClose)
         } else if path == "/mine/poster" {
             NativePosterPage(onClose: onClose)

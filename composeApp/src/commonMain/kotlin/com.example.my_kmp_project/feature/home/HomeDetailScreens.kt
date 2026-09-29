@@ -36,6 +36,7 @@ import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 internal data class AfterSalesDetailRow(
+    val id: String,
     val title: String,
     val kindLabel: String,
     val customerName: String,

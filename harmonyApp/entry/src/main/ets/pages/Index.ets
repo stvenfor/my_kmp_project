@@ -217,6 +217,19 @@ struct Index {
       const session = sharedSessionStore.load();
       if (session?.token) {
         this.applySession(session);
+        // Shell cache → Kotlin Account Session SoT (lib may already hold the same token).
+        try {
+          if (libentry !== undefined && libentry.ApplyAuthSession !== undefined) {
+            libentry.ApplyAuthSession(
+              session.token,
+              session.userId,
+              session.userName,
+              session.phone ?? '',
+            );
+          }
+        } catch (_e) {
+          // Compose host may not be loaded yet.
+        }
       }
     });
     setTimeout(() => {

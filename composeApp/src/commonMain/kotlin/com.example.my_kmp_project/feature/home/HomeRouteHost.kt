@@ -134,16 +134,20 @@ internal object HomeRoutes {
     const val NewCarFollowCreate = "/home/new_car_follow/create"
     const val NewCarFollowDetail = "/home/new_car_follow/detail"
 
+    const val AllServices = "/home/all_services"
+
     /** Map Home feature / todo labels → route. */
     fun fromLabel(label: String): String? = when (label.trim()) {
         "搜索" -> Search
+        "全部服务", "更多" -> AllServices
         "投资策略", "策略", "朋友圈营销", "朋友圈" -> Strategy
         "学习报告" -> LearningReport
         "签到商城", "积分商城", "签到日历", "签到", "营销活动" -> CheckInMall
         "配音", "配音首页" -> DubbingFeed
         "热榜", "热配榜" -> HotRankDetail
         "生活服务" -> LifeService
-        "直播带货", "直播" -> LiveCommerce
+        "直播带货" -> LiveCommerce
+        // 「直播」alone → Content live room in ContentRoutes; keep 直播带货 here.
         "Club" -> Club
         "二手车" -> UsedCar
         "台账", "公司数据", "收支" -> Ledger
@@ -193,11 +197,15 @@ internal fun HomeRouteHost(
         )
         HomeRoutes.UsedCar -> UsedCarListScreen(
             onBack = onBack,
-            onItem = { onNavigate(HomeRoutes.UsedCarDetail) },
+            onItem = { order ->
+                HomeSecondaryStore.selectUsedCar(order.id)
+                onNavigate(HomeRoutes.UsedCarDetail)
+            },
             onCreate = { onNavigate(HomeRoutes.UsedCarCreate) },
         )
         HomeRoutes.UsedCarDetail -> UsedCarDetailScreen(
-            order = HomeSecondaryMock.usedCarOrders.first(),
+            order = HomeSecondaryStore.findUsedCar(HomeSecondaryStore.selectedUsedCarId)
+                ?: HomeSecondaryStore.usedCarOrders().first(),
             onBack = onBack,
         )
         HomeRoutes.UsedCarCreate -> UsedCarCreateScreen(onBack = onBack)
@@ -224,22 +232,30 @@ internal fun HomeRouteHost(
         HomeRoutes.TodoOrderReview -> StoreReviewOrdersScreen(onBack = onBack)
         HomeRoutes.AfterSales -> AfterSalesListScreen(
             onBack = onBack,
-            onItem = { onNavigate(HomeRoutes.AfterSalesDetail) },
+            onItem = { row ->
+                HomeSecondaryStore.selectAfterSales(row.id)
+                onNavigate(HomeRoutes.AfterSalesDetail)
+            },
             onCreate = { onNavigate(HomeRoutes.AfterSalesCreate) },
         )
         HomeRoutes.AfterSalesCreate -> AfterSalesCreateScreen(onBack = onBack)
         HomeRoutes.AfterSalesDetail -> AfterSalesServiceDetailScreen(
-            row = HomeSecondaryMock.afterSalesDetails.first(),
+            row = HomeSecondaryStore.findAfterSales(HomeSecondaryStore.selectedAfterSalesId)
+                ?: HomeSecondaryStore.afterSalesDetails().first(),
             onBack = onBack,
         )
         HomeRoutes.NewCarFollow -> NewCarFollowListScreen(
             onBack = onBack,
-            onItem = { onNavigate(HomeRoutes.NewCarFollowDetail) },
+            onItem = { row ->
+                HomeSecondaryStore.selectNewCarFollow(row.id)
+                onNavigate(HomeRoutes.NewCarFollowDetail)
+            },
             onCreate = { onNavigate(HomeRoutes.NewCarFollowCreate) },
         )
         HomeRoutes.NewCarFollowCreate -> NewCarFollowCreateScreen(onBack = onBack)
         HomeRoutes.NewCarFollowDetail -> NewCarFollowArchiveDetailScreen(
-            row = HomeSecondaryMock.newCarFollows.first(),
+            row = HomeSecondaryStore.findNewCarFollow(HomeSecondaryStore.selectedNewCarFollowId)
+                ?: HomeSecondaryStore.newCarFollows().first(),
             onBack = onBack,
         )
         else -> CrudDetailScreen("未识别路由", "route=$route", onBack)
@@ -249,6 +265,7 @@ internal fun HomeRouteHost(
 internal data class HomeListRow(val title: String, val subtitle: String)
 
 internal data class UsedCarOrderRow(
+    val id: String,
     val kindLabel: String,
     val statusLabel: String,
     val submittedDate: String,
@@ -259,9 +276,11 @@ internal data class UsedCarOrderRow(
     val amountLabel: String,
     val amount: Int,
     val customerName: String,
+    val vin: String = "",
 )
 
 internal data class NewCarFollowRow(
+    val id: String,
     val customerName: String,
     val phone: String,
     val vehicle: String,
@@ -287,47 +306,13 @@ internal data class AnalyticsRecordRow(
 )
 
 internal object HomeSecondaryMock {
-    val usedCarOrders = listOf(
-        UsedCarOrderRow(
-            kindLabel = "置换",
-            statusLabel = "待审核",
-            submittedDate = "2026-09-22",
-            vehicleModel = "2021 帝豪",
-            plateNo = "京A·88X21",
-            modelYear = 2021,
-            mileageKm = 32000,
-            amountLabel = "评估价",
-            amount = 86000,
-            customerName = "张先生",
-        ),
-        UsedCarOrderRow(
-            kindLabel = "专卖",
-            statusLabel = "已通过",
-            submittedDate = "2026-09-18",
-            vehicleModel = "2020 星越L",
-            plateNo = "沪B·6K902",
-            modelYear = 2020,
-            mileageKm = 41000,
-            amountLabel = "成交价",
-            amount = 152000,
-            customerName = "李女士",
-        ),
-        UsedCarOrderRow(
-            kindLabel = "收车",
-            statusLabel = "已提交",
-            submittedDate = "2026-09-15",
-            vehicleModel = "2019 博越",
-            plateNo = "粤C·19H33",
-            modelYear = 2019,
-            mileageKm = 55000,
-            amountLabel = "收车价",
-            amount = 79000,
-            customerName = "王先生",
-        ),
-    )
-    val usedCars = usedCarOrders.map {
-        HomeListRow(it.vehicleModel, "${it.amount / 10000.0}万 · ${it.mileageKm / 10000.0}万公里")
-    }
+    /** Prefer [HomeSecondaryStore] for mutable pipelines; kept for ledger/analytics. */
+    val usedCarOrders: List<UsedCarOrderRow>
+        get() = HomeSecondaryStore.usedCarOrders()
+    val usedCars: List<HomeListRow>
+        get() = usedCarOrders.map {
+            HomeListRow(it.vehicleModel, "${it.amount / 10000.0}万 · ${it.mileageKm / 10000.0}万公里")
+        }
     val ledger = listOf(
         LedgerTransaction(
             id = 1,
@@ -389,68 +374,18 @@ internal object HomeSecondaryMock {
         HomeListRow("订单 #NC-9021", "星瑞 · 待门店审核"),
         HomeListRow("订单 #NC-9018", "缤越 · 待门店审核"),
     )
-    val afterSales = listOf(
-        HomeListRow("工单 AS-441", "保养套餐 · 进行中"),
-        HomeListRow("工单 AS-438", "索赔 · 待配件"),
-    )
-    val afterSalesDetails = listOf(
-        AfterSalesDetailRow(
-            title = "工单 AS-441",
-            kindLabel = "保养",
-            customerName = "陈先生",
-            customerPhone = "139****2201",
-            plateNo = "京A·88K21",
-            mileageKm = 28600,
-            serviceDate = "2026-09-25",
-            content = "更换机油机滤，检查刹车片；客户要求加急。",
-            appointmentId = 8821,
-        ),
-        AfterSalesDetailRow(
-            title = "工单 AS-438",
-            kindLabel = "维修",
-            customerName = "周女士",
-            customerPhone = "137****6610",
-            plateNo = "京N·5U902",
-            mileageKm = 42100,
-            serviceDate = "2026-09-24",
-            content = "前杠钣喷索赔，待配件到店。",
-            appointmentId = null,
-        ),
-    )
-    val newCars = listOf(
-        HomeListRow("客户 孙某", "银河 L7 · 试驾完成"),
-        HomeListRow("客户 吴某", "星愿 · 报价跟进"),
-    )
-    val newCarFollows = listOf(
-        NewCarFollowRow(
-            customerName = "孙某",
-            phone = "138****2101",
-            vehicle = "银河 L7",
-            stage = "跟进中",
-            intentBand = "高",
-            nextFollow = "今日 15:00",
-            owner = "销售顾问",
-        ),
-        NewCarFollowRow(
-            customerName = "吴某",
-            phone = "139****8820",
-            vehicle = "星愿",
-            stage = "报价",
-            intentBand = "中",
-            nextFollow = "明日 10:30",
-            owner = "销售顾问",
-        ),
-        NewCarFollowRow(
-            customerName = "赵某",
-            phone = "186****4412",
-            vehicle = "星越 L",
-            stage = "试驾",
-            intentBand = "低",
-            nextFollow = "09-20 已逾期",
-            owner = "网销",
-            overdue = true,
-        ),
-    )
+    val afterSales: List<HomeListRow>
+        get() = HomeSecondaryStore.afterSalesDetails().map {
+            HomeListRow(it.title, "${it.kindLabel} · ${it.customerName}")
+        }
+    val afterSalesDetails: List<AfterSalesDetailRow>
+        get() = HomeSecondaryStore.afterSalesDetails()
+    val newCars: List<HomeListRow>
+        get() = HomeSecondaryStore.newCarFollows().map {
+            HomeListRow("客户 ${it.customerName}", "${it.vehicle} · ${it.stage}")
+        }
+    val newCarFollows: List<NewCarFollowRow>
+        get() = HomeSecondaryStore.newCarFollows()
 }
 
 @Composable
@@ -908,17 +843,15 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
 
 @Composable
 private fun CheckInMallScreen(onBack: () -> Unit) {
-    // Flutter CheckInMallPage layout: blue chrome (nav+notice+stats) → check-in card →
-    // 成长任务 → 积分换礼. Mock fills until PointsApi is wired.
+    // Flutter CheckInMallPage — bound to HomePointsStore (mock PointsApi).
     val headerBlue = DemoColors.Accent
     val coinGold = Color(0xFFF5A623)
-    // Match Flutter CheckInMall SoT: 0 points, streak 1, today +5, no prior signed cells.
-    var points by remember { mutableStateOf(0) }
-    var streak by remember { mutableStateOf(1) }
-    var checkedToday by remember { mutableStateOf(false) }
+    HomePointsStore.version
+    val points = HomePointsStore.balance
+    val streak = HomePointsStore.streak
+    val checkedToday = HomePointsStore.checkedInToday
     var remind by remember { mutableStateOf(false) }
     var checkingIn by remember { mutableStateOf(false) }
-    // Flutter CheckInDayView week strip — unsigned past / today / future
     data class DayCell(val label: String, val reward: Int, val signed: Boolean, val isToday: Boolean)
     val calendar = listOf(
         DayCell("19", 5, false, false),
@@ -927,11 +860,11 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
         DayCell("22", 5, false, false),
         DayCell("23", 5, false, false),
         DayCell("24", 5, false, false),
-        DayCell("今天", 5, false, true),
+        DayCell("今天", HomePointsStore.todayReward, checkedToday, true),
     )
     data class TaskRow(val title: String, val points: Int, val action: String, val icon: String)
     val tasks = listOf(
-        TaskRow("每日登录", 5, "领取", "➡️"),
+        TaskRow("每日登录", 5, if (checkedToday) "已领" else "领取", "➡️"),
         TaskRow("发一条动态", 10, "去完成", "💬"),
         TaskRow("商城下单", 20, "去完成", "🛍"),
     )
@@ -1047,11 +980,13 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                             .background(if (checkedToday) Color(0xFFF5F6F8) else headerBlue)
                             .clickable(enabled = !checkedToday && !checkingIn) {
                                 checkingIn = true
-                                checkedToday = true
-                                points += 5
-                                streak += 1
+                                val res = HomePointsStore.checkIn()
                                 checkingIn = false
-                                showPlatformToast("签到成功，+5积分")
+                                if (res != null) {
+                                    showPlatformToast("签到成功，+${res.points}积分")
+                                } else {
+                                    showPlatformToast("今日已签到")
+                                }
                             }
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
@@ -1188,8 +1123,12 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
                                 .clickable {
                                     when (task.action) {
                                         "领取" -> {
-                                            points += task.points
-                                            showPlatformToast("领取成功，+${task.points}积分")
+                                            val res = HomePointsStore.checkIn()
+                                            if (res != null) {
+                                                showPlatformToast("领取成功，+${res.points}积分")
+                                            } else {
+                                                showPlatformToast("今日已领取")
+                                            }
                                         }
                                         "去完成" -> showPlatformToast("去完成：${task.title}")
                                         else -> showPlatformToast(task.action)
@@ -2289,7 +2228,10 @@ private fun NewCarFollowListScreen(
     val ink = Color(0xFF1A1A1A)
     val tabs = listOf("全部", "高意向", "中意向", "低意向", "逾期")
     var tab by remember { mutableStateOf("全部") }
-    val all = HomeSecondaryMock.newCarFollows
+    val all = run {
+        HomeSecondaryStore.version
+        HomeSecondaryStore.newCarFollows()
+    }
     val filtered = when (tab) {
         "高意向" -> all.filter { it.intentBand == "高" }
         "中意向" -> all.filter { it.intentBand == "中" }
@@ -2538,8 +2480,35 @@ private fun UsedCarCreateScreen(onBack: () -> Unit) {
                     .clip(RoundedCornerShape(12.dp))
                     .background(accent)
                     .clickable {
-                        showPlatformToast("已提交（$kind）")
-                        onBack()
+                        val mileageInt = mileage.trim().toIntOrNull()
+                        val yearInt = year.trim().toIntOrNull()
+                        val amountInt = amount.trim().toIntOrNull()
+                            ?: amount.trim().toDoubleOrNull()?.toInt()
+                        val err = HomeSecondaryStore.validateUsedCarCreate(
+                            customerName = customer,
+                            vehicleModel = model.trim(),
+                            plateNo = plate.trim(),
+                            vin = vin.trim(),
+                            mileageKm = mileageInt,
+                            modelYear = yearInt,
+                            amount = amountInt,
+                        )
+                        if (err != null) {
+                            showPlatformToast(err)
+                        } else {
+                            HomeSecondaryStore.createUsedCar(
+                                kindLabel = kind,
+                                customerName = customer,
+                                vehicleModel = model.trim(),
+                                plateNo = plate.trim(),
+                                vin = vin.trim(),
+                                mileageKm = mileageInt!!,
+                                modelYear = yearInt!!,
+                                amount = amountInt!!,
+                            )
+                            showPlatformToast("提交成功")
+                            onBack()
+                        }
                     }
                     .padding(vertical = 14.dp),
             )
@@ -2669,7 +2638,10 @@ private fun UsedCarListScreen(
     val accent = Color(0xFF0B6E4F)
     val ink = Color(0xFF1C2430)
     val bg = Color(0xFFF3F5F8)
-    val allOrders = HomeSecondaryMock.usedCarOrders
+    val allOrders = run {
+        HomeSecondaryStore.version
+        HomeSecondaryStore.usedCarOrders()
+    }
     val statusTabs = listOf("全部", "待审核", "已通过", "未通过")
     val kindTabs = listOf("全部类型", "置换", "专卖", "收车")
     var status by remember { mutableStateOf("全部") }
@@ -2974,8 +2946,28 @@ private fun AfterSalesCreateScreen(onBack: () -> Unit) {
                     .clip(RoundedCornerShape(12.dp))
                     .background(DemoColors.Accent)
                     .clickable {
-                        showPlatformToast("已创建售后工单")
-                        onBack()
+                        val err = HomeSecondaryStore.validateAfterSalesCreate(
+                            name = name.trim(),
+                            phone = phone.trim(),
+                            title = title.trim(),
+                            plate = plate.trim(),
+                            content = content.trim(),
+                        )
+                        if (err != null) {
+                            showPlatformToast(err)
+                        } else {
+                            HomeSecondaryStore.createAfterSales(
+                                name = name.trim(),
+                                phone = phone.trim(),
+                                title = title.trim().ifBlank { "${name.trim()} 售后服务" },
+                                plate = plate.trim(),
+                                mileageKm = mileage.trim().toIntOrNull(),
+                                date = date.trim(),
+                                content = content.trim(),
+                            )
+                            showPlatformToast("已创建售后工单")
+                            onBack()
+                        }
                     }
                     .padding(vertical = 14.dp),
             )
@@ -3048,9 +3040,19 @@ private fun NewCarFollowCreateScreen(onBack: () -> Unit) {
                     .clip(RoundedCornerShape(12.dp))
                     .background(DemoColors.Accent)
                     .clickable {
-                        if (name.isBlank() || phone.isBlank()) {
-                            showPlatformToast("请填写客户姓名和手机号")
+                        val err = HomeSecondaryStore.validateNewCarFollowCreate(
+                            name = name.trim(),
+                            phone = phone.trim(),
+                        )
+                        if (err != null) {
+                            showPlatformToast(err)
                         } else {
+                            HomeSecondaryStore.createNewCarFollow(
+                                name = name.trim(),
+                                phone = phone.trim(),
+                                vehicle = vehicle.trim(),
+                                intentBand = level,
+                            )
                             showPlatformToast("已保存跟进")
                             onBack()
                         }
@@ -3086,13 +3088,16 @@ private fun NewCarFollowDetailScreen(row: NewCarFollowRow, onBack: () -> Unit) {
 @Composable
 private fun AfterSalesListScreen(
     onBack: () -> Unit,
-    @Suppress("UNUSED_PARAMETER") onItem: (HomeListRow) -> Unit,
+    onItem: (AfterSalesDetailRow) -> Unit,
     onCreate: () -> Unit,
 ) {
-    // Flutter AfterSalesListPage consumer empty SoT: canCreate=false, 0 items
-    val canCreate = false
+    // Logic-first: advisor demo canCreate=true (Flutter can_create for store staff).
+    val canCreate = HomeSecondaryStore.afterSalesCanCreate
+    val records = run {
+        HomeSecondaryStore.version
+        HomeSecondaryStore.afterSalesDetails()
+    }
     ReportMainTabRoot(isRoot = false)
-    // Flutter AfterSalesTheme: background F3F5F8, accentDeep→accent gradient
     Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
         MineTopBar(
             title = "售后专区",
@@ -3136,13 +3141,13 @@ private fun AfterSalesListScreen(
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(
-                        "维修保养档案",
+                        if (canCreate) "维修保养档案" else "我的服务记录",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "查看与您相关的服务记录",
+                        if (canCreate) "当前店服务记录与预约跟进" else "查看与您相关的服务记录",
                         color = Color.White.copy(alpha = 0.85f),
                         fontSize = 13.sp,
                     )
@@ -3153,53 +3158,85 @@ private fun AfterSalesListScreen(
                 Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("0", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "${records.size}",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                )
                 Text("记录", color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
             }
         }
         Text(
-            "我的服务记录",
+            if (canCreate) "维修保养记录" else "我的服务记录",
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
             color = Color(0xFF1C2430),
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp),
         )
-        Box(
-            Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    Modifier
-                        .size(88.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFECECEC)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = MineIcons.Build,
-                        contentDescription = null,
-                        tint = Color(0xFFB0B0B0),
-                        modifier = Modifier.size(40.dp),
+        if (records.isEmpty()) {
+            Box(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        Modifier
+                            .size(88.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFECECEC)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = MineIcons.Build,
+                            contentDescription = null,
+                            tint = Color(0xFFB0B0B0),
+                            modifier = Modifier.size(40.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        "暂无记录",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = Color(0xFF6B7280),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "完成售后服务后，在这里沉淀维修保养档案",
+                        fontSize = 13.sp,
+                        color = Color(0xFF6B7280),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp),
                     )
                 }
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    "暂无记录",
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    color = Color(0xFF6B7280),
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "完成售后服务后，在这里沉淀维修保养档案",
-                    fontSize = 13.sp,
-                    color = Color(0xFF6B7280),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 32.dp),
-                )
+            }
+        } else {
+            LazyColumn(
+                Modifier.weight(1f),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(records, key = { it.id }) { row ->
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .clickable { onItem(row) }
+                            .padding(14.dp),
+                    ) {
+                        Text(row.title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "${row.kindLabel} · ${row.customerName} · ${row.serviceDate}",
+                            fontSize = 13.sp,
+                            color = DemoColors.TextSecondary,
+                        )
+                    }
+                }
             }
         }
     }
@@ -3207,15 +3244,82 @@ private fun AfterSalesListScreen(
 
 @Composable
 private fun PartnerPendingScreen(onBack: () -> Unit) {
-    TodoListScreen(
-        title = "新伙伴待确认",
-        subtitle = "3 位新成员",
-        rows = listOf(
-            Triple("赵倩 · 销售顾问", "待审核 · 昨天申请", "待审"),
-            Triple("孙浩 · 售后技师", "待审核 · 今天申请", "待审"),
-        ),
-        onBack = onBack,
-    )
+    val pending = run {
+        HomeTodoStore.version
+        HomeTodoStore.pendingApplications()
+    }
+    ReportMainTabRoot(isRoot = false)
+    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        MineTopBar(title = "新伙伴待确认", onBack = onBack, containerColor = DemoColors.PageBg)
+        Text(
+            if (pending.isEmpty()) "暂无待审申请" else "${pending.size} 位新成员",
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            color = DemoColors.TextSecondary,
+            fontSize = 13.sp,
+        )
+        if (pending.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("有人申请入店后会显示在这里", color = DemoColors.TextSecondary, fontSize = 14.sp)
+            }
+        } else {
+            pending.forEach { app ->
+                Column(
+                    Modifier
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White)
+                        .padding(14.dp),
+                ) {
+                    Text(
+                        "${app.displayName} · ${app.roleLabel}",
+                        fontWeight = FontWeight.Medium,
+                        color = DemoColors.TextPrimary,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "申请于 ${app.createdAtLabel}",
+                        fontSize = 13.sp,
+                        color = DemoColors.TextSecondary,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            "拒绝",
+                            color = DemoColors.TextSecondary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                                .clickable {
+                                    if (HomeTodoStore.rejectJoin(app.applicationId)) {
+                                        showPlatformToast("已拒绝 ${app.displayName}")
+                                    }
+                                }
+                                .padding(vertical = 10.dp),
+                        )
+                        Text(
+                            "确认入店",
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(DemoColors.Accent)
+                                .clickable {
+                                    if (HomeTodoStore.approveJoin(app.applicationId)) {
+                                        showPlatformToast("已确认 ${app.displayName}")
+                                    }
+                                }
+                                .padding(vertical = 10.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

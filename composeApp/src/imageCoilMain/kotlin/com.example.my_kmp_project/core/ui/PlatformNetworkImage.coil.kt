@@ -12,6 +12,10 @@ import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
+/**
+ * CPF Coil actual for Android / iOS / ohosArm64 (imageCoilMain).
+ * Call sites keep using [PlatformNetworkImage]; do not import coil3 from features.
+ */
 @Composable
 internal actual fun PlatformNetworkImage(
     url: String?,

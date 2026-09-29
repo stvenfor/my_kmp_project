@@ -4,9 +4,8 @@ import com.example.my_kmp_project.core.account.AccountFacade
 import com.example.my_kmp_project.core.account.LoggedInUser
 import com.example.my_kmp_project.core.network.NetworkError
 import com.example.my_kmp_project.core.network.NetworkFacade
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
+import com.example.my_kmp_project.core.network.postApi
+import com.example.my_kmp_project.core.network.postApiOk
 
 /**
  * Remote auth repository aligned with Flutter `UserAuthApi` / `BackendAuthService`.
@@ -29,12 +28,12 @@ object AuthRepository {
         }
         return postLogin(
             path = AuthApiPaths.LOGIN,
-            body = buildJsonObject {
-                put("username", user)
-                put("password", password)
-                put("device_id", AuthDeviceContext.deviceId())
-                put("platform", AuthDeviceContext.platform())
-            },
+            body = AuthPasswordLoginRequest(
+                username = user,
+                password = password,
+                deviceId = AuthDeviceContext.deviceId(),
+                platform = AuthDeviceContext.platform(),
+            ),
         )
     }
 
@@ -45,7 +44,7 @@ object AuthRepository {
         val e164 = AuthPhoneUtils.toE164China(phone)
         return postOk(
             path = AuthApiPaths.SEND_PHONE_OTP,
-            body = buildJsonObject { put("phone", e164) },
+            body = AuthPhoneOtpSendRequest(phone = e164),
             emptySuccessMessage = "验证码已发送",
         )
     }
@@ -60,12 +59,12 @@ object AuthRepository {
         val e164 = AuthPhoneUtils.toE164China(phone)
         return postLogin(
             path = AuthApiPaths.VERIFY_PHONE_OTP,
-            body = buildJsonObject {
-                put("phone", e164)
-                put("otp", code.trim())
-                put("device_id", AuthDeviceContext.deviceId())
-                put("platform", AuthDeviceContext.platform())
-            },
+            body = AuthPhoneOtpVerifyRequest(
+                phone = e164,
+                otp = code.trim(),
+                deviceId = AuthDeviceContext.deviceId(),
+                platform = AuthDeviceContext.platform(),
+            ),
         )
     }
 
@@ -89,23 +88,22 @@ object AuthRepository {
             normalizedEmail.substringBefore('@').ifBlank { normalizedEmail }
         }
         return try {
-            val response = NetworkFacade.api().postApi(
+            val response = NetworkFacade.api().postApi<AuthRegisterRequest, AuthRegisterData>(
                 path = AuthApiPaths.REGISTER,
-                body = buildJsonObject {
-                    put("username", username)
-                    put("password", password)
-                    put("email", normalizedEmail)
-                    put("device_id", AuthDeviceContext.deviceId())
-                    put("platform", AuthDeviceContext.platform())
-                }.toString(),
-                parseData = ::parseAuthRegisterPayload,
+                body = AuthRegisterRequest(
+                    username = username,
+                    password = password,
+                    email = normalizedEmail,
+                    deviceId = AuthDeviceContext.deviceId(),
+                    platform = AuthDeviceContext.platform(),
+                ),
             )
             if (!isAuthBusinessSuccess(response.code) || response.data == null) {
                 return Result.failure(
                     IllegalStateException(mapAuthFailure(response.code, response.message)),
                 )
             }
-            val payload = response.data!!
+            val payload = response.data!!.toPayload()
             if (payload.hasSession) {
                 commitSession(
                     displayName = payload.username.ifBlank { username },
@@ -128,20 +126,60 @@ object AuthRepository {
     suspend fun registerWithPhone(phone: String, code: String): Result<Unit> =
         loginWithOtp(phone, code)
 
+    /**
+     * Exchange Huawei Account Kit authorization [code] for a BFF session
+     * (`POST /api/v1/user/huawei/login`).
+     */
+    suspend fun loginWithHuaweiCode(code: String, deviceId: String): Result<Unit> {
+        val authCode = code.trim()
+        if (authCode.isEmpty()) {
+            return Result.failure(IllegalArgumentException("缺少授权码"))
+        }
+        val id = deviceId.trim().ifBlank { AuthDeviceContext.deviceId() }
+        return try {
+            val response = NetworkFacade.api().postApi<AuthHuaweiLoginRequest, AuthLoginData>(
+                path = AuthApiPaths.HUAWEI_LOGIN,
+                body = AuthHuaweiLoginRequest(code = authCode, deviceId = id),
+            )
+            val data = response.data?.toPayload()
+            if (!isAuthBusinessSuccess(response.code) || data == null || data.token.isBlank()) {
+                return Result.failure(
+                    IllegalStateException(mapAuthFailure(response.code, response.message)),
+                )
+            }
+            commitSession(
+                displayName = data.username.ifBlank { "华为用户" },
+                userId = data.userId.ifBlank { data.username }.ifBlank { "华为用户" },
+                token = data.token,
+                phone = data.phone.ifBlank { null },
+                email = data.email.ifBlank { null },
+            )
+        } catch (e: NetworkError.Transport) {
+            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
+        } catch (e: Throwable) {
+            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
+        }
+    }
+
     fun logout() {
         AccountFacade.logout()
         AuthSessionState.clearLocal()
         AuthGate.clearPending()
     }
 
-    private suspend fun postLogin(path: String, body: JsonObject): Result<Unit> {
+    private suspend fun postLogin(path: String, body: AuthPasswordLoginRequest): Result<Unit> =
+        postLoginTyped(path, body)
+
+    private suspend fun postLogin(path: String, body: AuthPhoneOtpVerifyRequest): Result<Unit> =
+        postLoginTyped(path, body)
+
+    private suspend inline fun <reified Req : Any> postLoginTyped(
+        path: String,
+        body: Req,
+    ): Result<Unit> {
         return try {
-            val response = NetworkFacade.api().postApi(
-                path = path,
-                body = body.toString(),
-                parseData = ::parseAuthLoginPayload,
-            )
-            val data = response.data
+            val response = NetworkFacade.api().postApi<Req, AuthLoginData>(path, body)
+            val data = response.data?.toPayload()
             if (!isAuthBusinessSuccess(response.code) || data == null || data.token.isBlank()) {
                 return Result.failure(
                     IllegalStateException(mapAuthFailure(response.code, response.message)),
@@ -154,7 +192,7 @@ object AuthRepository {
                 displayName = display,
                 userId = data.userId.ifBlank { display },
                 token = data.token,
-                phone = null,
+                phone = data.phone.ifBlank { null },
                 email = data.email.ifBlank { null },
             )
         } catch (e: NetworkError.Transport) {
@@ -164,17 +202,13 @@ object AuthRepository {
         }
     }
 
-    private suspend fun postOk(
+    private suspend inline fun <reified Req : Any> postOk(
         path: String,
-        body: JsonObject,
+        body: Req,
         emptySuccessMessage: String,
     ): Result<Unit> {
         return try {
-            val response = NetworkFacade.api().postApi(
-                path = path,
-                body = body.toString(),
-                parseData = { _ -> Unit },
-            )
+            val response = NetworkFacade.api().postApiOk(path, body)
             if (!isAuthBusinessSuccess(response.code)) {
                 return Result.failure(
                     IllegalStateException(mapAuthFailure(response.code, response.message)),
