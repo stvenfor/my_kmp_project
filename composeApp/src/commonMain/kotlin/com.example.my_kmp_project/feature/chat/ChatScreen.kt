@@ -324,7 +324,7 @@ internal fun ChatDetailScreen(
         MineTopBar(
             title = conversation.title,
             onBack = onBack,
-            containerColor = DemoColors.PageBg,
+            containerColor = DemoColors.Background,
         )
         LazyColumn(
             modifier = Modifier
@@ -369,7 +369,7 @@ internal fun ChatDetailScreen(
                 textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
                 decorationBox = { inner ->
                     if (draft.isEmpty()) {
-                        Text("输入消息…", color = DemoColors.Muted, fontSize = 14.sp)
+                        Text("发消息…", color = DemoColors.Muted, fontSize = 14.sp)
                     }
                     inner()
                 },

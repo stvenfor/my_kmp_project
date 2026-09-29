@@ -1,0 +1,18 @@
+{
+  "friend": {
+    "mse_pct": 1.91,
+    "mad_pct": 3.243,
+    "pass_": true,
+    "bar_mse_pct": 2.0,
+    "flutter": "/Users/mac/Desktop/github/my_kmp_project/.scratch/gate-now/friend.flutter.png",
+    "kmp": "/Users/mac/Desktop/github/my_kmp_project/.scratch/gate-now/friend.kmp.png",
+    "heat": "/Users/mac/Desktop/github/my_kmp_project/.scratch/gate-now/friend.heat.png"
+  },
+  "meta": {
+    "gate": "mse_pct<=2.0",
+    "roi": "top=0.04,bot=0.9,resize=540x960",
+    "measured_at": "2026-09-28T17:50Z",
+    "script": "scripts/screenshot_diff_gate.py",
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
+  }
+}

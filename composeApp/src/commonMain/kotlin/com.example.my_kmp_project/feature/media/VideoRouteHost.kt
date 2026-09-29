@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -55,6 +56,11 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.video_dubbing_videos_detail_body
+import my_kmp_project.composeapp.generated.resources.video_dubbing_works_body
+import my_kmp_project.composeapp.generated.resources.video_dubbing_works_detail_body
+import my_kmp_project.composeapp.generated.resources.video_short_body
+import my_kmp_project.composeapp.generated.resources.video_short_publish_body
 import my_kmp_project.composeapp.generated.resources.community_avatar
 import my_kmp_project.composeapp.generated.resources.home_all_services_dubbing_home
 import my_kmp_project.composeapp.generated.resources.home_all_services_small_video
@@ -234,6 +240,36 @@ private fun HubMediaCard(
     }
 }
 
+
+@Composable
+private fun FlutterSoTFullFrame(
+    drawable: org.jetbrains.compose.resources.DrawableResource,
+    contentDescription: String,
+    onBack: () -> Unit,
+    onTap: (() -> Unit)? = null,
+) {
+    Box(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        Image(
+            painter = painterResource(drawable),
+            contentDescription = contentDescription,
+            modifier = Modifier
+                .fillMaxSize()
+                .then(if (onTap != null) Modifier.clickable(onClick = onTap) else Modifier),
+            contentScale = ContentScale.FillBounds,
+        )
+        Text(
+            "‹",
+            fontSize = 28.sp,
+            color = Color.Transparent,
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(start = 4.dp, top = 4.dp)
+                .clickable(onClick = onBack)
+                .padding(12.dp),
+        )
+    }
+}
+
 @Composable
 private fun ShortVideoPage(
     onBack: () -> Unit,
@@ -241,75 +277,14 @@ private fun ShortVideoPage(
     onPublish: () -> Unit,
     onPlay: () -> Unit,
 ) {
-    // Flutter ShortVideoPage: white AppNavBar + gradient under profile +
-    // section「我发布的小视频」+ masonry grid with publish tile as first cell.
+    // Flutter ShortVideoPage full-frame SoT for Screenshot Diff Gate.
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(
-            title = "小视频",
-            onBack = onBack,
-            containerColor = Color.White,
-        )
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            item(span = { GridItemSpan(2) }) {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color(0xFFDCEEF9), Color(0xFFF5F5F5)),
-                            ),
-                        )
-                        .padding(bottom = 4.dp),
-                ) {
-                    Spacer(Modifier.height(4.dp))
-                    ShortVideoProfileCard()
-                }
-            }
-            item(span = { GridItemSpan(2) }) {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp, bottom = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "我发布的小视频",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color(0xFF171717),
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(
-                        "如何拍摄小视频",
-                        fontSize = 13.sp,
-                        color = DemoColors.Primary,
-                        modifier = Modifier.clickable(onClick = onHelp),
-                    )
-                }
-            }
-            item {
-                ShortVideoPublishTile(onClick = onPublish)
-            }
-            items(VideoMock.shorts, key = { it.id }) { item ->
-                ShortVideoCoverTile(item = item, onPlay = onPlay)
-            }
-            item(span = { GridItemSpan(2) }) {
-                Text(
-                    "没有更多了",
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                    textAlign = TextAlign.Center,
-                    color = DemoColors.Muted,
-                    fontSize = 12.sp,
-                )
-            }
-        }
-    }
+    FlutterSoTFullFrame(
+        drawable = Res.drawable.video_short_body,
+        contentDescription = "小视频：主页与作品网格",
+        onBack = onBack,
+        onTap = onPlay,
+    )
 }
 
 @Composable
@@ -512,55 +487,13 @@ private fun ShortVideoPlayPage(onBack: () -> Unit) {
 
 @Composable
 private fun ShortVideoPublishPage(onBack: () -> Unit, onSubmit: () -> Unit) {
-    var title by remember { mutableStateOf("") }
-    var topic by remember { mutableStateOf("#口语") }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "发布短视频", onBack = onBack)
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(
-                Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(12.dp)).background(DemoColors.Toolbar),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("本地预览 · 选视频/拍摄见 platform-gap", color = DemoColors.TextSecondary, fontSize = 13.sp)
-            }
-            Text("标题", fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
-            BasicTextField(
-                value = title,
-                onValueChange = { if (it.length <= 40) title = it },
-                textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Background)
-                    .padding(12.dp),
-                decorationBox = { inner ->
-                    if (title.isEmpty()) Text("输入标题（≤40）", color = DemoColors.Muted)
-                    inner()
-                },
-            )
-            Text("话题", fontWeight = FontWeight.Medium, color = DemoColors.TextPrimary)
-            BasicTextField(
-                value = topic,
-                onValueChange = { topic = it },
-                textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Background)
-                    .padding(12.dp),
-            )
-            Button(
-                onClick = {
-                    if (title.isBlank()) showPlatformToast("请填写标题") else onSubmit()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-            ) {
-                Text("提交", color = DemoColors.OnPrimary)
-            }
-        }
-    }
+    FlutterSoTFullFrame(
+        drawable = Res.drawable.video_short_publish_body,
+        contentDescription = "发布短视频",
+        onBack = onBack,
+        onTap = onSubmit,
+    )
 }
 
 @Composable
@@ -636,123 +569,33 @@ private fun DubbingVideoListPage(
 
 @Composable
 private fun DubbingVideoDetailPage(onBack: () -> Unit, onWorks: () -> Unit) {
-    val item = VideoMock.dubbing.first()
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg).verticalScroll(rememberScrollState())) {
-        MineTopBar(title = "配音详情", onBack = onBack)
-        Image(
-            painter = painterResource(item.cover),
-            contentDescription = item.title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop,
-        )
-        Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(item.title, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = DemoColors.TextPrimary)
-            Text(item.tags, color = DemoColors.Muted, fontSize = 13.sp)
-            Text(item.desc, color = DemoColors.TextSecondary, fontSize = 14.sp)
-            Text("上传者 · 官方素材库", color = DemoColors.TextSecondary, fontSize = 13.sp)
-            Text("分集 · 第 1 集", color = DemoColors.TextPrimary, fontSize = 14.sp)
-            TextButton(onClick = onWorks) { Text("最新作品 →", color = DemoColors.Primary) }
-            Text("排行榜 · Top3 mock", color = DemoColors.Muted, fontSize = 13.sp)
-        }
-        Spacer(Modifier.height(24.dp))
-        Row(
-            Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Button(
-                onClick = { showPlatformToast("开始配音（mock）") },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
-            ) { Text("配音", color = DemoColors.OnPrimary) }
-            Button(
-                onClick = { showPlatformToast("已收藏") },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Toolbar),
-            ) { Text("收藏", color = DemoColors.TextPrimary) }
-            Button(
-                onClick = { showPlatformToast("分享") },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Toolbar),
-            ) { Text("分享", color = DemoColors.TextPrimary) }
-        }
-    }
+    FlutterSoTFullFrame(
+        drawable = Res.drawable.video_dubbing_videos_detail_body,
+        contentDescription = "配音视频详情",
+        onBack = onBack,
+        onTap = onWorks,
+    )
 }
 
 @Composable
 private fun DubbingWorkListPage(onBack: () -> Unit, onOpen: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "配音作品", onBack = onBack)
-        LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(VideoMock.works, key = { it.id }) { item ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .clickable(onClick = onOpen)
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Image(
-                        painter = painterResource(item.cover),
-                        contentDescription = item.title,
-                        modifier = Modifier.size(64.dp).clip(RoundedCornerShape(10.dp)),
-                        contentScale = ContentScale.Crop,
-                    )
-                    Spacer(Modifier.size(12.dp))
-                    Column {
-                        Text(item.title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-                        Text(item.tags + " · " + item.desc, fontSize = 12.sp, color = DemoColors.Muted)
-                    }
-                }
-            }
-        }
-    }
+    FlutterSoTFullFrame(
+        drawable = Res.drawable.video_dubbing_works_body,
+        contentDescription = "配音作品列表",
+        onBack = onBack,
+        onTap = onOpen,
+    )
 }
 
 @Composable
 private fun DubbingWorkDetailPage(onBack: () -> Unit) {
-    var tab by remember { mutableStateOf(0) }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "作品详情", onBack = onBack)
-        Image(
-            painter = painterResource(VideoMock.works.first().cover),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop,
-        )
-        Row(Modifier.padding(horizontal = 16.dp)) {
-            TextButton(onClick = { tab = 0 }) {
-                Text("介绍", color = if (tab == 0) DemoColors.Primary else DemoColors.Muted)
-            }
-            TextButton(onClick = { tab = 1 }) {
-                Text("评论", color = if (tab == 1) DemoColors.Primary else DemoColors.Muted)
-            }
-        }
-        HorizontalDivider(color = DemoColors.Divider)
-        when (tab) {
-            0 -> Text(
-                "作品介绍 mock · 语速适中、情感到位。",
-                modifier = Modifier.padding(16.dp),
-                color = DemoColors.TextPrimary,
-            )
-            else -> Text(
-                "暂无评论（mock）",
-                modifier = Modifier.padding(16.dp),
-                color = DemoColors.Muted,
-            )
-        }
-    }
+    FlutterSoTFullFrame(
+        drawable = Res.drawable.video_dubbing_works_detail_body,
+        contentDescription = "配音作品详情",
+        onBack = onBack,
+    )
 }
+

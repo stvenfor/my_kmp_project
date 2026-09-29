@@ -17,7 +17,7 @@ Product sync from Flutter `my_ai_project` required a hard choice between shared 
 5. **Visual SoT:** Flutter `my_ai_project` (screenshots + design tokens). Parity bar: ≤2% error vs SoT.
 6. **Phase 1:** Splash → privacy → tab shell + full Home/Chat/Community roots + native Mine root + Mine island; other features deferred with visible stubs on roots. **§6 scope cap superseded by ADR 0003 (Full Parity Phase)** — ownership elsewhere in this ADR still stands.
 7. **Tokens:** One shared token source consumed by all four UI stacks.
-8. **Legacy commonMain product Compose:** Keep temporarily as reference; main path does not depend on it; remove after native+island parity.
+8. **Legacy commonMain product Compose:** `SecondaryRouteIsland` is Mine-only (#23). In-scope non-Mine routes use Native Shell UI; leftover CMP product screens are reference/debt, not the main path.
 
 ## Consequences
 

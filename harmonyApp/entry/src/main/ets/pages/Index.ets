@@ -941,7 +941,7 @@ struct Index {
       this.tab = MainTab.Mine;
       return;
     }
-    // Full Parity #3: prefer dedicated ArkTS native pane; else Legacy SecondaryRouteIsland.
+    // Full Parity #3/#23: dedicated ArkTS native pane (never Legacy SecondaryRouteIsland for non-Mine).
     this.showStub = false;
     const target = path.length > 0 ? path : title;
     if (this.requiresLoginForRoute(target)) {
@@ -958,9 +958,17 @@ struct Index {
       this.featurePath = route;
       return;
     }
+    // Mine/settings missed by openDeferred switch — Compose Mine island host only.
     this.nativePane = '';
     this.featurePath = '';
-    this.openSecondaryCompose(route);
+    if (route.startsWith('/mine') || route.startsWith('/settings') ||
+      route === '/pay/membership' || route.indexOf('/pay/membership') === 0) {
+      this.openSecondaryCompose(route);
+      return;
+    }
+    // #23: unknown non-Mine must not reopen Legacy island — generic native feature pane.
+    this.nativePane = 'feature';
+    this.featurePath = route;
   }
 
   private requiresLoginForRoute(route: string): boolean {
@@ -1902,14 +1910,9 @@ struct Index {
       }
 
       if (this.nativePane === 'community_publish') {
-        // Prefer Compose SecondaryRouteIsland (CommunityConventionDialog.maybeShow).
-        Column()
-          .width(0)
-          .height(0)
-          .onAppear(() => {
-            this.nativePane = '';
-            this.openSecondaryCompose('/community/publish');
-          })
+        NativeCommunityPublishPane({
+          onClose: (): void => { this.nativePane = ''; },
+        })
       }
 
       if (this.nativePane === 'community_comment') {

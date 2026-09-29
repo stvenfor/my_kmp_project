@@ -454,8 +454,8 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
 
 /**
  * Full Parity #3/#23: map Flutter path → Index.nativePane id.
- * Mine/settings/membership stay on Compose island / SecondaryRouteIsland.
- * Unknown non-Mine paths use nativePane='feature' (catalog host), not Legacy island.
+ * Mine/settings/membership stay on Compose Mine island host.
+ * Unknown non-Mine paths use nativePane='feature' (catalog host), never Legacy island.
  */
 export function nativePaneIdFor(pathOrLabel: string): string {
   const path = resolveNativePath(pathOrLabel);

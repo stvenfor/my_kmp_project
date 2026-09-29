@@ -36,20 +36,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 private val GainRed = Color(0xFFFF3B30)
 private val GainGreen = Color(0xFF34C759)
 private val GaugeGreen = Color(0xFF34C759)
-private val GaugeYellow = Color(0xFFF5A623)
-private val GaugeOrange = Color(0xFFFF9500)
 private val GaugeRed = Color(0xFFFF3B30)
 
 @Composable
@@ -63,13 +57,26 @@ internal fun StrategyScreen(onBack: () -> Unit) {
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        FlutterFeatureTopBar(title = "策略", onBack = onBack)
+        FlutterFeatureTopBar(
+            title = "策略",
+            onBack = onBack,
+            // Flutter AppNavBar solid → tokens.canvas (white), not page soft gray.
+            containerColor = DemoColors.Background,
+        )
+        // Flutter AppNavBar solid bottom hairline
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(0.5.dp)
+                .background(DemoColors.Divider),
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                // Flutter ListView padding: fromLTRB(16, 8, 16, 24)
                 .padding(horizontal = 16.dp)
-                .padding(top = 12.dp, bottom = 24.dp),
+                .padding(top = 8.dp, bottom = 24.dp),
         ) {
             StrategySubTabs(
                 tabs = HomeMockData.strategyTabs,
@@ -101,9 +108,10 @@ private fun StrategySubTabs(
             val active = index == selectedIndex
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+                // Flutter: EdgeInsets.only(right: index < last ? 32 : 0)
                 modifier = Modifier
                     .clickable { onSelected(index) }
-                    .padding(horizontal = 16.dp),
+                    .padding(end = if (index < tabs.lastIndex) 32.dp else 0.dp),
             ) {
                 Text(
                     text = label,
@@ -116,7 +124,7 @@ private fun StrategySubTabs(
                     modifier = Modifier
                         .width(if (active) 24.dp else 0.dp)
                         .height(3.dp)
-                        .clip(RoundedCornerShape(1.5.dp))
+                        .clip(RoundedCornerShape(2.dp))
                         .background(DemoColors.Accent),
                 )
             }
@@ -140,10 +148,12 @@ private fun AssetGridCard(
         Text(
             text = "「大类资产九宫格策略」通过分散配置降低波动，帮助你在不同市场环境下保持稳健收益。",
             color = DemoColors.TextPrimary,
-            fontSize = 13.sp,
-            lineHeight = 20.sp,
+            // Flutter HomeDashboardTheme.sectionLabel: fontSize 14, height 1.5
+            fontSize = 14.sp,
+            lineHeight = 21.sp,
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        // Flutter SoT: intro block sits taller (font metrics) → grid starts ~38dp lower.
+        Spacer(modifier = Modifier.height(54.dp))
         val rows = HomeMockData.strategyAssets.chunked(3)
         rows.forEach { row ->
             Row(
@@ -157,7 +167,8 @@ private fun AssetGridCard(
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        // Flutter: SizedBox(height: 16) before period row
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -199,7 +210,7 @@ private fun AssetCell(
         Text(
             text = cell.value,
             color = if (cell.positive) GainRed else GainGreen,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
         )
     }
@@ -243,55 +254,62 @@ private fun StrategyPlanCard() {
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
+        // Flutter: CrossAxisAlignment.end + Spacer between return and gauge
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Bottom,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column {
                 Text(
                     text = "-11.35%",
                     color = GainGreen,
                     fontWeight = FontWeight.Bold,
                     fontSize = 32.sp,
                 )
-                Text(text = "本期收益率", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                Text(text = "本期收益率", color = DemoColors.TextSecondary, fontSize = 14.sp)
             }
-            // Flutter Fear & Greed semicircle gauge (was deferred → text-only near-miss).
-            FearGreedGauge(
-                score = 63,
-                label = "中立",
-                size = 96.dp,
-            )
+            Spacer(modifier = Modifier.weight(1f))
+            FearGreedGauge(score = 63, label = "中立")
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Text(text = "定投进度", color = DemoColors.TextSecondary, fontSize = 13.sp)
+        Text(text = "定投进度", color = DemoColors.TextSecondary, fontSize = 14.sp)
         Spacer(modifier = Modifier.height(8.dp))
         InvestProgressBar(current = 36, total = 50)
         Spacer(modifier = Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Flutter SoT: Row(本周已投 1 份 + FilledButton 订阅)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 text = "本周已投 1 份",
                 color = DemoColors.TextSecondary,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 modifier = Modifier.weight(1f),
             )
-            Text(
-                text = "订阅",
-                color = Color.White,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp,
+            Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
+                    .height(36.dp)
+                    .clip(RoundedCornerShape(18.dp))
                     .background(DemoColors.Accent)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-            )
+                    .clickable { }
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "订阅",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                )
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "在恐慌时买入、贪婪时卖出，通过定期定额降低择时压力，适合长期持有的投资者。",
             color = DemoColors.TextSecondary,
-            fontSize = 13.sp,
-            lineHeight = 20.sp,
+            fontSize = 14.sp,
+            lineHeight = 21.sp,
         )
     }
 }
@@ -325,86 +343,50 @@ private fun InvestProgressBar(current: Int, total: Int) {
 }
 
 /**
- * Flutter 恐贪指数 semicircle: green→yellow→red track + needle + center score.
- * Canvas-only (Vico 2.x has no gauge; CPF 无 chart fork).
+ * Flutter `_buildGauge`: SizedBox(88×56) + CustomPaint(88×44) arc (no needle) +
+ * bottom text "63 中立". Colors green → #FFCC00 → red, stroke 8, radius 36.
  */
 @Composable
 private fun FearGreedGauge(
     score: Int,
     label: String,
-    size: Dp,
 ) {
     val clamped = score.coerceIn(0, 100)
-    val frac = clamped / 100f
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = "恐贪指数", color = DemoColors.TextSecondary, fontSize = 11.sp)
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier.size(size),
-            contentAlignment = Alignment.Center,
+    Box(
+        modifier = Modifier
+            .width(88.dp)
+            .height(56.dp),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Canvas(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .width(88.dp)
+                .height(44.dp),
         ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val stroke = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
-                val pad = stroke.width / 2f + 2.dp.toPx()
-                val diam = (this.size.minDimension - pad * 2f).coerceAtLeast(1f)
-                val topLeft = Offset(
-                    (this.size.width - diam) / 2f,
-                    (this.size.height - diam) / 2f + diam * 0.12f,
-                )
-                val arcSize = Size(diam, diam)
-                // Upper semicircle: 180° (left) → 0° (right) via top (CCW = negative sweep).
-                val colors = listOf(GaugeGreen, GaugeYellow, GaugeOrange, GaugeRed)
-                val segments = colors.size
-                val sweepPer = -180f / segments
-                colors.forEachIndexed { i, c ->
-                    drawArc(
-                        color = c,
-                        startAngle = 180f + sweepPer * i,
-                        sweepAngle = sweepPer,
-                        useCenter = false,
-                        topLeft = topLeft,
-                        size = arcSize,
-                        style = stroke,
-                    )
-                }
-                // Needle tip on arc.
-                val needleAngleDeg = 180f + (-180f * frac)
-                val rad = needleAngleDeg * PI / 180.0
-                val cx = topLeft.x + diam / 2f
-                val cy = topLeft.y + diam / 2f
-                val r = diam / 2f
-                val tip = Offset(
-                    cx + (r * cos(rad)).toFloat(),
-                    cy + (r * sin(rad)).toFloat(),
-                )
-                drawLine(
-                    color = DemoColors.TextPrimary,
-                    start = Offset(cx, cy),
-                    end = tip,
-                    strokeWidth = 2.5.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-                drawCircle(color = DemoColors.TextPrimary, radius = 3.5.dp.toPx(), center = Offset(cx, cy))
-                drawCircle(color = Color.White, radius = 1.8.dp.toPx(), center = Offset(cx, cy))
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = size * 0.28f),
-            ) {
-                Text(
-                    text = "$clamped",
-                    color = DemoColors.TextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    lineHeight = 18.sp,
-                )
-                Text(
-                    text = label,
-                    color = DemoColors.TextSecondary,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
+            val stroke = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+            val cx = this.size.width / 2f
+            val cy = this.size.height // Flutter center at bottom of paint size
+            val radius = 36.dp.toPx()
+            val colors = listOf(GaugeGreen, Color(0xFFFFCC00), GaugeRed)
+            val sweepPer = -180f / colors.size
+            colors.forEachIndexed { i, c ->
+                drawArc(
+                    color = c,
+                    startAngle = 180f + sweepPer * i,
+                    sweepAngle = sweepPer,
+                    useCenter = false,
+                    topLeft = Offset(cx - radius, cy - radius),
+                    size = Size(radius * 2f, radius * 2f),
+                    style = stroke,
                 )
             }
         }
+        Text(
+            text = "$clamped $label",
+            color = DemoColors.TextPrimary,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 12.sp,
+        )
     }
 }

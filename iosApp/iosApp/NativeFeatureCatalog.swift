@@ -8,9 +8,9 @@ enum NativeRouteResolver {
         return labelToPath[key] ?? key
     }
 
-    /// Full Parity #3/#23: any non-Mine product path prefers NativeFeatureHost
+    /// Full Parity #3/#23: any non-Mine product path uses NativeFeatureHost
     /// (dedicated page or genericList). Mine / settings / membership stay on the
-    /// Compose island or SecondaryRouteIsland (MineRouteHost).
+    /// Compose Mine island (MineIslandViewController / MineRouteHost).
     static func hasNativeShellHost(_ raw: String) -> Bool {
         let path = resolve(raw)
         if path.isEmpty { return false }

@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -44,10 +47,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,11 +67,39 @@ import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import com.example.my_kmp_project.feature.mine.MineIcons
 import com.example.my_kmp_project.feature.mine.MineRoutes
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.community_avatar
 import my_kmp_project.composeapp.generated.resources.community_post_a
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_banner_main
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_bar_icon_top
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_01
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_02
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_03
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_04
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_05
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_06
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_07
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_08
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_09
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_10
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_11
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_12
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_feature_all_videos
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_feature_check_in
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_feature_classic_theater
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_feature_movie_words
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_feature_rank
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_icon_chevron_right
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_icon_duration
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_icon_notification
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_icon_refresh
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_icon_search
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_icon_swap
+import my_kmp_project.composeapp.generated.resources.home_dubbing_home_thumb_default
 import my_kmp_project.composeapp.generated.resources.ic_nav_back
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 /** Flutter `kToolbarHeight` / `AppSafeInsets.toolbarHeight`. */
@@ -1196,159 +1231,394 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
 
 @Composable
 private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
-    // Flutter DubbingHomePage sections + DubbingHomeMockData
-    val features = listOf("每日打卡", "影视单词", "经典剧场", "排行榜", "全部视频")
+    // Flutter DubbingHomePage — header / categories / banner / features / recent / expert + lower sections
+    val tabAccent = Color(0xFF0070F3) // Flutter VercelTokens.link
+    val adBlue = Color(0xFF3B82F6)
+    val svipGold = Color(0xFFE6A23C)
+    val searchPillBg = Color(0xFFF2F3F5)
+    val categories = listOf("SVIP", "配音", "听力", "小剧场", "专题")
+    val selectedCategory = 1 // 配音
+    val features = listOf(
+        Triple("每日打卡", Res.drawable.home_dubbing_home_feature_check_in, false),
+        Triple("影视单词", Res.drawable.home_dubbing_home_feature_movie_words, false),
+        Triple("经典剧场", Res.drawable.home_dubbing_home_feature_classic_theater, false),
+        Triple("排行榜", Res.drawable.home_dubbing_home_feature_rank, true),
+        Triple("全部视频", Res.drawable.home_dubbing_home_feature_all_videos, false),
+    )
     val recent = listOf(
-        "穿梭在迷宫的勇士" to "03:24",
-        "萌宠部落" to "02:18",
-        "完美的世界" to "04:05",
-        "小猪佩奇" to "01:56",
+        Triple("穿梭在迷宫的勇士", "03:24", Res.drawable.home_dubbing_home_cover_05),
+        Triple("萌宠部落", "02:18", Res.drawable.home_dubbing_home_cover_06),
+        Triple("完美的世界", "04:05", Res.drawable.home_dubbing_home_cover_07),
+        Triple("小猪佩奇", "01:56", Res.drawable.home_dubbing_home_cover_08),
+    )
+    // Flutter DubbingHomeExpertShowcase — 2×2 grid + avatar/user/subtitle
+    data class ExpertCard(
+        val title: String,
+        val userName: String,
+        val subtitle: String,
+        val cover: DrawableResource,
     )
     val expert = listOf(
-        Triple("英语启蒙课堂", "蓝儿老师Joyue", "跟读练习 · 初级"),
-        Triple("趣味配音挑战", "配音达人", "动画配音 · 中级"),
-        Triple("诵读之星", "朗读爱好者", "经典诵读"),
-        Triple("动画配音秀", "动画迷", "角色模仿"),
+        ExpertCard("英语启蒙课堂", "蓝儿老师Joyue", "跟读练习 · 初级", Res.drawable.home_dubbing_home_cover_09),
+        ExpertCard("趣味配音挑战", "配音达人", "动画配音 · 中级", Res.drawable.home_dubbing_home_cover_10),
+        ExpertCard("诵读之星", "朗读爱好者", "经典诵读", Res.drawable.home_dubbing_home_cover_11),
+        ExpertCard("动画配音秀", "动画迷", "角色模仿", Res.drawable.home_dubbing_home_cover_12),
     )
     val editor = listOf(
-        Triple("经典动画配音", "跟佩奇一起快乐学英语", "AD"),
-        Triple("英语启蒙课堂", "零基础也能开口说", "New"),
-        Triple("趣味配音挑战", "模仿经典电影片段", ""),
-        Triple("每日跟读练习", "坚持打卡领奖励", "New"),
+        Triple("经典动画配音", "跟佩奇一起快乐学英语", Res.drawable.home_dubbing_home_cover_01),
+        Triple("英语启蒙课堂", "零基础也能开口说", Res.drawable.home_dubbing_home_cover_02),
+        Triple("趣味配音挑战", "模仿经典电影片段", Res.drawable.home_dubbing_home_cover_03),
+        Triple("每日跟读练习", "坚持打卡领奖励", Res.drawable.home_dubbing_home_cover_04),
     )
     val albums = listOf(
-        "小猪佩奇" to "52集",
-        "冰雪奇缘" to "12集",
-        "狮子王" to "8集",
-        "海底总动员" to "16集",
+        Triple("小猪佩奇", "52集", Res.drawable.home_dubbing_home_cover_05),
+        Triple("冰雪奇缘", "12集", Res.drawable.home_dubbing_home_cover_06),
+        Triple("狮子王", "8集", Res.drawable.home_dubbing_home_cover_07),
+        Triple("海底总动员", "16集", Res.drawable.home_dubbing_home_cover_08),
     )
     val guess = listOf(
-        Triple("趣味英语配音", "6.8万播放", "05:12"),
-        Triple("经典电影片段", "9.2万播放", "03:45"),
+        Triple("趣味英语配音", "6.8万播放 · 05:12", Res.drawable.home_dubbing_home_cover_09),
+        Triple("经典电影片段", "9.2万播放 · 03:45", Res.drawable.home_dubbing_home_cover_10),
     )
-    val categories = listOf("推荐", "动画", "电影", "启蒙", "跟读")
 
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "学英语", onBack = onBack, containerColor = DemoColors.PageBg)
+        // Header: back + search pill + history + notification (Flutter AppBar, not MineTopBar title-only)
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .background(DemoColors.PageBg)
+                .statusBarsPadding(),
+        ) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(FlutterToolbarHeight)
+                    .padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = onBack) {
+                    Image(
+                        painter = painterResource(Res.drawable.ic_nav_back),
+                        contentDescription = "返回",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .rotate(180f),
+                        contentScale = ContentScale.Fit,
+                        colorFilter = ColorFilter.tint(DemoColors.TextPrimary),
+                    )
+                }
+                Row(
+                    Modifier
+                        .weight(1f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(searchPillBg)
+                        .clickable { showPlatformToast("搜索") }
+                        .padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.home_dubbing_home_icon_search),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        contentScale = ContentScale.Fit,
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("学英语", fontSize = 14.sp, color = DemoColors.Muted)
+                }
+                IconButton(onClick = { showPlatformToast("历史") }) {
+                    DubbingHistoryClockIcon(Modifier.size(22.dp), tint = DemoColors.TextPrimary)
+                }
+                Box {
+                    IconButton(onClick = { showPlatformToast("通知") }) {
+                        Image(
+                            painter = painterResource(Res.drawable.home_dubbing_home_icon_notification),
+                            contentDescription = "通知",
+                            modifier = Modifier.size(22.dp),
+                            contentScale = ContentScale.Fit,
+                        )
+                    }
+                    Box(
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 10.dp, end = 10.dp)
+                            .size(7.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFF3B30)),
+                    )
+                }
+            }
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 8.dp, bottom = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(
+                    Modifier
+                        .weight(1f)
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    categories.forEachIndexed { i, label ->
+                        val selected = i == selectedCategory
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { showPlatformToast(label) },
+                        ) {
+                            Text(
+                                label,
+                                // Flutter: selected w600 / unselected w400, all 16.sp
+                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = when {
+                                    label == "SVIP" -> svipGold
+                                    selected -> tabAccent
+                                    else -> DemoColors.TextSecondary
+                                },
+                                fontSize = 16.sp,
+                            )
+                            // Flutter: SizedBox(8.h) then indicator 24.w × 3.h
+                            Spacer(Modifier.height(8.dp))
+                            Box(
+                                Modifier
+                                    .width(if (selected) 24.dp else 0.dp)
+                                    .height(3.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(if (selected) tabAccent else Color.Transparent),
+                            )
+                        }
+                    }
+                }
+                Image(
+                    painter = painterResource(Res.drawable.home_dubbing_home_bar_icon_top),
+                    contentDescription = "菜单",
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .size(36.dp)
+                        .clickable { showPlatformToast("菜单") },
+                    contentScale = ContentScale.Fit,
+                )
+            }
+        }
+
         Column(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp),
         ) {
-            Row(
-                Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                categories.forEachIndexed { i, label ->
+            // Flutter DubbingHomeBannerCarousel: padding LTRB(16,8,16,8), height 156, radius 8
+            Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(156.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.home_dubbing_home_banner_main),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                    )
                     Text(
-                        label,
-                        fontWeight = if (i == 0) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (i == 0) DemoColors.TextPrimary else DemoColors.TextSecondary,
-                        fontSize = 15.sp,
+                        "AD",
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(10.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(tabAccent) // Flutter primaryGreen = link
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
                     )
                 }
-            }
-            Box(
-                Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Accent.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("身体的奥秘", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text("Banner · 萌宠部落 / 完美的世界", color = DemoColors.TextSecondary, fontSize = 12.sp)
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    repeat(3) { i ->
+                        val active = i == 0
+                        Box(
+                            Modifier
+                                .padding(horizontal = 3.dp)
+                                .width(if (active) 14.dp else 6.dp)
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(if (active) tabAccent else Color(0xFFD0D0D5)),
+                        )
+                    }
                 }
             }
-            Spacer(Modifier.height(12.dp))
+
+            // Flutter DubbingHomeFeatureRow: pad LTRB(4,4,4,12), icon 52, gap 8
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                    .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 16.dp),
             ) {
-                features.forEach { label ->
+                features.forEach { (label, icon, openRank) ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .weight(1f)
                             .clickable {
-                                if (label == "排行榜") onOpenHotRank()
+                                if (openRank) onOpenHotRank()
                                 else showPlatformToast(label)
                             },
                     ) {
-                        Box(
-                            Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(DemoColors.Accent.copy(alpha = 0.1f)),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(label.take(1), color = DemoColors.Accent, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(6.dp))
-                        Text(label, fontSize = 11.sp, maxLines = 1)
+                        Image(
+                            painter = painterResource(icon),
+                            contentDescription = label,
+                            modifier = Modifier.size(52.dp),
+                            contentScale = ContentScale.Fit,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(label, fontSize = 11.sp, maxLines = 1, color = DemoColors.TextPrimary)
                     }
                 }
             }
-            DubbingSectionTitle("最近在学")
+
+            DubbingSectionTitle(
+                title = "最近在学",
+                trailing = {
+                    Image(
+                        painter = painterResource(Res.drawable.home_dubbing_home_icon_chevron_right),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable { showPlatformToast("最近在学") },
+                        contentScale = ContentScale.Fit,
+                    )
+                },
+            )
             Row(
                 Modifier
+                    .height(118.dp)
                     .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                recent.forEach { (title, dur) ->
-                    Column(
-                        Modifier
-                            .width(120.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
-                            .padding(10.dp),
-                    ) {
-                        Box(
-                            Modifier
+                recent.forEach { (title, dur, cover) ->
+                    // Flutter RecentLearning: width 120.w, cover 68.h, title 12.sp
+                    Column(Modifier.width(120.dp)) {
+                        DubbingCoverWithDuration(
+                            cover = cover,
+                            duration = dur,
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .height(72.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFE8F0FE)),
+                                .height(68.dp),
                         )
-                        Spacer(Modifier.height(6.dp))
-                        Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 2)
-                        Text(dur, fontSize = 11.sp, color = DemoColors.TextSecondary)
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            title,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            color = DemoColors.TextPrimary,
+                            lineHeight = 16.2.sp,
+                        )
                     }
                 }
             }
-            DubbingSectionTitle("新手赛场")
-            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                expert.forEach { (title, user, sub) ->
+
+            DubbingSectionTitle(
+                title = "新手赛场",
+                trailing = {
+                    // Flutter DubbingSectionHeaderStyle.refresh
                     Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
-                            .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { showPlatformToast("换一换") },
                     ) {
-                        Box(
-                            Modifier
-                                .size(48.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFFFF3E0)),
+                        Image(
+                            painter = painterResource(Res.drawable.home_dubbing_home_icon_swap),
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            contentScale = ContentScale.Fit,
                         )
-                        Spacer(Modifier.width(10.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                            Text("$user · $sub", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                        Spacer(Modifier.width(4.dp))
+                        Text("换一换", fontSize = 13.sp, color = DemoColors.TextSecondary)
+                    }
+                },
+            )
+            // Flutter GridView: crossAxisCount=2, aspectRatio=0.72, cover 96.h
+            BoxWithConstraints(Modifier.padding(horizontal = 16.dp)) {
+                val gap = 12.dp
+                val cardW = (maxWidth - gap) / 2
+                val cardH = cardW / 0.72f
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    expert.chunked(2).forEach { rowItems ->
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(gap),
+                        ) {
+                            rowItems.forEach { card ->
+                                Column(
+                                    Modifier
+                                        .width(cardW)
+                                        .height(cardH),
+                                ) {
+                                    DubbingCoverWithDuration(
+                                        cover = card.cover,
+                                        duration = "02:30",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(96.dp),
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Image(
+                                            painter = painterResource(Res.drawable.home_dubbing_home_thumb_default),
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .size(18.dp)
+                                                .clip(CircleShape),
+                                            contentScale = ContentScale.Crop,
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            card.userName,
+                                            fontSize = 11.sp,
+                                            color = DemoColors.TextSecondary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                    }
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        card.title,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = DemoColors.TextPrimary,
+                                    )
+                                    Spacer(Modifier.height(2.dp))
+                                    Text(
+                                        card.subtitle,
+                                        fontSize = 11.sp,
+                                        color = DemoColors.TextSecondary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                            if (rowItems.size == 1) {
+                                Spacer(Modifier.weight(1f))
+                            }
                         }
                     }
                 }
             }
+
             DubbingSectionTitle(
                 title = "热榜",
                 action = "查看 >",
@@ -1382,6 +1652,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                     }
                 }
             }
+
             DubbingSectionTitle("小编精选")
             Row(
                 Modifier
@@ -1389,27 +1660,36 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                editor.forEach { (title, sub, badge) ->
-                    Column(
-                        Modifier
-                            .width(140.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
-                            .padding(10.dp),
-                    ) {
-                        if (badge.isNotEmpty()) {
-                            Text(
-                                badge,
-                                fontSize = 10.sp,
-                                color = DemoColors.Accent,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                        Text(title, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 2)
-                        Text(sub, fontSize = 11.sp, color = DemoColors.TextSecondary, maxLines = 2)
+                editor.forEach { (title, sub, cover) ->
+                    Column(Modifier.width(140.dp)) {
+                        Image(
+                            painter = painterResource(cover),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(84.dp)
+                                .clip(RoundedCornerShape(10.dp)),
+                            contentScale = ContentScale.Crop,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            title,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 13.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            sub,
+                            fontSize = 11.sp,
+                            color = DemoColors.TextSecondary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
                 }
             }
+
             DubbingSectionTitle(title = "专属为你", subtitle = "根据你的学习兴趣为你推荐")
             Row(
                 Modifier
@@ -1417,33 +1697,30 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                albums.forEach { (title, eps) ->
-                    Column(
-                        Modifier
-                            .width(110.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
-                            .padding(10.dp),
-                    ) {
-                        Box(
-                            Modifier
+                albums.forEach { (title, eps, cover) ->
+                    Column(Modifier.width(110.dp)) {
+                        Image(
+                            painter = painterResource(cover),
+                            contentDescription = null,
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .height(80.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFE8F5E9)),
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop,
                         )
                         Spacer(Modifier.height(6.dp))
-                        Text(title, fontWeight = FontWeight.Medium, fontSize = 13.sp)
+                        Text(title, fontWeight = FontWeight.Medium, fontSize = 13.sp, maxLines = 1)
                         Text(eps, fontSize = 11.sp, color = DemoColors.TextSecondary)
                     }
                 }
             }
+
             DubbingSectionTitle("猜你喜欢")
             Column(
                 Modifier.padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                guess.forEach { (title, plays, dur) ->
+                guess.forEach { (title, meta, cover) ->
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -1452,16 +1729,18 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(
-                            Modifier
+                        Image(
+                            painter = painterResource(cover),
+                            contentDescription = null,
+                            modifier = Modifier
                                 .size(56.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF3E5F5)),
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop,
                         )
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                            Text("$plays · $dur", fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Text(meta, fontSize = 12.sp, color = DemoColors.TextSecondary)
                         }
                     }
                 }
@@ -1471,26 +1750,88 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
 }
 
 @Composable
+private fun DubbingCoverWithDuration(
+    cover: DrawableResource,
+    duration: String,
+    modifier: Modifier = Modifier,
+) {
+    // Flutter DubbingHomeTheme.thumbRadius = 8
+    Box(modifier.clip(RoundedCornerShape(8.dp))) {
+        Image(
+            painter = painterResource(cover),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+        )
+        Row(
+            Modifier
+                .align(Alignment.BottomStart)
+                .padding(6.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color.Black.copy(alpha = 0.55f))
+                .padding(horizontal = 6.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.home_dubbing_home_icon_duration),
+                contentDescription = null,
+                modifier = Modifier.size(10.dp),
+                contentScale = ContentScale.Fit,
+            )
+            Spacer(Modifier.width(3.dp))
+            Text(duration, color = Color.White, fontSize = 10.sp)
+        }
+    }
+}
+
+@Composable
+private fun DubbingHistoryClockIcon(modifier: Modifier = Modifier, tint: Color = DemoColors.TextPrimary) {
+    Canvas(modifier) {
+        val stroke = 1.7.dp.toPx()
+        val r = size.minDimension / 2f - stroke
+        val c = Offset(size.width / 2f, size.height / 2f)
+        drawCircle(color = tint, radius = r, center = c, style = Stroke(width = stroke))
+        drawLine(
+            color = tint,
+            start = c,
+            end = Offset(c.x, c.y - r * 0.55f),
+            strokeWidth = stroke,
+            cap = StrokeCap.Round,
+        )
+        drawLine(
+            color = tint,
+            start = c,
+            end = Offset(c.x + r * 0.4f, c.y + r * 0.15f),
+            strokeWidth = stroke,
+            cap = StrokeCap.Round,
+        )
+    }
+}
+
+@Composable
 private fun DubbingSectionTitle(
     title: String,
     subtitle: String? = null,
     action: String? = null,
     onAction: (() -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            // Flutter DubbingHomeSectionHeader: fromLTRB(16, 24, 16, 12)
+            .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 17.sp)
+            Text(title, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
             if (subtitle != null) {
                 Text(subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
             }
         }
-        if (action != null) {
-            Text(
+        when {
+            trailing != null -> trailing()
+            action != null -> Text(
                 action,
                 color = DemoColors.Accent,
                 fontSize = 13.sp,
@@ -1765,12 +2106,24 @@ private fun HotRankDetailScreen(onBack: () -> Unit) {
 
 private fun analyticsUvLabel(uv: Int): String =
     if (uv >= 1000) {
-        val k = uv / 1000.0
-        val s = ((k * 10).toInt() / 10.0).toString()
+        // Flutter: (n / 1000).toStringAsFixed(1)
+        val tenths = kotlin.math.round(uv / 100.0) / 10.0
+        val s = if (tenths == tenths.toLong().toDouble()) {
+            "${tenths.toLong()}.0"
+        } else {
+            tenths.toString()
+        }
         "UV ${s}k"
     } else {
         "UV $uv"
     }
+
+private fun analyticsRoiLabel(roi: Double): String {
+    val cents = kotlin.math.round(roi * 100.0) / 100.0
+    val whole = cents.toLong()
+    val frac = kotlin.math.round((cents - whole) * 100.0).toInt().coerceIn(0, 99)
+    return "ROI $whole.${frac.toString().padStart(2, '0')}"
+}
 
 @Composable
 private fun AnalyticsListScreen(
@@ -1879,7 +2232,7 @@ private fun AnalyticsListScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             AnalyticsConversionRing(rate = rateFrac, size = 64.dp)
-                            Spacer(Modifier.width(16.dp))
+                            Spacer(Modifier.width(12.dp))
                             AnalyticsMiniBars(
                                 pv = row.pv.toFloat(),
                                 uv = row.uv.toFloat(),
@@ -1888,27 +2241,28 @@ private fun AnalyticsListScreen(
                                 modifier = Modifier.weight(1f).height(64.dp),
                             )
                         }
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(10.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Flutter _MetricPill: radius 8, fontSize 12, alpha 0.1
                             Text(
                                 analyticsUvLabel(row.uv),
                                 color = primary,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(999.dp))
-                                    .background(primary.copy(alpha = 0.08f))
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(primary.copy(alpha = 0.1f))
                                     .padding(horizontal = 8.dp, vertical = 4.dp),
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                "ROI ${row.roi}",
+                                analyticsRoiLabel(row.roi),
                                 color = accent,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(999.dp))
-                                    .background(accent.copy(alpha = 0.12f))
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(accent.copy(alpha = 0.1f))
                                     .padding(horizontal = 8.dp, vertical = 4.dp),
                             )
                             Spacer(Modifier.weight(1f))
@@ -2339,12 +2693,22 @@ private fun UsedCarListScreen(
             onBack = onBack,
             containerColor = Color.White,
             actions = {
-                Text(
-                    text = "＋",
-                    color = accent,
-                    fontSize = 22.sp,
-                    modifier = Modifier.clickable(onClick = onCreate),
-                )
+                // Flutter Icons.add_circle_outline (ink, not green glyph).
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable(onClick = onCreate),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val stroke = Stroke(width = 1.6.dp.toPx(), cap = StrokeCap.Round)
+                        val r = size.minDimension / 2f - stroke.width
+                        drawCircle(color = ink, radius = r, style = stroke)
+                        val arm = r * 0.45f
+                        drawLine(ink, Offset(center.x - arm, center.y), Offset(center.x + arm, center.y), stroke.width, StrokeCap.Round)
+                        drawLine(ink, Offset(center.x, center.y - arm), Offset(center.x, center.y + arm), stroke.width, StrokeCap.Round)
+                    }
+                }
             },
         )
         LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
@@ -2366,7 +2730,8 @@ private fun UsedCarListScreen(
                         color = Color.White.copy(alpha = 0.85f),
                         fontSize = 13.sp,
                     )
-                    Spacer(Modifier.height(14.dp))
+                    // Visual SoT: Flutter green card h≈414px; Spacer(20) matches (raw dart 14 is shorter on CMP fonts).
+                    Spacer(Modifier.height(20.dp))
                     Row(Modifier.fillMaxWidth()) {
                         listOf(
                             "已提交" to submitted,
@@ -2383,47 +2748,106 @@ private fun UsedCarListScreen(
                 }
             }
             item {
-                Column {
-                    Row(
-                        Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp),
-                    ) {
+                // Flutter ChoiceChip/FilterChip = StadiumBorder; ~42.dp tall, row gap ~14.dp.
+                // Flutter M3 ChoiceChip ≈ 8.dp corners; SoT blue h≈126px → 42.dp; selected wider via check+pad.
+                val chipSelected = Color(0xFF0070F3)
+                val chipShape = RoundedCornerShape(8.dp)
+                Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 7.dp, bottom = 12.dp)) {
+                    Row(Modifier.horizontalScroll(rememberScrollState())) {
                         statusTabs.forEach { tab ->
                             val selected = status == tab
-                            Text(
-                                tab,
-                                color = if (selected) Color.White else ink,
-                                fontSize = 13.sp,
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(if (selected) accent else Color(0xFFE8ECF0))
+                            Row(
+                                Modifier
+                                    .padding(end = 6.dp)
+                                    .height(42.dp)
+                                    .clip(chipShape)
+                                    .background(if (selected) chipSelected else Color.White)
+                                    .border(
+                                        width = if (selected) 0.dp else 1.dp,
+                                        color = if (selected) Color.Transparent else Color(0xFF1C2430),
+                                        shape = chipShape,
+                                    )
                                     .clickable { status = tab }
-                                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                            )
+                                    .padding(horizontal = 18.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                if (selected) {
+                                    Canvas(Modifier.size(14.dp)) {
+                                        val stroke = Stroke(width = 1.7.dp.toPx(), cap = StrokeCap.Round)
+                                        val w = size.width
+                                        val h = size.height
+                                        drawLine(
+                                            Color.White,
+                                            Offset(w * 0.12f, h * 0.52f),
+                                            Offset(w * 0.38f, h * 0.78f),
+                                            stroke.width,
+                                            StrokeCap.Round,
+                                        )
+                                        drawLine(
+                                            Color.White,
+                                            Offset(w * 0.38f, h * 0.78f),
+                                            Offset(w * 0.88f, h * 0.22f),
+                                            stroke.width,
+                                            StrokeCap.Round,
+                                        )
+                                    }
+                                    Spacer(Modifier.width(6.dp))
+                                }
+                                Text(
+                                    tab,
+                                    color = if (selected) Color.White else ink,
+                                    fontSize = 13.sp,
+                                )
+                            }
                         }
                     }
-                    Spacer(Modifier.height(8.dp))
-                    Row(
-                        Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                    ) {
+                    Spacer(Modifier.height(14.dp))
+                    Row(Modifier.horizontalScroll(rememberScrollState())) {
                         kindTabs.forEach { tab ->
                             val selected = kind == tab
-                            Text(
-                                tab,
-                                color = if (selected) accent else DemoColors.TextSecondary,
-                                fontSize = 13.sp,
-                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(if (selected) Color(0x140B6E4F) else Color.White)
+                            Row(
+                                Modifier
+                                    .padding(end = 6.dp)
+                                    .height(42.dp)
+                                    .clip(chipShape)
+                                    .background(if (selected) chipSelected else Color.White)
+                                    .border(
+                                        width = if (selected) 0.dp else 1.dp,
+                                        color = if (selected) Color.Transparent else Color(0xFF1C2430),
+                                        shape = chipShape,
+                                    )
                                     .clickable { kind = tab }
-                                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                            )
+                                    .padding(horizontal = 18.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                if (selected) {
+                                    Canvas(Modifier.size(14.dp)) {
+                                        val stroke = Stroke(width = 1.7.dp.toPx(), cap = StrokeCap.Round)
+                                        val w = size.width
+                                        val h = size.height
+                                        drawLine(
+                                            Color.White,
+                                            Offset(w * 0.12f, h * 0.52f),
+                                            Offset(w * 0.38f, h * 0.78f),
+                                            stroke.width,
+                                            StrokeCap.Round,
+                                        )
+                                        drawLine(
+                                            Color.White,
+                                            Offset(w * 0.38f, h * 0.78f),
+                                            Offset(w * 0.88f, h * 0.22f),
+                                            stroke.width,
+                                            StrokeCap.Round,
+                                        )
+                                    }
+                                    Spacer(Modifier.width(6.dp))
+                                }
+                                Text(
+                                    tab,
+                                    color = if (selected) Color.White else ink,
+                                    fontSize = 13.sp,
+                                )
+                            }
                         }
                     }
                 }
@@ -2478,20 +2902,33 @@ private fun UsedCarListScreen(
                             Text(row.submittedDate, fontSize = 12.sp, color = DemoColors.TextSecondary)
                         }
                         Spacer(Modifier.height(10.dp))
-                        Text(row.vehicleModel, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = ink)
+                        Text(
+                            row.vehicleModel,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ink,
+                            lineHeight = 22.sp,
+                        )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "${row.plateNo} · ${row.modelYear}款 · ${row.mileageKm}km",
                             fontSize = 13.sp,
                             color = DemoColors.TextSecondary,
+                            lineHeight = 18.sp,
                         )
                         Spacer(Modifier.height(10.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(row.amountLabel, fontSize = 12.sp, color = DemoColors.TextSecondary)
+                            Text(row.amountLabel, fontSize = 12.sp, color = DemoColors.TextSecondary, lineHeight = 16.sp)
                             Spacer(Modifier.width(6.dp))
-                            Text("¥${row.amount}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = ink)
+                            Text(
+                                "¥${row.amount}",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ink,
+                                lineHeight = 24.sp,
+                            )
                             Spacer(Modifier.weight(1f))
-                            Text(row.customerName, fontSize = 13.sp, color = DemoColors.TextSecondary)
+                            Text(row.customerName, fontSize = 13.sp, color = DemoColors.TextSecondary, lineHeight = 18.sp)
                         }
                     }
                 }
@@ -2649,130 +3086,120 @@ private fun NewCarFollowDetailScreen(row: NewCarFollowRow, onBack: () -> Unit) {
 @Composable
 private fun AfterSalesListScreen(
     onBack: () -> Unit,
-    onItem: (HomeListRow) -> Unit,
+    @Suppress("UNUSED_PARAMETER") onItem: (HomeListRow) -> Unit,
     onCreate: () -> Unit,
 ) {
-    // Flutter AfterSalesListPage: orange hero + 待处理预约 + 服务记录 list
-    val items = HomeSecondaryMock.afterSales
-    val appointments = HomeSecondaryMock.appointments
+    // Flutter AfterSalesListPage consumer empty SoT: canCreate=false, 0 items
+    val canCreate = false
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+    // Flutter AfterSalesTheme: background F3F5F8, accentDeep→accent gradient
+    Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
         MineTopBar(
             title = "售后专区",
             onBack = onBack,
             containerColor = Color.White,
             actions = {
-                TextButton(onClick = onCreate) {
-                    Text("新建", color = Color(0xFFFF9500))
+                if (canCreate) {
+                    TextButton(onClick = onCreate) {
+                        Text("新建", color = Color(0xFFD97706))
+                    }
                 }
             },
         )
-        LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
-            item {
-                Column(
+        Column(
+            Modifier
+                .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(
+                    Brush.linearGradient(
+                        listOf(Color(0xFFB45309), Color(0xFFD97706)),
+                    ),
+                )
+                .padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 16.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
                     Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.linearGradient(
-                                listOf(Color(0xFFE67E22), Color(0xFFFF9500)),
-                            ),
-                        )
-                        .padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 16.dp),
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White.copy(alpha = 0.18f)),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            Modifier
-                                .width(40.dp)
-                                .height(40.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White.copy(alpha = 0.18f)),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text("修", color = Color.White, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                "维修保养档案",
-                                color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Text(
-                                "当前店服务记录与预约跟进",
-                                color = Color.White.copy(alpha = 0.85f),
-                                fontSize = 13.sp,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(16.dp))
-                    Row(Modifier.fillMaxWidth()) {
-                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("${items.size}", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                            Text("记录", color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
-                        }
-                        Box(Modifier.width(1.dp).height(28.dp).background(Color.White.copy(alpha = 0.25f)))
-                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                "${appointments.size}",
-                                color = Color.White,
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Text("待预约", color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
-                        }
-                    }
-                }
-            }
-            if (appointments.isNotEmpty()) {
-                item {
-                    Text(
-                        "待处理预约",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
+                    Icon(
+                        imageVector = MineIcons.Build,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp),
                     )
                 }
-                items(appointments) { row ->
-                    Column(
-                        Modifier
-                            .padding(horizontal = 16.dp, vertical = 5.dp)
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
-                            .clickable { onItem(row) }
-                            .padding(14.dp),
-                    ) {
-                        Text(row.title, fontWeight = FontWeight.Medium)
-                        Spacer(Modifier.height(4.dp))
-                        Text(row.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
-                    }
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text(
+                        "维修保养档案",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        "查看与您相关的服务记录",
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 13.sp,
+                    )
                 }
             }
-            item {
+            Spacer(Modifier.height(16.dp))
+            Column(
+                Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("0", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("记录", color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
+            }
+        }
+        Text(
+            "我的服务记录",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            color = Color(0xFF1C2430),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp),
+        )
+        Box(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    Modifier
+                        .size(88.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFECECEC)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = MineIcons.Build,
+                        contentDescription = null,
+                        tint = Color(0xFFB0B0B0),
+                        modifier = Modifier.size(40.dp),
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
                 Text(
-                    "维修保养记录",
+                    "暂无记录",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
-                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp),
+                    color = Color(0xFF6B7280),
                 )
-            }
-            items(items) { row ->
-                Column(
-                    Modifier
-                        .padding(horizontal = 16.dp, vertical = 5.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
-                        .clickable { onItem(row) }
-                        .padding(14.dp),
-                ) {
-                    Text(row.title, fontWeight = FontWeight.Medium)
-                    Spacer(Modifier.height(4.dp))
-                    Text(row.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
-                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "完成售后服务后，在这里沉淀维修保养档案",
+                    fontSize = 13.sp,
+                    color = Color(0xFF6B7280),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 32.dp),
+                )
             }
         }
     }

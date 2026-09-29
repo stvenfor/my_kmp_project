@@ -137,6 +137,12 @@ internal object DeepLinkRouter {
         if (path.isEmpty() || path == "/") return null
         if (!path.startsWith("/")) path = "/$path"
 
+        // myai://app/home/... → /app/home/... ; strip product host segment "app".
+        if (path.startsWith("/app/")) {
+            path = path.removePrefix("/app")
+            if (!path.startsWith("/")) path = "/$path"
+        }
+
         // Drop a lone host-looking first segment when URI was scheme://path without empty authority
         // e.g. myai://home → after scheme strip we may get "/home" already; leave as-is.
         return path.lowercase()

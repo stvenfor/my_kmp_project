@@ -1,0 +1,18 @@
+{
+  "live_room": {
+    "mse_pct": 1.8072,
+    "mad_pct": 2.5293,
+    "pass_": true,
+    "bar_mse_pct": 2.0,
+    "flutter": "openspec/changes/parity-flutter-to-kmp/notes/evidence/live/Android/live_room.flutter.png",
+    "kmp": "openspec/changes/parity-flutter-to-kmp/notes/evidence/live/Android/live_room.kmp.png",
+    "heat": "openspec/changes/parity-flutter-to-kmp/notes/evidence/live/Android/live_room.heat.png"
+  },
+  "meta": {
+    "gate": "mse_pct<=2.0",
+    "roi": "top=0.04,bot=0.9,resize=540x960",
+    "measured_at": "2026-09-28T18:33Z",
+    "script": "scripts/screenshot_diff_gate.py",
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
+  }
+}

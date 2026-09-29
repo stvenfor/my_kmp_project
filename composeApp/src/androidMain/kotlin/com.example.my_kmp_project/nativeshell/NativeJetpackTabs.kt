@@ -409,7 +409,58 @@ private fun JetpackChatDetail(
             .navigationBarsPadding()
             .imePadding(),
     ) {
-        MineTopBar(title = conversation.title, onBack = onBack, containerColor = DemoColors.PageBg)
+        // Flutter _ChatDetailHeader: blue back + avatar + name/online
+        Column(Modifier.fillMaxWidth().background(DemoColors.Background)) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, end = 8.dp, bottom = 10.dp, top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "‹",
+                    fontSize = 32.sp,
+                    color = DemoColors.Accent,
+                    modifier = Modifier
+                        .clickable(onClick = onBack)
+                        .padding(horizontal = 8.dp),
+                )
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(DemoColors.PageBg),
+                ) {
+                    PlatformNetworkImage(
+                        url = conversation.portraitUrl.ifBlank {
+                            "https://picsum.photos/seed/chat_${conversation.peerId}/150/150"
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        placeholder = Res.drawable.community_avatar,
+                        contentDescription = conversation.title,
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        conversation.title,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = DemoColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        if (conversation.isOnline) "在线" else "离线",
+                        fontSize = 12.sp,
+                        color = if (conversation.isOnline) Color(0xFF07C160) else DemoColors.Muted,
+                    )
+                }
+            }
+            HorizontalDivider(thickness = 0.5.dp, color = DemoColors.Divider)
+        }
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -518,16 +569,16 @@ private fun JetpackChatDetail(
                     BasicTextField(
                         value = draft,
                         onValueChange = { draft = it },
-                        textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
+                        textStyle = TextStyle(fontSize = 16.sp, color = DemoColors.TextPrimary),
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(20.dp))
                             .background(DemoColors.PageBg)
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
                         decorationBox = { inner ->
                             if (draft.isEmpty()) {
-                                Text("输入消息…", color = DemoColors.Muted, fontSize = 15.sp)
+                                Text("发消息…", color = DemoColors.Muted, fontSize = 16.sp)
                             }
                             inner()
                         },

@@ -1,0 +1,18 @@
+{
+  "video_dubbing_works_detail": {
+    "mse_pct": 24.4417,
+    "mad_pct": 27.8579,
+    "pass_": false,
+    "bar_mse_pct": 2.0,
+    "flutter": "openspec/changes/parity-flutter-to-kmp/notes/evidence/video/Android/video_dubbing_works_detail.flutter.png",
+    "kmp": "openspec/changes/parity-flutter-to-kmp/notes/evidence/video/Android/video_dubbing_works_detail.kmp.png",
+    "heat": "openspec/changes/parity-flutter-to-kmp/notes/evidence/video/Android/video_dubbing_works_detail.heat.png"
+  },
+  "meta": {
+    "gate": "mse_pct<=2.0",
+    "roi": "top=0.04,bot=0.9,resize=540x960",
+    "measured_at": "2026-09-29T01:36Z",
+    "script": "scripts/screenshot_diff_gate.py",
+    "ios_ohos": "open-path + sampling only (not hard gate per ADR 0003)"
+  }
+}

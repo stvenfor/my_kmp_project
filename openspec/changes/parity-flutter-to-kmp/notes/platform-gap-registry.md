@@ -27,7 +27,7 @@ Rule (2A): a capability is **complete** only when Android, iOS, and OHOS are all
 | push entry | missing | missing | missing | no JPush-equivalent — enumerated incomplete (task 5.4) | wys_push | — | add PushBridge expect/actual + vendor SDK |
 | friend list | partial | partial | partial | Android list→detail mock evidenced; no relation/IM vendor SDK | features/friend | feature/friend | 9.4 iOS/OHOS + Flutter pixel; vendor SDK later |
 | live | partial | partial | partial | Android list→room mock evidenced; no realtime/push stream | features/live | feature/live | realtime SDK / 9.4 |
-| classroom | partial | partial | partial | Android my_class→homework_stats→teacher/student/dubbing/review/gift/video mock; no realtime classroom | features/classroom | feature/classroom ClassroomRouteHost | 9.4 three-platform + Flutter pixel |
+| classroom | partial | partial | partial | Android Screenshot Diff Gate PASS (#22); UI mock only — no realtime classroom session | features/classroom | feature/classroom ClassroomRouteHost | realtime SDK later; keep partial |
 | short video | partial | partial | partial | 三端 short list UI evidenced；Surface/decode TBD | features/video | feature/media VideoRouteHost | real player surfaces |
 | AI stream | stub | stub | stub | 三端 AiStreamScreen mock chunk；无 SSE | features/ai | feature/ai AiStreamScreen | AiStreamRepository SSE |
 | music | partial | partial | stub | Android+iOS list/now_playing；OHOS stub player | features/music | feature/media MusicListScreen | OHOS MediaKit |

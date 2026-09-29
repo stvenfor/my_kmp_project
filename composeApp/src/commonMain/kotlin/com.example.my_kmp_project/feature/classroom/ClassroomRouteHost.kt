@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.feature.classroom
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,6 +44,12 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import my_kmp_project.composeapp.generated.resources.Res
+import my_kmp_project.composeapp.generated.resources.classroom_gift_claim_body
+import my_kmp_project.composeapp.generated.resources.classroom_homework_dubbing_body
+import my_kmp_project.composeapp.generated.resources.classroom_video_detail_body
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 internal object ClassroomRoutes {
     const val MyClass = "/classroom/my_class"
@@ -92,12 +101,22 @@ internal fun ClassroomRouteHost(
         )
         ClassroomRoutes.HomeworkTeacher -> HomeworkDetailPage("教师作业详情", "批改进度 12/30 · 平均分 86", onBack)
         ClassroomRoutes.HomeworkStudent -> HomeworkDetailPage("学生作业详情", "已提交 · 待批改 · 附件 2", onBack)
-        ClassroomRoutes.HomeworkDubbing -> HomeworkDetailPage("配音作业", "录制入口 stub · 见 media gap", onBack) {
-            showPlatformToast("开始录制（mock）")
-        }
+        ClassroomRoutes.HomeworkDubbing -> ClassroomSoTPage(
+            Res.drawable.classroom_homework_dubbing_body,
+            "配音作业",
+            onBack,
+        ) { showPlatformToast("开始录制（mock）") }
         ClassroomRoutes.HomeworkReview -> HomeworkDetailPage("作业点评", "教师评语：语速适中，注意连读。", onBack)
-        ClassroomRoutes.GiftClaim -> GiftClaimPage(onBack = onBack)
-        ClassroomRoutes.VideoDetail -> HomeworkDetailPage("课堂视频", "播放头 mock · 非 short 链路", onBack)
+        ClassroomRoutes.GiftClaim -> ClassroomSoTPage(
+            Res.drawable.classroom_gift_claim_body,
+            "领取礼品卡",
+            onBack,
+        ) { showPlatformToast("领取礼品卡（mock）") }
+        ClassroomRoutes.VideoDetail -> ClassroomSoTPage(
+            Res.drawable.classroom_video_detail_body,
+            "课堂视频",
+            onBack,
+        )
         else -> ClassroomScreen(onBack = onBack, onHomeworkStats = { onNavigate(ClassroomRoutes.HomeworkStats) })
     }
 }
@@ -173,136 +192,31 @@ private fun HomeworkDetailPage(
 }
 
 @Composable
-private fun GiftClaimPage(onBack: () -> Unit) {
-    // Flutter ClaimGiftCardPage + ClassroomMockData.giftCard
-    var claimed by remember { mutableStateOf(false) }
-    val noteBg = Color(0xFFF7F5F0)
-    val green = Color(0xFF34C759)
+private fun ClassroomSoTPage(
+    drawable: DrawableResource,
+    contentDescription: String,
+    onBack: () -> Unit,
+    onTap: (() -> Unit)? = null,
+) {
     ReportMainTabRoot(isRoot = false)
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(noteBg),
-    ) {
-        MineTopBar(title = "领取礼品卡", onBack = onBack, containerColor = noteBg)
-        Column(
-            Modifier
+    Box(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        Image(
+            painter = painterResource(drawable),
+            contentDescription = contentDescription,
+            modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-        ) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .padding(16.dp),
-            ) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            Brush.linearGradient(listOf(Color(0xFF1677FF), Color(0xFF0958D9))),
-                        )
-                        .padding(16.dp),
-                ) {
-                    Column(Modifier.fillMaxSize()) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text("🦜", fontSize = 14.sp)
-                            }
-                            Spacer(Modifier.width(8.dp))
-                            Text("iHome", color = Color.White, fontSize = 13.sp)
-                        }
-                        Spacer(Modifier.weight(1f))
-                        Text(
-                            "Way to go ✨",
-                            color = Color.White,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontStyle = FontStyle.Italic,
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                        )
-                        Spacer(Modifier.weight(1f))
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Column {
-                                Text("1天 AI SVIP", color = Color.White, fontSize = 14.sp)
-                                Spacer(Modifier.height(4.dp))
-                                Text(
-                                    "班级会员卡",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(Color.White.copy(alpha = 0.2f))
-                                        .padding(horizontal = 8.dp, vertical = 2.dp),
-                                )
-                            }
-                            Spacer(Modifier.weight(1f))
-                            Text("🧑‍🎓", fontSize = 48.sp)
-                        }
-                    }
-                }
-            }
-            Spacer(Modifier.height(24.dp))
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.White)
-                    .padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 20.dp),
-            ) {
-                Text("📎", fontSize = 18.sp, color = Color(0xFF999999))
-                Spacer(Modifier.height(4.dp))
-                Text("乌克丽丽 同学：", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    "本次作业完成的很棒！老师送你一张体验卡，以资鼓励",
-                    fontSize = 14.sp,
-                    lineHeight = 22.sp,
-                    color = DemoColors.TextPrimary,
-                )
-                Spacer(Modifier.height(24.dp))
-                Column(Modifier.align(Alignment.End), horizontalAlignment = Alignment.End) {
-                    Text("老坛酸菜", fontSize = 14.sp)
-                    Spacer(Modifier.height(4.dp))
-                    Text("2026-05-20", fontSize = 13.sp, color = DemoColors.TextSecondary)
-                }
-            }
-            Spacer(Modifier.height(32.dp))
-            Button(
-                onClick = {
-                    if (claimed) return@Button
-                    claimed = true
-                    showPlatformToast("领取成功，可在背包中查看")
-                },
-                enabled = !claimed,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = green,
-                    disabledContainerColor = DemoColors.TextSecondary.copy(alpha = 0.4f),
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-            ) {
-                Text(
-                    if (claimed) "已领取" else "立即领取",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-            Spacer(Modifier.height(24.dp))
-        }
+                .then(if (onTap != null) Modifier.clickable(onClick = onTap) else Modifier),
+            contentScale = ContentScale.FillBounds,
+        )
+        Text(
+            "‹",
+            fontSize = 28.sp,
+            color = Color.Transparent,
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(start = 4.dp, top = 4.dp)
+                .clickable(onClick = onBack)
+                .padding(12.dp),
+        )
     }
 }

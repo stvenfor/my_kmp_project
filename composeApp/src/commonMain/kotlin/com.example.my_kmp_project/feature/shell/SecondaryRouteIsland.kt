@@ -15,40 +15,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.router.AppRoutePath
-import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.chat.ChatScreen
-import com.example.my_kmp_project.feature.community.CommunityRouteHost
 import com.example.my_kmp_project.feature.community.CommunityRoutes
-import com.example.my_kmp_project.feature.community.CommunityScreen
-import com.example.my_kmp_project.feature.content.ContentRouteHost
 import com.example.my_kmp_project.feature.content.ContentRoutes
-import com.example.my_kmp_project.feature.home.AllServicesScreen
-import com.example.my_kmp_project.feature.home.HomeRouteHost
 import com.example.my_kmp_project.feature.home.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineRouteHost
 import com.example.my_kmp_project.feature.mine.MineRoutes
-import com.example.my_kmp_project.feature.scan.ScanScreen
-import com.example.my_kmp_project.feature.web.InAppWebScreen
 
 /**
- * Shared secondary-route island for iOS / OHOS native shells (ADR 0002 / Legacy Shared Compose).
+ * Mine-only Compose secondary host (ADR 0002 / #23).
  *
- * Android main path does **not** host secondaries here — see `NativeAndroidMain` overlays
- * (`HomeRouteHost`, `MineIsland`, …). Deleting this island is blocked until iOS/OHOS native
- * hosts cut over (#23).
- *
- * Resolves Flutter RoutePath strings or Chinese labels used by tab roots.
+ * In-scope **non-Mine** routes must open via Native Shell UI
+ * (`NativeAndroidMain` / `NativeFeatureHost` / ArkTS `nativePane`) — never here.
+ * Android main path does not use this host at all.
  */
 object SecondaryRouteResolver {
     fun resolve(titleOrPath: String): String? {
         val raw = titleOrPath.trim()
         if (raw.isEmpty()) return null
-        // Flutter MineController toast-only paths — never open secondary island.
         val toastOnlyPaths = setOf(
             "/mine/business_card",
             "/mine/invite",
@@ -63,32 +50,31 @@ object SecondaryRouteResolver {
             if (canon in toastOnlyPaths) return null
             return canon
         }
-        if (raw.startsWith("http://") || raw.startsWith("https://")) return AppRoutePath.web
         when (raw) {
-            "全部服务", "更多" -> return AppRoutePath.homeAllServices
-            "扫一扫" -> return "/scan"
-            "H5 调试", "内嵌网页" -> return AppRoutePath.web
-            "消息" -> return AppRoutePath.chat
-            "电子名片" -> return null // Flutter: toast only — never Invite
-            "商务合作" -> return null // Flutter MineController: toast only
-            "好友" -> return ContentRoutes.Friend
-            "粉丝群" -> return null // Flutter: toast only
-            "帮助中心" -> return null // Flutter feedback: toast only
-            "意见反馈" -> return null
-            "提醒事项" -> return null
-            "邀请好友" -> return null // Flutter: toast only (not Invite screen)
+            "电子名片", "商务合作", "好友", "粉丝群", "帮助中心",
+            "意见反馈", "提醒事项", "邀请好友", "头像", "请先登录",
+            "切换门店", "切换店铺", "个人资料",
+            "全部服务", "更多", "扫一扫", "H5 调试", "内嵌网页", "消息",
+            -> return null
             "订单中心" -> return MineRoutes.MallOrders
             "会员续费" -> return MineRoutes.Membership
-            "切换门店", "切换店铺" -> return null // SwitchStoreDialog on Mine root
-            "个人资料" -> return null // Flutter profile icon — separate; toast/stub on shells
-            "头像" -> return null
-            "请先登录" -> return null
         }
+        MineRoutes.fromLabel(raw)?.let { return it }
+        // Non-Mine labels resolve for shell routers, but must not open this island.
         HomeRoutes.fromLabel(raw)?.let { return it }
         CommunityRoutes.fromLabel(raw)?.let { return it }
-        MineRoutes.fromLabel(raw)?.let { return it }
         ContentRoutes.fromLabel(raw)?.let { return it }
         return null
+    }
+
+    /** Mine Compose Island ownership (settings / profile / addresses / membership / mall children). */
+    fun isMineIslandOwned(route: String): Boolean {
+        val r = MineRoutes.canonicalize(route.trim())
+        if (r.startsWith("/mine") || r.startsWith("/settings") || r == AppRoutePath.settings) return true
+        if (r == "/pay/membership" || r.startsWith("/pay/membership")) return true
+        // Commerce children reachable from MineRouteHost stack (not primary native hosts).
+        if (r.startsWith("/mall") || r.startsWith("/wallet") || r.startsWith("/pay")) return true
+        return false
     }
 }
 
@@ -104,6 +90,10 @@ fun SecondaryRouteIsland(
 
     fun navigate(next: String) {
         val resolved = SecondaryRouteResolver.resolve(next) ?: next
+        if (!SecondaryRouteResolver.isMineIslandOwned(resolved)) {
+            // Refuse non-Mine push — native shell owns those paths (#23).
+            return
+        }
         stack = stack + resolved
     }
 
@@ -115,67 +105,22 @@ fun SecondaryRouteIsland(
         }
     }
 
-    when {
-        route == AppRoutePath.homeAllServices || route == "/home/all_services" ->
-            AllServicesScreen(onBack = ::pop, onOpen = ::navigate)
-        route == "/scan" ->
-            ScanScreen(
-                onBack = ::pop,
-                onScanResult = { payload ->
-                    when {
-                        payload.startsWith("http://") || payload.startsWith("https://") ->
-                            navigate(payload)
-                        else -> {
-                            val deeplink = DeepLinkRouter.parse(payload)
-                            when {
-                                deeplink != null -> navigate(deeplink.route)
-                                payload.startsWith("/") -> navigate(payload)
-                            }
-                        }
-                    }
-                },
-            )
-        route == AppRoutePath.web || route.startsWith("http://") || route.startsWith("https://") ->
-            InAppWebScreen(
-                url = if (route.startsWith("http")) route else OfflineWebFixtureUrl,
-                onBack = ::pop,
-            )
-        route == AppRoutePath.chat || route == AppRoutePath.chatDetail ->
-            ChatScreen(onOpenFriends = { navigate(AppRoutePath.friend) })
-        route == AppRoutePath.community || route == "/community" ->
-            CommunityScreen()
-        route.startsWith("/home/") ->
-            HomeRouteHost(route = route, onBack = ::pop, onNavigate = ::navigate)
-        route.startsWith("/community/") ->
-            CommunityRouteHost(route = route, onBack = ::pop, onNavigate = ::navigate)
-        route.startsWith("/mine") ||
-            route.startsWith("/mall") ||
-            route.startsWith("/wallet") ||
-            route.startsWith("/pay") ||
-            route == AppRoutePath.settings ||
-            route.startsWith("/settings") ->
-            MineRouteHost(route = route, onBack = ::pop, onNavigate = ::navigate)
-        route.startsWith("/video") ||
-            route.startsWith("/classroom") ||
-            route.startsWith("/live") ||
-            route.startsWith("/friend") ||
-            route.startsWith("/music") ||
-            route.startsWith("/ai") ||
-            route.startsWith("/media") ->
-            ContentRouteHost(route = route, onBack = ::pop, onNavigate = ::navigate)
-        else ->
-            UnresolvedSecondaryRoute(route = route, onBack = ::pop)
+    if (!SecondaryRouteResolver.isMineIslandOwned(route)) {
+        LegacyNonMineBlocked(route = route, onBack = ::pop)
+        return
     }
+
+    MineRouteHost(route = route, onBack = ::pop, onNavigate = ::navigate)
 }
 
 @Composable
-private fun UnresolvedSecondaryRoute(route: String, onBack: () -> Unit) {
+private fun LegacyNonMineBlocked(route: String, onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
-        MineTopBar(title = "未映射入口", onBack = onBack)
+        MineTopBar(title = "请从原生壳打开", onBack = onBack)
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                "route=$route",
+                "非 Mine 路由已迁出 Legacy 岛 (#23)\nroute=$route",
                 color = DemoColors.TextSecondary,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(16.dp),

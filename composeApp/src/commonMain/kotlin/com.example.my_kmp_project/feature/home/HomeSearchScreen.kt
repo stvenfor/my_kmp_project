@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -49,26 +50,44 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.home_banner_bg
 import my_kmp_project.composeapp.generated.resources.home_search_icon_clear_history
 import my_kmp_project.composeapp.generated.resources.home_search_icon_refresh
 import my_kmp_project.composeapp.generated.resources.home_search_microphone
+import my_kmp_project.composeapp.generated.resources.home_search_rank_1
+import my_kmp_project.composeapp.generated.resources.home_search_rank_2
+import my_kmp_project.composeapp.generated.resources.home_search_rank_3
+import my_kmp_project.composeapp.generated.resources.home_search_rank_4
+import my_kmp_project.composeapp.generated.resources.home_search_rank_5
+import my_kmp_project.composeapp.generated.resources.home_search_rank_6
+import my_kmp_project.composeapp.generated.resources.home_search_rank_7
+import my_kmp_project.composeapp.generated.resources.home_search_rank_8
 import my_kmp_project.composeapp.generated.resources.ic_nav_back
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 /** Flutter `SearchPageTheme.searchFieldHeight` / AppNav chrome. */
 private val SearchFieldHeight = 44.dp
 
+private fun searchRankCoverRes(rank: Int): DrawableResource = when (rank) {
+    1 -> Res.drawable.home_search_rank_1
+    2 -> Res.drawable.home_search_rank_2
+    3 -> Res.drawable.home_search_rank_3
+    4 -> Res.drawable.home_search_rank_4
+    5 -> Res.drawable.home_search_rank_5
+    6 -> Res.drawable.home_search_rank_6
+    7 -> Res.drawable.home_search_rank_7
+    else -> Res.drawable.home_search_rank_8
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun HomeSearchScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
-    // Match archived Flutter SoT (rotateIndex landed on 龙猫 + mic overlay).
     var query by remember { mutableStateOf("") }
-    val rotatingHint = HomeMockData.searchHistory.getOrElse(3) { HomeMockData.searchPagePlaceholder }
+    // Match Flutter SoT rotating keyword (history[3] = 龙猫 + mic).
+    val rotatingHint = HomeMockData.searchHistory.getOrElse(2) { HomeMockData.searchPagePlaceholder }
     var history by remember { mutableStateOf(HomeMockData.searchHistory) }
     var discovery by remember { mutableStateOf(HomeMockData.searchDiscovery) }
     var selectedRankTab by remember { mutableStateOf(0) }
@@ -159,8 +178,8 @@ private fun SearchHeaderBar(
             .fillMaxWidth()
             .background(DemoColors.PageBg)
             .statusBarsPadding()
-            // Flutter SafeArea + 8.h; CMP statusBars alone needs ~+11.dp to match SoT Y.
-            .padding(start = 8.dp, end = 16.dp, top = 19.dp, bottom = 12.dp),
+            // Flutter SearchHeaderBar: EdgeInsets.fromLTRB(8.w, 8.h, 16.w, 12.h) after SafeArea.
+            .padding(start = 8.dp, end = 16.dp, top = 8.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -190,6 +209,7 @@ private fun SearchHeaderBar(
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Flutter CupertinoIcons.search (not text glyph).
             Text(
                 text = "⌕",
                 color = DemoColors.TextSecondary,
@@ -258,10 +278,14 @@ private fun SearchHistorySection(
     onTagTap: (String) -> Unit,
 ) {
     Column(
+        // Flutter SearchHistorySection fromLTRB(16,0,16,16).
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
     ) {
+        // Flutter CupertinoButton minSize 44 → header row height.
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 44.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -269,6 +293,7 @@ private fun SearchHistorySection(
                 color = DemoColors.TextPrimary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
+                lineHeight = 24.sp,
                 modifier = Modifier.weight(1f),
             )
             Row(
@@ -279,9 +304,10 @@ private fun SearchHistorySection(
                     painter = painterResource(Res.drawable.home_search_icon_clear_history),
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
+                    colorFilter = ColorFilter.tint(DemoColors.TextSecondary),
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "清除", color = DemoColors.TextSecondary, fontSize = 14.sp)
+                Text(text = "清除", color = DemoColors.TextSecondary, fontSize = 13.sp)
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
@@ -289,18 +315,9 @@ private fun SearchHistorySection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // Flutter history: plain text flow (no pills).
+            // Flutter history chips share page fill (canvasSoft2) → visually text-only.
             history.forEach { tag ->
-                Text(
-                    text = tag,
-                    color = DemoColors.TextPrimary,
-                    fontSize = 14.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .clickable { onTagTap(tag) }
-                        .padding(vertical = 4.dp, horizontal = 2.dp),
-                )
+                SearchTagChip(label = tag, onTap = { onTagTap(tag) })
             }
         }
     }
@@ -320,14 +337,19 @@ private fun SearchDiscoverySection(
             // Flutter discovery card: white surface; chips use soft page fill.
             .background(DemoColors.Background)
             .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Flutter CupertinoButton (refresh) minSize 44 → header row height.
+        Row(
+            modifier = Modifier.heightIn(min = 44.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 text = "搜索发现",
                 color = DemoColors.TextPrimary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
+                lineHeight = 24.sp,
             )
             Spacer(modifier = Modifier.width(6.dp))
             Image(
@@ -377,6 +399,7 @@ private fun SearchFilterSection(
                 color = DemoColors.TextPrimary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
+                lineHeight = 24.sp,
             )
             Spacer(modifier = Modifier.width(6.dp))
             // Flutter CupertinoIcons.slider_horizontal_3 (not funnel asset).
@@ -387,18 +410,9 @@ private fun SearchFilterSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // Flutter filter: plain text, no chip chrome.
+            // Flutter SearchFilterSection uses SearchTagChip pills.
             tags.forEach { tag ->
-                Text(
-                    text = tag,
-                    color = DemoColors.TextPrimary,
-                    fontSize = 14.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .clickable { onTagTap(tag) }
-                        .padding(vertical = 4.dp, horizontal = 2.dp),
-                )
+                SearchTagChip(label = tag, onTap = { onTagTap(tag) })
             }
         }
     }
@@ -427,23 +441,27 @@ private fun SearchTagChip(
     label: String,
     onTap: () -> Unit,
     highlight: Boolean = false,
+    softFill: Boolean = false,
 ) {
-    // Flutter SearchTagChip highlight: soft accent fill + accent ink (not solid white-on-blue).
+    // Flutter SearchTagChip: padding H14/V8, fontSize 14, highlight alpha 0.1
     val shape = RoundedCornerShape(20.dp)
+    val bg = when {
+        highlight -> DemoColors.Accent.copy(alpha = 0.1f)
+        softFill -> DemoColors.Background
+        else -> DemoColors.PageBg
+    }
     Text(
         text = label,
         color = if (highlight) DemoColors.Accent else DemoColors.TextPrimary,
-        fontSize = 13.sp,
+        fontSize = 14.sp,
         fontWeight = if (highlight) FontWeight.Medium else FontWeight.Normal,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .clip(shape)
-            .background(
-                if (highlight) DemoColors.Accent.copy(alpha = 0.12f) else DemoColors.PageBg,
-            )
+            .background(bg)
             .clickable(onClick = onTap)
-            .padding(horizontal = 10.dp, vertical = 7.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
     )
 }
 
@@ -513,14 +531,22 @@ private fun RankListRow(item: SearchRankItem) {
                 .size(72.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(DemoColors.PageBg),
+            contentAlignment = Alignment.Center,
         ) {
-            PlatformNetworkImage(
-                url = item.coverUrl,
-                contentDescription = item.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                placeholder = Res.drawable.home_banner_bg,
-            )
+            // Flutter SoT on emulator: picsum fails → fillSecondary + Icons.play_circle_outline.
+            Canvas(modifier = Modifier.size(28.dp)) {
+                val stroke = Stroke(width = 1.8.dp.toPx())
+                val c = Offset(size.width / 2f, size.height / 2f)
+                val r = size.minDimension / 2f - stroke.width
+                drawCircle(color = DemoColors.Muted, radius = r, center = c, style = stroke)
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(c.x - r * 0.2f, c.y - r * 0.35f)
+                    lineTo(c.x - r * 0.2f, c.y + r * 0.35f)
+                    lineTo(c.x + r * 0.45f, c.y)
+                    close()
+                }
+                drawPath(path, color = DemoColors.Muted)
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {

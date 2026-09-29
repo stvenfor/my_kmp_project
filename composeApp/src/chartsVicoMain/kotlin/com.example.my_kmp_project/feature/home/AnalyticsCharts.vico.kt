@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -26,14 +24,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.patrykandpatrick.vico.multiplatform.cartesian.CartesianChartHost
-import com.patrykandpatrick.vico.multiplatform.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.multiplatform.cartesian.data.columnSeries
-import com.patrykandpatrick.vico.multiplatform.cartesian.layer.ColumnCartesianLayer
-import com.patrykandpatrick.vico.multiplatform.cartesian.layer.rememberColumnCartesianLayer
-import com.patrykandpatrick.vico.multiplatform.cartesian.rememberCartesianChart
-import com.patrykandpatrick.vico.multiplatform.common.Fill
-import com.patrykandpatrick.vico.multiplatform.common.component.rememberLineComponent
 import kotlin.math.round
 
 private val ChartInk = Color(0xFF171717)
@@ -43,8 +33,9 @@ private val ChartGrid = Color(0xFFEBEBEB)
 private val ChartMute = Color(0xFF888888)
 
 /**
- * Vico 2.x multiplatform has Cartesian charts only (no PieChart until 3.1).
- * Ring ≈ Flutter WysConversionRing via Canvas; bars via Vico ColumnCartesianLayer.
+ * Ring ≈ Flutter WysConversionRing via Canvas.
+ * Bars ≈ Flutter WysMiniBarChart (fl_chart width:10, spaceAround) via Canvas —
+ * Vico multi-series clusters all rods into one x-group and blows MSE.
  */
 @Composable
 internal actual fun AnalyticsConversionRing(
@@ -122,45 +113,32 @@ internal actual fun AnalyticsMiniBars(
     height: Dp,
 ) {
     val labels = listOf("PV", "UV", "点", "转")
-    val y0 = pv.coerceAtLeast(0.02f)
-    val y1 = uv.coerceAtLeast(0.02f)
-    val y2 = clicks.coerceAtLeast(0.02f)
-    val y3 = converts.coerceAtLeast(0.02f)
+    val values = listOf(pv, uv, clicks, converts)
     val colors = listOf(ChartInk, ChartLink, ChartAccent, ChartLink)
-    val modelProducer = remember { CartesianChartModelProducer() }
-    LaunchedEffect(y0, y1, y2, y3) {
-        modelProducer.runTransaction {
-            columnSeries {
-                series(y0)
-                series(y1)
-                series(y2)
-                series(y3)
-            }
-        }
-    }
-    val barShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
+    val maxY = pv.coerceAtLeast(1f)
     Column(modifier = modifier.height(height)) {
-        CartesianChartHost(
-            chart = rememberCartesianChart(
-                rememberColumnCartesianLayer(
-                    columnProvider = ColumnCartesianLayer.ColumnProvider.series(
-                        colors.map { color ->
-                            rememberLineComponent(
-                                fill = Fill(color),
-                                thickness = 10.dp,
-                                shape = barShape,
-                            )
-                        },
-                    ),
-                    columnCollectionSpacing = 6.dp,
-                ),
-            ),
-            modelProducer = modelProducer,
-            animateIn = false,
+        Canvas(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
-        )
+        ) {
+            val n = values.size
+            val barW = 10.dp.toPx()
+            val slot = size.width / n
+            val chartH = size.height
+            val radius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+            values.forEachIndexed { i, v ->
+                val h = (v.coerceAtLeast(0f) / maxY).coerceIn(0f, 1f) * chartH
+                val left = slot * i + (slot - barW) / 2f
+                val top = chartH - h
+                drawRoundRect(
+                    color = colors[i],
+                    topLeft = Offset(left, top),
+                    size = Size(barW, h.coerceAtLeast(1f)),
+                    cornerRadius = radius,
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(2.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
             labels.forEach { label ->

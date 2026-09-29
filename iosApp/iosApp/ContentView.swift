@@ -68,8 +68,6 @@ struct ContentView: View {
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
-    @State private var showSecondary = false
-    @State private var secondaryRoute = "/home/search"
     @State private var showNativeFeature = false
     @State private var nativeFeaturePath = "/home/search"
     @State private var chatPendingPeer: String? = nil
@@ -113,8 +111,9 @@ struct ContentView: View {
         }
     }
 
-    /// Route ownership: tab roots native; Mine island Compose; non-Mine with a
-    /// SwiftUI host → NativeFeatureHost (#3); else Legacy SecondaryRouteIsland.
+    /// Route ownership: tab roots native; Mine island Compose; non-Mine →
+    /// NativeFeatureHost (#3/#23). Legacy SecondaryRouteIsland is not used for
+    /// in-scope non-Mine routes.
     private func handleDeepLinkOrLabel(_ raw: String) {
         let route: String
         if let parsed = MainViewControllerKt.AcceptDeepLinkFromIos(uri: raw) {
@@ -219,20 +218,16 @@ struct ContentView: View {
         }
     }
 
-    /// Prefer native shell when a dedicated host exists; else Legacy island.
+    /// Mine → Compose island; all other product paths → NativeFeatureHost (#23).
     private func openSecondaryOrNative(_ route: String) {
         if let island = Self.mineIslandKey(for: route) {
             mineIslandRoute = island
             showMineIsland = true
             return
         }
-        if NativeRouteResolver.hasNativeShellHost(route) {
-            nativeFeaturePath = route
-            showNativeFeature = true
-        } else {
-            secondaryRoute = route
-            showSecondary = true
-        }
+        // #23: never reopen Legacy SecondaryRouteIsland for in-scope non-Mine.
+        nativeFeaturePath = route
+        showNativeFeature = true
     }
 
     private func openMineIslandWithSoftAuth(_ islandKey: String) {
@@ -415,10 +410,6 @@ struct ContentView: View {
             )
             .ignoresSafeArea(.all)
         }
-        .fullScreenCover(isPresented: $showSecondary) {
-            SecondaryRouteHost(route: secondaryRoute)
-                .ignoresSafeArea(.all)
-        }
     }
 }
 
@@ -463,21 +454,12 @@ private struct AuthGateView: View {
     }
 }
 
-// MARK: - Compose host (Mine island only — ADR 0002)
+// MARK: - Compose host (Mine island only — ADR 0002 / #23)
 
 private struct MineIslandHost: UIViewControllerRepresentable {
     var route: String
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MineIslandViewController(route: route)
-    }
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
-}
-
-/// Flutter-aligned secondary product UI (Home/Mine/Content/Community RouteHosts).
-private struct SecondaryRouteHost: UIViewControllerRepresentable {
-    var route: String
-    func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.SecondaryRouteViewController(routeOrLabel: route)
     }
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }

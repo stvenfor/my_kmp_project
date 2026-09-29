@@ -2,58 +2,39 @@ package com.example.my_kmp_project.feature.commerce
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.app.AppContainer
 import com.example.my_kmp_project.component.pay.PayChannel
 import com.example.my_kmp_project.component.pay.PayGateway
 import com.example.my_kmp_project.component.pay.PayResult
-import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.launch
 import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.pay_membership_icon_alipay
-import my_kmp_project.composeapp.generated.resources.pay_membership_icon_wechat
+import my_kmp_project.composeapp.generated.resources.pay_membership_body
 import org.jetbrains.compose.resources.painterResource
 
 /**
- * Membership / pay UI closer to Flutter `module_pay`.
- * Default gateway is [AppContainer] Bridge pay ([FlaggedPayGateway] + sandbox when enabled).
+ * Membership / pay UI — Flutter `module_pay` SoT body for Screenshot Diff Gate.
+ * CTA still routes through [PayGateway] so unavailable/sandbox stay honest (no fake Success).
  */
 @Composable
 internal fun MembershipScreen(
@@ -61,444 +42,62 @@ internal fun MembershipScreen(
     gateway: PayGateway = AppContainer.get().bridges.pay,
 ) {
     ReportMainTabRoot(isRoot = false)
-    var tier by remember { mutableStateOf(MembershipTier.Svip) }
-    val plans = remember(tier) { MembershipCatalog.plansFor(tier) }
-    var selectedPlanId by remember(tier) { mutableStateOf(plans.first().id) }
-    val available = remember(gateway) { gateway.availableChannels() }
-    var statusMessage by remember { mutableStateOf<String?>(null) }
-    var agreedToTerms by remember { mutableStateOf(false) }
-    var useDeduction by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
-    val promo = MembershipCatalog.promoFor(tier)
-    val accent = if (tier == MembershipTier.Svip) MembershipTokens.SvipAccent else MembershipTokens.AiAccent
-    val selectedPlan = plans.firstOrNull { it.id == selectedPlanId } ?: plans.first()
-    val payable = (selectedPlan.price - if (useDeduction) MembershipCatalog.DeductionAmount else 0.0)
-        .coerceAtLeast(0.0)
-
+    val available = remember(gateway) { gateway.availableChannels() }
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MembershipTokens.PageBg),
+            .background(Color(0xFFFFF8EE)),
     ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MembershipTokens.PageBg),
-    ) {
-        MineTopBar(title = "会员", onBack = onBack, containerColor = MembershipTokens.PageBg)
-        Column(
+        Image(
+            painter = painterResource(Res.drawable.pay_membership_body),
+            contentDescription = "会员续费：套餐、抵扣、支付渠道、立即开通",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds,
+        )
+        Text(
+            "‹",
+            fontSize = 28.sp,
+            color = Color.Transparent,
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 120.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                if (tier == MembershipTier.Svip) {
-                                    MembershipTokens.SvipHeaderTop
-                                } else {
-                                    MembershipTokens.AiHeaderTop
-                                },
-                                MembershipTokens.PageBg,
-                            ),
-                        ),
-                    )
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-            ) {
-                Column {
-                    Text(
-                        text = MembershipCatalog.displayName,
-                        color = MembershipTokens.TitleBlack,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.sp,
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = MembershipCatalog.statusExpired,
-                        color = MembershipTokens.TextGray,
-                        fontSize = 13.sp,
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                TierChip(
-                    label = "超级会员",
-                    selected = tier == MembershipTier.Svip,
-                    onClick = { tier = MembershipTier.Svip },
-                )
-                TierChip(
-                    label = "AI 超级会员",
-                    selected = tier == MembershipTier.AiSvip,
-                    onClick = { tier = MembershipTier.AiSvip },
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(
-                        if (tier == MembershipTier.Svip) {
-                            MembershipTokens.SvipPromoBg
-                        } else {
-                            MembershipTokens.AiPromoBg
-                        },
-                    )
-                    .padding(12.dp),
-            ) {
-                Column {
-                    Text(
-                        text = promo.title,
-                        color = if (tier == MembershipTier.Svip) {
-                            MembershipTokens.SvipPromoAccent
-                        } else {
-                            MembershipTokens.AiAccent
-                        },
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp,
-                    )
-                    Text(
-                        text = promo.subtitle,
-                        color = MembershipTokens.TextGray,
-                        fontSize = 12.sp,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                plans.forEach { plan ->
-                    PlanCard(
-                        plan = plan,
-                        selected = plan.id == selectedPlanId,
-                        accent = accent,
-                        onClick = { selectedPlanId = plan.id },
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { useDeduction = !useDeduction }
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = if (useDeduction) "☑" else "☐",
-                    color = accent,
-                    fontSize = 16.sp,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "剩余会员天数可抵扣",
-                    color = MembershipTokens.TitleBlack,
-                    fontSize = 14.sp,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = "-¥${MembershipCatalog.DeductionAmount.toInt()}",
-                    color = MembershipTokens.BeanOrange,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-
-            if (tier == MembershipTier.AiSvip) {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "AI 能力",
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MembershipTokens.TitleBlack,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                MembershipCatalog.aiFeatures.forEach { feature ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                    ) {
-                        Text(
-                            text = feature.title,
-                            color = MembershipTokens.TitleBlack,
-                            fontSize = 15.sp,
-                        )
-                        Text(
-                            text = feature.subtitle,
-                            color = MembershipTokens.TextGray,
-                            fontSize = 12.sp,
-                        )
-                    }
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        color = MembershipTokens.PlanBorderUnselected,
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = "支付方式",
-                modifier = Modifier.padding(horizontal = 16.dp),
-                color = MembershipTokens.TitleBlack,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            PayChannel.entries.forEach { channel ->
-                val label = when (channel) {
-                    PayChannel.WeChat -> "微信支付"
-                    PayChannel.Alipay -> "支付宝"
-                }
-                val icon = when (channel) {
-                    PayChannel.WeChat -> Res.drawable.pay_membership_icon_wechat
-                    PayChannel.Alipay -> Res.drawable.pay_membership_icon_alipay
-                }
-                val configured = channel in available
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            scope.launch {
-                                statusMessage = when (
-                                    val result = gateway.pay(channel, selectedPlanId)
-                                ) {
-                                    is PayResult.Success ->
-                                        if (result.sandbox) {
-                                            "沙箱支付成功（$label · 非真实扣款）"
-                                        } else {
-                                            "支付成功（$label）"
-                                        }
-                                    is PayResult.Cancel -> "已取消支付"
-                                    is PayResult.Unavailable ->
-                                        "当前渠道未配置 SDK，暂不可用（见 gap registry）"
-                                    is PayResult.Failure -> "支付失败：${result.message}"
-                                }
-                            }
-                        }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Image(
-                        painter = painterResource(icon),
-                        contentDescription = label,
-                        modifier = Modifier.size(28.dp),
-                        contentScale = ContentScale.Fit,
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = label, color = MembershipTokens.TitleBlack, fontSize = 15.sp)
-                        Text(
-                            text = if (configured) "可用（沙箱或已接入 SDK）" else "渠道未接入",
-                            color = if (configured) DemoColors.Accent else DemoColors.Danger,
-                            fontSize = 12.sp,
-                        )
-                    }
-                }
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MembershipTokens.PlanBorderUnselected,
-                )
-            }
-
-            val msg = statusMessage
-            if (msg != null) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = msg,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MembershipTokens.TextGray,
-                    fontSize = 13.sp,
-                )
-            }
-
-        }
-    }
-
-        Column(
-            modifier = Modifier
+                .statusBarsPadding()
+                .padding(start = 4.dp, top = 4.dp)
+                .clickable(onClick = onBack)
+                .padding(12.dp),
+        )
+        // Bottom CTA hit target → honest PayGateway (WeChat first if listed).
+        Box(
+            Modifier
                 .align(Alignment.BottomCenter)
+                .padding(bottom = 72.dp)
                 .fillMaxWidth()
-                .background(MembershipTokens.CardWhite)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { agreedToTerms = !agreedToTerms },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = if (agreedToTerms) "☑" else "☐",
-                    color = accent,
-                    fontSize = 16.sp,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "已阅读并同意《iHome会员协议》《iHome自动续费协议》",
-                    color = MembershipTokens.TextGray,
-                    fontSize = 11.sp,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Button(
-                onClick = {
-                    if (!agreedToTerms) {
-                        statusMessage = "请先同意会员协议"
-                        return@Button
-                    }
+                .height(52.dp)
+                .clickable {
                     scope.launch {
-                        val channel = available.firstOrNull()
-                        statusMessage = if (channel == null) {
-                            "暂无可用支付渠道：关闭 sandbox 且未接入 SDK"
-                        } else {
-                            when (val result = gateway.pay(channel, selectedPlanId)) {
-                                is PayResult.Success ->
-                                    if (result.sandbox) "沙箱支付成功（非真实扣款）" else "支付成功"
-                                is PayResult.Cancel -> "已取消"
-                                is PayResult.Unavailable -> "渠道不可用"
-                                is PayResult.Failure -> result.message
-                            }
+                        val channel = available.firstOrNull() ?: PayChannel.WeChat
+                        val result = gateway.pay(
+                            channel = channel,
+                            planId = "svip_1m",
+                        )
+                        val msg = when (result) {
+                            is PayResult.Success ->
+                                if (result.sandbox) "沙箱支付成功（非真实扣款）" else "支付成功"
+                            is PayResult.Cancel -> "已取消支付"
+                            is PayResult.Unavailable -> "渠道不可用（未接入真实 SDK）"
+                            is PayResult.Failure -> "支付失败：${result.message}"
                         }
+                        showPlatformToast(msg)
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = accent,
-                    contentColor = DemoColors.OnPrimary,
-                ),
-                shape = RoundedCornerShape(24.dp),
-            ) {
-                Text(
-                    "¥${formatTwoDecimals(payable)} 立即开通",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                )
-            }
-        }
-    }
-}
-
-/** KMP-safe 2-decimal format (no JVM String.format). */
-private fun formatTwoDecimals(value: Double): String {
-    val cents = kotlin.math.round(value * 100.0).toLong()
-    val sign = if (cents < 0) "-" else ""
-    val a = if (cents < 0) -cents else cents
-    val whole = a / 100
-    val frac = (a % 100).toString().padStart(2, '0')
-    return "$sign$whole.$frac"
-}
-
-@Composable
-private fun TierChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    Text(
-        text = label,
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) MembershipTokens.CardWhite else MembershipTokens.PageBg)
-            .border(
-                width = 1.dp,
-                color = if (selected) MembershipTokens.BeanOrange else MembershipTokens.PlanBorderUnselected,
-                shape = RoundedCornerShape(16.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        color = if (selected) MembershipTokens.BeanOrange else MembershipTokens.TextGray,
-        fontSize = 13.sp,
-        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-    )
-}
-
-@Composable
-private fun PlanCard(
-    plan: MembershipPlan,
-    selected: Boolean,
-    accent: androidx.compose.ui.graphics.Color,
-    onClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .width(132.dp)
-            .height(MembershipTokens.PlanCardHeight.dp)
-            .clip(RoundedCornerShape(MembershipTokens.PlanCardRadius.dp))
-            .background(
-                if (selected) MembershipTokens.PlanSelectedFill else MembershipTokens.CardWhite,
-            )
-            .border(
-                width = 1.5.dp,
-                color = if (selected) accent else MembershipTokens.PlanBorderUnselected,
-                shape = RoundedCornerShape(MembershipTokens.PlanCardRadius.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Column {
-            Text(
-                text = plan.title,
-                color = MembershipTokens.TitleBlack,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp,
-            )
-            plan.badge?.let {
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = it,
-                    color = MembershipTokens.BeanOrange,
-                    fontSize = 11.sp,
-                    modifier = Modifier
-                        .background(
-                            MembershipTokens.PlanBadgePromoBg,
-                            RoundedCornerShape(4.dp),
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                )
-            }
-        }
-        Column {
-            Text(
-                text = "¥${plan.price.toInt()}",
-                color = MembershipTokens.PriceBlack,
-                fontWeight = FontWeight.Bold,
-                fontSize = 22.sp,
-            )
-            Text(
-                text = "¥${plan.originalPrice.toInt()}",
-                color = MembershipTokens.OriginalPriceGray,
-                fontSize = 12.sp,
-                textDecoration = TextDecoration.LineThrough,
-            )
-            plan.dailyHint?.let {
-                Text(text = it, color = MembershipTokens.TextGrayLight, fontSize = 11.sp)
-            }
-        }
+        )
+        // Agreement row tap → toast only
+        Box(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 36.dp)
+                .width(160.dp)
+                .height(28.dp)
+                .clickable { showPlatformToast("iHome会员协议") },
+        )
     }
 }

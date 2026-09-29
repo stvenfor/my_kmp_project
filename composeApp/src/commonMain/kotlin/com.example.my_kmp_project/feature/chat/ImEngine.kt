@@ -438,9 +438,7 @@ internal fun chatDetailArgsFromDeepLink(rawUri: String): ChatDetailDeepLinkArgs?
         val eq = part.indexOf('=')
         if (eq <= 0) continue
         val key = part.substring(0, eq)
-        val value = part.substring(eq + 1)
-            .replace("%20", " ")
-            .replace("+", " ")
+        val value = percentDecode(part.substring(eq + 1))
         map[key] = value
     }
     if (map["peerName"].isNullOrBlank() &&
@@ -458,7 +456,50 @@ internal fun chatDetailArgsFromDeepLink(rawUri: String): ChatDetailDeepLinkArgs?
     return ChatDetailDeepLinkArgs(
         id = id,
         peerName = map["peerName"].orEmpty().ifBlank { "推送会话" },
-        lastMessage = map["lastMessage"].orEmpty().ifBlank { "来自 Push/Deeplink 的 mock 会话" },
-        unreadCount = map["unread"]?.toIntOrNull() ?: 1,
+        // Empty lastMessage → empty thread (Flutter SoT chat_detail.flutter.png).
+        lastMessage = map["lastMessage"].orEmpty(),
+        unreadCount = map["unread"]?.toIntOrNull() ?: 0,
     )
+}
+
+/** Minimal percent-decode for deeplink query values (UTF-8). */
+private fun percentDecode(raw: String): String {
+    if (!raw.contains('%') && !raw.contains('+')) return raw
+    val sb = StringBuilder(raw.length)
+    var i = 0
+    val bytes = ArrayList<Byte>()
+    fun flushBytes() {
+        if (bytes.isEmpty()) return
+        sb.append(bytes.toByteArray().decodeToString())
+        bytes.clear()
+    }
+    while (i < raw.length) {
+        val c = raw[i]
+        when {
+            c == '+' -> {
+                flushBytes()
+                sb.append(' ')
+                i++
+            }
+            c == '%' && i + 2 < raw.length -> {
+                val hex = raw.substring(i + 1, i + 3)
+                val b = hex.toIntOrNull(16)
+                if (b != null) {
+                    bytes.add(b.toByte())
+                    i += 3
+                } else {
+                    flushBytes()
+                    sb.append(c)
+                    i++
+                }
+            }
+            else -> {
+                flushBytes()
+                sb.append(c)
+                i++
+            }
+        }
+    }
+    flushBytes()
+    return sb.toString()
 }

@@ -4,7 +4,7 @@ package com.example.my_kmp_project.core.network
  * 真机局域网回退地址。由 my_go_study `scripts/sync-lan-ip.sh` 按当前网卡写入。
  */
 public object LanHost {
-    public const val fallback: String = "192.168.0.102"
+    public const val fallback: String = "172.16.0.34"
 }
 
 public fun replaceLocalhostHost(baseUrl: String, mappedHost: String): String {

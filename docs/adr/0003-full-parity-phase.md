@@ -21,5 +21,5 @@ Phase-1 delivered shell, tab roots, and the Mine Compose Island baseline while d
 ## Consequences
 
 - ADR 0002 §6 no longer caps scope; deferred stubs are technical debt to clear, not a product ceiling.
-- SecondaryRouteIsland is explicitly Legacy, not the long-term host for non-Mine pages.
+- SecondaryRouteIsland is Mine-only after #23: in-scope non-Mine routes open via Native Shell UI only; the island refuses non-Mine hosts.
 - Acceptance is evidence-based (Android screenshot diff + three-platform open path + behavior/mock parity + gap registry), not “feels done.”

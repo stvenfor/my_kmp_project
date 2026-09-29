@@ -1,8 +1,6 @@
 package com.example.my_kmp_project.feature.live
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
@@ -32,85 +31,68 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 /**
- * Live list → room entry (mock rooms; push/realtime remain registry gaps).
+ * Flutter [LivePage] / [LiveRoomPage] mock chrome.
+ * Realtime / push remain platform-gap-registry (no SDK claimed ready).
  */
 @Composable
 internal fun LiveScreen(
     onBack: () -> Unit,
     openRoom: Boolean = false,
 ) {
-    var selectedId by remember {
-        mutableStateOf(
-            if (openRoom) LiveMockData.rooms.firstOrNull()?.id else null,
-        )
-    }
-    val selected = selectedId?.let { id -> LiveMockData.rooms.firstOrNull { it.id == id } }
+    var inRoom by remember { mutableStateOf(openRoom) }
+    val room = LiveMockData.rooms.firstOrNull { it.id == "mock_room_001" }
+        ?: LiveMockData.rooms.first()
 
-    if (selected != null) {
+    if (inRoom) {
         ReportMainTabRoot(isRoot = false)
         LiveRoomScreen(
-            room = selected,
+            room = room,
             onBack = {
-                if (openRoom) onBack() else selectedId = null
+                if (openRoom) onBack() else inRoom = false
             },
         )
     } else {
         ReportMainTabRoot(isRoot = false)
         LiveListContent(
-            rooms = LiveMockData.rooms,
-            onBack = onBack,
-            onOpen = { selectedId = it },
+            onEnterRoom = { inRoom = true },
         )
     }
 }
 
 @Composable
 private fun LiveListContent(
-    rooms: List<LiveRoomItem>,
-    onBack: () -> Unit,
-    onOpen: (String) -> Unit,
+    onEnterRoom: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "直播", onBack = onBack, containerColor = DemoColors.PageBg)
-        LazyColumn(
+        MineTopBar(title = "直播", onBack = null, containerColor = DemoColors.Toolbar)
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 24.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "点选进入房间入口 · 推流/实时通道见 gap registry",
+                    text = "进入直播房联调 Realtime 信令",
                     color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            items(rooms, key = { it.id }) { row ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onOpen(row.id) }
-                        .padding(vertical = 12.dp),
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onEnterRoom,
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DemoColors.TextPrimary,
+                        contentColor = DemoColors.OnPrimary,
+                    ),
                 ) {
-                    Text(
-                        text = row.title,
-                        color = DemoColors.TextPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = row.host,
-                        color = DemoColors.Muted,
-                        fontSize = 12.sp,
-                    )
+                    Text("进入 Mock 直播房", fontSize = 14.sp)
                 }
-                HorizontalDivider(color = DemoColors.Divider)
             }
         }
     }
@@ -121,70 +103,60 @@ private fun LiveRoomScreen(
     room: LiveRoomItem,
     onBack: () -> Unit,
 ) {
-    var joined by remember { mutableStateOf(false) }
-    var signals by remember { mutableStateOf(listOf("state: idle")) }
+    var connectionLabel by remember { mutableStateOf("未连接") }
+    var signals by remember { mutableStateOf(listOf<String>()) }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "直播 ${room.id}", onBack = onBack, containerColor = DemoColors.PageBg)
-        Box(
+        MineTopBar(
+            title = "直播 ${room.id}",
+            onBack = onBack,
+            containerColor = DemoColors.Toolbar,
+        )
+        Text(
+            text = "WS: $connectionLabel · paused 保持连接",
+            color = DemoColors.TextSecondary,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(12.dp),
+        )
+        Button(
+            onClick = {
+                connectionLabel = "connected"
+                signals = (
+                    listOf("[signal] live.join seq=1 {roomId=${room.id}}") + signals
+                    ).take(30)
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
-                .padding(horizontal = 16.dp)
-                .background(DemoColors.Toolbar, RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center,
+                .padding(horizontal = 12.dp),
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = DemoColors.TextPrimary,
+                contentColor = DemoColors.OnPrimary,
+            ),
         ) {
-            Text(
-                text = if (joined) "WS: connected · paused 保持连接" else "WS: disconnected",
-                color = DemoColors.TextPrimary,
-                fontSize = 15.sp,
-            )
+            Text("发送 join 信令", fontSize = 14.sp)
         }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(text = room.host, color = DemoColors.TextSecondary, fontSize = 14.sp)
-            Text("信令（上限 30）", fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary)
-            signals.takeLast(30).forEach { line ->
-                Text(line, fontSize = 12.sp, color = DemoColors.Muted)
+        Spacer(modifier = Modifier.height(12.dp))
+        HorizontalDivider(thickness = 1.dp, color = DemoColors.Divider)
+        if (signals.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("暂无信令", color = DemoColors.Muted, fontSize = 14.sp)
             }
-            Button(
-                onClick = {
-                    joined = true
-                    signals = (signals + "signal: live.join payload={room=${room.id}}").takeLast(30)
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = DemoColors.Primary,
-                    contentColor = DemoColors.OnPrimary,
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("发送 Mock 信令 live.join")
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(signals) { line ->
+                    Text(
+                        text = line,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = DemoColors.TextPrimary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                    )
+                }
             }
-            Button(
-                onClick = {
-                    joined = false
-                    signals = signals + "state: left"
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = DemoColors.Toolbar,
-                    contentColor = DemoColors.TextPrimary,
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("退订 liveSignal")
-            }
-            Text(
-                text = "Realtime SDK 未接入；本页 mock 信令列表。",
-                color = DemoColors.Muted,
-                fontSize = 12.sp,
-            )
         }
     }
 }
