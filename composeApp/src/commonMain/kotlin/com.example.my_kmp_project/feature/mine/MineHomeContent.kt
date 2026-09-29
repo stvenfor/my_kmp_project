@@ -55,6 +55,8 @@ internal fun MineHomeContent(
     onOpenSettings: () -> Unit,
     onOpenPersonalized: () -> Unit,
     onNavigate: (String) -> Unit = {},
+    /** Soft-auth: open login then resume [redirect] (Flutter AuthNavigation.openLogin). */
+    onRequireLogin: (redirect: String) -> Unit = { _ -> onLoginClick() },
     snackbar: (String) -> Unit,
 ) {
     MinePrefsStore.version
@@ -69,11 +71,27 @@ internal fun MineHomeContent(
     val navOpacity = with(density) {
         (scrollState.value / MineNavFadeExtent.toPx()).coerceIn(0f, 1f)
     }
-    val gate: (String) -> Unit = { route ->
-        if (!loggedIn) onNavigate("请先登录") else onNavigate(route)
+
+    fun applyTap(result: MineTapResult) {
+        when (result) {
+            is MineTapResult.Toast -> snackbar(result.message)
+            is MineTapResult.Navigate -> onNavigate(result.path)
+            is MineTapResult.RequireLogin -> onRequireLogin(result.redirectPath)
+        }
     }
-    val onOpenProfile = { gate(MineRoutes.Profile) }
-    val onCalendar = { gate(MineRoutes.CheckIn) }
+
+    val onOpenProfile = {
+        applyTap(
+            if (loggedIn) MineTapResult.Navigate(MineRoutes.Profile)
+            else MineTapResult.RequireLogin(MineRoutes.Profile),
+        )
+    }
+    val onCalendar = {
+        applyTap(
+            if (loggedIn) MineTapResult.Navigate(MineRoutes.CheckIn)
+            else MineTapResult.RequireLogin(MineRoutes.CheckIn),
+        )
+    }
 
     if (showSwitchStore && loggedIn) {
         SwitchStoreDialog(
@@ -130,15 +148,13 @@ internal fun MineHomeContent(
             Spacer(modifier = Modifier.height(8.dp))
             QuickServicesSection(
                 onTap = { service ->
-                    val route = MineRoutes.fromLabel(service.label)
-                    if (route != null) gate(route) else snackbar(service.label)
+                    applyTap(MineTapDispatch.onQuickService(service.id, loggedIn))
                 },
             )
             FunctionSection(
                 entries = MinePrefsStore.orderedFunctions(),
                 onTap = { item ->
-                    val route = MineRoutes.fromLabel(item.title)
-                    if (route != null) gate(route) else snackbar(item.title)
+                    applyTap(MineTapDispatch.onFunction(item.id, loggedIn))
                 },
                 onReorderHint = {
                     // Persist current catalog order as explicit prefs write (drag UI later).
@@ -149,9 +165,7 @@ internal fun MineHomeContent(
             MenuSection(
                 onSettings = onOpenSettings,
                 onOther = { item ->
-                    val route = MineRoutes.fromLabel(item.label)
-                    if (route != null) gate(route)
-                    else snackbar(item.label) // Flutter toast-only rows
+                    applyTap(MineTapDispatch.onMenu(item.id, loggedIn))
                 },
             )
         }

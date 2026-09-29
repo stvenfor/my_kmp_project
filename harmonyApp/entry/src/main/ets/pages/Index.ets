@@ -862,8 +862,12 @@ struct Index {
     const toastOnly: string[] = [
       '切换门店', '切换店铺', '电子名片', '商务合作', '提醒事项',
       '邀请好友', '粉丝群', '意见反馈', '帮助中心', '头像', '请先登录',
-      '/mine/business_card', '/mine/invite', '/mine/business',
+      '/mine/business_card', '/mine/invite', '/mine/business', '/mine/cooperation',
       '/mine/reminders', '/mine/reminder', '/mine/fan_group', '/mine/feedback',
+      '短信模板', '店铺收款码', '收款码', '商家海报', '海报',
+      '/mine/sms_templates', '/mine/sms_template',
+      '/mine/shop_qr', '/mine/store_qr',
+      '/mine/poster',
     ];
     if (toastOnly.indexOf(title) >= 0) {
       if (title === '切换门店' || title === '切换店铺') {
@@ -874,7 +878,16 @@ struct Index {
         }
         return;
       }
-      promptAction.showToast({ message: title, duration: 2000 });
+      let msg = title;
+      if (title === '短信模板' || title === '/mine/sms_templates' || title === '/mine/sms_template') {
+        msg = '短信模板 开发中';
+      } else if (title === '店铺收款码' || title === '收款码' ||
+        title === '/mine/shop_qr' || title === '/mine/store_qr') {
+        msg = '店铺收款码 开发中';
+      } else if (title === '商家海报' || title === '海报' || title === '/mine/poster') {
+        msg = '商家海报 开发中';
+      }
+      promptAction.showToast({ message: msg, duration: 2000 });
       return;
     }
     // Flutter DealInvoiceNavigation: login then Mine island demo.

@@ -73,13 +73,11 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['我的钱包', '/wallet'],
   ['我的课程', '/classroom/my_class'],
   ['我的订单', '/mall/orders'],
-  ['短信模板', '/mine/sms_template'],
   ['购车计算器', '/mine/purchase_calculator'],
   ['小视频', '/video/short'],
   ['短视频', '/video/short'],
-  ['店铺收款码', '/mine/store_qr'],
   ['选买问答', '/mine/http_test'],
-  ['商家海报', '/mine/poster'],
+  // Flutter: 短信模板 / 店铺收款码 / 商家海报 → toast 开发中 (Index toastOnly)
   // Flutter MineController toast-only — do NOT map:
   // 切换门店/电子名片/商务合作/提醒事项/邀请好友/粉丝群/意见反馈/帮助中心
   ['收货地址', '/mine/addresses'],
@@ -187,6 +185,22 @@ export function resolveNativePath(raw: string): string {
     }
     if (key.startsWith('/scan')) {
       return '/scan';
+    }
+    // Align MineRoutes.canonicalize (KMP ProductRouteDispatch).
+    if (key === '/mine/sms_template') {
+      return '/mine/sms_templates';
+    }
+    if (key === '/mine/store_qr') {
+      return '/mine/shop_qr';
+    }
+    if (key === '/mine/qa' || key === '/mine/buy_qa') {
+      return '/mine/http_test';
+    }
+    if (key === '/mine/business') {
+      return '/mine/cooperation';
+    }
+    if (key === '/mine/reminders') {
+      return '/mine/reminder';
     }
     return key;
   }

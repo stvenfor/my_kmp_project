@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.feature.home.HomeAssetIcon
+import com.example.my_kmp_project.feature.home.HomeIcons
 import com.example.my_kmp_project.feature.home.HomeMockData
 import com.example.my_kmp_project.feature.home.HomeServiceAssets
 import com.example.my_kmp_project.feature.home.HomeTodoCardStrip
@@ -163,11 +165,11 @@ internal fun JetpackContactList(onDeferred: (String) -> Unit) {
                             .background(DemoColors.Accent.copy(alpha = 0.12f)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            if (c.trailing == "phone") "☎" else c.title.take(1),
-                            color = DemoColors.Accent,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp,
+                        Icon(
+                            imageVector = HomeIcons.PersonOutline,
+                            contentDescription = null,
+                            tint = DemoColors.Accent,
+                            modifier = Modifier.size(22.dp),
                         )
                     }
                     Spacer(Modifier.width(12.dp))
@@ -176,10 +178,19 @@ internal fun JetpackContactList(onDeferred: (String) -> Unit) {
                         Text(c.subtitle, fontSize = 12.sp, color = DemoColors.TextSecondary)
                     }
                     // Flutter HomeContactList: chat_bubble_outline / phone_outlined icons.
-                    Text(
-                        if (c.trailing == "phone") "☎" else "💬",
-                        color = DemoColors.Accent,
-                        fontSize = 18.sp,
+                    Icon(
+                        imageVector = when (c.trailing) {
+                            "chat" -> HomeIcons.ChatBubble
+                            "phone" -> HomeIcons.Phone
+                            else -> HomeIcons.ChevronRight
+                        },
+                        contentDescription = null,
+                        tint = if (c.trailing == "chat" || c.trailing == "phone") {
+                            DemoColors.Accent
+                        } else {
+                            DemoColors.TextSecondary
+                        },
+                        modifier = Modifier.size(20.dp),
                     )
                 }
                 if (index < HomeMockData.contacts.lastIndex) {
@@ -277,14 +288,24 @@ internal fun JetpackLearningReportEntry(onDeferred: (String) -> Unit) {
                 .background(DemoColors.Accent.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Text("报", color = DemoColors.Accent, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Icon(
+                imageVector = HomeIcons.Analytics,
+                contentDescription = null,
+                tint = DemoColors.Accent,
+                modifier = Modifier.size(24.dp),
+            )
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("学习报告", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = DemoColors.TextPrimary)
             Text("今日高光 · 学习记录", fontSize = 13.sp, color = DemoColors.TextSecondary)
         }
-        Text("›", color = DemoColors.TextSecondary, fontSize = 18.sp)
+        Icon(
+            imageVector = HomeIcons.ChevronRight,
+            contentDescription = null,
+            tint = DemoColors.TextSecondary,
+            modifier = Modifier.size(22.dp),
+        )
     }
 }
 
@@ -308,13 +329,23 @@ internal fun JetpackStrategyEntry(onDeferred: (String) -> Unit) {
                 .background(DemoColors.Accent.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Text("策", color = DemoColors.Accent, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Icon(
+                imageVector = HomeIcons.GridView,
+                contentDescription = null,
+                tint = DemoColors.Accent,
+                modifier = Modifier.size(24.dp),
+            )
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text("投资策略", fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = DemoColors.TextPrimary)
             Text("资产九宫格 · 恐贪定投 · 趋势策略", fontSize = 13.sp, color = DemoColors.TextSecondary)
         }
-        Text("›", color = DemoColors.TextSecondary)
+        Icon(
+            imageVector = HomeIcons.ChevronRight,
+            contentDescription = null,
+            tint = DemoColors.TextSecondary,
+            modifier = Modifier.size(22.dp),
+        )
     }
 }

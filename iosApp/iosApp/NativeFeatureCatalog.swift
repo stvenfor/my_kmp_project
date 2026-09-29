@@ -64,6 +64,15 @@ enum NativeRouteResolver {
         if path.hasPrefix("/community/image_preview") { return "/community/image_preview" }
         if path.hasPrefix("/web") || path.hasPrefix("http") { return "/web" }
         if path.hasPrefix("/scan") { return "/scan" }
+        // Align MineRoutes.canonicalize (KMP ProductRouteDispatch).
+        switch path {
+        case "/mine/sms_template": return "/mine/sms_templates"
+        case "/mine/store_qr": return "/mine/shop_qr"
+        case "/mine/qa", "/mine/buy_qa": return "/mine/http_test"
+        case "/mine/business": return "/mine/cooperation"
+        case "/mine/reminders": return "/mine/reminder"
+        default: break
+        }
         return path
     }
 
@@ -104,12 +113,11 @@ enum NativeRouteResolver {
         "我的钱包": "/wallet",
         "我的课程": "/classroom/my_class",
         "我的订单": "/mall/orders",
-        "短信模板": "/mine/sms_template",
         "购车计算器": "/mine/purchase_calculator",
         "小视频": "/video/short", "短视频": "/video/short",
-        "店铺收款码": "/mine/store_qr",
         "选买问答": "/mine/http_test",
-        "商家海报": "/mine/poster",
+        // Flutter: 短信模板 / 店铺收款码 / 商家海报 → toast 开发中 (ContentView toastOnlyKeys)
+        // Do NOT map those labels to paths that open Compose stubs.
         // Flutter MineController toast-only — do NOT map:
         // 商务门店/电子名片/商务合作/提醒事项/邀请好友/粉丝群/意见反馈/帮助中心
         "收货地址": "/mine/addresses", "地址管理": "/mine/addresses", "地址": "/mine/addresses",

@@ -29,6 +29,13 @@ class ProductRouteDispatchTest {
     fun toastOnlyNeverNavigates() {
         assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("意见反馈")!!.host)
         assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("粉丝群")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("短信模板")!!.host)
+        assertEquals("短信模板 开发中", ProductRouteDispatch.resolve("短信模板")!!.toastMessage)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("/mine/sms_templates")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("店铺收款码")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("/mine/shop_qr")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("商家海报")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("/mine/poster")!!.host)
     }
 
     @Test
@@ -47,5 +54,10 @@ class ProductRouteDispatchTest {
         val qa = assertNotNull(ProductRouteDispatch.resolve("/mine/qa"))
         assertEquals(MineRoutes.HttpTest, qa.path)
         assertEquals(ProductRouteHost.Mine, qa.host)
+
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("/mine/sms_template")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("/mine/store_qr")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("/mine/cooperation")!!.host)
+        assertEquals(ProductRouteHost.Toast, ProductRouteDispatch.resolve("/mine/business")!!.host)
     }
 }

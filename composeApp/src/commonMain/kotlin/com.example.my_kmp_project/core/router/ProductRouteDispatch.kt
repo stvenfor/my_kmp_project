@@ -38,6 +38,8 @@ internal object ProductRouteDispatch {
         "电子名片", "商务合作", "提醒事项", "邀请好友", "粉丝群",
         "意见反馈", "帮助中心", "头像", "请先登录",
         "切换门店", "切换店铺",
+        // Flutter Mine function undeveloped — toast from root / shell mis-routes.
+        "短信模板", "店铺收款码", "收款码", "商家海报", "海报",
     )
 
     private val toastOnlyPaths = setOf(
@@ -49,6 +51,12 @@ internal object ProductRouteDispatch {
         "/mine/fan_group",
         "/mine/feedback",
         "/mine/cooperation",
+        // Undeveloped Mine function paths (root must not open; deep-link screens may still exist).
+        "/mine/sms_templates",
+        "/mine/sms_template",
+        "/mine/shop_qr",
+        "/mine/store_qr",
+        "/mine/poster",
     )
 
     /**
@@ -63,6 +71,9 @@ internal object ProductRouteDispatch {
             val msg = when (input) {
                 "切换门店", "切换店铺" -> "请在「我的」页头点击门店名称切换"
                 "请先登录" -> "请先登录"
+                "短信模板", "/mine/sms_templates", "/mine/sms_template" -> "短信模板 开发中"
+                "店铺收款码", "收款码", "/mine/shop_qr", "/mine/store_qr" -> "店铺收款码 开发中"
+                "商家海报", "海报", "/mine/poster" -> "商家海报 开发中"
                 else -> input.removePrefix("/mine/").ifBlank { input }
             }
             return ProductRouteTarget(input, ProductRouteHost.Toast, toastMessage = msg)

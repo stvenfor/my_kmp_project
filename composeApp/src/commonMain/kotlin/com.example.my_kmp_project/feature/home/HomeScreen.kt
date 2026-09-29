@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,9 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -254,6 +254,7 @@ private fun HomeRootContent(
                 HubEntryCard(
                     title = "投资策略",
                     subtitle = "资产九宫格 · 恐贪定投 · 趋势策略",
+                    icon = HomeIcons.GridView,
                     onClick = { onNavigate(HomeRoutes.Strategy) },
                 )
             }
@@ -271,10 +272,11 @@ private fun HomeRootContent(
                 HubEntryCard(
                     title = "学习报告",
                     subtitle = "今日高光 · 学习记录",
+                    icon = HomeIcons.Analytics,
                     onClick = { onNavigate(HomeRoutes.LearningReport) },
                 )
             }
-            item { ToolsSection(onNavigate = onNavigate) }
+            // Flutter HomePage ends at LearningReport — no「更多工具」row.
         }
     }
 }
@@ -316,8 +318,12 @@ private fun GreetingSection(greeting: String) {
                 .background(DemoColors.Accent.copy(alpha = 0.1f))
                 .padding(horizontal = 12.dp, vertical = 6.dp),
         ) {
-            // Flutter Icons.notifications_none_rounded (glyph stand-in)
-            Text("◌", color = DemoColors.Accent, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Icon(
+                imageVector = HomeIcons.NotificationsNone,
+                contentDescription = null,
+                tint = DemoColors.Accent,
+                modifier = Modifier.size(14.dp),
+            )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = "3条新消息",
@@ -352,7 +358,12 @@ private fun HomeSearchBarRow(
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("⌕", color = DemoColors.Muted, fontSize = 18.sp)
+            Icon(
+                imageVector = HomeIcons.Search,
+                contentDescription = null,
+                tint = DemoColors.Muted,
+                modifier = Modifier.size(18.dp),
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text(HomeMockData.searchPlaceholder, color = DemoColors.Muted, fontSize = 15.sp)
         }
@@ -366,7 +377,12 @@ private fun HomeSearchBarRow(
                 .clickable(onClick = onScan),
             contentAlignment = Alignment.Center,
         ) {
-            Text("▣", color = DemoColors.Accent, fontSize = 18.sp)
+            Icon(
+                imageVector = HomeIcons.QrScan,
+                contentDescription = "扫一扫",
+                tint = DemoColors.Accent,
+                modifier = Modifier.size(20.dp),
+            )
         }
     }
 }
@@ -620,6 +636,7 @@ private fun StoreMetricsCard(
 private fun HubEntryCard(
     title: String,
     subtitle: String,
+    icon: ImageVector,
     onClick: () -> Unit,
 ) {
     Row(
@@ -641,11 +658,11 @@ private fun HubEntryCard(
                 .background(DemoColors.Accent.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = title.take(1),
-                color = DemoColors.Accent,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = DemoColors.Accent,
+                modifier = Modifier.size(24.dp),
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
@@ -662,7 +679,12 @@ private fun HubEntryCard(
                 fontSize = 13.sp,
             )
         }
-        Text(text = "›", color = DemoColors.TextSecondary, fontSize = 22.sp)
+        Icon(
+            imageVector = HomeIcons.ChevronRight,
+            contentDescription = null,
+            tint = DemoColors.TextSecondary,
+            modifier = Modifier.size(22.dp),
+        )
     }
 }
 
@@ -692,7 +714,12 @@ private fun ServiceGridSection(onService: (String) -> Unit) {
                 color = DemoColors.Accent,
                 modifier = Modifier.clickable { onService("全部") },
             )
-            Text("›", fontSize = 16.sp, color = DemoColors.Accent)
+            Icon(
+                imageVector = HomeIcons.ChevronRight,
+                contentDescription = null,
+                tint = DemoColors.Accent,
+                modifier = Modifier.size(16.dp),
+            )
         }
         HomeMockData.services.chunked(4).forEachIndexed { rowIndex, row ->
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -770,10 +797,11 @@ private fun ContactsSection() {
                         .background(DemoColors.Accent.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = contact.title.take(1),
-                        color = DemoColors.Accent,
-                        fontWeight = FontWeight.SemiBold,
+                    Icon(
+                        imageVector = HomeIcons.PersonOutline,
+                        contentDescription = null,
+                        tint = DemoColors.Accent,
+                        modifier = Modifier.size(22.dp),
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -790,14 +818,20 @@ private fun ContactsSection() {
                         fontSize = 12.sp,
                     )
                 }
-                if (contact.trailing != null) {
-                    Text(
-                        text = contact.trailing,
-                        color = DemoColors.Accent,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
-                }
+                Icon(
+                    imageVector = when (contact.trailing) {
+                        "chat" -> HomeIcons.ChatBubble
+                        "phone" -> HomeIcons.Phone
+                        else -> HomeIcons.ChevronRight
+                    },
+                    contentDescription = null,
+                    tint = if (contact.trailing == "chat" || contact.trailing == "phone") {
+                        DemoColors.Accent
+                    } else {
+                        DemoColors.TextSecondary
+                    },
+                    modifier = Modifier.size(20.dp),
+                )
             }
             if (index < HomeMockData.contacts.lastIndex) {
                 HorizontalDivider(
@@ -853,52 +887,3 @@ private fun NewsSection() {
     }
 }
 
-@Composable
-private fun ToolsSection(onNavigate: (String) -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 8.dp),
-    ) {
-        Text(
-            text = "更多工具",
-            color = DemoColors.TextPrimary,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 17.sp,
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            HomeMockData.toolEntries.forEach { (item, dest) ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .width(72.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DemoColors.Background)
-                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
-                        .clickable { onNavigate(dest) }
-                        .padding(vertical = 12.dp),
-                ) {
-                    Text(
-                        text = item.label.take(1),
-                        color = DemoColors.Accent,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp,
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = item.label,
-                        color = DemoColors.TextPrimary,
-                        fontSize = 12.sp,
-                    )
-                }
-            }
-        }
-    }
-}

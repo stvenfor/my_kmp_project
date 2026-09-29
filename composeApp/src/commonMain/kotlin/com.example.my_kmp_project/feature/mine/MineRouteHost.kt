@@ -108,15 +108,14 @@ internal object MineRoutes {
         "我的钱包", "钱包" -> Wallet
         "会员", "会员续费" -> Membership
         "我的课程", "课程" -> Classroom
-        "短信模板" -> SmsTemplates
+        // Flutter onFunctionTap: sms / qr_pay / poster are toast-only — do NOT map.
+        "短信模板", "店铺收款码", "收款码", "商家海报", "海报" -> null
         "购车计算器", "计算器" -> Calculator
         "二手车" -> HomeRoutes.UsedCar
         "收支", "台账" -> HomeRoutes.Ledger
         "售后", "售后专区" -> HomeRoutes.AfterSales
         "小视频" -> ShortVideo
-        "店铺收款码", "收款码" -> ShopQr
         "选买问答" -> HttpTest
-        "商家海报", "海报" -> Poster
         "地址管理", "地址", "收货地址" -> Addresses
         "个人资料", "资料" -> Profile
         "签到日历" -> CheckIn

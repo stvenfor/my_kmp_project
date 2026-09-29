@@ -29,6 +29,7 @@ internal fun MineScreen(
     onLogoutClick: () -> Unit,
 ) {
     var destination by remember { mutableStateOf<String?>(null) }
+    var pendingAfterLogin by remember { mutableStateOf<String?>(null) }
     var snackMessage by remember { mutableStateOf<String?>(null) }
     val showSnack: (String) -> Unit = { snackMessage = it }
 
@@ -44,6 +45,14 @@ internal fun MineScreen(
         }
     }
 
+    LaunchedEffect(loggedIn) {
+        val pending = pendingAfterLogin
+        if (loggedIn && pending != null) {
+            pendingAfterLogin = null
+            go(pending)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         when (val dest = destination) {
             null -> {
@@ -56,6 +65,10 @@ internal fun MineScreen(
                     onOpenSettings = { destination = MineRoutes.Settings },
                     onOpenPersonalized = { destination = MineRoutes.PersonalizedSettings },
                     onNavigate = ::go,
+                    onRequireLogin = { redirect ->
+                        pendingAfterLogin = redirect
+                        onLoginClick()
+                    },
                     snackbar = showSnack,
                 )
             }

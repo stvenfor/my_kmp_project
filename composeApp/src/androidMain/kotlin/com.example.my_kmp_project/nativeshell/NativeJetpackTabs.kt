@@ -1276,13 +1276,11 @@ internal fun JetpackMineRoot(
         onOpenSettings = onOpenSettings,
         onOpenPersonalized = onOpenPersonalized,
         onNavigate = { raw ->
-            if (raw == "请先登录") {
-                showPlatformToast("请先登录")
-            } else {
-                // Paths + Chinese labels → NativeAndroidMain.openDeferred / ProductRouteDispatch.
-                onDeferred(raw)
-            }
+            // Paths + Chinese labels → NativeAndroidMain.openDeferred / ProductRouteDispatch.
+            onDeferred(raw)
         },
+        // Soft-auth: openDeferred already gates mall/wallet/home routes via openWithSoftAuth.
+        onRequireLogin = { redirect -> onDeferred(redirect) },
         snackbar = { label -> showPlatformToast(label) },
     )
 }

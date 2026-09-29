@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -48,6 +49,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.feature.home.HomeIcons
 import com.example.my_kmp_project.feature.home.DailyCheckInDialog
 import com.example.my_kmp_project.feature.home.HomeAssetIcon
 import com.example.my_kmp_project.feature.home.HomeFeatureItem
@@ -171,11 +173,11 @@ internal fun JetpackHomeRoot(
                             .background(DemoColors.Accent.copy(alpha = 0.1f))
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     ) {
-                        Text(
-                            "◌",
-                            color = DemoColors.Accent,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
+                        Icon(
+                            imageVector = HomeIcons.NotificationsNone,
+                            contentDescription = null,
+                            tint = DemoColors.Accent,
+                            modifier = Modifier.size(14.dp),
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
@@ -203,7 +205,12 @@ internal fun JetpackHomeRoot(
                             .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("⌕", color = DemoColors.Muted, fontSize = 18.sp)
+                        Icon(
+                            imageVector = HomeIcons.Search,
+                            contentDescription = null,
+                            tint = DemoColors.Muted,
+                            modifier = Modifier.size(18.dp),
+                        )
                         Spacer(Modifier.width(8.dp))
                         Text(HomeMockData.searchPlaceholder, color = DemoColors.Muted, fontSize = 15.sp)
                     }
@@ -217,7 +224,12 @@ internal fun JetpackHomeRoot(
                             .clickable { onDeferred("扫一扫") },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Text("▣", color = DemoColors.Accent, fontSize = 18.sp)
+                        Icon(
+                            imageVector = HomeIcons.QrScan,
+                            contentDescription = "扫一扫",
+                            tint = DemoColors.Accent,
+                            modifier = Modifier.size(20.dp),
+                        )
                     }
                 }
             }

@@ -68,6 +68,9 @@ struct ContentView: View {
     @State private var showLogin = false
     @State private var showMineIsland = false
     @State private var mineIslandRoute = "settings"
+    /// MineRouteHost via SecondaryRouteViewController (mall/wallet/sms/poster/http_test…).
+    @State private var showMineSecondary = false
+    @State private var mineSecondaryRoute = ""
     @State private var showNativeFeature = false
     @State private var nativeFeaturePath = "/home/search"
     @State private var chatPendingPeer: String? = nil
@@ -128,22 +131,30 @@ struct ContentView: View {
 
     private func openOwnedRoute(_ routeOrLabel: String) {
         let key = routeOrLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Flutter MineController toast-only labels — never open secondary Compose.
+        // Flutter MineController toast-only — never open secondary Compose.
         let toastOnlyKeys: Set<String> = [
             "切换门店", "切换店铺", "电子名片", "商务合作", "提醒事项",
             "邀请好友", "粉丝群", "意见反馈", "帮助中心", "头像",
-            "/mine/business_card", "/mine/invite", "/mine/business",
+            "/mine/business_card", "/mine/invite", "/mine/business", "/mine/cooperation",
             "/mine/reminders", "/mine/reminder", "/mine/fan_group", "/mine/feedback",
+            // Flutter onFunctionTap undeveloped
+            "短信模板", "店铺收款码", "收款码", "商家海报", "海报",
+            "/mine/sms_templates", "/mine/sms_template",
+            "/mine/shop_qr", "/mine/store_qr",
+            "/mine/poster",
         ]
         if toastOnlyKeys.contains(key) || key == "请先登录" {
             let toast: String
             switch key {
             case "/mine/business_card": toast = "电子名片"
             case "/mine/invite": toast = "邀请好友"
-            case "/mine/business": toast = "商务合作"
+            case "/mine/business", "/mine/cooperation": toast = "商务合作"
             case "/mine/reminders", "/mine/reminder": toast = "提醒事项"
             case "/mine/fan_group": toast = "粉丝群"
             case "/mine/feedback": toast = "意见反馈"
+            case "短信模板", "/mine/sms_templates", "/mine/sms_template": toast = "短信模板 开发中"
+            case "店铺收款码", "收款码", "/mine/shop_qr", "/mine/store_qr": toast = "店铺收款码 开发中"
+            case "商家海报", "海报", "/mine/poster": toast = "商家海报 开发中"
             case "请先登录": toast = "请先登录"
             default: toast = key
             }
@@ -218,16 +229,39 @@ struct ContentView: View {
         }
     }
 
-    /// Mine → Compose island; all other product paths → NativeFeatureHost (#23).
+    /// Mine island keys → MineIslandHost; other Mine-owned paths → SecondaryRoute
+    /// (MineRouteHost); non-Mine → NativeFeatureHost (#23).
     private func openSecondaryOrNative(_ route: String) {
-        if let island = Self.mineIslandKey(for: route) {
+        let path = NativeRouteResolver.resolve(route)
+        if let island = Self.mineIslandKey(for: path) {
             mineIslandRoute = island
             showMineIsland = true
             return
         }
+        if Self.isMineComposeSecondary(path) {
+            mineSecondaryRoute = path
+            showMineSecondary = true
+            return
+        }
         // #23: never reopen Legacy SecondaryRouteIsland for in-scope non-Mine.
-        nativeFeaturePath = route
+        nativeFeaturePath = path
         showNativeFeature = true
+    }
+
+    /// Whitelist MineRouteHost secondaries (Flutter-navigable only). Undeveloped
+    /// sms / shop_qr / poster stay toast-only via toastOnlyKeys.
+    private static func isMineComposeSecondary(_ route: String) -> Bool {
+        if route.hasPrefix("/mall") || route.hasPrefix("/wallet") { return true }
+        if route == "/pay/membership" || route.hasPrefix("/pay/membership") { return true }
+        switch route {
+        case "/mine/http_test", "/mine/purchase_calculator",
+             "/mine/profile", "/mine/addresses", "/mine/addresses/edit",
+             "/settings", "/mine/settings", "/mine/personalized_settings", "/mine/about",
+             "/settings/deal_invoice_demo", "/settings/deal_invoice/upload":
+            return true
+        default:
+            return false
+        }
     }
 
     private func openMineIslandWithSoftAuth(_ islandKey: String) {
@@ -402,6 +436,10 @@ struct ContentView: View {
             MineIslandHost(route: mineIslandRoute)
                 .ignoresSafeArea(.all)
         }
+        .fullScreenCover(isPresented: $showMineSecondary) {
+            MineSecondaryHost(route: mineSecondaryRoute)
+                .ignoresSafeArea(.all)
+        }
         .fullScreenCover(isPresented: $showNativeFeature) {
             NativeFeatureHost(
                 pathOrLabel: nativeFeaturePath,
@@ -454,12 +492,20 @@ private struct AuthGateView: View {
     }
 }
 
-// MARK: - Compose host (Mine island only — ADR 0002 / #23)
+// MARK: - Compose host (Mine island + MineRouteHost secondary — ADR 0002 / #23)
 
 private struct MineIslandHost: UIViewControllerRepresentable {
     var route: String
     func makeUIViewController(context: Context) -> UIViewController {
         MainViewControllerKt.MineIslandViewController(route: route)
+    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
+
+private struct MineSecondaryHost: UIViewControllerRepresentable {
+    var route: String
+    func makeUIViewController(context: Context) -> UIViewController {
+        MainViewControllerKt.SecondaryRouteViewController(routeOrLabel: route)
     }
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }

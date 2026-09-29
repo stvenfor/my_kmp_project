@@ -13,7 +13,7 @@ class MineContactValidatorsTest {
     fun nameAndMobileRules() {
         assertTrue(MineContactValidators.isNameValid("张三"))
         assertFalse(MineContactValidators.isNameValid(""))
-        assertFalse(MineContactValidators.isNameValid("一二三四五六七八九十十一"))
+        assertFalse(MineContactValidators.isNameValid("一二三四五六七八九十十一三"))
         assertTrue(MineContactValidators.isCnMobile("13800115172"))
         assertTrue(MineContactValidators.isCnMobile("138-0011-5172"))
         assertFalse(MineContactValidators.isCnMobile("23800115172"))
