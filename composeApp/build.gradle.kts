@@ -110,18 +110,9 @@ kotlin {
     }
 
     sourceSets {
-        // CPF uuid 已下沉 :core:base，Coil 网络图下沉 :core:ui，
-        // CameraX/MLKit 扫码下沉 :core:platform —— 这里只留 Vico（Android + iOS）。
-        // Vico charts: Android + iOS only (CPF 无 Vico/KoalaPlot ohos 产物)
-        val chartsVicoMain = sourceSets.create("chartsVicoMain").apply {
-            dependsOn(commonMain.get())
-            dependencies {
-                // Vico 2.3 transitive Compose is stock 1.9.2; project CMP (compose.*) wins via commonMain.
-                implementation(libs.vico.compose)
-            }
-        }
-        sourceSets.getByName("androidMain").dependsOn(chartsVicoMain)
-
+        // 能力型依赖全部下沉：CPF uuid → :core:base，Coil 网络图 → :core:ui，
+        // CameraX/MLKit 扫码 → :core:platform，Vico 图表 → :feature:home。
+        // :composeApp 只剩 app/ 装配 + 三端入口，所以这里不再创建任何中间 source set。
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
@@ -137,6 +128,25 @@ kotlin {
             implementation(projects.core.storage)
             implementation(projects.core.platform)
             implementation(projects.core.ui)
+            // app/ 是唯一允许看见全部 feature 的装配层；这条列表与 scripts/check-layer-deps.sh
+            // 的「feature 不得互相依赖」配套：跨功能跳转只能在这里接线。
+            implementation(projects.feature.ai)
+            implementation(projects.feature.auth)
+            implementation(projects.feature.chat)
+            implementation(projects.feature.classroom)
+            implementation(projects.feature.commerce)
+            implementation(projects.feature.community)
+            implementation(projects.feature.content)
+            implementation(projects.feature.friend)
+            implementation(projects.feature.home)
+            implementation(projects.feature.live)
+            implementation(projects.feature.media)
+            implementation(projects.feature.mine)
+            implementation(projects.feature.pay)
+            implementation(projects.feature.scan)
+            implementation(projects.feature.shell)
+            implementation(projects.feature.wallet)
+            implementation(projects.feature.web)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)
@@ -151,7 +161,6 @@ kotlin {
         if (!androidOnly) {
             val iosMain = sourceSets.create("iosMain").apply {
                 dependsOn(commonMain.get())
-                dependsOn(chartsVicoMain)
             }
             listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
                 sourceSets.getByName(it).dependsOn(iosMain)

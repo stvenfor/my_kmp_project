@@ -1,0 +1,223 @@
+package com.example.my_kmp_project.feature.media
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.music_list_body
+import org.jetbrains.compose.resources.painterResource
+
+private data class MockTrack(
+    val id: String,
+    val title: String,
+    val artist: String,
+)
+
+/** Flutter audio list SoT titles (module_music). */
+private val FlutterTracks = listOf(
+    MockTrack("t1", "Ya Ali - DJMaza.Com", "DJMaza"),
+    MockTrack("t2", "Ek Do Teen - DJMaza.Info", "DJMaza"),
+    MockTrack("t3", "16 yeh dil diwana hai", "Classic"),
+    MockTrack("t4", "Shape of You", "Ed Sheeran"),
+    MockTrack("t5", "Blinding Lights", "The Weeknd"),
+    MockTrack("t6", "Levitating", "Dua Lipa"),
+)
+
+@Composable
+fun MusicListScreen(
+    onBack: () -> Unit,
+    onOpenNowPlaying: (() -> Unit)? = null,
+) {
+    // Flutter audio list full-frame SoT; player gaps stay registry-honest.
+    val tracks = remember { FlutterTracks }
+    ReportMainTabRoot(isRoot = false)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DemoColors.PageBg),
+    ) {
+        Image(
+            painter = painterResource(Res.drawable.music_list_body),
+            contentDescription = "音频列表：曲目与播放入口",
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    val track = tracks.first()
+                    MusicSession.start(track.title, track.artist)
+                    onOpenNowPlaying?.invoke()
+                },
+            contentScale = ContentScale.FillBounds,
+        )
+        Text(
+            "‹",
+            fontSize = 28.sp,
+            color = Color.Transparent,
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(start = 4.dp, top = 4.dp)
+                .clickable(onClick = onBack)
+                .padding(12.dp),
+        )
+    }
+}
+
+/** Deep-link `/music/now_playing` — Flutter Now Playing. */
+@Composable
+fun MusicNowPlayingRoute(onBack: () -> Unit) {
+    val fallback = FlutterTracks.first()
+    if (MusicSession.trackTitle == null) {
+        MusicSession.start(fallback.title, fallback.artist)
+    }
+    val title = MusicSession.trackTitle ?: fallback.title
+    val artist = MusicSession.artist.ifBlank { fallback.artist }
+    ReportMainTabRoot(isRoot = false)
+    NowPlayingScreen(
+        track = MockTrack("np", title, artist),
+        onBack = onBack,
+    )
+}
+
+@Composable
+private fun NowPlayingScreen(
+    track: MockTrack,
+    onBack: () -> Unit,
+) {
+    val player = MusicSession.player
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DemoColors.PageBg),
+    ) {
+        MineTopBar(title = "Now Playing", onBack = onBack, containerColor = Color.White)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = track.title,
+                color = DemoColors.TextPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = track.artist,
+                color = DemoColors.TextSecondary,
+                fontSize = 14.sp,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = if (player.isPlaying) "播放中（Stub）" else "已暂停",
+                color = DemoColors.Muted,
+                fontSize = 13.sp,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = {
+                    if (player.isPlaying) player.pause() else player.play()
+                }) {
+                    Text(
+                        text = if (player.isPlaying) "暂停" else "播放",
+                        color = DemoColors.Primary,
+                    )
+                }
+                TextButton(onClick = {
+                    MusicSession.dismiss()
+                    onBack()
+                }) {
+                    Text(text = "停止", color = DemoColors.TextSecondary)
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                "播放器缺口：OHOS/真机解码见 platform-gap-registry",
+                color = DemoColors.Muted,
+                fontSize = 12.sp,
+            )
+        }
+    }
+}
+
+/** Dismissible mini-player shown on Home when [MusicSession] is active. */
+@Composable
+fun MiniPlayerBar(
+    modifier: Modifier = Modifier,
+    onOpenNowPlaying: (() -> Unit)? = null,
+) {
+    val title = MusicSession.trackTitle ?: return
+    val player = MusicSession.player
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(DemoColors.Background),
+    ) {
+        HorizontalDivider(color = DemoColors.Divider)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = onOpenNowPlaying != null) {
+                    onOpenNowPlaying?.invoke()
+                }
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    color = DemoColors.TextPrimary,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                )
+                Text(
+                    text = MusicSession.artist,
+                    color = DemoColors.Muted,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                )
+            }
+            TextButton(onClick = {
+                if (player.isPlaying) player.pause() else player.play()
+            }) {
+                Text(
+                    text = if (player.isPlaying) "暂停" else "播放",
+                    color = DemoColors.Primary,
+                    fontSize = 13.sp,
+                )
+            }
+            TextButton(onClick = { MusicSession.dismiss() }) {
+                Text(text = "关闭", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            }
+        }
+    }
+}

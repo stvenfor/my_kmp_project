@@ -6,9 +6,17 @@ plugins {
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.kotlinSerialization) apply false
 }
 
-// 跨平台一键部署/校验任务（借鉴 kmp-cmp-example/deployment.gradle.kts 并按本工程适配）
+// 跨平台一键部署/校验任务（借鉴 kmp-cmp-example/deployment.gradle.kts 并按本工程适配）。
+//
+// 注意：这脚本 29 处 `exec { commandLine(...) }` 用的是 `Project.exec`，Gradle 9.0 已把它移除
+// （改用注入的 ExecOperations）。工程当前锁在 wrapper 的 Gradle **8.9**，所以还能编译；
+// 一旦升 Gradle 大版本，这个 apply 会让整个工程配置阶段红（9.4.1 实测 234 个
+// `Unresolved reference 'exec'`，`./gradlew help` 都跑不起来）。届时先按 ExecOperations 重写再挂回。
+// 另外这些任务都是 doLast 里直接起进程，与 configuration cache 不兼容，且依赖真机/模拟器，
+// 门禁从不跑它们（三端日常跑用 scripts/run-{android,ios,harmony}.sh）。
 apply(from = "deployment.gradle.kts")
 
 // ---------------------------------------------------------------------------
@@ -93,10 +101,15 @@ subprojects {
             kmp.ohosX64()
         }
 
+        // 序列化：core:* 与 feature:* 里的 @Serializable 数据契约满地都是（114 行 API 契约表
+        // 每一行都要一个请求/响应模型）。以前只有 :composeApp 单独 apply 过插件，拆模块后
+        // 每个模块重复声明插件是噪声、漏声明是编译红，所以插件和 json 依赖都在这条共享接线里给。
+        pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
         with(kmp.sourceSets) {
             getByName("commonMain").dependencies {
                 implementation(catalog.findLibrary("kotlinx-coroutines-core").get())
                 implementation(catalog.findLibrary("atomicFu").get())
+                api(catalog.findLibrary("kotlinx-serialization-json").get())
             }
             getByName("commonTest").dependencies {
                 implementation(catalog.findLibrary("kotlin-test").get())

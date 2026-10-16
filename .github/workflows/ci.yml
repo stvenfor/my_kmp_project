@@ -7,6 +7,8 @@ on:
     paths:
       - "composeApp/**"
       - "core/**"
+      - "component/**"
+      - "feature/**"
       - "ohosAggregate/**"
       - "gradle/**"
       - "scripts/**"
@@ -20,6 +22,8 @@ on:
     paths:
       - "composeApp/**"
       - "core/**"
+      - "component/**"
+      - "feature/**"
       - "ohosAggregate/**"
       - "gradle/**"
       - "scripts/**"
@@ -65,14 +69,15 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Single Gradle invocation: gate + produce the debug APK used for CD.
-      - name: Architecture gate (no feature→feature imports)
-        run: bash scripts/check-layer-deps.sh
+      # 本地同一份脚本：Kotlin 词法扫描 + 分层门禁（feature→feature、下层反向 import、
+      # component 里出现 projects.feature.*）。拆模块后漏一条就是整片红。
+      - name: Static gates (kotlin lexer + layer deps)
+        run: bash scripts/verify-parity.sh --static-only
 
       - name: Assemble debug & unit tests
         run: |
           set -o pipefail
-          ./gradlew :composeApp:assembleDebug :composeApp:testDebugUnitTest :core:network:testDebugUnitTest \
+          ./gradlew testDebugUnitTest :composeApp:assembleDebug \
             -PandroidOnly=true --no-daemon --stacktrace 2>&1 | tee gradle-ci.log
 
       - name: Summarize Gradle failure
@@ -95,9 +100,8 @@ jobs:
           name: gradle-ci-log
           path: |
             gradle-ci.log
-            composeApp/build/reports/tests/
-            composeApp/build/test-results/
-            core/network/build/test-results/
+            "**/build/reports/tests/"
+            "**/build/test-results/"
           if-no-files-found: ignore
           retention-days: 7
 

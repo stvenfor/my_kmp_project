@@ -334,10 +334,10 @@ M 段是「内容对齐」，P 段是「骨架对齐」：不先做 P，feature 
 | ID | 范围 | 状态 | 出口证据 |
 |---|---|---|---|
 | P1 | 共享 KMP 接线：根 `build.gradle.kts` 的 `subprojects {}` 统一 target 集 / android 基础配置 / commonMain 公共依赖（**buildSrc 在本环境不可用**：`org.gradle.kotlin.kotlin-dsl` 在镜像里解析失败） | ✅ 完成 | 10 模块 × 5 目标编译通过 |
-| P2 | `core.*` 下沉为真模块：`base`/`analytics`/`storage`/`router`/`network`/`account`/`design`(+171 资源) / `platform` / `ui` | 🚧 进行中 | 资源归属 `:core:design`（`publicResClass=true`，包名 `my_kmp_project.core.design.generated.resources`，OHOS 走 `harmonyResourceRoots` 投递） |
-| P3 | `core:persistence`：把 KV 收成一个模块（multiplatform-settings，android/ios/ohosArm64；ohosX64 走文件回落），修掉 OHOS `/tmp` 重启丢数据（M8.5）；`:core:account` + `core.platform.StringListStore` 都改为消费它 | ⬜ 待做 | session/隐私同意/收藏列表读写三端同源测试 |
-| P4 | 17 个 `feature/` 目录（123 文件）按叶子优先拆 `:feature:*`：scan/web/content/live/classroom → media/community/friend/chat → pay/wallet/commerce/auth → mine/home | ⬜ 待做 | 每模块独立 `testDebugUnitTest`；R7 门禁含模块级检查 |
-| P5 | `:composeApp` 收窄为 app + shell + RouteHost 分发；`libkn.so`/framework 产出者仍只有 `:composeApp`；R4 口径已改写 | ⬜ 待做 | 门禁 + 三端可跑 |
+| P2 | `core.*` 下沉为真模块：`base`/`analytics`/`storage`/`router`/`network`/`account`/`design`(+171 资源) / `platform` / `ui` | ✅ 完成（2026-10-17）| 资源归属 `:core:design`（`publicResClass=true`，包名 `my_kmp_project.core.design.generated.resources`，OHOS 走 `harmonyResourceRoots` 投递） |
+| P3 | KV 收进 **已有的** `:core:storage`（用户决策：不建第二个持久化模块、不上 SQLDelight）：`KeyValueStore` 是唯一契约；Android/iOS 走 multiplatform-settings(`settingsMain`)，**两 arch OHOS** 直接实现 `OH_Preferences` NDK（`-lohpreferences`），`/tmp` 回落已删 | ✅ 完成（2026-10-17） | `:core:storage` 8 例契约测试 + `:core:account` 7 例（session/隐私同意均消费 `KeyValueStore`）；`component/realtime` 的 `RealtimeKeyValueStore` 仍自带 InMemory 实现、生产侧无构造点 → 归 M2 接线（任务 #23）|
+| P4 | 17 个 `feature/` 模块（叶子优先拆出，`git mv` 保历史）+ `:component` | ✅ 完成（2026-10-17） | 21 模块 `testDebugUnitTest`＝**660 tests / 68 类 / 0 失败**（与拆分前基线同数）；`check-layer-deps.sh` 0 违规且新增「`component/build.gradle.kts` 里不得出现 `projects.feature.*`」；五目标编译矩阵 `verify-parity: OK` |
+| P5 | `:composeApp` 收窄：commonMain 只剩 `App.kt`/`Platform.kt`/`app/`(5 文件)，其余是 android `nativeshell/` + iOS/OHOS 入口与 cinterop；能力型中间 source set 全部下沉（uuid→base、coil→ui、camera/mlkit→platform、vico→feature:home） | ✅ 完成（2026-10-17） | `composeApp/src/commonMain/…/MODULES.md` 重写为 28 模块真实依赖表；`libkn.so`/framework 仍只由 `:composeApp` 产出（`compileKotlinOhos{Arm64,X64}` 绿）|
 
 **已踩平的两个「拆了就红」坑（后续批次直接照抄结论）**：
 

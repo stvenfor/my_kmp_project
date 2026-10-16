@@ -962,8 +962,11 @@ internal fun JetpackCommunityRoot(
             ) {
                 items(feed, key = { it.id }) { post ->
                     val thread = post.previewComments.map { c ->
-                        if (c.replyToNickname != null) {
-                            CommunityThreadLine.Reply(c.nickname, c.replyToNickname, c.content)
+                        // c.replyToNickname 是另一个模块的 public API 属性，跨模块不可 smart cast
+                        // （编译器不能保证别的模块没并发改写它），所以先落到本地 val。
+                        val replyTo = c.replyToNickname
+                        if (replyTo != null) {
+                            CommunityThreadLine.Reply(c.nickname, replyTo, c.content)
                         } else {
                             CommunityThreadLine.Comment(c.nickname, c.content)
                         }

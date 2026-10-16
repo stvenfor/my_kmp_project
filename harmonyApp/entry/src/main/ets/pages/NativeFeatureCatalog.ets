@@ -477,7 +477,8 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
 
 /**
  * Full Parity #3/#23: map Flutter path → Index.nativePane id.
- * Mine/settings/membership stay on Compose Mine island host.
+ * M10.A.1.h: classroom homework/gift + the dedicated ArkTS mine panes dispatch here;
+ * any other Mine/settings route stays on the Compose Mine island host.
  * Unknown non-Mine paths use nativePane='feature' (catalog host), never Legacy island.
  */
 export function nativePaneIdFor(pathOrLabel: string): string {
@@ -492,6 +493,42 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   if (path.indexOf('/chat/') === 0) {
     return '';
   }
+  // M10.A.1.h: specific ArkTS mine panes must be dispatched before the /mine catch-all
+  // (mirrors iOS NativeFeatureHost exact-path checks). Canonical forms from resolveNativePath.
+  if (path === '/mine/purchase_calculator') {
+    return 'purchase_calculator';
+  }
+  if (path === '/mine/sms_templates') {
+    return 'sms_template';
+  }
+  if (path === '/mine/shop_qr') {
+    return 'store_qr';
+  }
+  if (path === '/mine/http_test') {
+    return 'qa';
+  }
+  if (path === '/mine/poster') {
+    return 'poster';
+  }
+  if (path === '/mine/cooperation') {
+    return 'business';
+  }
+  if (path === '/mine/reminder') {
+    return 'reminders';
+  }
+  if (path === '/mine/feedback') {
+    return 'feedback';
+  }
+  if (path === '/mine/profile') {
+    return 'profile';
+  }
+  if (path === '/mine/addresses' || path.startsWith('/mine/addresses/')) {
+    return 'addresses';
+  }
+  if (path === '/mine/business_card') {
+    return 'business_card';
+  }
+  // Unmapped mine/settings still stay on Compose Mine island host.
   if (path.startsWith('/mine') || path.startsWith('/settings')) {
     return '';
   }
@@ -641,6 +678,18 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   }
   if (path.startsWith('/music')) {
     return 'music';
+  }
+  // M10.A.1.h: classroom family — homework stats / homework detail / gift claim panes
+  // (Kotlin AppRoutePath: homework_stats, homework/detail_*, homework/dubbing,
+  // homework/review, gift/claim, video/detail; '/classroom/homework' kept for iOS parity).
+  if (path.startsWith('/classroom/gift')) {
+    return 'gift_claim';
+  }
+  if (path.startsWith('/classroom/homework/') || path === '/classroom/video' || path.startsWith('/classroom/video/')) {
+    return 'homework_detail';
+  }
+  if (path === '/classroom/homework' || path === '/classroom/homework_stats') {
+    return 'homework_stats';
   }
   if (path.startsWith('/classroom')) {
     return 'classroom';

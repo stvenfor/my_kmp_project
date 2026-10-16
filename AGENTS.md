@@ -30,18 +30,26 @@ Ruflo MCP (Cursor): `.cursor/mcp.json` → `npx -y ruflo@latest mcp start`. Heal
 
 | Path | Role |
 |------|------|
-| `composeApp/` | Shared KMP module: UI + logic + platform actuals |
-| `composeApp/src/commonMain/.../app/` | `DemoApp` shell (Home + Mine tabs) |
-| `composeApp/src/commonMain/.../core/` | router, account, network, design, platform, ui |
-| `composeApp/src/commonMain/.../feature/` | `home`, `mine`, `shell` |
-| `composeApp/src/androidMain/` | Android actuals + `MainActivity` |
+| `core/{base,network,router,account,design,platform,ui,analytics,storage}/` | ④ horizontal commons — 9 real Gradle modules (`:core:*`) |
+| `component/` | ③ vertical ports: pay / push / chat / webview / auth / routing / realtime (`:component`) |
+| `feature/{home,mine,auth,shell,chat,friend,community,media,classroom,commerce,content,live,scan,web,ai,pay,wallet}/` | ② 17 business modules (`:feature:*`) — **no sibling feature deps**, each testable alone |
+| `composeApp/` | ① assembly only: `app/` shell + 三端入口 + RouteHost 分发; **the only binary producer** (iOS framework + OHOS `libkn.so`) |
+| `composeApp/src/commonMain/.../app/` | `AppContainer` / `AppShell` / `DemoApp` / `ShellBootstrap` / `AppCrossFeatureScreens` |
+| `composeApp/src/androidMain/` | `MainActivity` + `nativeshell/` (Jetpack native tabs) |
 | `composeApp/src/iosMain/` | iOS actuals + `MainViewController` |
 | `composeApp/src/ohosMain/` | OHOS actuals + `MainArkUIViewController` + cinterop |
-| `composeApp/src/commonTest/` | Shared tests |
+| `composeApp/src/commonTest/` | App-layer tests only (feature tests live in their module) |
 | `iosApp/` | Thin SwiftUI shell hosting the Compose framework |
 | `harmonyApp/` | Thin ArkTS/Harmony shell hosting `libkn.so` |
 | `gradle/libs.versions.toml` | Version catalog (single source of truth) |
 | `local.properties` | Machine-local SDK paths — never commit |
+| `composeApp/src/commonMain/.../MODULES.md` | Full 28-module graph + intermediate source sets |
+
+Module wiring lives in the root `build.gradle.kts` `subprojects {}` (targets, android base config,
+coroutines/atomicfu/serialization/kotlin-test). **buildSrc does not work in this environment** —
+`~/.gradle/init.gradle` pins plugin-marker resolution to mirrors that cannot fetch
+`org.gradle.kotlin.kotlin-dsl`. A new module therefore needs: `settings.gradle.kts` include +
+its own `build.gradle.kts` (plugins + `api(projects…)` + `android { namespace }`).
 
 **Intermediate source sets (avoid unsupported OHOS artifacts in `commonMain`):**
 

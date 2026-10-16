@@ -13,7 +13,7 @@ import { NativeHomeContent } from './NativeHomeContent';
 import { NativeLoginPane } from '../auth/NativeLoginPane';
 import { AuthSession, sharedSessionStore } from '../auth/SessionStore';
 import { PENDING_DEEP_LINK_KEY } from '../entryability/EntryAbility';
-import { featurePageFor, FeatureRow, resolveNativePath, nativePaneIdFor } from './NativeFeatureCatalog';
+import { featurePageFor, FeaturePage, FeatureRow, resolveNativePath, nativePaneIdFor } from './NativeFeatureCatalog';
 import {
   NativeSearchPane,
   NativeAllServicesPane,
@@ -1069,6 +1069,76 @@ struct Index {
     this.openSecondaryOrNative(route);
   }
 
+  /** Canonical path for the pane currently shown (featurePath may be label/deep-link raw). */
+  private featureRoutePath(): string {
+    return resolveNativePath(this.featurePath);
+  }
+
+  private homeworkDetailTitle(): string {
+    const p = this.featureRoutePath();
+    if (p === '/classroom/homework/detail_teacher') {
+      return '教师作业详情';
+    }
+    if (p === '/classroom/homework/detail_student') {
+      return '学生作业详情';
+    }
+    if (p === '/classroom/homework/dubbing') {
+      return '配音作业';
+    }
+    if (p === '/classroom/homework/review') {
+      return '作业点评';
+    }
+    if (p === '/classroom/video' || p.startsWith('/classroom/video/')) {
+      return '课堂视频';
+    }
+    return '作业详情';
+  }
+
+  private homeworkDetailBody(): string {
+    const p = this.featureRoutePath();
+    if (p === '/classroom/homework/detail_teacher') {
+      return '批改进度 12/30 · 平均分 86';
+    }
+    if (p === '/classroom/homework/detail_student') {
+      return '已提交 · 待批改 · 附件 2';
+    }
+    if (p === '/classroom/homework/dubbing') {
+      return '录制入口 stub · 见 media gap';
+    }
+    if (p === '/classroom/homework/review') {
+      return '教师评语：语速适中，注意连读。';
+    }
+    if (p === '/classroom/video' || p.startsWith('/classroom/video/')) {
+      return '播放头 mock · 非 short 链路';
+    }
+    return '待提交';
+  }
+
+  private homeworkDetailAction(): string {
+    if (this.featureRoutePath() === '/classroom/homework/dubbing') {
+      return '开始录制';
+    }
+    return '';
+  }
+
+  private todoTitle(): string {
+    return featurePageFor(this.featurePath).title;
+  }
+
+  private todoAction(): string {
+    return featurePageFor(this.featurePath).primaryAction;
+  }
+
+  private todoRows(): string[][] {
+    const page: FeaturePage = featurePageFor(this.featurePath);
+    const out: string[][] = [];
+    for (let i = 0; i < page.rows.length; i++) {
+      const r: FeatureRow = page.rows[i];
+      out.push([r.title, r.detail, r.badge]);
+    }
+    return out;
+  }
+
 
   @Builder
   SplashPane() {
@@ -2052,6 +2122,29 @@ struct Index {
             this.openDeferred(p);
           },
         })
+      }
+
+      if (this.nativePane === 'homework_stats') {
+        NativeHomeworkStatsPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (p: string): void => {
+            this.nativePane = '';
+            this.openDeferred(p);
+          },
+        })
+      }
+
+      if (this.nativePane === 'homework_detail') {
+        NativeHomeworkDetailPane({
+          titleText: this.homeworkDetailTitle(),
+          detail: this.homeworkDetailBody(),
+          action: this.homeworkDetailAction(),
+          onClose: (): void => { this.nativePane = ''; },
+        })
+      }
+
+      if (this.nativePane === 'gift_claim') {
+        NativeGiftClaimPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
       if (this.nativePane === 'used_car') {
