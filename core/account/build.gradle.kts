@@ -1,6 +1,7 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
+// core:account —— 会话/隐私同意本地存储（KV，基于 multiplatform-settings）。
+// target 集 / android 基础配置 / 公共依赖 / iosMain·ohosMain 层级见根 build.gradle.kts；
+// 这里只留本模块特有的 accountSettingsMain 能力 source set（OHOS 无 settings 产物，
+// 所以刻意不挂到 ohosMain）。
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
@@ -10,69 +11,27 @@ plugins {
 val androidOnly = rootProject.findProperty("androidOnly")?.toString()?.toBoolean() == true
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
-
-    if (!androidOnly) {
-        listOf(
-            iosX64(),
-            iosArm64(),
-            iosSimulatorArm64(),
-        ).forEach { /* library — no framework binary */ }
-
-        listOf(
-            ohosArm64(),
-            ohosX64(),
-        ).forEach { /* library — linked via :composeApp / future :ohosAggregate */ }
-    }
-
     sourceSets {
-        commonMain.dependencies {
+        getByName("commonMain").dependencies {
             implementation(projects.core.network)
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.atomicFu)
             implementation(libs.kotlinx.serialization.json)
         }
 
-        val accountSettingsMain = sourceSets.create("accountSettingsMain").apply {
-            dependsOn(commonMain.get())
+        val accountSettingsMain = create("accountSettingsMain").apply {
+            dependsOn(getByName("commonMain"))
             dependencies {
                 implementation(libs.multiplatform.settings)
             }
         }
 
-        sourceSets.getByName("androidMain").dependsOn(accountSettingsMain)
+        getByName("androidMain").dependsOn(accountSettingsMain)
 
         if (!androidOnly) {
-            val iosMain = sourceSets.create("iosMain").apply {
-                dependsOn(commonMain.get())
-                dependsOn(accountSettingsMain)
-            }
-            listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
-                sourceSets.getByName(it).dependsOn(iosMain)
-            }
-
-            val ohosMain = sourceSets.create("ohosMain").apply {
-                dependsOn(commonMain.get())
-            }
-            sourceSets.getByName("ohosArm64Main").dependsOn(ohosMain)
-            sourceSets.getByName("ohosX64Main").dependsOn(ohosMain)
+            getByName("iosMain").dependsOn(accountSettingsMain)
         }
     }
 }
 
 android {
     namespace = "com.example.my_kmp_project.core.account"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
 }

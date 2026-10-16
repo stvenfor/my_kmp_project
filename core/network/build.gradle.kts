@@ -1,7 +1,9 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import java.io.File
 
+// core:network —— HTTP / SSE / realtime 传输层（唯一持有 Ktor 的模块）。
+// target 集 / android 基础配置 / 公共依赖 / iosMain·ohosMain 层级见根 build.gradle.kts；
+// 这里只留本模块特有的东西：Ktor 能力 source set、ohosX64 的 net_http cinterop。
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
@@ -21,50 +23,30 @@ val ohosNativeSysroot: File? = run {
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
-    }
-
     if (!androidOnly) {
-        listOf(
-            iosX64(),
-            iosArm64(),
-            iosSimulatorArm64(),
-        ).forEach { /* library — no framework binary */ }
-
-        listOf(
-            ohosArm64(),
-            ohosX64(),
-        ).forEach { ohosTarget ->
-            // net_http cinterop only on ohosX64 (no CPF Ktor ohosX64 klib).
-            // ohosArm64 uses Ktor CIO — see networkKtorMain + HttpClientFactory.ohosArm64.
-            if (ohosTarget.name == "ohosX64") {
-                ohosTarget.compilations.getByName("main") {
-                    val netHttp by cinterops.creating {
-                        defFile(file("src/ohosMain/cinterop/net_http.def"))
-                        includeDirs(file("src/ohosMain/cinterop/include"))
-                        ohosNativeSysroot?.let { sysroot ->
-                            includeDirs(sysroot.resolve("usr/include"))
-                        }
-                        compilerOpts("-I${file("src/ohosMain/cinterop/include").absolutePath}")
-                    }
+        // net_http cinterop only on ohosX64 (no CPF Ktor ohosX64 klib).
+        // ohosArm64 uses Ktor CIO — see networkKtorMain + HttpClientFactory.ohosArm64.
+        val ohosX64 = targets.getByName("ohosX64") as KotlinNativeTarget
+        ohosX64.compilations.getByName("main") {
+            val netHttp by cinterops.creating {
+                defFile(file("src/ohosMain/cinterop/net_http.def"))
+                includeDirs(file("src/ohosMain/cinterop/include"))
+                ohosNativeSysroot?.let { sysroot ->
+                    includeDirs(sysroot.resolve("usr/include"))
                 }
+                compilerOpts("-I${file("src/ohosMain/cinterop/include").absolutePath}")
             }
         }
     }
 
     sourceSets {
+        val commonMain = getByName("commonMain")
         commonMain.dependencies {
-            implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.atomicFu)
             implementation(libs.kotlinx.serialization.json)
         }
 
-        val networkKtorMain = sourceSets.create("networkKtorMain").apply {
-            dependsOn(commonMain.get())
+        val networkKtorMain = create("networkKtorMain").apply {
+            dependsOn(commonMain)
             dependencies {
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
@@ -75,43 +57,33 @@ kotlin {
             }
         }
 
-        sourceSets.getByName("androidMain").dependsOn(networkKtorMain)
-        sourceSets.getByName("androidMain").dependencies {
-            implementation(libs.ktor.client.okhttp)
+        getByName("androidMain").apply {
+            dependsOn(networkKtorMain)
+            dependencies {
+                implementation(libs.ktor.client.okhttp)
+            }
         }
 
         if (!androidOnly) {
-            val iosMain = sourceSets.create("iosMain").apply {
-                dependsOn(commonMain.get())
+            getByName("iosMain").apply {
                 dependsOn(networkKtorMain)
                 dependencies {
                     implementation(libs.ktor.client.darwin)
                 }
             }
-            listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
-                sourceSets.getByName(it).dependsOn(iosMain)
-            }
-
-            val ohosMain = sourceSets.create("ohosMain").apply {
-                dependsOn(commonMain.get())
-            }
             // Arm64: shared Ktor + CIO. X64: cinterop only (design D4 — no ohosX64 Ktor klib).
-            sourceSets.getByName("ohosArm64Main").apply {
-                dependsOn(ohosMain)
+            getByName("ohosArm64Main").apply {
                 dependsOn(networkKtorMain)
                 dependencies {
                     implementation(libs.ktor.client.cio)
                 }
             }
-            sourceSets.getByName("ohosX64Main").dependsOn(ohosMain)
         }
 
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
+        getByName("commonTest").dependencies {
             implementation(libs.kotlinx.coroutines.core)
         }
-        sourceSets.getByName("androidUnitTest").dependencies {
-            implementation(libs.kotlin.test)
+        getByName("androidUnitTest").dependencies {
             implementation(libs.ktor.client.mock)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutines.core)
@@ -121,12 +93,4 @@ kotlin {
 
 android {
     namespace = "com.example.my_kmp_project.core.network"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
 }
