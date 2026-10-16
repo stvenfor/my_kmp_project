@@ -12,8 +12,17 @@ out="${1:-}"
 python3 - <<'PY' ${out:+$out}
 import datetime, pathlib, sys, xml.etree.ElementTree as ET
 
-dirs = ["composeApp/build/test-results/testDebugUnitTest",
-        "core/network/build/test-results/testDebugUnitTest"]
+# 所有模块都扫：拆出 :core:* / :feature:* 之后写死两个目录会静默漏掉新模块的证据。
+dirs = sorted({
+    str(p.parent)
+    for p in pathlib.Path(".").rglob("TEST-*.xml")
+    if "/build/test-results/" in str(p)
+    and "harmonyApp" not in str(p)
+    and "node_modules" not in str(p)
+})
+if not dirs:
+    print("no test-results found — run `bash scripts/verify-parity.sh` first", file=sys.stderr)
+    sys.exit(1)
 rows = []
 for d in dirs:
     base = pathlib.Path(d)

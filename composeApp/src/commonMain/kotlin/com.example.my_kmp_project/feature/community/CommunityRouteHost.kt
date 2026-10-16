@@ -59,10 +59,10 @@ import com.example.my_kmp_project.core.platform.saveStringList
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.community_convention_body
-import my_kmp_project.composeapp.generated.resources.community_post_a
-import my_kmp_project.composeapp.generated.resources.ic_nav_back
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.community_convention_body
+import my_kmp_project.core.design.generated.resources.community_post_a
+import my_kmp_project.core.design.generated.resources.ic_nav_back
 import org.jetbrains.compose.resources.painterResource
 import com.example.my_kmp_project.core.router.CommunityRoutes
 import com.example.my_kmp_project.core.router.AiRoutes

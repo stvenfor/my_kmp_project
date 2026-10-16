@@ -58,8 +58,8 @@ import com.example.my_kmp_project.feature.home.HomeServiceAssets
 import com.example.my_kmp_project.feature.mine.SwitchStoreDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.home_banner_sot
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.home_banner_sot
 import org.jetbrains.compose.resources.painterResource
 import java.text.SimpleDateFormat
 import java.util.Calendar

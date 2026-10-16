@@ -60,9 +60,9 @@ import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.core.router.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineHomeContent
 import com.example.my_kmp_project.core.router.MineRoutes
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.community_avatar
-import my_kmp_project.composeapp.generated.resources.community_post_a
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.community_avatar
+import my_kmp_project.core.design.generated.resources.community_post_a
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.text.BasicTextField

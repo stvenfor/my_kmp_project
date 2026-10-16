@@ -22,15 +22,15 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.ImmersiveInsets.MainBottomBarHeight
 import com.example.my_kmp_project.core.router.MainTab
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.main_tab_chat_selected
-import my_kmp_project.composeapp.generated.resources.main_tab_chat_unselected
-import my_kmp_project.composeapp.generated.resources.main_tab_community_selected
-import my_kmp_project.composeapp.generated.resources.main_tab_community_unselected
-import my_kmp_project.composeapp.generated.resources.main_tab_home_selected
-import my_kmp_project.composeapp.generated.resources.main_tab_home_unselected
-import my_kmp_project.composeapp.generated.resources.main_tab_me_selected
-import my_kmp_project.composeapp.generated.resources.main_tab_me_unselected
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.main_tab_chat_selected
+import my_kmp_project.core.design.generated.resources.main_tab_chat_unselected
+import my_kmp_project.core.design.generated.resources.main_tab_community_selected
+import my_kmp_project.core.design.generated.resources.main_tab_community_unselected
+import my_kmp_project.core.design.generated.resources.main_tab_home_selected
+import my_kmp_project.core.design.generated.resources.main_tab_home_unselected
+import my_kmp_project.core.design.generated.resources.main_tab_me_selected
+import my_kmp_project.core.design.generated.resources.main_tab_me_unselected
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 

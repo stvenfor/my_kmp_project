@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_01
-import my_kmp_project.composeapp.generated.resources.music_defaults_music_record
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_01
+import my_kmp_project.core.design.generated.resources.music_defaults_music_record
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 

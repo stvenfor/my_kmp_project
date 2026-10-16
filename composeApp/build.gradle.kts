@@ -110,6 +110,8 @@ kotlin {
     }
 
     sourceSets {
+        // CPF uuid 已下沉 :core:base，Coil 网络图下沉 :core:ui，
+        // CameraX/MLKit 扫码下沉 :core:platform —— 这里只留 Vico（Android + iOS）。
         // Vico charts: Android + iOS only (CPF 无 Vico/KoalaPlot ohos 产物)
         val chartsVicoMain = sourceSets.create("chartsVicoMain").apply {
             dependsOn(commonMain.get())
@@ -118,29 +120,11 @@ kotlin {
                 implementation(libs.vico.compose)
             }
         }
-        // CPF Coil: android + ios + ohosArm64 (no ohosX64 klib — placeholder actual there)
-        val imageCoilMain = sourceSets.create("imageCoilMain").apply {
-            dependsOn(commonMain.get())
-            dependencies {
-                implementation(libs.coil.compose)
-            }
-        }
-        // CPF uuid 已下沉 :core:base（uuidCpfMain 跟着走），这里不再声明。
         sourceSets.getByName("androidMain").dependsOn(chartsVicoMain)
-        sourceSets.getByName("androidMain").dependsOn(imageCoilMain)
 
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.androidx.collection)
-            implementation(libs.coil.network.okhttp)
-            implementation(libs.androidx.camera.core)
-            implementation(libs.androidx.camera.camera2)
-            implementation(libs.androidx.camera.lifecycle)
-            implementation(libs.androidx.camera.view)
-            implementation(libs.mlkit.barcode.scanning)
         }
         commonMain.dependencies {
             implementation(projects.core.network)
@@ -150,6 +134,8 @@ kotlin {
             implementation(projects.core.base)
             implementation(projects.core.analytics)
             implementation(projects.core.storage)
+            implementation(projects.core.platform)
+            implementation(projects.core.ui)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)
@@ -165,10 +151,6 @@ kotlin {
             val iosMain = sourceSets.create("iosMain").apply {
                 dependsOn(commonMain.get())
                 dependsOn(chartsVicoMain)
-                dependsOn(imageCoilMain)
-            }
-            iosMain.dependencies {
-                implementation(libs.coil.network.ktor3)
             }
             listOf("iosX64Main", "iosArm64Main", "iosSimulatorArm64Main").forEach {
                 sourceSets.getByName(it).dependsOn(iosMain)
@@ -182,10 +164,6 @@ kotlin {
             }
             val ohosArm64Main by getting {
                 dependsOn(ohosMain)
-                dependsOn(imageCoilMain)
-                dependencies {
-                    implementation(libs.coil.network.ktor3)
-                }
             }
             val ohosX64Main by getting {
                 dependsOn(ohosMain)
@@ -255,6 +233,15 @@ fun String.capitalizeUS(): String = this.replaceFirstChar {
 }
 
 
+// OHOS rawfile 资源投递清单：composeResources 已经归属各库模块（:core:design 持有全部
+// drawable/font），:composeApp 自己不再有 src/commonMain/composeResources。
+// 生成的 Res 包名 = <rootProject>.<模块名>.generated.resources，harmonyApp 侧按这个目录名
+// 读资源，所以「模块目录」和「包名」必须成对维护；将来 feature 自带资源就往这个表里加一行。
+val harmonyResourceRoots: List<Pair<String, File>> = listOf(
+    "my_kmp_project.core.design.generated.resources" to
+        rootProject.file("core/design/src/commonMain/composeResources"),
+)
+
 // 为不同类型(debug、release)OHOS构建注册Copy任务并发布到Harmony App目录
 // CPF 对齐：真机 arm64 用 publish*BinariesToHarmonyApp；
 // 模拟器 x86_64 用 publish*BinariesToHarmonyAppX64（需 linkDebugSharedOhosX64 成功）。
@@ -272,10 +259,10 @@ if (!androidOnly) {
             from(project.file("build/bin/ohosArm64/${type}Shared/libkn.so")) {
                 into("entry/libs/arm64-v8a/")
             }
-            val composeResourcePackage =
-                "${rootProject.name.lowercase()}.${project.name.lowercase()}.generated.resources"
-            from("src/commonMain/composeResources") {
-                into("entry/src/main/resources/rawfile/composeResources/$composeResourcePackage/")
+            harmonyResourceRoots.forEach { (pkg, dir) ->
+                from(dir) {
+                    into("entry/src/main/resources/rawfile/composeResources/$pkg/")
+                }
             }
         }
 
@@ -293,10 +280,10 @@ if (!androidOnly) {
             from(project.file("build/bin/ohosX64/${type}Shared/libkn.so")) {
                 into("entry/libs/x86_64/")
             }
-            val composeResourcePackage =
-                "${rootProject.name.lowercase()}.${project.name.lowercase()}.generated.resources"
-            from("src/commonMain/composeResources") {
-                into("entry/src/main/resources/rawfile/composeResources/$composeResourcePackage/")
+            harmonyResourceRoots.forEach { (pkg, dir) ->
+                from(dir) {
+                    into("entry/src/main/resources/rawfile/composeResources/$pkg/")
+                }
             }
         }
     }

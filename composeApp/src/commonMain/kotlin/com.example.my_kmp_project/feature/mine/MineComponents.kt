@@ -31,8 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.settings_personalized_settings_chevron_right
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.settings_personalized_settings_chevron_right
 import org.jetbrains.compose.resources.painterResource
 
 @Composable

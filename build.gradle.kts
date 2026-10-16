@@ -29,6 +29,23 @@ val libraryModulePaths: (Project) -> Boolean = { it.path.startsWith(":core:") ||
 subprojects {
     if (!libraryModulePaths(this)) return@subprojects
 
+    // 库模块的仓库顺序必须显式钉死，两个源各有对方没有的东西：
+    // - OHOS fork 独有坐标（org.jetbrains.androidx.lifecycle:lifecycle-common:2.9.4-0.3.0 这类）
+    //   只在 eazytec；阿里云对它是 socket/SSL 报错，而 Gradle 把传输错误判成整次解析失败、
+    //   不会接着试下一个仓库，所以 eazytec 必须排第一。
+    // - eazytec 不代理 AGP 二进制（aapt2 同样报 socket 错），所以把它对
+    //   com.android.tools.build 排除掉，让 aapt2 落到阿里云的 google 镜像。
+    // settings 的 dependencyResolutionManagement 默认 PREFER_PROJECT：工程级 repositories 生效。
+    repositories {
+        maven("https://maven.eazytec-cloud.com/nexus/repository/maven-public/") {
+            mavenContent { excludeGroup("com.android.tools.build") }
+        }
+        maven("https://maven.aliyun.com/repository/google")
+        maven("https://maven.aliyun.com/repository/public")
+        google()
+        mavenCentral()
+    }
+
     val skipNative = rootProject.findProperty("androidOnly")?.toString()?.toBoolean() == true
 
     // VersionCatalogsExtension 要到子工程自己求值时才注册，所以只能在回调体里取。

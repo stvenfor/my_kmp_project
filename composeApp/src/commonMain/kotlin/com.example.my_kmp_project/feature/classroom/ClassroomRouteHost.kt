@@ -44,10 +44,10 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.classroom_gift_claim_body
-import my_kmp_project.composeapp.generated.resources.classroom_homework_dubbing_body
-import my_kmp_project.composeapp.generated.resources.classroom_video_detail_body
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.classroom_gift_claim_body
+import my_kmp_project.core.design.generated.resources.classroom_homework_dubbing_body
+import my_kmp_project.core.design.generated.resources.classroom_video_detail_body
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import com.example.my_kmp_project.core.router.ClassroomRoutes

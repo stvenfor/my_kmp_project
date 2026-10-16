@@ -19,7 +19,7 @@
 - **R1** 非「我的」页 → 各端原生壳：Android Compose 壳 / iOS SwiftUI / OHOS ArkTS + `NativeFeatureCatalog`。
 - **R2** 「我的」二级及子页 → 三端共享 Compose 岛（`MineIsland` / `SecondaryRouteIsland`）。
 - **R3** 共享业务逻辑 → `commonMain` + expect/actual；页面状态机不默认算进 UI。
-- **R4** 单 `:composeApp` + `libkn.so`（OHOS）；不为拆模块破坏 OHOS 链接（core:* 已就位）。
+- **R4** 分层多模块（`core/*` 与 `feature/*` 与 `:composeApp` 同级注册）：feature 模块之间禁止相互依赖、按需引入、可独立跑单测；但 `libkn.so` / iOS framework 的**产出者仍只能是 `:composeApp`**，拆模块不得破坏 OHOS 链接与 `MainArkUIViewController` 符号。旧「单 `:composeApp`」口径自 2026-10-16 架构决策起作废。
 - **R5** 平台能力缺 → gap registry 登记 + blocker + follow_up；不得静默降级为完成。
 - **R6** Flutter 侧为 mock 的能力允许 KMP 同等 mock（深度对齐）过逻辑验收；真 SDK 另列。
 - **R7** `scripts/check-layer-deps.sh` 必须通过（层依赖门禁）。

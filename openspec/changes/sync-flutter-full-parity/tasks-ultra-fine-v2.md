@@ -327,6 +327,25 @@ SoT：Flutter commit `fc99691`（HEAD 前）；`features/home/lib/new_car_follow
 
 ---
 
+# P. 架构前置（用户决策 2026-10-16：feature 与 core 同级、feature 互不依赖、core 补持久化）
+
+M 段是「内容对齐」，P 段是「骨架对齐」：不先做 P，feature 拆出去的模块拿不到 `core.*`，只能反向依赖 `:composeApp`，R7 门禁立刻红。
+
+| ID | 范围 | 状态 | 出口证据 |
+|---|---|---|---|
+| P1 | 共享 KMP 接线：根 `build.gradle.kts` 的 `subprojects {}` 统一 target 集 / android 基础配置 / commonMain 公共依赖（**buildSrc 在本环境不可用**：`org.gradle.kotlin.kotlin-dsl` 在镜像里解析失败） | ✅ 完成 | 10 模块 × 5 目标编译通过 |
+| P2 | `core.*` 下沉为真模块：`base`/`analytics`/`storage`/`router`/`network`/`account`/`design`(+171 资源) / `platform` / `ui` | 🚧 进行中 | 资源归属 `:core:design`（`publicResClass=true`，包名 `my_kmp_project.core.design.generated.resources`，OHOS 走 `harmonyResourceRoots` 投递） |
+| P3 | `core:persistence`：把 KV 收成一个模块（multiplatform-settings，android/ios/ohosArm64；ohosX64 走文件回落），修掉 OHOS `/tmp` 重启丢数据（M8.5）；`:core:account` + `core.platform.StringListStore` 都改为消费它 | ⬜ 待做 | session/隐私同意/收藏列表读写三端同源测试 |
+| P4 | 17 个 `feature/` 目录（123 文件）按叶子优先拆 `:feature:*`：scan/web/content/live/classroom → media/community/friend/chat → pay/wallet/commerce/auth → mine/home | ⬜ 待做 | 每模块独立 `testDebugUnitTest`；R7 门禁含模块级检查 |
+| P5 | `:composeApp` 收窄为 app + shell + RouteHost 分发；`libkn.so`/framework 产出者仍只有 `:composeApp`；R4 口径已改写 | ⬜ 待做 | 门禁 + 三端可跑 |
+
+**已踩平的两个「拆了就红」坑（后续批次直接照抄结论）**：
+
+1. **`internal` 跨不过模块边界**。`core.design`（`DemoColors`/`MineTopBar`/`ImmersiveInsets`…8 个）与整个 `core.platform`、`core.ui` 原先全是 `internal`——在同模块内合法，拆出去后 29+29 个消费文件立刻 `Cannot access … it is internal`。下沉一个包之前先把它对外暴露的符号改 public（expect/actual 必须两侧一起改）。feature 拆分会是同一形态。
+2. **门禁必须按「全模块」写死不存在**。`scripts/verify-parity.sh` 的任务名不带冒号（`testDebugUnitTest`、`compileKotlinOhosArm64`…）＝ 在每个有该任务的子工程执行；JUnit XML 统计走全仓 `**/build/test-results/**`。写死 `:composeApp:` 会让新模块的编译与单测静默漏检——这就是之前「绿灯但其实没跑」的根因。
+
+---
+
 # 执行顺序与波次
 
 | Wave | 内容 | 出口门禁 |

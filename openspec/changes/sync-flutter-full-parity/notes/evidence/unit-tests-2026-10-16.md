@@ -2,7 +2,7 @@
 
 采集时间：2026-10-16；来源 = 最近一次未过滤的 testDebugUnitTest 运行。
 
-合计：**643 tests, 0 failures, 0 errors, 0 skipped**，63 个测试类。
+合计：**645 tests, 0 failures, 0 errors, 0 skipped**，64 个测试类。
 
 | 测试类 | tests | failures | errors | skipped |
 |---|---|---|---|---|
@@ -17,10 +17,6 @@
 | `com.example.my_kmp_project.component.realtime.RealtimeStartupGateTest` | 13 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.component.realtime.RealtimeStateAndTelemetryTest` | 10 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.component.realtime.ReconnectPolicyTest` | 8 | 0 | 0 | 0 |
-| `com.example.my_kmp_project.core.router.ProductRouteDispatchTest` | 5 | 0 | 0 | 0 |
-| `com.example.my_kmp_project.core.sse.AiSseDecoderTest` | 19 | 0 | 0 | 0 |
-| `com.example.my_kmp_project.core.sse.SseParserTest` | 21 | 0 | 0 | 0 |
-| `com.example.my_kmp_project.core.uuid.AppUuidTest` | 4 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.feature.ai.AiSseApiTest` | 6 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.feature.auth.AuthHttpDecisionTest` | 17 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.feature.auth.AuthSessionClearTest` | 6 | 0 | 0 | 0 |
@@ -58,6 +54,8 @@
 | `com.example.my_kmp_project.feature.pay.MembershipPayContractTest` | 18 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.feature.shell.SoftAuthPresenterTest` | 4 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.feature.wallet.WalletApiContractTest` | 13 | 0 | 0 | 0 |
+| `com.example.my_kmp_project.core.uuid.AppUuidTest` | 4 | 0 | 0 | 0 |
+| `com.example.my_kmp_project.core.design.DesignTokensSoTTest` | 2 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.core.network.ApiEnvelopeParserTest` | 13 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.core.network.AuthRefreshingApiClientTest` | 11 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.core.network.BackendHostPolicyTest` | 7 | 0 | 0 | 0 |
@@ -69,4 +67,6 @@
 | `com.example.my_kmp_project.core.network.realtime.RealtimeConfigAndCloseCodeTest` | 9 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.core.network.realtime.RealtimeEnvelopeTest` | 12 | 0 | 0 | 0 |
 | `com.example.my_kmp_project.core.network.realtime.RealtimeWsApiContractTest` | 16 | 0 | 0 | 0 |
-
+| `com.example.my_kmp_project.core.sse.AiSseDecoderTest` | 19 | 0 | 0 | 0 |
+| `com.example.my_kmp_project.core.sse.SseParserTest` | 21 | 0 | 0 | 0 |
+| `com.example.my_kmp_project.core.router.ProductRouteDispatchTest` | 5 | 0 | 0 | 0 |

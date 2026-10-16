@@ -57,13 +57,13 @@ import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.component.routing.CrossFeatureScreens
 import com.example.my_kmp_project.core.router.HomeRoutes
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.mall_detail_body
-import my_kmp_project.composeapp.generated.resources.mall_list_body
-import my_kmp_project.composeapp.generated.resources.mall_orders_body
-import my_kmp_project.composeapp.generated.resources.mine_address_edit_body
-import my_kmp_project.composeapp.generated.resources.mine_purchase_calculator_body
-import my_kmp_project.composeapp.generated.resources.wallet_body
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.mall_detail_body
+import my_kmp_project.core.design.generated.resources.mall_list_body
+import my_kmp_project.core.design.generated.resources.mall_orders_body
+import my_kmp_project.core.design.generated.resources.mine_address_edit_body
+import my_kmp_project.core.design.generated.resources.mine_purchase_calculator_body
+import my_kmp_project.core.design.generated.resources.wallet_body
 import org.jetbrains.compose.resources.painterResource
 import com.example.my_kmp_project.core.router.MineRoutes
 

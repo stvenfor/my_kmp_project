@@ -51,8 +51,8 @@ import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.home_banner_sot
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.home_banner_sot
 import org.jetbrains.compose.resources.painterResource
 import com.example.my_kmp_project.core.router.AiRoutes
 import com.example.my_kmp_project.core.router.ClassroomRoutes

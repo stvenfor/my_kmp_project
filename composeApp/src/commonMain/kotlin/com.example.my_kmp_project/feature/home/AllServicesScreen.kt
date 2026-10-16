@@ -41,8 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.ic_nav_back
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.ic_nav_back
 import org.jetbrains.compose.resources.painterResource
 
 /** Flutter `SliverGridDelegateWithFixedCrossAxisCount` childAspectRatio. */

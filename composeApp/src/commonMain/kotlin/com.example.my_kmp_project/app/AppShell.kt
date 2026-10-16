@@ -71,9 +71,9 @@ import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
 import com.example.my_kmp_project.feature.web.InAppWebScreen
 import kotlinx.coroutines.delay
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.bg_splash
-import my_kmp_project.composeapp.generated.resources.ic_splash_logo
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.bg_splash
+import my_kmp_project.core.design.generated.resources.ic_splash_logo
 import org.jetbrains.compose.resources.painterResource
 
 private enum class AppPhase {

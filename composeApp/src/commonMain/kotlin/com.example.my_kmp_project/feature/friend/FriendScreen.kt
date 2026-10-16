@@ -40,8 +40,8 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.community_avatar
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.community_avatar
 
 internal data class FriendItem(
     val id: String,

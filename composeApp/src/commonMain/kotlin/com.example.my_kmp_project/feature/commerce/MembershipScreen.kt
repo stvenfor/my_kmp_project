@@ -28,8 +28,8 @@ import com.example.my_kmp_project.component.pay.PayResult
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.launch
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.pay_membership_body
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.pay_membership_body
 import org.jetbrains.compose.resources.painterResource
 
 /**

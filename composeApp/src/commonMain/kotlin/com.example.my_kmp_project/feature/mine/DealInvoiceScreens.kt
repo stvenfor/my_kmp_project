@@ -35,8 +35,8 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import my_kmp_project.composeapp.generated.resources.Res
-import my_kmp_project.composeapp.generated.resources.deal_invoice_demo_body
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.deal_invoice_demo_body
 import org.jetbrains.compose.resources.painterResource
 
 /**
