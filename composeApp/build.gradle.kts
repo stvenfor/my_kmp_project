@@ -127,6 +127,7 @@ kotlin {
             implementation(libs.androidx.core.splashscreen)
         }
         commonMain.dependencies {
+            implementation(projects.component)
             implementation(projects.core.network)
             implementation(projects.core.account)
             implementation(projects.core.router)

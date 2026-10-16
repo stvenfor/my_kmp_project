@@ -16,6 +16,7 @@ kotlin {
         getByName("commonMain").dependencies {
             api(projects.core.design)
             api(projects.core.account)
+            implementation(projects.core.storage)
             api(compose.runtime)
             api(compose.foundation)
             api(compose.material3)

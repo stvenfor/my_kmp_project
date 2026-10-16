@@ -50,7 +50,13 @@ com.example.my_kmp_project
 | Source set | Module | Used by | Purpose |
 |------------|--------|---------|---------|
 | `networkKtorMain` | `:core:network` | android + ios + **ohosArm64** | Shared Ktor `ApiClient` (OkHttp / Darwin / CIO) |
-| `accountSettingsMain` | `:core:account` | android + ios | multiplatform-settings KV |
+| `settingsMain` | `:core:storage` | android + ios | multiplatform-settings KV behind `KeyValueStore` |
+
+- **KV / persistence:** `:core:storage` owns the only KV contract (`KeyValueStore`,
+  `createKeyValueStore(name)`). `:core:account` (session + privacy consent) and
+  `core.platform` (favorites / Mine prefs / IM session id) consume it; neither implements
+  persistence. **OHOS both arches** use the `OH_Preferences` NDK API directly (durable app
+  sandbox, replaces the old `/tmp` file actuals); Android/iOS use `multiplatform-settings`.
 
 - **ohosArm64:** `KtorApiClient` + CIO (CPF Ktor `3.3.3-0.3.0`; HTTPS gate passed; cinterop retired on this target).
 - **ohosX64:** no CPF Ktor `ohosX64` klib — `OhosApiClient` + `net_http` cinterop only.

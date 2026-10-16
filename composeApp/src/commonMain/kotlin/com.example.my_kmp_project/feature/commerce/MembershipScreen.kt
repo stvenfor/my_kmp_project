@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.app.AppContainer
+import com.example.my_kmp_project.component.pay.FlaggedPayGateway
 import com.example.my_kmp_project.component.pay.PayChannel
 import com.example.my_kmp_project.component.pay.PayGateway
 import com.example.my_kmp_project.component.pay.PayResult
@@ -39,7 +39,7 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 internal fun MembershipScreen(
     onBack: () -> Unit,
-    gateway: PayGateway = AppContainer.get().bridges.pay,
+    gateway: PayGateway = FlaggedPayGateway(),
 ) {
     ReportMainTabRoot(isRoot = false)
     val scope = rememberCoroutineScope()

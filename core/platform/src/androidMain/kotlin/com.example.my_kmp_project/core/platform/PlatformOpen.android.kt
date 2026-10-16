@@ -10,10 +10,10 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
-import com.example.my_kmp_project.core.account.AndroidAccountContext
+import com.example.my_kmp_project.core.storage.AndroidAppContext
 
 actual fun openUrl(url: String) {
-    val ctx = AndroidAccountContext.applicationContext ?: return
+    val ctx = AndroidAppContext.applicationContext ?: return
     runCatching {
         ctx.startActivity(
             Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
@@ -22,13 +22,13 @@ actual fun openUrl(url: String) {
 }
 
 actual fun copyToClipboard(text: String) {
-    val ctx = AndroidAccountContext.applicationContext ?: return
+    val ctx = AndroidAppContext.applicationContext ?: return
     val clipboard = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
     clipboard.setPrimaryClip(ClipData.newPlainText("text", text))
 }
 
 actual fun showPlatformToast(message: String) {
-    val ctx = AndroidAccountContext.applicationContext ?: return
+    val ctx = AndroidAppContext.applicationContext ?: return
     val text = message.trim()
     if (text.isEmpty()) return
     val show = {
@@ -42,7 +42,7 @@ actual fun showPlatformToast(message: String) {
 }
 
 actual fun openSystemNotificationSettings(): String? {
-    val ctx = AndroidAccountContext.applicationContext
+    val ctx = AndroidAppContext.applicationContext
         ?: return "无法打开系统通知设置（无 Application Context）"
     return runCatching {
         val intent = Intent().addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

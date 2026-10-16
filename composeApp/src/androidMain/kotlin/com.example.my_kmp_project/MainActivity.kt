@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.my_kmp_project.nativeshell.NativeAndroidApp
-import com.example.my_kmp_project.core.account.AndroidAccountContext
+import com.example.my_kmp_project.core.storage.AndroidAppContext
 import com.example.my_kmp_project.core.network.platformNetworkBootstrap
 import com.example.my_kmp_project.core.platform.AndroidActivityContext
 import com.example.my_kmp_project.core.router.acceptDeepLink
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        AndroidAccountContext.install(this)
+        AndroidAppContext.install(this)
         AndroidActivityContext.install(this)
         platformNetworkBootstrap()
         // 会话水合 + 401 静默刷新装机（幂等）；须早于任何业务请求。

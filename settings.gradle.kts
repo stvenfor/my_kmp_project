@@ -21,6 +21,7 @@ dependencyResolutionManagement {
 }
 
 include(":composeApp")
+include(":component")
 include(":core:network")
 include(":core:account")
 include(":core:router")

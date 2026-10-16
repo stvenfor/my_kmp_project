@@ -3,25 +3,13 @@ package com.example.my_kmp_project.core.platform
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-/** OHOS: process-memory until Preferences cinterop lands (Flutter SpUtils parity on Android/iOS). */
-private val ohosStringLists = mutableMapOf<String, List<String>>()
-private val ohosStrings = mutableMapOf<String, String>()
-
-actual fun loadStringList(key: String): List<String>? = ohosStringLists[key]
-
-actual fun saveStringList(key: String, values: List<String>) {
-    ohosStringLists[key] = values.toList()
-}
-
-actual fun loadString(key: String): String? = ohosStrings[key]
-
-actual fun saveString(key: String, value: String) {
-    ohosStrings[key] = value
-}
-
+/**
+ * KV lives in :core:storage now (see commonMain StringListStore.kt); only the local-date
+ * helper is platform-specific.
+ */
 @OptIn(ExperimentalTime::class)
 actual fun platformTodayYmd(): String {
-    // Approximate local day via UTC until OHOS calendar API is wired.
+    // Approximate local day via UTC until an OHOS calendar API is wired.
     val ms = Clock.System.now().toEpochMilliseconds()
     val days = ms / 86_400_000L
     var y = 1970

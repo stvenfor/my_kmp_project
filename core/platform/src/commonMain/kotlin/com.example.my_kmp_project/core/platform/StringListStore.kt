@@ -1,14 +1,34 @@
 package com.example.my_kmp_project.core.platform
 
-/** String-list KV for Flutter SpUtils-style favorites (key = home_favorite_service_ids_v2). */
-expect fun loadStringList(key: String): List<String>?
+import com.example.my_kmp_project.core.storage.createKeyValueStore
 
-expect fun saveStringList(key: String, values: List<String>)
+/**
+ * Flutter SpUtils-style platform preferences, on top of the single :core:storage KV contract.
+ *
+ * One named store ([PLATFORM_PREFS_NAME] -- the Android prefs file name already in use) holds
+ * the Home favorites, the Mine function order / dark mode / locale flags, the community
+ * convention acknowledgement and the IM session id, so all of them behave the same on
+ * Android, iOS and OHOS and none of them re-implements persistence.
+ *
+ * Absent vs empty matters: a null return means "the user never chose", which callers use to
+ * fall back to defaults, while an empty list is a real stored value.
+ */
+private const val PLATFORM_PREFS_NAME = "home_favorites"
+
+private val platformPrefsStore by lazy { createKeyValueStore(PLATFORM_PREFS_NAME) }
+
+fun loadStringList(key: String): List<String>? = platformPrefsStore.getStringList(key)
+
+fun saveStringList(key: String, values: List<String>) {
+    platformPrefsStore.putStringList(key, values)
+}
 
 /** Scalar string KV (Flutter SpUtils.getString / setString). */
-expect fun loadString(key: String): String?
+fun loadString(key: String): String? = platformPrefsStore.getString(key)
 
-expect fun saveString(key: String, value: String)
+fun saveString(key: String, value: String) {
+    platformPrefsStore.putString(key, value)
+}
 
 /** Local calendar yyyy-MM-dd (device timezone). */
 expect fun platformTodayYmd(): String

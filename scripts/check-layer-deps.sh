@@ -28,12 +28,13 @@ while IFS= read -r -d '' file; do
 done < <(find "$ROOT/composeApp/src" "$ROOT/feature" -name '*.kt' -print0 2>/dev/null)
 
 # ---- 2) lower layers must not import upward ----
-# 只看 core/ 与 component/ 两种形态：还在 :composeApp 里的包，以及已下沉的 core/* 模块。
+# 只看 core/ 与 component/ 两种形态：还在 :composeApp 里的包、已下沉的 core/* 模块，
+# 以及顶层 :component 模块（component/）。
 while IFS= read -r -d '' file; do
   while IFS= read -r line; do
     report "$file (lower layer) imports upward: $line"
   done < <(grep -E "^import $PKG\.(feature|app)\." "$file" || true)
-done < <(find "$ROOT/composeApp/src" "$ROOT/core" "$ROOT/feature" \
+done < <(find "$ROOT/composeApp/src" "$ROOT/core" "$ROOT/feature" "$ROOT/component" \
               \( -path '*/core/*' -o -path '*/component/*' \) -name '*.kt' -print0 2>/dev/null)
 
 # ---- 3) module-level: a feature module may not depend on a sibling feature module ----
@@ -49,6 +50,13 @@ while IFS= read -r -d '' gradle; do
     report "$gradle (core layer) depends on a feature module: ${line//[$'\t']/ }"
   done < <(grep -E 'projects\.feature\.' "$gradle" || true)
 done < <(find "$ROOT/core" -name build.gradle.kts -print0 2>/dev/null)
+
+# ---- 3c) the component module may not depend on feature modules either ----
+while IFS= read -r -d '' gradle; do
+  while IFS= read -r line; do
+    report "$gradle (component layer) depends on a feature module: ${line//[$'\t']/ }"
+  done < <(grep -E 'projects\.feature\.' "$gradle" || true)
+done < <(find "$ROOT/component" -name build.gradle.kts -print0 2>/dev/null)
 
 if [[ "$violations" -gt 0 ]]; then
   echo "Found $violations layer violation(s). Use app assembly + CrossFeatureScreens ports instead."

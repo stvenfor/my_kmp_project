@@ -48,7 +48,7 @@ Ruflo MCP (Cursor): `.cursor/mcp.json` → `npx -y ruflo@latest mcp start`. Heal
 | Source set | Used by | Purpose |
 |------------|---------|---------|
 | `networkKtorMain` | android + ios + ohosArm64 | Ktor client (OHOS: CIO; x64 still cinterop) |
-| `accountSettingsMain` | android + ios | `multiplatform-settings` session KV |
+| `settingsMain` | android + ios | `multiplatform-settings` KV behind `core.storage.KeyValueStore` (OHOS implements that interface on `OH_Preferences` instead — no settings line covers both Android and OHOS) |
 | `imageCoilMain` | android + ios + ohosArm64 | CPF Coil network images (`PlatformNetworkImage`; ohosX64 placeholder) |
 | `uuidCpfMain` | android + ios + ohosArm64 | CPF `com.benasher44:uuid` (`AppUuid`; ohosX64 stub) |
 
@@ -122,6 +122,8 @@ OHOS HTTP: **ohosArm64** = CPF Ktor `3.3.3-0.3.0` + **CIO** (HTTPS gate passed).
 OHOS images: **ohosArm64** = CPF Coil `3.3.0-0.3.0` via `imageCoilMain` + `coil-network-ktor3`. **ohosX64** = placeholder only (no Coil ohosX64 klib). See `openspec/changes/adopt-cpf-coil-image/`.
 
 OHOS UUID: **ohosArm64** = CPF `com.benasher44:uuid:0.8.4-1.0.0` via `uuidCpfMain` (`AppUuid`). **ohosX64** = stub actual (no uuid ohosX64 klib). See `openspec/changes/adopt-cpf-uuid/`.
+
+OHOS KV / persistence: `core.storage.KeyValueStore` is the only KV contract. **both OHOS arches** implement it directly on the `OH_Preferences` NDK API (`platform.ArkData.Preferences`, `-lohpreferences`), so session + privacy consent are durable in the app sandbox (M8.5 — the old `/tmp` file actuals are gone). Android / iOS use `multiplatform-settings` via `settingsMain`. Neither settings line can serve Android *and* OHOS: stock `1.3.0` has no ohos klib, the CPF `-0.3.0` line has no `multiplatform-settings-android` AAR (404). See `openspec/changes/unify-core-kv-storage/`.
 
 ## Conventions
 
