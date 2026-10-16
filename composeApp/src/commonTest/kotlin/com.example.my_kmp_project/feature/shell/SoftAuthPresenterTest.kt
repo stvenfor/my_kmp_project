@@ -1,8 +1,8 @@
 package com.example.my_kmp_project.feature.shell
 
 import com.example.my_kmp_project.core.router.MainTab
-import com.example.my_kmp_project.feature.auth.AuthGate
-import com.example.my_kmp_project.feature.auth.AuthSessionState
+import com.example.my_kmp_project.component.auth.AuthGate
+import com.example.my_kmp_project.component.auth.AuthSessionState
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

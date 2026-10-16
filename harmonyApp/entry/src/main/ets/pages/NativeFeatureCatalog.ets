@@ -138,11 +138,17 @@ export function resolveNativePath(raw: string): string {
     if (key.startsWith('/video/short/') || key === '/video/short') {
       return key === '/video/short' || key.startsWith('/video/short?') ? '/video/short' : key;
     }
+    if (key === '/live/room') {
+      return '/live/room';
+    }
     if (key.startsWith('/live')) {
       return '/live';
     }
     if (key.startsWith('/friend')) {
       return '/friend';
+    }
+    if (key === '/mall/orders/detail') {
+      return '/mall/orders/detail';
     }
     if (key.startsWith('/mall/orders')) {
       return '/mall/orders';
@@ -158,6 +164,9 @@ export function resolveNativePath(raw: string): string {
     }
     if (key.startsWith('/ai')) {
       return '/ai/stream';
+    }
+    if (key === '/music/now_playing') {
+      return '/music/now_playing';
     }
     if (key.startsWith('/music')) {
       return '/music/list';
@@ -510,11 +519,23 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   if (path === '/home/hot_rank_detail') {
     return 'hot_rank';
   }
+  if (path === '/home/used_car/detail') {
+    return 'used_car_detail';
+  }
+  if (path === '/home/used_car/create') {
+    return 'used_car_create';
+  }
   if (path === '/home/used_car' || path.startsWith('/home/used_car/')) {
     return 'used_car';
   }
+  if (path === '/home/ledger/detail') {
+    return 'ledger_detail';
+  }
   if (path === '/home/ledger' || path.startsWith('/home/ledger/')) {
     return 'ledger';
+  }
+  if (path === '/home/data_analytics/detail') {
+    return 'data_analytics_detail';
   }
   if (path === '/home/data_analytics' || path.startsWith('/home/data_analytics/')) {
     return 'data_analytics';
@@ -528,8 +549,20 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   if (path === '/home/club') {
     return 'club';
   }
+  if (path === '/home/after_sales/create') {
+    return 'after_sales_create';
+  }
+  if (path === '/home/after_sales/detail') {
+    return 'after_sales_detail';
+  }
   if (path === '/home/after_sales' || path.startsWith('/home/after_sales/')) {
     return 'after_sales';
+  }
+  if (path === '/home/new_car_follow/create') {
+    return 'new_car_follow_create';
+  }
+  if (path === '/home/new_car_follow/detail') {
+    return 'new_car_follow_detail';
   }
   if (path === '/home/new_car_follow' || path.startsWith('/home/new_car_follow/')) {
     return 'new_car_follow';
@@ -552,11 +585,17 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   if (path === '/friend' || path.startsWith('/friend/')) {
     return 'friend';
   }
+  if (path === '/live/room') {
+    return 'live_room';
+  }
   if (path === '/live' || path.startsWith('/live/')) {
     return 'live';
   }
   if (path === '/mall/detail') {
     return 'mall_detail';
+  }
+  if (path === '/mall/orders/detail') {
+    return 'mall_orders_detail';
   }
   if (path === '/mall/orders') {
     return 'mall_orders';
@@ -576,11 +615,29 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   if (path === '/video/short/help') {
     return 'short_help';
   }
+  if (path === '/video') {
+    return 'video_hub';
+  }
+  if (path.startsWith('/video/dubbing/videos/detail')) {
+    return 'dubbing_video_detail';
+  }
+  if (path.startsWith('/video/dubbing/videos')) {
+    return 'dubbing_videos';
+  }
+  if (path.startsWith('/video/dubbing/works/detail')) {
+    return 'dubbing_work_detail';
+  }
+  if (path.startsWith('/video/dubbing/works')) {
+    return 'dubbing_works';
+  }
   if (path === '/video/short' || path.startsWith('/video/')) {
     return 'short_video';
   }
   if (path === '/ai/stream' || path.startsWith('/ai/')) {
     return 'ai_stream';
+  }
+  if (path === '/music/now_playing') {
+    return 'music_now_playing';
   }
   if (path.startsWith('/music')) {
     return 'music';
@@ -593,6 +650,9 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   }
   if (path === '/scan' || path.startsWith('/scan')) {
     return 'scan';
+  }
+  if (path === '/community/convention') {
+    return 'community_convention';
   }
   // Catalog-backed generic native host (not Legacy SecondaryRouteIsland).
   return 'feature';

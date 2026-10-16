@@ -19,11 +19,34 @@ class ApiEnvelopeParserTest {
     }
 
     @Test
-    fun invalid_json_returns_not_network() {
+    fun bff_code_zero_is_success() {
+        // Go BFF `/api/v1` 成功码是 0（Dart result_model.dart:28），不是遗留表的 200。
+        val raw = """{"code":0,"message":"success","data":{"token":"abc"}}"""
+
+        @kotlinx.serialization.Serializable
+        data class Payload(val token: String = "")
+
+        val resp = ApiEnvelopeParser.parse(raw, parseData = { decodeEnvelopeData<Payload>(it) })
+        assertEquals(NetworkCodes.BFF_OK, resp.code)
+        assertTrue(resp.isSuccess)
+        assertEquals("abc", resp.data?.token)
+    }
+
+    @Test
+    fun invalid_json_returns_passthrough() {
         val resp = ApiEnvelopeParser.parse("not-json", parseData = { null })
-        assertEquals(NetworkCodes.NOT_NETWORK, resp.code)
+        assertEquals(NetworkCodes.PASSTHROUGH, resp.code)
+        assertTrue(!resp.isSuccess)
         assertEquals("响应格式错误", resp.message)
         assertNull(resp.data)
+    }
+
+    @Test
+    fun missing_code_is_not_success() {
+        // 缺 code 的合法 JSON 也不能算成功（Dart `code ?? -1`）。
+        val resp = ApiEnvelopeParser.parse("""{"message":"hi","data":1}""", parseData = { null })
+        assertEquals(NetworkCodes.PASSTHROUGH, resp.code)
+        assertTrue(!resp.isSuccess)
     }
 
     @Test
@@ -75,6 +98,59 @@ class ApiEnvelopeParserTest {
         val resp = ApiEnvelopeParser.parse(raw, parseData = { null })
         assertEquals(NetworkCodes.OK, resp.code)
         assertTrue(resp.isSuccess)
+    }
+
+    // ---- Flutter `forbidden_status_test.dart` parity (d7876a1) ----
+
+    @Test
+    fun http_403_invokes_forbidden_not_token_expired() {
+        var forbiddenCalls = 0
+        var expiredCalls = 0
+        val raw = """{"message":"无权限访问"}"""
+        val resp = ApiEnvelopeParser.parse(
+            raw = raw,
+            parseData = { null },
+            onTokenExpired = TokenExpiredHandler { expiredCalls++ },
+            businessHandlers = NetworkBusinessHandlers(onForbidden = { forbiddenCalls++ }),
+            httpStatus = NetworkCodes.FORBIDDEN,
+        )
+        assertEquals(NetworkCodes.FORBIDDEN, resp.code)
+        assertEquals(NetworkCodes.FORBIDDEN, resp.httpStatus)
+        assertEquals(1, forbiddenCalls)
+        assertEquals(0, expiredCalls)
+    }
+
+    @Test
+    fun business_code_403_invokes_forbidden_not_token_expired() {
+        var forbiddenCalls = 0
+        var expiredCalls = 0
+        val raw = """{"code":403,"message":"无权限","data":null}"""
+        val resp = ApiEnvelopeParser.parse(
+            raw = raw,
+            parseData = { null },
+            onTokenExpired = TokenExpiredHandler { expiredCalls++ },
+            businessHandlers = NetworkBusinessHandlers(onForbidden = { forbiddenCalls++ }),
+        )
+        assertEquals(NetworkCodes.FORBIDDEN, resp.code)
+        assertEquals(1, forbiddenCalls)
+        assertEquals(0, expiredCalls)
+    }
+
+    @Test
+    fun forbidden_is_not_token_expired_semantics() {
+        // 403 必须与 401 语义互斥：isSuccess=false，但不走 TokenExpired 分支。
+        val raw = """{"code":403,"message":"无权限","data":null}"""
+        val resp = ApiEnvelopeParser.parse(raw, parseData = { null })
+        assertEquals(NetworkCodes.FORBIDDEN, resp.code)
+        assertTrue(!resp.isSuccess)
+    }
+
+    @Test
+    fun http_status_propagates_into_response() {
+        val raw = """{"code":500,"message":"boom","data":null}"""
+        val resp = ApiEnvelopeParser.parse(raw, parseData = { null }, httpStatus = 500)
+        assertEquals(500, resp.code)
+        assertEquals(500, resp.httpStatus)
     }
 
     @Test

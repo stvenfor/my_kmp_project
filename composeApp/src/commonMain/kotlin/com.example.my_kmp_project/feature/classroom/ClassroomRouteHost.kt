@@ -50,24 +50,14 @@ import my_kmp_project.composeapp.generated.resources.classroom_homework_dubbing_
 import my_kmp_project.composeapp.generated.resources.classroom_video_detail_body
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
-internal object ClassroomRoutes {
-    const val MyClass = "/classroom/my_class"
-    const val HomeworkStats = "/classroom/homework_stats"
-    const val HomeworkTeacher = "/classroom/homework/detail_teacher"
-    const val HomeworkStudent = "/classroom/homework/detail_student"
-    const val HomeworkDubbing = "/classroom/homework/dubbing"
-    const val HomeworkReview = "/classroom/homework/review"
-    const val GiftClaim = "/classroom/gift/claim"
-    const val VideoDetail = "/classroom/video/detail"
-
-    fun fromLabel(label: String): String? = when (label.trim()) {
-        "我的课程", "课程", "课堂", "我的班级", "班级教学", "培训" -> MyClass
-        "作业统计" -> HomeworkStats
-        "领取礼品卡", "礼品卡" -> GiftClaim
-        else -> null
-    }
-}
 
 private data class HomeworkRow(val id: String, val title: String, val type: String, val due: String)
 

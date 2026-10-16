@@ -33,21 +33,24 @@ public object ApiEnvelopeParser {
                     code = NetworkCodes.EXPIRE_TOKEN,
                     message = message,
                     raw = raw,
+                    httpStatus = httpStatus,
                 )
             }
         }
 
         if (envelope == null) {
             return ApiResponse(
-                code = httpStatus?.takeIf { it >= 400 } ?: NetworkCodes.NOT_NETWORK,
+                // 非信封体（畸形 JSON / 静态页 / 网关 HTML）：Dart 缺 code 记 -1，不可当成功。
+                code = httpStatus?.takeIf { it >= 400 } ?: NetworkCodes.PASSTHROUGH,
                 message = "响应格式错误",
                 raw = raw,
+                httpStatus = httpStatus,
             )
         }
 
         val code = envelope.code
             ?: httpStatus?.takeIf { it >= 400 }
-            ?: NetworkCodes.NOT_NETWORK
+            ?: NetworkCodes.PASSTHROUGH
         val message = envelope.message?.takeIf { it.isNotBlank() }
             ?: envelope.oauthOrMessage()
         val dataElement = envelope.dataOrNull()
@@ -73,6 +76,11 @@ public object ApiEnvelopeParser {
                 val err = NetworkError.Business(code, message ?: "账号无效")
                 businessHandlers?.onInvalidAccount?.invoke(err)
             }
+            NetworkCodes.FORBIDDEN -> {
+                // 403（业务码或 HTTP 回退）：无权限，不登出、不刷新（Flutter d7876a1）。
+                val err = NetworkError.Business(code, message ?: "无权限")
+                businessHandlers?.onForbidden?.invoke(err)
+            }
         }
 
         return ApiResponse(
@@ -80,6 +88,7 @@ public object ApiEnvelopeParser {
             message = message,
             data = parseData(dataElement),
             raw = raw,
+            httpStatus = httpStatus,
         )
     }
 

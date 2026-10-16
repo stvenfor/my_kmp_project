@@ -64,25 +64,14 @@ import my_kmp_project.composeapp.generated.resources.community_convention_body
 import my_kmp_project.composeapp.generated.resources.community_post_a
 import my_kmp_project.composeapp.generated.resources.ic_nav_back
 import org.jetbrains.compose.resources.painterResource
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
-internal object CommunityRoutes {
-    const val Publish = "/community/publish"
-    const val Search = "/community/search"
-    const val Convention = "/community/convention"
-    const val ImagePreview = "/community/image_preview"
-    const val VideoPlay = "/community/video_play"
-    const val TopicSelect = "/community/topic_select"
-    const val Comment = "/community/comment"
-
-    fun fromLabel(label: String): String? = when (label.trim()) {
-        "发布动态", "社区发布" -> Publish
-        "社区搜索" -> Search
-        "社区公约" -> Convention
-        "话题选择" -> TopicSelect
-        "评论", "社区评论" -> Comment
-        else -> null
-    }
-}
 
 /** In-memory publish bridge — topic pick + last publish for feed ingest. */
 internal object CommunityPublishBus {

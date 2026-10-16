@@ -1,8 +1,8 @@
 package com.example.my_kmp_project.feature.shell
 
+import com.example.my_kmp_project.component.auth.AuthGate
+import com.example.my_kmp_project.component.auth.AuthSessionState
 import com.example.my_kmp_project.core.router.MainTab
-import com.example.my_kmp_project.feature.auth.AuthGate
-import com.example.my_kmp_project.feature.auth.AuthSessionState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

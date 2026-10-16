@@ -4224,3 +4224,574 @@ enum HomeNativeMock {
         ("🎧", "听力练习", "英美绕口令 · 5题", "14:00", "5 min", false),
     ]
 }
+
+// MARK: - W5.i 子路由专属页面（消除 genericList 占位，见 tasks-ultra-fine.md R2/W5.i.1–4）
+
+/// `/home/used_car/detail` — 复用 NativeUsedCarPage 数据（HomeSecondaryMock.usedCarOrders[0]）
+struct NativeUsedCarDetailPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.043, green: 0.431, blue: 0.310)
+    private let ink = Color(red: 0.110, green: 0.141, blue: 0.188)
+    private let bg = Color(red: 0.953, green: 0.961, blue: 0.973)
+    private let detail: [(label: String, value: String)] = [
+        ("业务类型", "置换"),
+        ("当前状态", "待审核"),
+        ("登记日期", "2026-09-22"),
+        ("车型", "2021 帝豪"),
+        ("车牌", "京A·88X21"),
+        ("客户", "张先生"),
+        ("评估价", "¥86,000"),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(accent) }
+                Text("二手车详情", font: .system(size: 17, weight: .semibold), color: ink)
+                Spacer()
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background(Color.white)
+
+            ScrollView {
+                VStack(spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("2021 帝豪", font: .system(size: 20, weight: .bold), color: .white)
+                            Text("京A·88X21", font: .system(size: 13), color: .white.opacity(0.85))
+                        }
+                        Spacer()
+                        Text("待审核", font: .system(size: 13, weight: .semibold), color: .white)
+                            .padding(.horizontal, 10).padding(.vertical, 5)
+                            .background(Color.white.opacity(0.2), in: Capsule())
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(accent, in: RoundedRectangle(cornerRadius: 16))
+                    .padding(.horizontal, 16).padding(.top, 12)
+
+                    ForEach(detail.indices, id: \.self) { i in
+                        let row = detail[i]
+                        HStack {
+                            Text(row.label, font: .system(size: 14), color: DesignTokens.mute)
+                            Spacer()
+                            Text(row.value, font: .system(size: 15, weight: .medium), color: ink)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("跟进备注", font: .system(size: 14, weight: .semibold), color: ink)
+                        Text("客户意向置换，已安排评估师上门。等待店长审核后进入专卖流程。", font: .system(size: 13), color: DesignTokens.body)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal, 16)
+                }
+                .padding(.bottom, 24)
+            }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+/// `/home/used_car/create` — 新建业务单表单（mock 提交）
+struct NativeUsedCarCreatePage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.043, green: 0.431, blue: 0.310)
+    private let ink = Color(red: 0.110, green: 0.141, blue: 0.188)
+    private let bg = Color(red: 0.953, green: 0.961, blue: 0.973)
+    @State private var kind = "置换"
+    @State private var model = ""
+    @State private var plate = ""
+    @State private var customer = ""
+    @State private var amount = ""
+    @State private var submitted = false
+    private let kinds = ["置换", "专卖", "收车"]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(accent) }
+                Text("新建二手车单", font: .system(size: 17, weight: .semibold), color: ink)
+                Spacer()
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background(Color.white)
+
+            ScrollView {
+                VStack(spacing: 12) {
+                    HStack(spacing: 8) {
+                        ForEach(kinds, id: \.self) { k in
+                            Text(k, font: .system(size: 13, weight: kind == k ? .semibold : .regular), color: kind == k ? .white : ink)
+                                .padding(.horizontal, 14).padding(.vertical, 8)
+                                .background(kind == k ? accent : Color.white, in: Capsule())
+                                .onTapGesture { kind = k }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+
+                    field("车型", text: $model, placeholder: "如 2021 帝豪")
+                    field("车牌", text: $plate, placeholder: "如 京A·88X21")
+                    field("客户", text: $customer, placeholder: "客户姓名")
+                    field("估价 / 成交价", text: $amount, placeholder: "如 ¥86,000")
+
+                    if submitted {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill").foregroundStyle(accent)
+                            Text("已提交（演示）", font: .system(size: 14), color: accent)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                    }
+
+                    Button {
+                        submitted = true
+                    } label: {
+                        Text("提交业务单", font: .system(size: 16, weight: .semibold), color: .white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(accent, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                    .padding(16)
+                }
+                .padding(.top, 12).padding(.bottom, 24)
+            }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+
+    private func field(_ title: String, text: Binding<String>, placeholder: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title, font: .system(size: 13), color: DesignTokens.mute)
+            TextField(placeholder, text: text)
+                .textFieldStyle(.roundedBorder)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+    }
+}
+
+/// `/home/ledger/detail` — 复用 NativeLedgerPage 数据（HomeSecondaryMock.ledgerEntries[0]）
+struct NativeLedgerDetailPage: View {
+    var onClose: () -> Void
+    private let ink = Color(red: 0.110, green: 0.141, blue: 0.188)
+    private let bg = Color(red: 0.953, green: 0.961, blue: 0.973)
+    private let accent = Color(red: 0.043, green: 0.431, blue: 0.310)
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(accent) }
+                Text("台账详情", font: .system(size: 17, weight: .semibold), color: ink)
+                Spacer()
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background(Color.white)
+
+            ScrollView {
+                VStack(spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("新车定金", font: .system(size: 20, weight: .bold), color: ink)
+                            Text("收入 · 2026-09-24", font: .system(size: 13), color: DesignTokens.mute)
+                        }
+                        Spacer()
+                        Text("+¥5,000.00", font: .system(size: 20, weight: .bold), color: accent)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
+                    .padding(.horizontal, 16).padding(.top, 12)
+
+                    let rows: [(String, String)] = [("类型", "收入"), ("日期", "2026-09-24"), ("经手人", "演示顾问"), ("备注", "客户定金，等待合同签署")]
+                    ForEach(rows.indices, id: \.self) { i in
+                        let row = rows[i]
+                        HStack {
+                            Text(row.0, font: .system(size: 14), color: DesignTokens.mute)
+                            Spacer()
+                            Text(row.1, font: .system(size: 15, weight: .medium), color: ink)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                    }
+                }
+                .padding(.bottom, 24)
+            }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+/// `/home/data_analytics/detail` — 复用 NativeDataAnalyticsPage 指标
+struct NativeDataAnalyticsDetailPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.0, green: 0.44, blue: 0.95)
+    private let ink = Color(red: 0.110, green: 0.141, blue: 0.188)
+    private let bg = Color(red: 0.953, green: 0.961, blue: 0.973)
+    private let metrics: [(name: String, value: String, ratio: Double)] = [
+        ("线索转化", "12.4%", 0.62),
+        ("试驾到店", "86", 0.43),
+        ("直播线索", "异常↓", 0.18),
+    ]
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(accent) }
+                Text("数据分析详情", font: .system(size: 17, weight: .semibold), color: ink)
+                Spacer()
+            }
+            .padding(.horizontal, 16).padding(.vertical, 12)
+            .background(Color.white)
+
+            ScrollView {
+                VStack(spacing: 12) {
+                    Text("本周门店经营概览", font: .system(size: 14), color: DesignTokens.mute)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16).padding(.top, 8)
+                    ForEach(metrics.indices, id: \.self) { i in
+                        let item = metrics[i]
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text(item.name, font: .system(size: 15, weight: .medium), color: ink)
+                                Spacer()
+                                Text(item.value, font: .system(size: 15, weight: .semibold), color: accent)
+                            }
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 6).fill(Color(red: 0.91, green: 0.925, blue: 0.941))
+                                    RoundedRectangle(cornerRadius: 6).fill(accent)
+                                        .frame(width: geo.size.width * CGFloat(item.ratio))
+                                }
+                                .frame(height: 10)
+                            }
+                            .frame(height: 10)
+                        }
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        .padding(.horizontal, 16)
+                    }
+                }
+                .padding(.bottom, 24)
+            }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// MARK: - 子路由页面共享辅助（W5.i.5–15）
+
+private func subRouteHeader(_ title: String, accent: Color, ink: Color, onClose: @escaping () -> Void) -> some View {
+    HStack {
+        Button { onClose() } label: { Image(systemName: "chevron.left").foregroundStyle(accent) }
+        Text(title, font: .system(size: 17, weight: .semibold), color: ink)
+        Spacer()
+    }
+    .padding(.horizontal, 16).padding(.vertical, 12)
+    .background(Color.white)
+}
+
+private func labeledField(_ title: String, text: Binding<String>, placeholder: String) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+        Text(title, font: .system(size: 13), color: DesignTokens.mute)
+        TextField(placeholder, text: text).textFieldStyle(.roundedBorder)
+    }
+    .padding(14).frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+    .padding(.horizontal, 16)
+}
+
+private func pickerRow(_ title: String, options: [String], selection: Binding<String>, accent: Color, ink: Color) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+        Text(title, font: .system(size: 13), color: DesignTokens.mute)
+        HStack(spacing: 8) {
+            ForEach(options, id: \.self) { opt in
+                Text(opt, font: .system(size: 13, weight: selection.wrappedValue == opt ? .semibold : .regular), color: selection.wrappedValue == opt ? accent : ink)
+                    .padding(.horizontal, 14).padding(.vertical, 8)
+                    .background(selection.wrappedValue == opt ? accent.opacity(0.08) : Color.white, in: Capsule())
+                    .onTapGesture { selection.wrappedValue = opt }
+            }
+        }
+    }
+    .padding(14).frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+    .padding(.horizontal, 16)
+}
+
+private func infoRow(_ label: String, _ value: String, ink: Color) -> some View {
+    HStack {
+        Text(label, font: .system(size: 14), color: DesignTokens.mute)
+        Spacer()
+        Text(value, font: .system(size: 15, weight: .medium), color: ink)
+    }
+    .padding(14).frame(maxWidth: .infinity)
+    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+    .padding(.horizontal, 16)
+}
+
+// W5.i.5 `/home/new_car_follow/create`
+struct NativeNewCarFollowCreatePage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.231, green: 0.549, blue: 1.0)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    @State private var name = ""; @State private var phone = ""; @State private var vehicle = ""; @State private var stage = "跟进中"; @State private var intent = "高"; @State private var submitted = false
+    private let stages = ["跟进中","报价","试驾","成交"]; private let intents = ["高","中","低"]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("新建跟进", accent: accent, ink: ink, onClose: onClose)
+            ScrollView {
+                VStack(spacing: 12) {
+                    labeledField("客户姓名", text: $name, placeholder: "如 孙某")
+                    labeledField("手机号", text: $phone, placeholder: "138****0000")
+                    labeledField("意向车型", text: $vehicle, placeholder: "如 银河 L7")
+                    pickerRow("阶段", options: stages, selection: $stage, accent: accent, ink: ink)
+                    pickerRow("意向等级", options: intents, selection: $intent, accent: accent, ink: ink)
+                    if submitted {
+                        HStack(spacing: 6) { Image(systemName: "checkmark.circle.fill").foregroundStyle(accent); Text("已提交（演示）", font: .system(size: 14), color: accent) }
+                            .padding(14).frame(maxWidth: .infinity, alignment: .leading).background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16)
+                    }
+                    Button { submitted = true } label: { Text("提交跟进", font: .system(size: 16, weight: .semibold), color: .white).frame(maxWidth: .infinity).padding(.vertical, 14).background(accent, in: RoundedRectangle(cornerRadius: 12)) }.padding(16)
+                }.padding(.top, 12).padding(.bottom, 24)
+            }.background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.6 `/home/new_car_follow/detail`
+struct NativeNewCarFollowDetailPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.231, green: 0.549, blue: 1.0)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let rows: [(String,String)] = [("客户","孙某"),("手机","138****2101"),("车型","银河 L7"),("阶段","跟进中"),("意向","高"),("下次跟进","今日 15:00")]
+    private let timeline: [(String,String)] = [("09-18","首次到店试驾 银河 L7"),("09-20","微信发送配置单"),("09-22","电话沟通金融方案")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("跟进详情", accent: accent, ink: ink, onClose: onClose)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(rows.indices, id: \.self) { i in infoRow(rows[i].0, rows[i].1, ink: ink) }
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("跟进流水", font: .system(size: 14, weight: .semibold), color: ink)
+                        ForEach(timeline.indices, id: \.self) { i in
+                            let t = timeline[i]
+                            HStack(alignment: .top, spacing: 10) {
+                                Text(t.0, font: .system(size: 12), color: DesignTokens.mute).frame(width: 42, alignment: .leading)
+                                Text(t.1, font: .system(size: 13), color: ink)
+                                Spacer()
+                            }
+                        }
+                    }
+                    .padding(14).frame(maxWidth: .infinity, alignment: .leading).background(Color.white, in: RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16)
+                }.padding(.top, 12).padding(.bottom, 24)
+            }.background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.7 `/home/after_sales/create`
+struct NativeAfterSalesCreatePage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.0, green: 0.7, blue: 0.55)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    @State private var vehicle = ""; @State private var type = "小保养"; @State private var desc = ""; @State private var submitted = false
+    private let types = ["小保养","钣喷","四轮定位","机电维修"]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("新建工单", accent: accent, ink: ink, onClose: onClose)
+            ScrollView {
+                VStack(spacing: 12) {
+                    labeledField("车牌", text: $vehicle, placeholder: "京A·12345")
+                    pickerRow("工单类型", options: types, selection: $type, accent: accent, ink: ink)
+                    labeledField("问题描述", text: $desc, placeholder: "描述故障或需求")
+                    if submitted { HStack(spacing: 6){ Image(systemName:"checkmark.circle.fill").foregroundStyle(accent); Text("已提交（演示）", font: .system(size: 14), color: accent) }.padding(14).frame(maxWidth: .infinity, alignment: .leading).background(accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16) }
+                    Button { submitted = true } label: { Text("提交工单", font: .system(size: 16, weight: .semibold), color: .white).frame(maxWidth: .infinity).padding(.vertical, 14).background(accent, in: RoundedRectangle(cornerRadius: 12)) }.padding(16)
+                }.padding(.top, 12).padding(.bottom, 24)
+            }.background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.8 `/home/after_sales/detail`
+struct NativeAfterSalesDetailPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.0, green: 0.7, blue: 0.55)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let rows: [(String,String)] = [("车牌","京A·12345"),("类型","小保养"),("状态","完成"),("日期","2026-09-20"),("技师","小刘"),("备注","常规保养，已交车")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("售后详情", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 12){ ForEach(rows.indices, id: \.self){ i in infoRow(rows[i].0, rows[i].1, ink: ink) } }.padding(.top, 12).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.9 `/mall/orders/detail`
+struct NativeMallOrderDetailPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.0, green: 0.7, blue: 0.55)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let rows: [(String,String)] = [("订单号","A1024"),("状态","待发货"),("金额","¥399"),("商品","行车记录仪 Pro"),("数量","1"),("收货","北京市大兴区")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("订单详情", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 12){ ForEach(rows.indices, id: \.self){ i in infoRow(rows[i].0, rows[i].1, ink: ink) } }.padding(.top, 12).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.10 `/video/dubbing/videos` + `/videos/detail`
+struct NativeDubbingVideosPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let items: [(String,String,String)] = [("小王子 · 片段 3","难度初级 · 女声","0:45"),("飞屋环游记 · OP","难度中级 · 男声","1:12")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("配音视频", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 8){ ForEach(items.indices, id: \.self){ i in let it = items[i]; HStack{ RoundedRectangle(cornerRadius: 10).fill(accent.opacity(0.12)).frame(width: 56, height: 56).overlay(Text("▶", color: accent)); VStack(alignment: .leading, spacing: 4){ Text(it.0, font: .system(size: 15, weight: .semibold), color: ink); Text(it.1, font: .system(size: 12), color: DesignTokens.mute) }; Spacer(); Text(it.2, font: .system(size: 12), color: DesignTokens.mute) }.padding(12).background(Color.white, in: RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16) } }.padding(.top, 12).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeDubbingVideoDetailPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let rows: [(String,String)] = [("素材","小王子 · 片段 3"),("难度","初级"),("音色","女声"),("时长","0:45"),("进度","已完成 86%")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("配音详情", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 12){ ForEach(rows.indices, id: \.self){ i in infoRow(rows[i].0, rows[i].1, ink: ink) } }.padding(.top, 12).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.11 `/video/dubbing/works` + `/works/detail`
+struct NativeDubbingWorksPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let items: [(String,String)] = [("我的配音作品 · 小王子","2.1k 播放 · 186 赞"),("练习作品 · 飞屋","980 播放")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("我的作品", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 8){ ForEach(items.indices, id: \.self){ i in let it = items[i]; HStack{ RoundedRectangle(cornerRadius: 10).fill(accent.opacity(0.12)).frame(width: 56, height: 56).overlay(Text("▶", color: accent)); VStack(alignment: .leading, spacing: 4){ Text(it.0, font: .system(size: 15, weight: .semibold), color: ink); Text(it.1, font: .system(size: 12), color: DesignTokens.mute) } } .padding(12).background(Color.white, in: RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16) } }.padding(.top, 12).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+struct NativeDubbingWorkDetailPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let rows: [(String,String)] = [("作品","我的配音作品 · 小王子"),("时长","0:45"),("播放","2.1k"),("赞","186")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("作品详情", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 12){ ForEach(rows.indices, id: \.self){ i in infoRow(rows[i].0, rows[i].1, ink: ink) } }.padding(.top, 12).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.12 `/community/convention`
+struct NativeCommunityConventionPage: View {
+    var onClose: () -> Void
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let paras: [(String,String)] = [("社区公约","欢迎来到社区，请文明交流，尊重彼此。"),("内容规范","禁止发布违法违规、低俗、广告引流内容。"),("互动礼仪","友善评论，不人身攻击，不引战。"),("违规处理","违规行为将被删除，严重者封禁账号。")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("社区公约", accent: DesignTokens.link, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 12){ ForEach(paras.indices, id: \.self){ i in let p = paras[i]; VStack(alignment: .leading, spacing: 6){ Text(p.0, font: .system(size: 15, weight: .semibold), color: ink); Text(p.1, font: .system(size: 13), color: DesignTokens.body) }.padding(14).frame(maxWidth: .infinity, alignment: .leading).background(Color.white, in: RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16) } }.padding(.top, 12).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.13 `/live/room`
+struct NativeLiveRoomPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.85, green: 0.2, blue: 0.2)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("直播间", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 12){ RoundedRectangle(cornerRadius: 16).fill(accent.opacity(0.12)).frame(height: 180).overlay(Text("直播画面（演示）", color: accent, font: .system(size: 15, weight: .semibold))).padding(.horizontal, 16).padding(.top, 12); infoRow("主播","沃德龙鼎直播间", ink: ink); infoRow("在线","326 人", ink: ink); infoRow("主题","讲解新车 · 限时权益", ink: ink) }.padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.14 `/music/now_playing`
+struct NativeMusicNowPlayingPage: View {
+    var onClose: () -> Void
+    private let accent = Color(red: 0.0, green: 0.44, blue: 0.95)
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("正在播放", accent: accent, ink: ink, onClose: onClose)
+            ScrollView { VStack(spacing: 16){ RoundedRectangle(cornerRadius: 20).fill(accent.opacity(0.12)).frame(width: 200, height: 200).overlay(Text("♪", color: accent, font: .system(size: 64))).padding(.top, 16); Text("Night Drive", font: .system(size: 20, weight: .bold), color: ink); Text("3:28", font: .system(size: 14), color: DesignTokens.mute); HStack(spacing: 40){ Image(systemName: "backward.fill").foregroundStyle(accent); Image(systemName: "play.circle.fill").font(.system(size: 44)).foregroundStyle(accent); Image(systemName: "forward.fill").foregroundStyle(accent) }.padding(.top, 8) }.padding(.horizontal, 16).padding(.bottom, 24) }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}
+
+// W5.i.15 `/video` Hub
+struct NativeVideoHubPage: View {
+    var onClose: () -> Void
+    var onOpen: ((String) -> Void)? = nil
+    private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
+    private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
+    private let tiles: [(String,String)] = [("短视频","/video/short"),("配音视频","/video/dubbing/videos"),("我的作品","/video/dubbing/works")]
+    var body: some View {
+        VStack(spacing: 0) {
+            subRouteHeader("视频", accent: DesignTokens.link, ink: ink, onClose: onClose)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(tiles.indices, id: \.self) { i in
+                        let t = tiles[i]
+                        Button(action: { onOpen?(t.1) }) {
+                            HStack {
+                                Text(t.0, font: .system(size: 16, weight: .semibold), color: ink)
+                                Spacer()
+                                Image(systemName: "chevron.right").foregroundStyle(DesignTokens.mute)
+                            }
+                            .padding(16)
+                            .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                            .padding(.horizontal, 16)
+                        }
+                    }
+                }
+                .padding(.top, 12)
+                .padding(.bottom, 24)
+            }
+            .background(bg.ignoresSafeArea())
+        }
+    }
+}

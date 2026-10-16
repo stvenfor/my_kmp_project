@@ -1,6 +1,6 @@
 package com.example.my_kmp_project.feature.shell
 
-import com.example.my_kmp_project.feature.mine.MineIslandRoute
+import com.example.my_kmp_project.core.router.MineIslandRoute
 
 /**
  * Harmony ArkTS sets this before creating MainArkUIViewController.

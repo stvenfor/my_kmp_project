@@ -9,6 +9,9 @@ import kotlinx.serialization.encodeToString
 public data class AccountUserSnapshot(
     val userId: String? = null,
     val token: String? = null,
+    val refreshToken: String? = null,
+    val sessionId: String? = null,
+    val deviceId: String? = null,
     val nickname: String? = null,
     val avatarUrl: String? = null,
     val phone: String? = null,
@@ -23,6 +26,9 @@ public data class AccountUserSnapshot(
             LoggedInUser(
                 displayName = nickname,
                 token = token.orEmpty(),
+                refreshToken = refreshToken.orEmpty(),
+                sessionId = sessionId.orEmpty(),
+                deviceId = deviceId.orEmpty(),
                 userId = userId,
                 avatarUrl = avatarUrl,
                 phone = phone,
@@ -40,6 +46,9 @@ public data class AccountUserSnapshot(
             return AccountUserSnapshot(
                 userId = session.userId,
                 token = session.token,
+                refreshToken = session.refreshToken,
+                sessionId = session.sessionId,
+                deviceId = session.deviceId,
                 nickname = session.displayName,
                 avatarUrl = session.avatarUrl,
                 phone = session.phone,

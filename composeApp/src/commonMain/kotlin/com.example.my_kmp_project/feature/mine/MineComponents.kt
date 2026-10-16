@@ -1,4 +1,5 @@
 package com.example.my_kmp_project.feature.mine
+import com.example.my_kmp_project.core.design.MineIcons
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

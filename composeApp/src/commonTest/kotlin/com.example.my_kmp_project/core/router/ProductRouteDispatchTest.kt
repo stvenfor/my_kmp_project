@@ -1,7 +1,5 @@
 package com.example.my_kmp_project.core.router
 
-import com.example.my_kmp_project.feature.home.HomeRoutes
-import com.example.my_kmp_project.feature.mine.MineRoutes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

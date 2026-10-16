@@ -9,6 +9,7 @@ on:
       - "core/**"
       - "ohosAggregate/**"
       - "gradle/**"
+      - "scripts/**"
       - "*.gradle.kts"
       - "gradle.properties"
       - "gradlew"
@@ -21,6 +22,7 @@ on:
       - "core/**"
       - "ohosAggregate/**"
       - "gradle/**"
+      - "scripts/**"
       - "*.gradle.kts"
       - "gradle.properties"
       - "gradlew"
@@ -64,10 +66,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       # Single Gradle invocation: gate + produce the debug APK used for CD.
+      - name: Architecture gate (no feature→feature imports)
+        run: bash scripts/check-layer-deps.sh
+
       - name: Assemble debug & unit tests
         run: |
           set -o pipefail
-          ./gradlew :composeApp:assembleDebug :composeApp:testDebugUnitTest \
+          ./gradlew :composeApp:assembleDebug :composeApp:testDebugUnitTest :core:network:testDebugUnitTest \
             -PandroidOnly=true --no-daemon --stacktrace 2>&1 | tee gradle-ci.log
 
       - name: Summarize Gradle failure
@@ -92,6 +97,7 @@ jobs:
             gradle-ci.log
             composeApp/build/reports/tests/
             composeApp/build/test-results/
+            core/network/build/test-results/
           if-no-files-found: ignore
           retention-days: 7
 

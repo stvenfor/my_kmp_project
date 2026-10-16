@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.feature.auth
 
+import com.example.my_kmp_project.component.auth.AuthSessionState
 import com.example.my_kmp_project.core.account.AccountFacade
 import com.example.my_kmp_project.core.account.LoggedInUser
 import kotlinx.coroutines.CoroutineScope
@@ -33,12 +34,18 @@ object AuthBridge {
         displayName: String,
         phone: String? = null,
         email: String? = null,
+        refreshToken: String = "",
+        sessionId: String = "",
+        deviceId: String = "",
     ) {
         if (token.isBlank()) return
         AccountFacade.setSession(
             LoggedInUser(
                 displayName = displayName.ifBlank { "用户" },
                 token = token,
+                refreshToken = refreshToken,
+                sessionId = sessionId,
+                deviceId = deviceId,
                 userId = userId.ifBlank { displayName },
                 avatarUrl = null,
                 phone = phone,

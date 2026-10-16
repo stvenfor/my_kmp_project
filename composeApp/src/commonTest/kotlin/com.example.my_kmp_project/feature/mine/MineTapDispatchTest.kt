@@ -1,9 +1,10 @@
 package com.example.my_kmp_project.feature.mine
 
-import com.example.my_kmp_project.feature.home.HomeRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import com.example.my_kmp_project.core.router.MineRoutes
 
 /** Flutter MineController SoT — id-based tap dispatch. */
 class MineTapDispatchTest {

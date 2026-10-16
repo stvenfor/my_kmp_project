@@ -76,27 +76,14 @@ import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_09
 import my_kmp_project.composeapp.generated.resources.home_dubbing_home_cover_10
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import com.example.my_kmp_project.core.router.VideoRoutes
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
 
-/** Flutter `RoutePath` video graph — Android-first clickable mock. */
-internal object VideoRoutes {
-    const val Hub = "/video"
-    const val Short = "/video/short"
-    const val ShortPlay = "/video/short/play"
-    const val ShortPublish = "/video/short/publish"
-    const val ShortHelp = "/video/short/help"
-    const val DubbingVideos = "/video/dubbing/videos"
-    const val DubbingVideoDetail = "/video/dubbing/videos/detail"
-    const val DubbingWorks = "/video/dubbing/works"
-    const val DubbingWorkDetail = "/video/dubbing/works/detail"
-
-    fun fromLabel(label: String): String? = when (label.trim()) {
-        "视频", "视频中心", "Video", "视频号", "素材库", "视频列表" -> Hub
-        "小视频", "短视频" -> Short
-        "配音视频", "配音列表" -> DubbingVideos
-        "配音作品", "作品列表" -> DubbingWorks
-        else -> null
-    }
-}
 
 private data class ShortItem(
     val id: String,

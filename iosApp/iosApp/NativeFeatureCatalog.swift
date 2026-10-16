@@ -484,10 +484,14 @@ struct NativeFeatureHost: View {
             NativeCommunityCommentPage(onClose: onClose)
         } else if path == "/community/image_preview" {
             NativeCommunityImagePreviewPage(onClose: onClose)
+        } else if path == "/community/convention" {
+            NativeCommunityConventionPage(onClose: onClose)
         } else if path == "/mall/detail" {
             NativeMallDetailPage(onClose: onClose)
         } else if path == "/mall/orders" {
             NativeMallOrdersPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/mall/orders/detail" {
+            NativeMallOrderDetailPage(onClose: onClose)
         } else if path == "/mall" {
             NativeMallPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/wallet" {
@@ -500,8 +504,20 @@ struct NativeFeatureHost: View {
             NativeShortVideoHelpPage(onClose: onClose)
         } else if path == "/video/short" {
             NativeShortVideoPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/video/dubbing/videos" {
+            NativeDubbingVideosPage(onClose: onClose)
+        } else if path == "/video/dubbing/videos/detail" {
+            NativeDubbingVideoDetailPage(onClose: onClose)
+        } else if path == "/video/dubbing/works" {
+            NativeDubbingWorksPage(onClose: onClose)
+        } else if path == "/video/dubbing/works/detail" {
+            NativeDubbingWorkDetailPage(onClose: onClose)
+        } else if path == "/video" {
+            NativeVideoHubPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/live" {
             NativeLivePage(onClose: onClose)
+        } else if path == "/live/room" {
+            NativeLiveRoomPage(onClose: onClose)
         } else if path == "/home/live_commerce" || pathOrLabel == "直播带货" {
             // Flutter homeLiveCommerce → HomeClubTabContent (same as Club)
             NativeClubPage(title: "直播带货", onClose: onClose)
@@ -515,6 +531,8 @@ struct NativeFeatureHost: View {
             NativeCheckInMallPage(onClose: onClose)
         } else if path == "/music/list" {
             NativeMusicPage(onClose: onClose)
+        } else if path == "/music/now_playing" {
+            NativeMusicNowPlayingPage(onClose: onClose)
         } else if path == "/classroom/homework" || path == "/classroom/homework_stats" {
             NativeHomeworkStatsPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/classroom/homework/detail_teacher" {
@@ -533,8 +551,16 @@ struct NativeFeatureHost: View {
             NativeClassroomPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/used_car" {
             NativeUsedCarPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/used_car/detail" {
+            NativeUsedCarDetailPage(onClose: onClose)
+        } else if path == "/home/used_car/create" {
+            NativeUsedCarCreatePage(onClose: onClose)
         } else if path == "/home/new_car_follow" || pathOrLabel == "新车跟进" || pathOrLabel == "新车关注" {
             NativeNewCarFollowPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/new_car_follow/create" {
+            NativeNewCarFollowCreatePage(onClose: onClose)
+        } else if path == "/home/new_car_follow/detail" {
+            NativeNewCarFollowDetailPage(onClose: onClose)
         } else if path == "/home/club" || pathOrLabel == "Club" {
             NativeClubPage(title: "Club", onClose: onClose)
         } else if path == "/home/life_service" || pathOrLabel == "生活服务" {
@@ -562,8 +588,14 @@ struct NativeFeatureHost: View {
             NativeWebPage(onClose: onClose)
         } else if path == "/home/after_sales" {
             NativeAfterSalesPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/after_sales/create" {
+            NativeAfterSalesCreatePage(onClose: onClose)
+        } else if path == "/home/after_sales/detail" {
+            NativeAfterSalesDetailPage(onClose: onClose)
         } else if path == "/home/ledger" {
             NativeLedgerPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/ledger/detail" {
+            NativeLedgerDetailPage(onClose: onClose)
         } else if path == "/mine/sms_template" {
             NativeSmsTemplatePage(onClose: onClose)
         } else if path == "/mine/store_qr" {
@@ -588,6 +620,8 @@ struct NativeFeatureHost: View {
             NativeHotRankPage(onClose: onClose)
         } else if path == "/home/data_analytics" {
             NativeDataAnalyticsPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/data_analytics/detail" {
+            NativeDataAnalyticsDetailPage(onClose: onClose)
         } else if path == "/mine/business_card" || pathOrLabel == "电子名片" {
             NativeBusinessCardPage(onClose: onClose)
         } else {

@@ -1,6 +1,6 @@
 package com.example.my_kmp_project.feature.friend
 
-import com.example.my_kmp_project.feature.chat.ImEngineStore
+import com.example.my_kmp_project.component.chat.ImEngineStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

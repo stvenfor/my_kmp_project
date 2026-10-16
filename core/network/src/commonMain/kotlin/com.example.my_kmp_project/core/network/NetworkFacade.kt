@@ -14,9 +14,30 @@ public object NetworkFacade {
     private var businessHandlers: NetworkBusinessHandlers? = null
 
     @Volatile
-    private var client: ApiClient = createDefaultClient()
+    private var authRefreshPolicy: AuthRefreshPolicy? = null
+
+    @Volatile
+    private var tokenRefresher: TokenRefreshHandler? = null
+
+    @Volatile
+    private var onSessionCleared: (() -> Unit)? = null
+
+    @Volatile
+    private var rawClient: ApiClient = createPlatformApiClient(
+        onTokenExpired = tokenExpiredHandler,
+        businessHandlers = businessHandlers,
+    )
+
+    @Volatile
+    private var client: ApiClient = decorate(rawClient)
 
     fun api(): ApiClient = client
+
+    /**
+     * 未装饰 client（refresh 请求专用）——Flutter `skipAuthRefresh` 的 KMP 对等：
+     * 用它发出的请求不会递归触发刷新。
+     */
+    fun rawApi(): ApiClient = rawClient
 
     fun setTokenExpiredHandler(handler: TokenExpiredHandler?) {
         tokenExpiredHandler = handler
@@ -28,8 +49,28 @@ public object NetworkFacade {
         rebuildClient()
     }
 
+    /**
+     * 启用 Flutter `AuthTokenRefreshInterceptor` 对等能力（feature/auth 在启动时调用）。
+     * 启用后平台 client 不再直接触发 [tokenExpiredHandler]——401 流由
+     * [AuthRefreshingApiClient] 独占（刷新→重试 / 清会话），避免「先跳登录再刷新成功」。
+     */
+    fun setAuthRefreshSupport(
+        policy: AuthRefreshPolicy?,
+        refresher: TokenRefreshHandler?,
+        onSessionCleared: (() -> Unit)? = null,
+    ) {
+        authRefreshPolicy = policy
+        tokenRefresher = refresher
+        this.onSessionCleared = onSessionCleared
+        rebuildClient()
+    }
+
     fun rebuildClient() {
-        client = createDefaultClient()
+        rawClient = createPlatformApiClient(
+            onTokenExpired = if (isAuthRefreshEnabled()) null else tokenExpiredHandler,
+            businessHandlers = businessHandlers,
+        )
+        client = decorate(rawClient)
     }
 
     fun bindAccessToken(token: String) {
@@ -46,6 +87,21 @@ public object NetworkFacade {
 
     internal fun currentBusinessHandlers(): NetworkBusinessHandlers? = businessHandlers
 
-    private fun createDefaultClient(): ApiClient =
-        createPlatformApiClient(tokenExpiredHandler, businessHandlers)
+    private fun isAuthRefreshEnabled(): Boolean =
+        authRefreshPolicy != null && tokenRefresher != null
+
+    private fun decorate(platform: ApiClient): ApiClient {
+        val p = authRefreshPolicy
+        val r = tokenRefresher
+        return if (p != null && r != null) {
+            AuthRefreshingApiClient(
+                delegate = platform,
+                policy = p,
+                refresher = r,
+                onSessionCleared = onSessionCleared,
+            )
+        } else {
+            platform
+        }
+    }
 }

@@ -5,11 +5,25 @@ import kotlin.concurrent.Volatile
 
 /**
  * Cross-platform account façade for the demo skeleton.
+ *
+ * Session carries access/refresh tokens plus session/device ids
+ * (Flutter `User` model, d7876a1) so the shared network layer can silently
+ * refresh an expired access token without bouncing the user to login.
  */
 public interface AccountSession {
     val isLoggedIn: Boolean
     val displayName: String?
     val token: String
+
+    /** 静默续期凭据；空 = 无法 refresh，401 时直接失效（Flutter 同款语义）。 */
+    val refreshToken: String
+
+    /** 服务端会话 id（单设备互踢 / refresh 请求携带）。 */
+    val sessionId: String
+
+    /** 登录时绑定的设备 id（refresh 时回传）。 */
+    val deviceId: String
+
     val userId: String?
     val avatarUrl: String?
     val phone: String?
@@ -50,6 +64,31 @@ public object AccountFacade {
         NetworkFacade.clearAccessToken()
     }
 
+    /**
+     * Flutter `UserService.updateAuthTokens`：refresh 成功后原子替换三件套。
+     * 不触碰资料字段；token 变更会重新绑定网络层。
+     */
+    fun updateAuthTokens(token: String, refreshToken: String, sessionId: String) {
+        ensureHydrated()
+        val cur = session
+        if (!cur.isLoggedIn) return
+        setSession(
+            LoggedInUser(
+                displayName = cur.displayName,
+                token = token,
+                refreshToken = refreshToken,
+                sessionId = sessionId,
+                deviceId = cur.deviceId,
+                userId = cur.userId,
+                avatarUrl = cur.avatarUrl,
+                phone = cur.phone,
+                email = cur.email,
+                companyId = cur.companyId,
+                orgId = cur.orgId,
+            ),
+        )
+    }
+
     /** Patch profile fields on the current logged-in session (nick / avatar). */
     fun updateProfile(displayName: String? = null, avatarUrl: String? = null) {
         ensureHydrated()
@@ -59,6 +98,9 @@ public object AccountFacade {
             LoggedInUser(
                 displayName = displayName ?: cur.displayName,
                 token = cur.token,
+                refreshToken = cur.refreshToken,
+                sessionId = cur.sessionId,
+                deviceId = cur.deviceId,
                 userId = cur.userId,
                 avatarUrl = avatarUrl ?: cur.avatarUrl,
                 phone = cur.phone,
@@ -77,6 +119,9 @@ public object AccountFacade {
             LoggedInUser(
                 displayName = cur.displayName,
                 token = cur.token,
+                refreshToken = cur.refreshToken,
+                sessionId = cur.sessionId,
+                deviceId = cur.deviceId,
                 userId = cur.userId,
                 avatarUrl = cur.avatarUrl,
                 phone = phone,
@@ -95,6 +140,9 @@ public object AccountFacade {
             LoggedInUser(
                 displayName = cur.displayName,
                 token = cur.token,
+                refreshToken = cur.refreshToken,
+                sessionId = cur.sessionId,
+                deviceId = cur.deviceId,
                 userId = cur.userId,
                 avatarUrl = cur.avatarUrl,
                 phone = cur.phone,
@@ -114,6 +162,9 @@ public object AccountFacade {
             LoggedInUser(
                 displayName = cur.displayName,
                 token = cur.token,
+                refreshToken = cur.refreshToken,
+                sessionId = cur.sessionId,
+                deviceId = cur.deviceId,
                 userId = cur.userId,
                 avatarUrl = cur.avatarUrl,
                 phone = cur.phone,
@@ -150,6 +201,9 @@ public data object LoggedOut : AccountSession {
     override val isLoggedIn: Boolean = false
     override val displayName: String? = null
     override val token: String = ""
+    override val refreshToken: String = ""
+    override val sessionId: String = ""
+    override val deviceId: String = ""
     override val userId: String? = null
     override val avatarUrl: String? = null
     override val phone: String? = null
@@ -161,6 +215,9 @@ public data object LoggedOut : AccountSession {
 public data class LoggedInUser(
     override val displayName: String?,
     override val token: String,
+    override val refreshToken: String = "",
+    override val sessionId: String = "",
+    override val deviceId: String = "",
     override val userId: String? = null,
     override val avatarUrl: String? = null,
     override val phone: String? = null,
@@ -169,4 +226,7 @@ public data class LoggedInUser(
     override val orgId: Long? = null,
 ) : AccountSession {
     override val isLoggedIn: Boolean = token.isNotBlank()
+
+    /** 可尝试静默续期（Flutter interceptor 的 refreshToken.isEmpty 分支对等）。 */
+    val canRefresh: Boolean get() = refreshToken.isNotBlank()
 }

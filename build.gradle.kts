@@ -7,3 +7,6 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
 }
+
+// 跨平台一键部署/校验任务（借鉴 kmp-cmp-example/deployment.gradle.kts 并按本工程适配）
+apply(from = "deployment.gradle.kts")

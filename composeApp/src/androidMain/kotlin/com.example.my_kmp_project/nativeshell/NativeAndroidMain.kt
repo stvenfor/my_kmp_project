@@ -48,31 +48,34 @@ import com.example.my_kmp_project.core.router.ProductRouteDispatch
 import com.example.my_kmp_project.core.router.ProductRouteHost
 import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
 import com.example.my_kmp_project.core.router.webUrlFromDeepLink
-import com.example.my_kmp_project.feature.auth.AuthGate
+import com.example.my_kmp_project.component.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.feature.auth.LoginOtpScreen
 import com.example.my_kmp_project.feature.auth.LoginPasswordScreen
 import com.example.my_kmp_project.feature.auth.LoginScreen
 import com.example.my_kmp_project.feature.auth.RegisterScreen
-import com.example.my_kmp_project.feature.chat.ChatDetailDeepLinkArgs
-import com.example.my_kmp_project.feature.chat.chatDetailArgsFromDeepLink
+import com.example.my_kmp_project.component.chat.ChatDetailDeepLinkArgs
+import com.example.my_kmp_project.component.chat.chatDetailArgsFromDeepLink
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.community.CommunityRouteHost
-import com.example.my_kmp_project.feature.community.CommunityRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
 import com.example.my_kmp_project.feature.content.ContentRouteHost
-import com.example.my_kmp_project.feature.content.ContentRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.feature.home.AllServicesScreen
 import com.example.my_kmp_project.feature.home.HomeRouteHost
-import com.example.my_kmp_project.feature.home.HomeRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
 import com.example.my_kmp_project.feature.home.HomeWebHandlers
 import com.example.my_kmp_project.feature.mine.MineIsland
-import com.example.my_kmp_project.feature.mine.MineIslandRoute
+import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.mine.MineRouteHost
-import com.example.my_kmp_project.feature.mine.MineRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
 import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
 import com.example.my_kmp_project.feature.web.InAppWebScreen
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 /**
  * Android Jetpack shell (ADR 0002 / Android UI Split).
  * Tab roots + auth + deferred stubs are Jetpack in androidMain.

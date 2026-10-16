@@ -4145,3 +4145,805 @@ export struct NativeBusinessCardPane {
     }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
   }
 }
+
+// MARK: - W6.h 子路由专属面板（消除 generic feature 占位，对齐 iOS W5.i.1–15）
+
+/** `/home/used_car/detail` — 复用 NativeUsedCarPane 数据（usedCarOrders[0]） */
+@Component
+export struct NativeUsedCarDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#0B6E4F';
+  private rows: string[][] = [
+    ['业务类型', '置换'],
+    ['当前状态', '待审核'],
+    ['登记日期', '2026-09-22'],
+    ['车型', '2021 帝豪'],
+    ['车牌', '京A·88X21'],
+    ['客户', '张先生'],
+    ['评估价', '¥86,000'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('二手车详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          Row() {
+            Column({ space: 4 }) {
+              Text('2021 帝豪').fontSize(20).fontWeight(FontWeight.Bold).fontColor(Color.White)
+              Text('京A·88X21').fontSize(13).fontColor('#D9FFFFFF')
+            }
+            Blank().layoutWeight(1)
+            Text('待审核').fontSize(13).fontWeight(FontWeight.Medium).fontColor(Color.White)
+              .padding({ left: 10, right: 10, top: 5, bottom: 5 })
+              .backgroundColor('#33FFFFFF').borderRadius(14)
+          }.padding(16).width('100%').linearGradient({ angle: 135, colors: [['#0B6E4F', 0.0], ['#149E6F', 1.0]] }).borderRadius(16)
+            .margin({ left: 16, right: 16, top: 12 })
+
+          ForEach(this.rows, (row: string[], idx: number) => {
+            Row() {
+              Text(row[0]).fontSize(14).fontColor(DesignTokens.mute)
+              Blank().layoutWeight(1)
+              Text(row[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (row: string[], idx: number) => `r_${idx}`)
+
+          Column({ space: 6 }) {
+            Text('跟进备注').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            Text('客户意向置换，已安排评估师上门。等待店长审核后进入专卖流程。').fontSize(13).fontColor(DesignTokens.body)
+          }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+            .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+        }.width('100%').padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/home/used_car/create` — 新建业务单表单（mock 提交） */
+@Component
+export struct NativeUsedCarCreatePane {
+  onClose: () => void = () => {};
+  private accent: string = '#0B6E4F';
+  @State kind: string = '置换';
+  @State model: string = '';
+  @State plate: string = '';
+  @State customer: string = '';
+  @State amount: string = '';
+  @State submitted: boolean = false;
+  private kinds: string[] = ['置换', '专卖', '收车'];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('新建二手车单').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          Scroll() {
+            Row({ space: 8 }) {
+              ForEach(this.kinds, (k: string) => {
+                Text(k)
+                  .fontSize(13)
+                  .fontColor(this.kind === k ? Color.White : DesignTokens.ink)
+                  .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+                  .backgroundColor(this.kind === k ? this.accent : Color.White)
+                  .borderRadius(16)
+                  .onClick(() => { this.kind = k; })
+              }, (k: string) => `k_${k}`)
+            }
+          }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).padding({ left: 16, right: 16 })
+
+          this.field('车型', '如 2021 帝豪', this.model, (v: string) => { this.model = v; })
+          this.field('车牌', '如 京A·88X21', this.plate, (v: string) => { this.plate = v; })
+          this.field('客户', '客户姓名', this.customer, (v: string) => { this.customer = v; })
+          this.field('估价 / 成交价', '如 ¥86,000', this.amount, (v: string) => { this.amount = v; })
+
+          if (this.submitted) {
+            Row({ space: 6 }) {
+              Text('✓').fontColor(this.accent).fontSize(16)
+              Text('已提交（演示）').fontColor(this.accent).fontSize(14)
+            }.width('100%').padding(14).backgroundColor('#F0F7F4').borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(VerticalAlign.Center)
+          }
+
+          Button('提交业务单')
+            .width('100%').height(48).backgroundColor(this.accent).fontColor(Color.White).fontSize(16)
+            .margin(16)
+            .onClick(() => { this.submitted = true; })
+        }.padding({ top: 12, bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+
+  @Builder
+  field(title: string, placeholder: string, value: string, onChange: (v: string) => void) {
+    Column({ space: 6 }) {
+      Text(title).fontSize(13).fontColor(DesignTokens.mute)
+      TextInput({ placeholder: placeholder, text: value })
+        .width('100%').height(44).backgroundColor(Color.White).borderRadius(8)
+        .padding({ left: 12, right: 12 })
+        .onChange((v: string) => { onChange(v); })
+    }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+      .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+  }
+}
+
+/** `/home/ledger/detail` — 复用 NativeLedgerPane 数据（ledgerEntries[0]） */
+@Component
+export struct NativeLedgerDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#0B6E4F';
+  private rows: string[][] = [
+    ['类型', '收入'],
+    ['日期', '2026-09-24'],
+    ['经手人', '演示顾问'],
+    ['备注', '客户定金，等待合同签署'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('台账详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          Row() {
+            Column({ space: 4 }) {
+              Text('新车定金').fontSize(20).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+              Text('收入 · 2026-09-24').fontSize(13).fontColor(DesignTokens.mute)
+            }
+            Blank().layoutWeight(1)
+            Text('+¥5,000.00').fontSize(20).fontWeight(FontWeight.Bold).fontColor(this.accent)
+          }.padding(16).width('100%').backgroundColor(Color.White).borderRadius(16)
+            .margin({ left: 16, right: 16, top: 12 })
+
+          ForEach(this.rows, (row: string[], idx: number) => {
+            Row() {
+              Text(row[0]).fontSize(14).fontColor(DesignTokens.mute)
+              Blank().layoutWeight(1)
+              Text(row[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (row: string[], idx: number) => `r_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/home/data_analytics/detail` — 复用 NativeDataAnalyticsPane 指标 */
+@Component
+export struct NativeDataAnalyticsDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#0070F2';
+  private metrics: string[][] = [
+    ['线索转化', '12.4%', '62'],
+    ['试驾到店', '86', '43'],
+    ['直播线索', '异常↓', '18'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('数据分析详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          Text('本周门店经营概览').fontSize(14).fontColor(DesignTokens.mute)
+            .width('100%').padding({ left: 16, right: 16, top: 8 })
+
+          ForEach(this.metrics, (m: string[], idx: number) => {
+            Column({ space: 8 }) {
+              Row() {
+                Text(m[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Blank().layoutWeight(1)
+                Text(m[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(this.accent)
+              }
+              Row() {
+                Row().width(`${m[2]}%`).height(10).backgroundColor(this.accent).borderRadius(6)
+              }.width('100%').height(10).backgroundColor('#E8ECF0').borderRadius(6)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+          }, (m: string[], idx: number) => `m_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/home/new_car_follow/create` */
+@Component
+export struct NativeNewCarFollowCreatePane {
+  onClose: () => void = () => {};
+  private accent: string = '#3B8CFF';
+  @State name: string = '';
+  @State phone: string = '';
+  @State vehicle: string = '';
+  @State stage: string = '跟进中';
+  @State intent: string = '高';
+  @State submitted: boolean = false;
+  private stages: string[] = ['跟进中', '报价', '试驾', '成交'];
+  private intents: string[] = ['高', '中', '低'];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('新建跟进').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          this.field('客户姓名', '如 孙某', this.name, (v: string) => { this.name = v; })
+          this.field('手机号', '138****0000', this.phone, (v: string) => { this.phone = v; })
+          this.field('意向车型', '如 银河 L7', this.vehicle, (v: string) => { this.vehicle = v; })
+          this.picker('阶段', this.stages, this.stage, (v: string) => { this.stage = v; })
+          this.picker('意向等级', this.intents, this.intent, (v: string) => { this.intent = v; })
+
+          if (this.submitted) {
+            Row({ space: 6 }) {
+              Text('✓').fontColor(this.accent).fontSize(16)
+              Text('已提交（演示）').fontColor(this.accent).fontSize(14)
+            }.width('100%').padding(14).backgroundColor('#EDF4FF').borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(VerticalAlign.Center)
+          }
+
+          Button('提交跟进')
+            .width('100%').height(48).backgroundColor(this.accent).fontColor(Color.White).fontSize(16)
+            .margin(16)
+            .onClick(() => { this.submitted = true; })
+        }.padding({ top: 12, bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+
+  @Builder
+  field(title: string, placeholder: string, value: string, onChange: (v: string) => void) {
+    Column({ space: 6 }) {
+      Text(title).fontSize(13).fontColor(DesignTokens.mute)
+      TextInput({ placeholder: placeholder, text: value })
+        .width('100%').height(44).backgroundColor(Color.White).borderRadius(8)
+        .padding({ left: 12, right: 12 })
+        .onChange((v: string) => { onChange(v); })
+    }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+      .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+  }
+
+  @Builder
+  picker(title: string, options: string[], selection: string, onPick: (v: string) => void) {
+    Column({ space: 6 }) {
+      Text(title).fontSize(13).fontColor(DesignTokens.mute)
+      Scroll() {
+        Row({ space: 8 }) {
+          ForEach(options, (opt: string) => {
+            Text(opt)
+              .fontSize(13)
+              .fontColor(selection === opt ? this.accent : DesignTokens.ink)
+              .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+              .backgroundColor(selection === opt ? '#143B8CFF' : Color.White)
+              .borderRadius(16)
+              .onClick(() => { onPick(opt); })
+          }, (opt: string) => `o_${opt}`)
+        }
+      }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).padding(0)
+    }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+      .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+  }
+}
+
+/** `/home/new_car_follow/detail` */
+@Component
+export struct NativeNewCarFollowDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#3B8CFF';
+  private rows: string[][] = [
+    ['客户', '孙某'],
+    ['手机', '138****2101'],
+    ['车型', '银河 L7'],
+    ['阶段', '跟进中'],
+    ['意向', '高'],
+    ['下次跟进', '今日 15:00'],
+  ];
+  private timeline: string[][] = [
+    ['09-18', '首次到店试驾 银河 L7'],
+    ['09-20', '微信发送配置单'],
+    ['09-22', '电话沟通金融方案'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('跟进详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.rows, (row: string[], idx: number) => {
+            Row() {
+              Text(row[0]).fontSize(14).fontColor(DesignTokens.mute)
+              Blank().layoutWeight(1)
+              Text(row[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (row: string[], idx: number) => `r_${idx}`)
+
+          Column({ space: 8 }) {
+            Text('跟进流水').fontSize(14).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            ForEach(this.timeline, (t: string[], idx: number) => {
+              Row({ space: 10 }) {
+                Text(t[0]).fontSize(12).fontColor(DesignTokens.mute).width(42)
+                Text(t[1]).fontSize(13).fontColor(DesignTokens.ink)
+                Blank().layoutWeight(1)
+              }.width('100%')
+            }, (t: string[], idx: number) => `t_${idx}`)
+          }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+            .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/home/after_sales/create` */
+@Component
+export struct NativeAfterSalesCreatePane {
+  onClose: () => void = () => {};
+  private accent: string = '#00B28C';
+  @State vehicle: string = '';
+  @State type: string = '小保养';
+  @State desc: string = '';
+  @State submitted: boolean = false;
+  private types: string[] = ['小保养', '钣喷', '四轮定位', '机电维修'];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('新建工单').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          this.field('车牌', '京A·12345', this.vehicle, (v: string) => { this.vehicle = v; })
+          this.picker('工单类型', this.types, this.type, (v: string) => { this.type = v; })
+          this.field('问题描述', '描述故障或需求', this.desc, (v: string) => { this.desc = v; })
+
+          if (this.submitted) {
+            Row({ space: 6 }) {
+              Text('✓').fontColor(this.accent).fontSize(16)
+              Text('已提交（演示）').fontColor(this.accent).fontSize(14)
+            }.width('100%').padding(14).backgroundColor('#E6F7F2').borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(VerticalAlign.Center)
+          }
+
+          Button('提交工单')
+            .width('100%').height(48).backgroundColor(this.accent).fontColor(Color.White).fontSize(16)
+            .margin(16)
+            .onClick(() => { this.submitted = true; })
+        }.padding({ top: 12, bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+
+  @Builder
+  field(title: string, placeholder: string, value: string, onChange: (v: string) => void) {
+    Column({ space: 6 }) {
+      Text(title).fontSize(13).fontColor(DesignTokens.mute)
+      TextInput({ placeholder: placeholder, text: value })
+        .width('100%').height(44).backgroundColor(Color.White).borderRadius(8)
+        .padding({ left: 12, right: 12 })
+        .onChange((v: string) => { onChange(v); })
+    }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+      .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+  }
+
+  @Builder
+  picker(title: string, options: string[], selection: string, onPick: (v: string) => void) {
+    Column({ space: 6 }) {
+      Text(title).fontSize(13).fontColor(DesignTokens.mute)
+      Scroll() {
+        Row({ space: 8 }) {
+          ForEach(options, (opt: string) => {
+            Text(opt)
+              .fontSize(13)
+              .fontColor(selection === opt ? this.accent : DesignTokens.ink)
+              .padding({ left: 14, right: 14, top: 8, bottom: 8 })
+              .backgroundColor(selection === opt ? '#1400B28C' : Color.White)
+              .borderRadius(16)
+              .onClick(() => { onPick(opt); })
+          }, (opt: string) => `o_${opt}`)
+        }
+      }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).padding(0)
+    }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+      .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+  }
+}
+
+/** `/home/after_sales/detail` */
+@Component
+export struct NativeAfterSalesDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#00B28C';
+  private rows: string[][] = [
+    ['车牌', '京A·12345'],
+    ['类型', '小保养'],
+    ['状态', '完成'],
+    ['日期', '2026-09-20'],
+    ['技师', '小刘'],
+    ['备注', '常规保养，已交车'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('售后详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.rows, (row: string[], idx: number) => {
+            Row() {
+              Text(row[0]).fontSize(14).fontColor(DesignTokens.mute)
+              Blank().layoutWeight(1)
+              Text(row[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (row: string[], idx: number) => `r_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/mall/orders/detail` */
+@Component
+export struct NativeMallOrderDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#00B28C';
+  private rows: string[][] = [
+    ['订单号', 'A1024'],
+    ['状态', '待发货'],
+    ['金额', '¥399'],
+    ['商品', '行车记录仪 Pro'],
+    ['数量', '1'],
+    ['收货', '北京市大兴区'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('订单详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.rows, (row: string[], idx: number) => {
+            Row() {
+              Text(row[0]).fontSize(14).fontColor(DesignTokens.mute)
+              Blank().layoutWeight(1)
+              Text(row[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (row: string[], idx: number) => `r_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/video/dubbing/videos` + `/videos/detail` */
+@Component
+export struct NativeDubbingVideosPane {
+  onClose: () => void = () => {};
+  private accent: string = '#A442ED';
+  private items: string[][] = [
+    ['小王子 · 片段 3', '难度初级 · 女声', '0:45'],
+    ['飞屋环游记 · OP', '难度中级 · 男声', '1:12'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('配音视频').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.items, (it: string[], idx: number) => {
+            Row({ space: 12 }) {
+              Row() {
+                Text('▶').fontColor(this.accent).fontSize(20)
+              }.width(56).height(56).backgroundColor('#1AA442ED').borderRadius(10)
+                .justifyContent(FlexAlign.Center).alignItems(VerticalAlign.Center)
+              Column({ space: 4 }) {
+                Text(it[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(it[1]).fontSize(12).fontColor(DesignTokens.mute)
+              }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+              Text(it[2]).fontSize(12).fontColor(DesignTokens.mute)
+            }.width('100%').padding(12).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (it: string[], idx: number) => `v_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeDubbingVideoDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#A442ED';
+  private rows: string[][] = [
+    ['素材', '小王子 · 片段 3'],
+    ['难度', '初级'],
+    ['音色', '女声'],
+    ['时长', '0:45'],
+    ['进度', '已完成 86%'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('配音详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.rows, (row: string[], idx: number) => {
+            Row() {
+              Text(row[0]).fontSize(14).fontColor(DesignTokens.mute)
+              Blank().layoutWeight(1)
+              Text(row[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (row: string[], idx: number) => `r_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/video/dubbing/works` + `/works/detail` */
+@Component
+export struct NativeDubbingWorksPane {
+  onClose: () => void = () => {};
+  private accent: string = '#A442ED';
+  private items: string[][] = [
+    ['我的配音作品 · 小王子', '2.1k 播放 · 186 赞'],
+    ['练习作品 · 飞屋', '980 播放'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('我的作品').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.items, (it: string[], idx: number) => {
+            Row({ space: 12 }) {
+              Row() {
+                Text('▶').fontColor(this.accent).fontSize(20)
+              }.width(56).height(56).backgroundColor('#1AA442ED').borderRadius(10)
+                .justifyContent(FlexAlign.Center).alignItems(VerticalAlign.Center)
+              Column({ space: 4 }) {
+                Text(it[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+                Text(it[1]).fontSize(12).fontColor(DesignTokens.mute)
+              }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+            }.width('100%').padding(12).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (it: string[], idx: number) => `w_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+@Component
+export struct NativeDubbingWorkDetailPane {
+  onClose: () => void = () => {};
+  private accent: string = '#A442ED';
+  private rows: string[][] = [
+    ['作品', '我的配音作品 · 小王子'],
+    ['时长', '0:45'],
+    ['播放', '2.1k'],
+    ['赞', '186'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('作品详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.rows, (row: string[], idx: number) => {
+            Row() {
+              Text(row[0]).fontSize(14).fontColor(DesignTokens.mute)
+              Blank().layoutWeight(1)
+              Text(row[1]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+          }, (row: string[], idx: number) => `r_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/community/convention` */
+@Component
+export struct NativeCommunityConventionPane {
+  onClose: () => void = () => {};
+  private paras: string[][] = [
+    ['社区公约', '欢迎来到社区，请文明交流，尊重彼此。'],
+    ['内容规范', '禁止发布违法违规、低俗、广告引流内容。'],
+    ['互动礼仪', '友善评论，不人身攻击，不引战。'],
+    ['违规处理', '违规行为将被删除，严重者封禁账号。'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('社区公约').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.paras, (p: string[], idx: number) => {
+            Column({ space: 6 }) {
+              Text(p[0]).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Text(p[1]).fontSize(13).fontColor(DesignTokens.body)
+            }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 }).alignItems(HorizontalAlign.Start)
+          }, (p: string[], idx: number) => `p_${idx}`)
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/live/room` */
+@Component
+export struct NativeLiveRoomPane {
+  onClose: () => void = () => {};
+  private accent: string = '#D93333';
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('直播间').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          Row() {
+            Text('直播画面（演示）').fontColor(this.accent).fontSize(15).fontWeight(FontWeight.Medium)
+          }.width('100%').height(180).backgroundColor('#1AD93333').borderRadius(16)
+            .margin({ left: 16, right: 16, top: 12 })
+            .justifyContent(FlexAlign.Center).alignItems(VerticalAlign.Center)
+          this.infoRow('主播', '沃德龙鼎直播间')
+          this.infoRow('在线', '326 人')
+          this.infoRow('主题', '讲解新车 · 限时权益')
+        }.padding({ bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+
+  @Builder
+  infoRow(label: string, value: string) {
+    Row() {
+      Text(label).fontSize(14).fontColor(DesignTokens.mute)
+      Blank().layoutWeight(1)
+      Text(value).fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+    }.width('100%').padding(14).backgroundColor(Color.White).borderRadius(12)
+      .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+  }
+}
+
+/** `/music/now_playing` */
+@Component
+export struct NativeMusicNowPlayingPane {
+  onClose: () => void = () => {};
+  private accent: string = '#0070F2';
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
+        Text('正在播放').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 16 }) {
+          Row() {
+            Text('♪').fontColor(this.accent).fontSize(64)
+          }.width(200).height(200).backgroundColor('#1A0070F2').borderRadius(20)
+            .margin({ top: 16 })
+            .justifyContent(FlexAlign.Center).alignItems(VerticalAlign.Center)
+          Text('Night Drive').fontSize(20).fontWeight(FontWeight.Bold).fontColor(DesignTokens.ink)
+          Text('3:28').fontSize(14).fontColor(DesignTokens.mute)
+          Row({ space: 40 }) {
+            Text('⏮').fontColor(this.accent).fontSize(28)
+            Text('⏯').fontColor(this.accent).fontSize(44)
+            Text('⏭').fontColor(this.accent).fontSize(28)
+          }.margin({ top: 8 }).justifyContent(FlexAlign.Center)
+        }.width('100%').padding({ left: 16, right: 16, bottom: 24 }).alignItems(HorizontalAlign.Center)
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}
+
+/** `/video` Hub */
+@Component
+export struct NativeVideoHubPane {
+  onClose: () => void = () => {};
+  onOpen: (path: string) => void = (_p: string) => {};
+  private tiles: string[][] = [
+    ['短视频', '/video/short'],
+    ['配音视频', '/video/dubbing/videos'],
+    ['我的作品', '/video/dubbing/works'],
+  ];
+
+  build() {
+    Column() {
+      Row() {
+        Text('‹').fontSize(22).fontColor(DesignTokens.link).onClick(() => this.onClose())
+        Text('视频').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Blank().layoutWeight(1)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
+
+      Scroll() {
+        Column({ space: 8 }) {
+          ForEach(this.tiles, (t: string[], idx: number) => {
+            Row() {
+              Text(t[0]).fontSize(16).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink)
+              Blank().layoutWeight(1)
+              Text('›').fontColor(DesignTokens.mute).fontSize(18)
+            }.width('100%').padding(16).backgroundColor(Color.White).borderRadius(12)
+              .margin({ left: 16, right: 16, top: 5, bottom: 5 })
+              .onClick(() => { this.onOpen(t[1]); })
+          }, (t: string[], idx: number) => `t_${idx}`)
+        }.padding({ top: 12, bottom: 24 })
+      }.layoutWeight(1).width('100%')
+    }.width('100%').height('100%').backgroundColor(DesignTokens.canvasSoft2)
+  }
+}

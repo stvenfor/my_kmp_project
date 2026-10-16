@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeArkUIViewController
 import com.example.my_kmp_project.feature.mine.MineIsland
-import com.example.my_kmp_project.feature.mine.MineIslandRoute
+import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.OhosComposeHostRequest
 import com.example.my_kmp_project.feature.shell.SecondaryRouteIsland
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -37,6 +37,8 @@ fun MainArkUIViewController(env: napi_env): napi_value {
         initMainHandler(env)
         if (!OhosSmokeUiOnly) {
             com.example.my_kmp_project.core.network.platformNetworkBootstrap()
+            // 幂等：401 静默刷新装机 + 会话水合，须早于 ArkTS 侧业务请求。
+            com.example.my_kmp_project.app.ShellBootstrap.install()
         }
         ComposeArkUIViewController(env) {
             if (OhosSmokeUiOnly) {
@@ -147,6 +149,8 @@ private fun copyUtf8(
 @OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
 private fun ensureOhosAuthReady() {
     com.example.my_kmp_project.core.network.platformNetworkBootstrap()
+    // 幂等：401 静默刷新装机 + 会话水合（ArkTS 任意入口都可能首个触发）。
+    com.example.my_kmp_project.app.ShellBootstrap.install()
 }
 
 /** 0 = success, 1 = failure (message in errBuf). Blocking — call from NAPI async work only. */

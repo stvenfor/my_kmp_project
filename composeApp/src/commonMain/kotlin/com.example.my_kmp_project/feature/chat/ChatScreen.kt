@@ -40,6 +40,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.component.chat.ImConversation
+import com.example.my_kmp_project.component.chat.ImEngine
+import com.example.my_kmp_project.component.chat.ImEngineStore
+import com.example.my_kmp_project.component.chat.ImMessage
+import com.example.my_kmp_project.component.chat.ImMessageType
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot

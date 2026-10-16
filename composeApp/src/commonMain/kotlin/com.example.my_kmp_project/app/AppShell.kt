@@ -40,8 +40,6 @@ import com.example.my_kmp_project.core.account.AccountFacade
 import com.example.my_kmp_project.core.account.createPrivacyConsentStore
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.ImmersiveInsets.shellContentInsets
-import com.example.my_kmp_project.core.network.NetworkFacade
-import com.example.my_kmp_project.core.network.TokenExpiredHandler
 import com.example.my_kmp_project.core.router.AppRoute
 import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.router.AppRoutes
@@ -50,9 +48,9 @@ import com.example.my_kmp_project.core.router.LocalAppNavigator
 import com.example.my_kmp_project.core.router.MainTab
 import com.example.my_kmp_project.core.ui.LocalMainTabChrome
 import com.example.my_kmp_project.core.ui.MainTabChromeController
-import com.example.my_kmp_project.feature.auth.AuthGate
+import com.example.my_kmp_project.component.auth.AuthGate
 import com.example.my_kmp_project.feature.auth.AuthRepository
-import com.example.my_kmp_project.feature.auth.AuthSessionState
+import com.example.my_kmp_project.component.auth.AuthSessionState
 import com.example.my_kmp_project.feature.auth.LoginOtpScreen
 import com.example.my_kmp_project.feature.auth.LoginPasswordScreen
 import com.example.my_kmp_project.feature.auth.LoginScreen
@@ -105,15 +103,9 @@ internal fun AppShell() {
     var privacyAccepted by remember { mutableStateOf(privacyConsentStore.isAccepted()) }
 
     DisposableEffect(Unit) {
-        AuthSessionState.sync()
-        NetworkFacade.setTokenExpiredHandler(
-            TokenExpiredHandler {
-                AuthRepository.logout()
-            },
-        )
-        onDispose {
-            NetworkFacade.setTokenExpiredHandler(null)
-        }
+        // 会话水合 + 401 刷新装机（幂等）：token 过期先静默续期，耗尽/互踢才回登录。
+        ShellBootstrap.install()
+        onDispose { }
     }
 
     when (phase) {

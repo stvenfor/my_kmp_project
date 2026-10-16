@@ -63,6 +63,23 @@ import {
   NativeHotRankPane,
   NativeDataAnalyticsPane,
   NativeBusinessCardPane,
+  NativeUsedCarDetailPane,
+  NativeUsedCarCreatePane,
+  NativeLedgerDetailPane,
+  NativeDataAnalyticsDetailPane,
+  NativeNewCarFollowCreatePane,
+  NativeNewCarFollowDetailPane,
+  NativeAfterSalesCreatePane,
+  NativeAfterSalesDetailPane,
+  NativeMallOrderDetailPane,
+  NativeDubbingVideosPane,
+  NativeDubbingVideoDetailPane,
+  NativeDubbingWorksPane,
+  NativeDubbingWorkDetailPane,
+  NativeCommunityConventionPane,
+  NativeLiveRoomPane,
+  NativeMusicNowPlayingPane,
+  NativeVideoHubPane,
 } from './NativeSecondaryPages';
 
 const DOMAIN = 0x0000;
@@ -2160,6 +2177,65 @@ struct Index {
 
       if (this.nativePane === 'business_card') {
         NativeBusinessCardPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+
+      // W6.h 子路由专属面板（消除 generic feature 占位，对齐 iOS W5.i.1–15）
+      if (this.nativePane === 'used_car_detail') {
+        NativeUsedCarDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'used_car_create') {
+        NativeUsedCarCreatePane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'ledger_detail') {
+        NativeLedgerDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'data_analytics_detail') {
+        NativeDataAnalyticsDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'new_car_follow_create') {
+        NativeNewCarFollowCreatePane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'new_car_follow_detail') {
+        NativeNewCarFollowDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'after_sales_create') {
+        NativeAfterSalesCreatePane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'after_sales_detail') {
+        NativeAfterSalesDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'mall_orders_detail') {
+        NativeMallOrderDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'dubbing_videos') {
+        NativeDubbingVideosPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'dubbing_video_detail') {
+        NativeDubbingVideoDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'dubbing_works') {
+        NativeDubbingWorksPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'dubbing_work_detail') {
+        NativeDubbingWorkDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'community_convention') {
+        NativeCommunityConventionPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'live_room') {
+        NativeLiveRoomPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'music_now_playing') {
+        NativeMusicNowPlayingPane({ onClose: (): void => { this.nativePane = ''; } })
+      }
+      if (this.nativePane === 'video_hub') {
+        NativeVideoHubPane({
+          onClose: (): void => { this.nativePane = ''; },
+          onOpen: (path: string): void => {
+            this.nativePane = '';
+            this.openDeferred(path);
+          }
+        })
       }
 
       if (this.nativePane === 'feature' && this.featurePath.length > 0) {

@@ -1,11 +1,5 @@
 package com.example.my_kmp_project.core.router
 
-import com.example.my_kmp_project.feature.ai.AiRoutes
-import com.example.my_kmp_project.feature.classroom.ClassroomRoutes
-import com.example.my_kmp_project.feature.content.ContentRoutes
-import com.example.my_kmp_project.feature.home.HomeRoutes
-import com.example.my_kmp_project.feature.media.VideoRoutes
-import com.example.my_kmp_project.feature.mine.MineRoutes
 
 /**
  * Convenience aliases into [AppRoutePath] / feature route objects.

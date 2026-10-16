@@ -14,12 +14,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.my_kmp_project.component.routing.CrossFeatureScreens
 import com.example.my_kmp_project.core.router.ProductRouteDispatch
 import com.example.my_kmp_project.core.router.ProductRouteHost
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.content.ContentRouteHost
-import com.example.my_kmp_project.feature.home.HomeRouteHost
 import kotlinx.coroutines.delay
+import com.example.my_kmp_project.core.router.MineRoutes
 
 @Composable
 internal fun MineScreen(
@@ -78,12 +78,12 @@ internal fun MineScreen(
                     MineAboutScreen(onBack = { destination = MineRoutes.Settings })
                 } else {
                     when (ProductRouteDispatch.hostForPath(dest)) {
-                        ProductRouteHost.Home -> HomeRouteHost(
+                        ProductRouteHost.Home -> CrossFeatureScreens.HomeRouteScreen(
                             route = dest,
                             onBack = { destination = null },
                             onNavigate = ::go,
                         )
-                        ProductRouteHost.Content -> ContentRouteHost(
+                        ProductRouteHost.Content -> CrossFeatureScreens.ContentRouteScreen(
                             route = dest,
                             onBack = { destination = null },
                             onNavigate = ::go,

@@ -4,8 +4,9 @@ import androidx.compose.ui.window.ComposeUIViewController
 import com.example.my_kmp_project.core.network.platformNetworkBootstrap
 import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.feature.auth.AuthBridge
+import com.example.my_kmp_project.app.ShellBootstrap
 import com.example.my_kmp_project.feature.mine.MineIsland
-import com.example.my_kmp_project.feature.mine.MineIslandRoute
+import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.SecondaryRouteIsland
 import platform.UIKit.UIViewController
 
@@ -15,6 +16,7 @@ import platform.UIKit.UIViewController
 @Deprecated("Native SwiftUI shell owns the app; use MineIslandViewController / SecondaryRouteViewController")
 fun MainViewController() = run {
     platformNetworkBootstrap()
+    ShellBootstrap.install()
     ComposeUIViewController { App() }
 }
 
@@ -25,6 +27,7 @@ fun MainViewController() = run {
  */
 fun MineIslandViewController(route: String = "settings"): UIViewController {
     platformNetworkBootstrap()
+    ShellBootstrap.install()
     val key = route.trim()
     val initial = MineIslandRoute.fromPath(key) ?: MineIslandRoute.fromHostKey(key)
     lateinit var controller: UIViewController
@@ -47,6 +50,7 @@ fun MineIslandViewController(route: String = "settings"): UIViewController {
  */
 fun SecondaryRouteViewController(routeOrLabel: String): UIViewController {
     platformNetworkBootstrap()
+    ShellBootstrap.install()
     lateinit var controller: UIViewController
     controller = ComposeUIViewController {
         SecondaryRouteIsland(
@@ -68,6 +72,8 @@ fun AcceptDeepLinkFromIos(uri: String): String? {
 /** Ensure network + account stores are ready before Swift auth calls. */
 private fun ensureIosAuthReady() {
     platformNetworkBootstrap()
+    // 幂等：401 静默刷新装机 + 会话水合。
+    ShellBootstrap.install()
 }
 
 fun AuthIsLoggedIn(): Boolean {

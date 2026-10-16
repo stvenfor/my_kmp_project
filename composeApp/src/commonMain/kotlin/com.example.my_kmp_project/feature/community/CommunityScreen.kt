@@ -37,6 +37,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
 /**
  * Community tab — bound to [CommunityMockStore] (Flutter MockPostRepository tabs /

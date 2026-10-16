@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Fail if feature packages import sibling feature packages (Spike I guard).
+# Fail if feature packages import sibling feature packages (Spike I guard),
+# or if the shared `component/` layer imports upward into `feature/`.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$ROOT/composeApp/src/commonMain/kotlin/com.example.my_kmp_project/feature"
+PKG="$ROOT/composeApp/src/commonMain/kotlin/com.example.my_kmp_project"
+SRC="$PKG/feature"
 violations=0
 while IFS= read -r -d '' file; do
   feat="$(echo "$file" | sed -n 's|.*/feature/\([^/]*\)/.*|\1|p')"
@@ -18,8 +20,16 @@ while IFS= read -r -d '' file; do
   done < <(grep -E '^import com\.example\.my_kmp_project\.feature\.' "$file" || true)
 done < <(find "$SRC" -name '*.kt' -print0)
 
+# core/ and component/ are below feature/: they may never import upward.
+while IFS= read -r -d '' file; do
+  while IFS= read -r line; do
+    echo "VIOLATION: $file (lower layer) imports upward: $line"
+    violations=$((violations + 1))
+  done < <(grep -E '^import com\.example\.my_kmp_project\.(feature|app)\.' "$file" || true)
+done < <(find "$PKG/component" "$PKG/core" -name '*.kt' -print0 2>/dev/null)
+
 if [[ "$violations" -gt 0 ]]; then
-  echo "Found $violations feature→feature import(s). Use Navigator + component/core instead."
+  echo "Found $violations layer violation(s). Use app assembly + CrossFeatureScreens ports instead."
   exit 1
 fi
 echo "OK: no feature→feature imports."

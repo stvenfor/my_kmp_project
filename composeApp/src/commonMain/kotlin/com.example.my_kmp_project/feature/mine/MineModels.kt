@@ -1,4 +1,5 @@
 package com.example.my_kmp_project.feature.mine
+import com.example.my_kmp_project.core.design.MineIcons
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector

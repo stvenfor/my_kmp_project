@@ -51,15 +51,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.MineIcons
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.classroom.ClassroomRouteHost
-import com.example.my_kmp_project.feature.classroom.ClassroomRoutes
-import com.example.my_kmp_project.feature.commerce.MembershipScreen
-import com.example.my_kmp_project.feature.home.HomeRoutes
-import com.example.my_kmp_project.feature.media.VideoRouteHost
-import com.example.my_kmp_project.feature.media.VideoRoutes
+import com.example.my_kmp_project.component.routing.CrossFeatureScreens
+import com.example.my_kmp_project.core.router.HomeRoutes
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.mall_detail_body
 import my_kmp_project.composeapp.generated.resources.mall_list_body
@@ -68,84 +65,8 @@ import my_kmp_project.composeapp.generated.resources.mine_address_edit_body
 import my_kmp_project.composeapp.generated.resources.mine_purchase_calculator_body
 import my_kmp_project.composeapp.generated.resources.wallet_body
 import org.jetbrains.compose.resources.painterResource
+import com.example.my_kmp_project.core.router.MineRoutes
 
-internal object MineRoutes {
-    const val Mall = "/mall"
-    const val MallDetail = "/mall/detail"
-    const val MallOrders = "/mall/orders"
-    const val MallOrderDetail = "/mall/orders/detail"
-    const val Wallet = "/wallet"
-    const val Pay = "/pay"
-    const val Membership = "/pay/membership"
-    const val Profile = "/mine/profile"
-    const val Addresses = "/mine/addresses"
-    const val AddressEdit = "/mine/addresses/edit"
-    const val Calculator = "/mine/purchase_calculator"
-    const val Classroom = ClassroomRoutes.MyClass
-    const val ShortVideo = VideoRoutes.Short
-    const val CheckIn = "/home/check_in_mall"
-    const val SmsTemplates = "/mine/sms_templates"
-    const val ShopQr = "/mine/shop_qr"
-    /** Flutter `RoutePath.mineHttpTest` (选买问答). */
-    const val HttpTest = "/mine/http_test"
-    /** @deprecated alias — prefer [HttpTest]. */
-    const val BuyQa = HttpTest
-    const val Poster = "/mine/poster"
-    const val Settings = "/settings"
-    const val SettingsLegacy = "/mine/settings"
-    const val DealInvoiceDemo = "/settings/deal_invoice_demo"
-    const val DealInvoiceUpload = "/settings/deal_invoice/upload"
-    const val PersonalizedSettings = "/mine/personalized_settings"
-    const val Feedback = "/mine/feedback"
-    const val Cooperation = "/mine/cooperation"
-    const val Reminder = "/mine/reminder"
-    const val Invite = "/mine/invite"
-    const val FanGroup = "/mine/fan_group"
-
-    fun fromLabel(label: String): String? = when (label.trim()) {
-        "商城", "mall" -> Mall
-        "我的订单", "订单", "订单中心" -> MallOrders
-        "我的钱包", "钱包" -> Wallet
-        "会员", "会员续费" -> Membership
-        "我的课程", "课程" -> Classroom
-        // Flutter onFunctionTap: sms / qr_pay / poster are toast-only — do NOT map.
-        "短信模板", "店铺收款码", "收款码", "商家海报", "海报" -> null
-        "购车计算器", "计算器" -> Calculator
-        "二手车" -> HomeRoutes.UsedCar
-        "收支", "台账" -> HomeRoutes.Ledger
-        "售后", "售后专区" -> HomeRoutes.AfterSales
-        "小视频" -> ShortVideo
-        "选买问答" -> HttpTest
-        "地址管理", "地址", "收货地址" -> Addresses
-        "个人资料", "资料" -> Profile
-        "签到日历" -> CheckIn
-        "设置" -> Settings
-        "设置页" -> Settings
-        "/mine/settings" -> Settings
-        "新车成交" -> DealInvoiceDemo
-        // Flutter MineController: these are toast-only — do NOT open Invite/fake screens.
-        "意见反馈", "帮助中心" -> null
-        "商务合作" -> null
-        "提醒事项" -> null
-        "邀请好友" -> null
-        "粉丝群" -> null
-        "电子名片" -> null
-        "好友" -> null // friend list is ContentRoutes.Friend
-        "切换门店" -> null // SwitchStoreDialog on Mine root
-        else -> null
-    }
-
-    /** Normalize shell catalog aliases → canonical MineRoutes paths. */
-    fun canonicalize(route: String): String = when (route) {
-        "/mine/sms_template" -> SmsTemplates
-        "/mine/store_qr" -> ShopQr
-        "/mine/qa", "/mine/buy_qa" -> HttpTest
-        "/mine/business" -> Cooperation
-        "/mine/reminders" -> Reminder
-        // Do NOT map business_card / friend → Invite (crash + wrong page).
-        else -> route
-    }
-}
 
 @Composable
 internal fun MineRouteHost(
@@ -155,8 +76,8 @@ internal fun MineRouteHost(
 ) {
     val route = MineRoutes.canonicalize(route)
     when {
-        route.startsWith("/classroom") -> ClassroomRouteHost(route, onBack, onNavigate)
-        route.startsWith("/video") -> VideoRouteHost(route, onBack, onNavigate)
+        CrossFeatureScreens.handlesSiblingScreen(route) ->
+            CrossFeatureScreens.RenderSiblingScreen(route, onBack, onNavigate)
         route == MineRoutes.Mall -> MallListScreen(
             onBack = onBack,
             onOpenDetail = { onNavigate(MineRoutes.MallDetail) },
@@ -170,7 +91,7 @@ internal fun MineRouteHost(
         route == MineRoutes.MallOrderDetail -> MallOrderDetailScreen(onBack = onBack)
         route == MineRoutes.Wallet -> WalletScreen(onBack = onBack, onPay = { onNavigate(MineRoutes.Pay) })
         route == MineRoutes.Pay -> PayCheckoutScreen(onBack = onBack)
-        route == MineRoutes.Membership -> MembershipScreen(onBack = onBack)
+        // MineRoutes.Membership is commerce-owned — intercepted by handlesSiblingScreen above.
         route == MineRoutes.Profile -> ProfileEditScreen(
             onBack = onBack,
             onLoggedOut = { onNavigate("logout") },
@@ -210,7 +131,6 @@ internal fun MineRouteHost(
         route == MineRoutes.Cooperation -> CooperationScreen(onBack = onBack)
         route == MineRoutes.Reminder -> ReminderScreen(onBack = onBack)
         route == MineRoutes.Invite -> InviteScreen(onBack = onBack)
-        route == MineRoutes.FanGroup -> FanGroupScreen(onBack = onBack)
         else -> UnmappedMineRoute(route = route, onBack = onBack)
     }
 }
@@ -1441,63 +1361,6 @@ private fun ShopQrScreen(onBack: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Text(
             "保存到相册",
-            color = Color(0xFF0070F3),
-            modifier = Modifier.clickable { showPlatformToast("已保存（mock）") },
-        )
-        Spacer(Modifier.height(32.dp))
-    }
-}
-
-@Composable
-private fun FanGroupScreen(onBack: () -> Unit) {
-    ReportMainTabRoot(isRoot = false)
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        MineTopBar(title = "粉丝群", onBack = onBack, containerColor = Color.White)
-        Spacer(Modifier.height(24.dp))
-        Column(
-            Modifier
-                .padding(horizontal = 24.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color.White)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text("演示门店粉丝群", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Spacer(Modifier.height(4.dp))
-            Text("扫码加入微信粉丝群", color = DemoColors.TextSecondary, fontSize = 13.sp)
-            Spacer(Modifier.height(20.dp))
-            Box(
-                Modifier
-                    .width(200.dp)
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF07C160).copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    Modifier
-                        .width(160.dp)
-                        .height(160.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("QR", fontWeight = FontWeight.Bold, fontSize = 28.sp, color = Color(0xFF07C160))
-                }
-            }
-            Spacer(Modifier.height(16.dp))
-            Text("长按识别二维码 · 演示码", color = DemoColors.TextSecondary, fontSize = 12.sp)
-        }
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "保存二维码",
             color = Color(0xFF0070F3),
             modifier = Modifier.clickable { showPlatformToast("已保存（mock）") },
         )

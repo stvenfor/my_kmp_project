@@ -22,15 +22,14 @@ import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.ai_stream_body
 import org.jetbrains.compose.resources.painterResource
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
-internal object AiRoutes {
-    const val Stream = "/ai/stream"
-
-    fun fromLabel(label: String): String? = when (label.trim()) {
-        "AI小石头", "AI 小石头", "小石头", "AI" -> Stream
-        else -> null
-    }
-}
 
 /**
  * AI 小石头 — Flutter AiStreamPage full-frame SoT for Screenshot Diff Gate.

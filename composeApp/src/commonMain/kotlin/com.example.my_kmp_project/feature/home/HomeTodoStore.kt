@@ -3,6 +3,13 @@ package com.example.my_kmp_project.feature.home
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
 /**
  * Process-wide home todo / partner-pending mock — mirrors Flutter HomeTodoApi

@@ -1,9 +1,5 @@
 package com.example.my_kmp_project.core.router
 
-import com.example.my_kmp_project.feature.community.CommunityRoutes
-import com.example.my_kmp_project.feature.content.ContentRoutes
-import com.example.my_kmp_project.feature.home.HomeRoutes
-import com.example.my_kmp_project.feature.mine.MineRoutes
 
 /**
  * Single label/path → canonical Flutter [AppRoutePath] resolver + shell host class.

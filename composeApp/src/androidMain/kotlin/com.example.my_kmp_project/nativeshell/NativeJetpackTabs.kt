@@ -49,17 +49,17 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
-import com.example.my_kmp_project.feature.chat.ChatDetailDeepLinkArgs
-import com.example.my_kmp_project.feature.chat.ImConversation
-import com.example.my_kmp_project.feature.chat.ImEngine
-import com.example.my_kmp_project.feature.chat.ImEngineStore
+import com.example.my_kmp_project.component.chat.ChatDetailDeepLinkArgs
+import com.example.my_kmp_project.component.chat.ImConversation
+import com.example.my_kmp_project.component.chat.ImEngine
+import com.example.my_kmp_project.component.chat.ImEngineStore
 import com.example.my_kmp_project.feature.community.CommunityMockStore
 import com.example.my_kmp_project.feature.community.CommunityPublishBus
-import com.example.my_kmp_project.feature.community.CommunityRoutes
-import com.example.my_kmp_project.feature.content.ContentRoutes
-import com.example.my_kmp_project.feature.home.HomeRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
 import com.example.my_kmp_project.feature.mine.MineHomeContent
-import com.example.my_kmp_project.feature.mine.MineRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.community_avatar
 import my_kmp_project.composeapp.generated.resources.community_post_a
@@ -72,6 +72,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
 /** Flutter ChatTheme / ConversationListItem — WeChat-blue for @/#/reply prefixes. */
 private val CommunityLinkBlue = Color(0xFF576B95)
@@ -471,7 +474,7 @@ private fun JetpackChatDetail(
         ) {
             // reverseLayout: index 0 is bottom — Flutter MessageListView reverse + newest-first store
             items(messages, key = { it.id }) { bubble ->
-                if (bubble.type == com.example.my_kmp_project.feature.chat.ImMessageType.Time) {
+                if (bubble.type == com.example.my_kmp_project.component.chat.ImMessageType.Time) {
                     Text(
                         bubble.body,
                         fontSize = 12.sp,
@@ -481,7 +484,7 @@ private fun JetpackChatDetail(
                     )
                     return@items
                 }
-                val isImage = bubble.type == com.example.my_kmp_project.feature.chat.ImMessageType.Image
+                val isImage = bubble.type == com.example.my_kmp_project.component.chat.ImMessageType.Image
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = if (bubble.isSelf) Arrangement.End else Arrangement.Start,
@@ -502,8 +505,8 @@ private fun JetpackChatDetail(
                         } else {
                             Text(
                                 when (bubble.type) {
-                                    com.example.my_kmp_project.feature.chat.ImMessageType.Voice -> "[语音]"
-                                    com.example.my_kmp_project.feature.chat.ImMessageType.Custom ->
+                                    com.example.my_kmp_project.component.chat.ImMessageType.Voice -> "[语音]"
+                                    com.example.my_kmp_project.component.chat.ImMessageType.Custom ->
                                         if (bubble.body == "Demo 名片" || bubble.body.contains("名片")) "Demo 名片"
                                         else bubble.body
                                     else -> bubble.body

@@ -67,8 +67,8 @@ import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.mine.MineIcons
-import com.example.my_kmp_project.feature.mine.MineRoutes
+import com.example.my_kmp_project.core.design.MineIcons
+import com.example.my_kmp_project.core.router.MineRoutes
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.community_avatar
 import my_kmp_project.composeapp.generated.resources.community_post_a
@@ -101,71 +101,16 @@ import my_kmp_project.composeapp.generated.resources.home_dubbing_home_thumb_def
 import my_kmp_project.composeapp.generated.resources.ic_nav_back
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
 /** Flutter `kToolbarHeight` / `AppSafeInsets.toolbarHeight`. */
 private val FlutterToolbarHeight = 56.dp
 
-/** Flutter `RoutePath` home secondaries — string keys used by Native shell overlay. */
-internal object HomeRoutes {
-    const val Search = "/home/search"
-    const val Strategy = "/home/strategy"
-    const val LearningReport = "/home/learning_report"
-    const val CheckInMall = "/home/check_in_mall"
-    const val DubbingFeed = "/home/dubbing_feed"
-    const val HotRankDetail = "/home/hot_rank_detail"
-    const val LifeService = "/home/life_service"
-    const val LiveCommerce = "/home/live_commerce"
-    const val Club = "/home/club"
-    const val UsedCar = "/home/used_car"
-    const val UsedCarDetail = "/home/used_car/detail"
-    const val UsedCarCreate = "/home/used_car/create"
-    const val Ledger = "/home/ledger"
-    const val LedgerDetail = "/home/ledger/detail"
-    const val DataAnalytics = "/home/data_analytics"
-    const val DataAnalyticsDetail = "/home/data_analytics/detail"
-    const val TodoPartner = "/home/todo/partner-pending"
-    const val TodoFollowUp = "/home/todo/follow-up-customers"
-    const val TodoAfterSales = "/home/todo/after-sales-appointments"
-    const val TodoOrderReview = "/home/todo/order-pending-review"
-    const val AfterSales = "/home/after_sales"
-    const val AfterSalesCreate = "/home/after_sales/create"
-    const val AfterSalesDetail = "/home/after_sales/detail"
-    const val NewCarFollow = "/home/new_car_follow"
-    const val NewCarFollowCreate = "/home/new_car_follow/create"
-    const val NewCarFollowDetail = "/home/new_car_follow/detail"
-
-    const val AllServices = "/home/all_services"
-
-    /** Map Home feature / todo labels → route. */
-    fun fromLabel(label: String): String? = when (label.trim()) {
-        "搜索" -> Search
-        "全部服务", "更多" -> AllServices
-        "投资策略", "策略", "朋友圈营销", "朋友圈" -> Strategy
-        "学习报告" -> LearningReport
-        "签到商城", "积分商城", "签到日历", "签到", "营销活动" -> CheckInMall
-        "配音", "配音首页" -> DubbingFeed
-        "热榜", "热配榜" -> HotRankDetail
-        "生活服务" -> LifeService
-        "直播带货" -> LiveCommerce
-        // 「直播」alone → Content live room in ContentRoutes; keep 直播带货 here.
-        "Club" -> Club
-        "二手车" -> UsedCar
-        "台账", "公司数据", "收支" -> Ledger
-        "数据分析", "竞品分析" -> DataAnalytics
-        "新伙伴待确认" -> TodoPartner
-        "待跟进客户", "销售顾问" -> TodoFollowUp
-        "售后预约" -> TodoAfterSales
-        "订单待审核" -> TodoOrderReview
-        "售后", "售后专区" -> AfterSales
-        // Flutter: 新车成交 → DealInvoiceDemo; 新车跟进 → NewCarFollow (distinct).
-        "新车跟进", "新车关注" -> NewCarFollow
-        "新车成交" -> MineRoutes.DealInvoiceDemo
-        // Flutter HomeController.onStoreTap → SwitchStoreDialog (Mine-root), not DataAnalytics.
-        "门店" -> null
-        "话术库" -> Strategy
-        else -> null
-    }
-}
 
 @Composable
 internal fun HomeRouteHost(

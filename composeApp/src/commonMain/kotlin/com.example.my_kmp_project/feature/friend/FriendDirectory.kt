@@ -1,7 +1,7 @@
 package com.example.my_kmp_project.feature.friend
 
-import com.example.my_kmp_project.feature.chat.ChatAvatarUrls
-import com.example.my_kmp_project.feature.chat.ImEngineStore
+import com.example.my_kmp_project.component.chat.ChatAvatarUrls
+import com.example.my_kmp_project.component.chat.ImEngineStore
 
 /**
  * Friend directory aligned with Flutter / [MockImEngine] seed peers

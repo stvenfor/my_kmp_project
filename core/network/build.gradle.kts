@@ -70,6 +70,8 @@ kotlin {
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.ktor.client.logging)
+                // realtime WS（Flutter components/realtime）— CPF 3.3.3-0.3.0 有 ohosArm64 klib。
+                implementation(libs.ktor.client.websockets)
             }
         }
 
@@ -106,6 +108,7 @@ kotlin {
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.core)
         }
         sourceSets.getByName("androidUnitTest").dependencies {
             implementation(libs.kotlin.test)

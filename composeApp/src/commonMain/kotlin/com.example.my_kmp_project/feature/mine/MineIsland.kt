@@ -1,4 +1,5 @@
 package com.example.my_kmp_project.feature.mine
+import com.example.my_kmp_project.core.router.MineIslandRoute
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

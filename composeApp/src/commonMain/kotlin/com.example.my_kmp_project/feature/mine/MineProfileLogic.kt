@@ -1,7 +1,7 @@
 package com.example.my_kmp_project.feature.mine
 
+import com.example.my_kmp_project.component.auth.AuthSessionActions
 import com.example.my_kmp_project.core.account.AccountFacade
-import com.example.my_kmp_project.feature.auth.AuthBridge
 
 /** Flutter MineProfileController save / dirty / logout pure helpers + façade writes. */
 internal object MineProfileLogic {
@@ -21,7 +21,7 @@ internal object MineProfileLogic {
     }
 
     fun logout() {
-        AuthBridge.logout()
+        AuthSessionActions.logout()
     }
 
     fun sessionNickname(): String =

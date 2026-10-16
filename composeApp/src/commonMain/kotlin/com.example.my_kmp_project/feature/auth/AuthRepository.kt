@@ -1,16 +1,19 @@
 package com.example.my_kmp_project.feature.auth
 
+import com.example.my_kmp_project.component.auth.AuthGate
+import com.example.my_kmp_project.component.auth.AuthSessionActions
+import com.example.my_kmp_project.component.auth.AuthSessionState
 import com.example.my_kmp_project.core.account.AccountFacade
 import com.example.my_kmp_project.core.account.LoggedInUser
 import com.example.my_kmp_project.core.network.NetworkError
 import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.postApi
-import com.example.my_kmp_project.core.network.postApiOk
 
 /**
  * Remote auth repository aligned with Flutter `UserAuthApi` / `BackendAuthService`.
  *
- * Posts real request shapes via [NetworkFacade]; maps failures to Flutter Chinese copy.
+ * HTTP 契约（契约表 #1–#7）由 [UserAuthHttpApi] 承担；本对象只做**会话编排**
+ * （校验 → 调用 → [AccountFacade] 落库 / 失效清理），不重复拼请求体。
  * Does not short-circuit to local demo success.
  */
 object AuthRepository {
@@ -26,29 +29,25 @@ object AuthRepository {
         if (password.length < AuthValidators.MIN_PASSWORD_LENGTH) {
             return Result.failure(IllegalArgumentException("密码至少 6 位"))
         }
-        return postLogin(
-            path = AuthApiPaths.LOGIN,
-            body = AuthPasswordLoginRequest(
-                username = user,
-                password = password,
-                deviceId = AuthDeviceContext.deviceId(),
-                platform = AuthDeviceContext.platform(),
-            ),
-        )
+        return UserAuthHttpApi.login(
+            username = user,
+            password = password,
+            deviceId = AuthDeviceContext.deviceId(),
+            platform = AuthDeviceContext.platform(),
+        ).commitLogin()
     }
 
+    /** 契约表 #5：`data` 恒 null，只看 `code == 0`。 */
     suspend fun sendPhoneOtp(phone: String): Result<Unit> {
         if (!AuthPhoneUtils.isValidChinaMobile(phone)) {
             return Result.failure(IllegalArgumentException("请输入有效的手机号"))
         }
-        val e164 = AuthPhoneUtils.toE164China(phone)
-        return postOk(
-            path = AuthApiPaths.SEND_PHONE_OTP,
-            body = AuthPhoneOtpSendRequest(phone = e164),
-            emptySuccessMessage = "验证码已发送",
-        )
+        return UserAuthHttpApi
+            .sendPhoneOtp(AuthPhoneUtils.toE164China(phone))
+            .guardSessionGone()
     }
 
+    /** 契约表 #6：`data` = `LoginResult`（与 #1 同 DTO）。 */
     suspend fun loginWithOtp(phone: String, code: String): Result<Unit> {
         if (!AuthPhoneUtils.isValidChinaMobile(phone)) {
             return Result.failure(IllegalArgumentException("请输入有效的手机号"))
@@ -56,20 +55,17 @@ object AuthRepository {
         if (!AuthValidators.isValidOtp(code)) {
             return Result.failure(IllegalArgumentException("请输入 6 位验证码"))
         }
-        val e164 = AuthPhoneUtils.toE164China(phone)
-        return postLogin(
-            path = AuthApiPaths.VERIFY_PHONE_OTP,
-            body = AuthPhoneOtpVerifyRequest(
-                phone = e164,
-                otp = code.trim(),
-                deviceId = AuthDeviceContext.deviceId(),
-                platform = AuthDeviceContext.platform(),
-            ),
-        )
+        return UserAuthHttpApi.verifyPhoneOtp(
+            phone = AuthPhoneUtils.toE164China(phone),
+            otp = code.trim(),
+            deviceId = AuthDeviceContext.deviceId(),
+            platform = AuthDeviceContext.platform(),
+        ).commitLogin()
     }
 
     /**
-     * Email register matching Flutter `BackendAuthService.signUpWithEmail`.
+     * Email register matching Flutter `BackendAuthService.signUpWithEmail`
+     * （契约表 #2；`data` 双形态见 [AuthRegisterData.resolvedUser]）.
      * If the response has no session token, falls back to password login.
      */
     suspend fun register(
@@ -87,39 +83,34 @@ object AuthRepository {
         val username = displayName.trim().ifBlank {
             normalizedEmail.substringBefore('@').ifBlank { normalizedEmail }
         }
-        return try {
-            val response = NetworkFacade.api().postApi<AuthRegisterRequest, AuthRegisterData>(
-                path = AuthApiPaths.REGISTER,
-                body = AuthRegisterRequest(
-                    username = username,
-                    password = password,
-                    email = normalizedEmail,
-                    deviceId = AuthDeviceContext.deviceId(),
-                    platform = AuthDeviceContext.platform(),
-                ),
-            )
-            if (!isAuthBusinessSuccess(response.code) || response.data == null) {
-                return Result.failure(
-                    IllegalStateException(mapAuthFailure(response.code, response.message)),
-                )
-            }
-            val payload = response.data!!.toPayload()
-            if (payload.hasSession) {
-                commitSession(
-                    displayName = payload.username.ifBlank { username },
-                    userId = payload.userId.ifBlank { username },
-                    token = payload.token!!,
-                    phone = null,
-                    email = payload.email.ifBlank { normalizedEmail },
-                )
-            } else {
-                loginWithPassword(normalizedEmail, password)
-            }
-        } catch (e: NetworkError.Transport) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
-        } catch (e: Throwable) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
-        }
+        val result = UserAuthHttpApi.register(
+            username = username,
+            password = password,
+            email = normalizedEmail,
+            deviceId = AuthDeviceContext.deviceId(),
+            platform = AuthDeviceContext.platform(),
+        ).guardSessionGone()
+        return result.fold(
+            onSuccess = { data ->
+                val payload = data.toPayload()
+                if (payload.hasSession) {
+                    commitSession(
+                        displayName = payload.username.ifBlank { username },
+                        userId = payload.userId.ifBlank { username },
+                        token = payload.token!!,
+                        phone = payload.phone.ifBlank { null },
+                        email = payload.email.ifBlank { normalizedEmail },
+                        refreshToken = payload.refreshToken.orEmpty(),
+                        sessionId = payload.sessionId.orEmpty(),
+                        avatarUrl = payload.avatarUrl.ifBlank { null },
+                    )
+                } else {
+                    // Flutter：注册只回资料不回 token 时，再走一次密码登录拿会话。
+                    loginWithPassword(normalizedEmail, password)
+                }
+            },
+            onFailure = { Result.failure(it) },
+        )
     }
 
     /** Phone register: same OTP verify contract as login (Flutter registerWithPhone). */
@@ -129,6 +120,9 @@ object AuthRepository {
     /**
      * Exchange Huawei Account Kit authorization [code] for a BFF session
      * (`POST /api/v1/user/huawei/login`).
+     *
+     * 该端点**不在**契约表 §2.1 内（本仓既有扩展，非 Flutter d7876a1 调用点），
+     * 因此保留直连写法，不经 [UserAuthHttpApi]。
      */
     suspend fun loginWithHuaweiCode(code: String, deviceId: String): Result<Unit> {
         val authCode = code.trim()
@@ -143,9 +137,7 @@ object AuthRepository {
             )
             val data = response.data?.toPayload()
             if (!isAuthBusinessSuccess(response.code) || data == null || data.token.isBlank()) {
-                return Result.failure(
-                    IllegalStateException(mapAuthFailure(response.code, response.message)),
-                )
+                return Result.failure(handleAuthFailure(response.code, null, response.message))
             }
             commitSession(
                 displayName = data.username.ifBlank { "华为用户" },
@@ -153,74 +145,154 @@ object AuthRepository {
                 token = data.token,
                 phone = data.phone.ifBlank { null },
                 email = data.email.ifBlank { null },
+                refreshToken = data.refreshToken,
+                sessionId = data.sessionId,
+                avatarUrl = data.avatarUrl.ifBlank { null },
             )
         } catch (e: NetworkError.Transport) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
+            Result.failure(handleAuthFailure(null, e.httpStatus, e.message))
         } catch (e: Throwable) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
+            Result.failure(handleAuthFailure(null, null, e.message))
         }
     }
 
-    fun logout() {
-        AccountFacade.logout()
-        AuthSessionState.clearLocal()
-        AuthGate.clearPending()
+    /**
+     * 契约表 #7：微信授权码换会话（Flutter `BackendAuthService.signInWithWechatCode`，:74）。
+     *
+     * `// GAP(R5)`: 只有 **HTTP 契约**可用——授权码需原生微信 SDK
+     * （iOS `WXApi` / Android `wechat-sdk-android` / OHOS 无对应能力）产出，
+     * 取码桥尚未接入。接入前请勿把本方法当成「微信登录已就绪」。
+     */
+    suspend fun loginWithWechatCode(code: String, deviceId: String = ""): Result<Unit> {
+        val authCode = code.trim()
+        if (authCode.isEmpty()) {
+            return Result.failure(IllegalArgumentException("缺少微信授权码"))
+        }
+        return UserAuthHttpApi.loginWithWechat(
+            code = authCode,
+            deviceId = deviceId.trim().ifBlank { AuthDeviceContext.deviceId() },
+            platform = AuthDeviceContext.platform(),
+        ).commitLogin()
     }
 
-    private suspend fun postLogin(path: String, body: AuthPasswordLoginRequest): Result<Unit> =
-        postLoginTyped(path, body)
+    /** 本地登出（互踢 / 会话已废时走这条，对应 Flutter `logout(remote: false)`）。 */
+    fun logout() {
+        AuthSessionActions.logout()
+    }
 
-    private suspend fun postLogin(path: String, body: AuthPhoneOtpVerifyRequest): Result<Unit> =
-        postLoginTyped(path, body)
+    /**
+     * 契约表 #4：Flutter `BackendAuthService.signOut`（:97-121）**Server-Confirmed Logout**：
+     * token/sessionId/deviceId 三者齐备才打远端 `POST /user/logout`（无 body，只看 `code == 0`）；
+     * 失败时**只有**「会话已废」类错误才继续清本地，其余错误原样上抛并**保留**本地会话；
+     * 远端成功或 Gone 之后一律 `clearUser()`。
+     */
+    suspend fun logoutWithRemote(): Result<Unit> {
+        val session = AccountFacade.current()
+        if (!session.isLoggedIn ||
+            session.token.isBlank() ||
+            session.sessionId.isBlank() ||
+            session.deviceId.isBlank()
+        ) {
+            // 会话不完整（token 已废 / 缺 header）→ 不做远端登出，直接清本地。
+            AuthSessionActions.logout()
+            return Result.success(Unit)
+        }
+        return UserAuthHttpApi.logout().fold(
+            onSuccess = {
+                AuthSessionActions.logout()
+                Result.success(Unit)
+            },
+            onFailure = { error ->
+                if (isLogoutSessionGone(error)) {
+                    AuthSessionActions.logout()
+                    Result.success(Unit)
+                } else {
+                    // 网络等失败：保留本地会话，用户可重试（Flutter 同款）。
+                    Result.failure(error)
+                }
+            },
+        )
+    }
 
-    private suspend inline fun <reified Req : Any> postLoginTyped(
-        path: String,
-        body: Req,
-    ): Result<Unit> {
-        return try {
-            val response = NetworkFacade.api().postApi<Req, AuthLoginData>(path, body)
-            val data = response.data?.toPayload()
-            if (!isAuthBusinessSuccess(response.code) || data == null || data.token.isBlank()) {
-                return Result.failure(
-                    IllegalStateException(mapAuthFailure(response.code, response.message)),
-                )
-            }
-            val display = data.username.ifBlank {
-                data.email.substringBefore('@').ifBlank { data.email }
+    /**
+     * Flutter `isLogoutSessionGone`（`backend_auth_service.dart:255-275`）：
+     * 服务端会话确实已废 / 无权限的失败——清本地是安全的。
+     */
+    private fun isLogoutSessionGone(error: Throwable): Boolean {
+        val code = (error as? AuthHttpFailure)?.code
+        if (code != null &&
+            (code == AuthBizCode.UNAUTHORIZED ||
+                AuthBizCode.isSessionGone(code))
+        ) {
+            return true
+        }
+        val text = error.message.orEmpty()
+        if (text.contains("Unauthorized") || text.contains("未登录") || text.contains("未授权")) {
+            return true
+        }
+        return text.contains("token 无效") ||
+            text.contains("token 已过期") ||
+            text.contains("登录已失效") ||
+            text.contains("会话不存在") ||
+            text.contains("会话已失效") ||
+            text.contains("会话无效") ||
+            text.contains("session not found", ignoreCase = true)
+    }
+
+    /**
+     * Flutter `SessionGuardHook._handleForcedLogout`（d7876a1）：互踢/会话无效/登录失效
+     * 先清本地会话（token 已废，不再请求远端 logout），再交由调用方提示与跳登录。
+     * 403（Forbidden）不走登出。
+     */
+    private fun handleAuthFailure(code: Int?, statusCode: Int?, message: String?): IllegalStateException {
+        val failure = AuthFailure.fromBizCode(code)
+        if (AuthBizCode.isSessionGone(code) || failure.isSessionGoneFailure()) {
+            AccountFacade.logout()
+            AuthSessionState.clearLocal()
+            AuthGate.clearPending()
+        }
+        return IllegalStateException(mapAuthFailure(code, message, statusCode))
+    }
+
+    /** [handleAuthFailure] 的 `AuthHttpFailure` 版本：文案已由 [UserAuthHttpApi] 映射，只补会话清理。 */
+    private fun clearSessionIfGone(error: Throwable): Throwable {
+        val code = (error as? AuthHttpFailure)?.code
+        if (code != null &&
+            (AuthBizCode.isSessionGone(code) || AuthFailure.fromBizCode(code).isSessionGoneFailure())
+        ) {
+            AccountFacade.logout()
+            AuthSessionState.clearLocal()
+            AuthGate.clearPending()
+        }
+        return error
+    }
+
+    /**
+     * 会话落库。[UserAuthHttpApi] 已保证成功分支的 `token` 非空（Dart `_requireData`
+     * 对 `data == null` / 空 token 一律抛），这里只做展示名与 id 的兜底推导。
+     */
+    private fun Result<AuthLoginData>.commitLogin(): Result<Unit> = fold(
+        onSuccess = { data ->
+            val payload = data.toPayload()
+            val display = payload.username.ifBlank {
+                payload.email.substringBefore('@').ifBlank { payload.email }
             }.ifBlank { "用户" }
             commitSession(
                 displayName = display,
-                userId = data.userId.ifBlank { display },
-                token = data.token,
-                phone = data.phone.ifBlank { null },
-                email = data.email.ifBlank { null },
+                userId = payload.userId.ifBlank { display },
+                token = payload.token,
+                phone = payload.phone.ifBlank { null },
+                email = payload.email.ifBlank { null },
+                refreshToken = payload.refreshToken,
+                sessionId = payload.sessionId,
+                avatarUrl = payload.avatarUrl.ifBlank { null },
             )
-        } catch (e: NetworkError.Transport) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
-        } catch (e: Throwable) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
-        }
-    }
+        },
+        onFailure = { Result.failure(clearSessionIfGone(it)) },
+    )
 
-    private suspend inline fun <reified Req : Any> postOk(
-        path: String,
-        body: Req,
-        emptySuccessMessage: String,
-    ): Result<Unit> {
-        return try {
-            val response = NetworkFacade.api().postApiOk(path, body)
-            if (!isAuthBusinessSuccess(response.code)) {
-                return Result.failure(
-                    IllegalStateException(mapAuthFailure(response.code, response.message)),
-                )
-            }
-            Result.success(Unit)
-        } catch (e: NetworkError.Transport) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message ?: emptySuccessMessage)))
-        } catch (e: Throwable) {
-            Result.failure(IllegalStateException(mapAuthFailure(null, e.message)))
-        }
-    }
+    private fun <T> Result<T>.guardSessionGone(): Result<T> =
+        fold(onSuccess = { Result.success(it) }, onFailure = { Result.failure(clearSessionIfGone(it)) })
 
     private fun commitSession(
         displayName: String,
@@ -228,13 +300,19 @@ object AuthRepository {
         token: String,
         phone: String?,
         email: String?,
+        refreshToken: String = "",
+        sessionId: String = "",
+        avatarUrl: String? = null,
     ): Result<Unit> {
         AccountFacade.setSession(
             LoggedInUser(
                 displayName = displayName,
                 token = token,
+                refreshToken = refreshToken,
+                sessionId = sessionId,
+                deviceId = AuthDeviceContext.deviceId(),
                 userId = userId,
-                avatarUrl = null,
+                avatarUrl = avatarUrl,
                 phone = phone,
                 email = email,
                 companyId = null,

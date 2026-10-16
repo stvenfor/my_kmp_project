@@ -1,4 +1,5 @@
 package com.example.my_kmp_project.feature.mine
+import com.example.my_kmp_project.core.design.MineIcons
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -41,6 +42,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.offset
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
 /** Flutter `MinePage._navFadeExtent` — scroll distance to full collapsed-nav opacity. */
 private val MineNavFadeExtent = 72.dp

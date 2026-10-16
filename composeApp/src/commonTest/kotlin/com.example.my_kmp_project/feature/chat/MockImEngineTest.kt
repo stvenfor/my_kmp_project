@@ -1,5 +1,8 @@
 package com.example.my_kmp_project.feature.chat
 
+import com.example.my_kmp_project.component.chat.ImMessageType
+import com.example.my_kmp_project.component.chat.ImSendStatus
+import com.example.my_kmp_project.component.chat.MockImEngine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

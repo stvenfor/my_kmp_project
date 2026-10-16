@@ -1,6 +1,7 @@
 package com.example.my_kmp_project.feature.mine
 
-import com.example.my_kmp_project.feature.home.HomeRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
 
 /**
  * Flutter `MineController` tap handlers — keyed by catalog **id**, not Chinese label.

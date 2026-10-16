@@ -14,6 +14,9 @@ import kotlin.coroutines.resumeWithException
 public enum class OhosHttpMethod {
     Get,
     Post,
+    Put,
+    Patch,
+    Delete,
 }
 
 public data class OhosHttpResult(
@@ -40,6 +43,26 @@ public object OhosHttpTransport {
         body: String,
         contentType: String,
     ): OhosHttpResult = execute(OhosHttpMethod.Post, url, headers, body, contentType)
+
+    suspend fun put(
+        url: String,
+        headers: Map<String, String>,
+        body: String,
+        contentType: String,
+    ): OhosHttpResult = execute(OhosHttpMethod.Put, url, headers, body, contentType)
+
+    suspend fun patch(
+        url: String,
+        headers: Map<String, String>,
+        body: String,
+        contentType: String,
+    ): OhosHttpResult = execute(OhosHttpMethod.Patch, url, headers, body, contentType)
+
+    /** DELETE carries no request body here; [OhosHttpTransport] only attaches bodies to non-GET verbs with content. */
+    suspend fun delete(
+        url: String,
+        headers: Map<String, String>,
+    ): OhosHttpResult = execute(OhosHttpMethod.Delete, url, headers, body = null, contentType = null)
 
     private suspend fun execute(
         method: OhosHttpMethod,
@@ -130,7 +153,7 @@ public class OhosHttpRequestHolder(
             headersPtr = httpHeaders
 
             val merged = LinkedHashMap(headers)
-            if (method == OhosHttpMethod.Post && !body.isNullOrEmpty()) {
+            if (method != OhosHttpMethod.Get && !body.isNullOrEmpty()) {
                 if (!merged.containsKey("Content-Type")) {
                     merged["Content-Type"] = contentType ?: "application/json"
                 }
@@ -145,6 +168,9 @@ public class OhosHttpRequestHolder(
             val methodLabel = when (method) {
                 OhosHttpMethod.Get -> "GET"
                 OhosHttpMethod.Post -> "POST"
+                OhosHttpMethod.Put -> "PUT"
+                OhosHttpMethod.Patch -> "PATCH"
+                OhosHttpMethod.Delete -> "DELETE"
             }
             val methodBytes = methodLabel.encodeToByteArray()
             pinnedMethod = methodBytes.pin()

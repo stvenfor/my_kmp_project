@@ -39,7 +39,8 @@ class MockCommunityEngineTest {
     fun add_comment_increments_count() {
         val engine = MockCommunityEngine()
         val postId = engine.defaultPostId()
-        val before = engine.posts("latest", pageSize = 1).first { it.id == postId }.commentCount
+        // latest 按时间倒序，defaultPostId 是种子序首条；pageSize 需覆盖全量才能按 id 命中。
+        val before = engine.posts("latest", pageSize = 50).first { it.id == postId }.commentCount
         val added = engine.addComment(postId, "逻辑验收评论")
         assertNotNull(added)
         assertEquals("我", added.nickname)

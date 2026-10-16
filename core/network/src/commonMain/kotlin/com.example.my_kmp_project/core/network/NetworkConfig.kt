@@ -15,6 +15,17 @@ public object NetworkConfig {
     @Volatile
     var baseUrlOverride: String = ""
 
+    /**
+     * 真机局域网后端 host 注入（Flutter `--dart-define=BACKEND_HOST` 等价通道）。
+     * 机器 IP 不入库（[LanHost]）；运行时注入，仅重写 loopback host，不动非 loopback 地址。
+     */
+    @Volatile
+    var backendHostOverride: String = ""
+
+    /** 注入优先；[LanHost.fallback] 恒为空，仅为历史兼容保留。 */
+    val effectiveBackendHost: String
+        get() = backendHostOverride.trim().ifEmpty { LanHost.fallback }
+
     @Volatile
     var accessToken: String = ""
 

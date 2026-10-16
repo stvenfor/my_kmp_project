@@ -15,13 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.component.routing.CrossFeatureScreens
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.router.ProductRouteDispatch
 import com.example.my_kmp_project.core.router.ProductRouteHost
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.mine.MineRouteHost
-import com.example.my_kmp_project.feature.mine.MineRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
 
 /**
  * Mine-only Compose secondary host (ADR 0002 / #23).
@@ -89,7 +89,7 @@ fun SecondaryRouteIsland(
         return
     }
 
-    MineRouteHost(route = route, onBack = ::pop, onNavigate = ::navigate)
+    CrossFeatureScreens.MineRouteScreen(route = route, onBack = ::pop, onNavigate = ::navigate)
 }
 
 @Composable

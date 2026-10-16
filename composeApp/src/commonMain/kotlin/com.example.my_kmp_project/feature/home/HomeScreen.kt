@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.component.webview.OfflineWebFixtureUrl
+import com.example.my_kmp_project.component.routing.CrossFeatureScreens
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.router.AppRoute
@@ -47,15 +48,19 @@ import com.example.my_kmp_project.core.router.LocalAppNavigator
 import com.example.my_kmp_project.core.router.ProductRouteDispatch
 import com.example.my_kmp_project.core.router.ProductRouteHost
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
-import com.example.my_kmp_project.feature.content.ContentRouteHost
-import com.example.my_kmp_project.feature.mine.MineRouteHost
-import com.example.my_kmp_project.feature.mine.SwitchStoreDialog
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
 import my_kmp_project.composeapp.generated.resources.Res
 import my_kmp_project.composeapp.generated.resources.home_banner_sot
 import org.jetbrains.compose.resources.painterResource
+import com.example.my_kmp_project.core.router.AiRoutes
+import com.example.my_kmp_project.core.router.ClassroomRoutes
+import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.ContentRoutes
+import com.example.my_kmp_project.core.router.HomeRoutes
+import com.example.my_kmp_project.core.router.MineRoutes
+import com.example.my_kmp_project.core.router.VideoRoutes
 
 /**
  * Shared home tab root (AppShell / iOS / OHOS). Layout + biz aligned to Flutter
@@ -111,12 +116,12 @@ internal fun HomeScreen(
                     onBack = { destination = null },
                     onNavigate = { go(it) },
                 )
-                ProductRouteHost.Content -> ContentRouteHost(
+                ProductRouteHost.Content -> CrossFeatureScreens.ContentRouteScreen(
                     route = dest,
                     onBack = { destination = null },
                     onNavigate = { go(it) },
                 )
-                ProductRouteHost.Mine -> MineRouteHost(
+                ProductRouteHost.Mine -> CrossFeatureScreens.MineRouteScreen(
                     route = dest,
                     onBack = { destination = null },
                     onNavigate = { go(it) },
@@ -171,13 +176,13 @@ private fun HomeRootContent(
     }
 
     if (showSwitchStore && loggedIn) {
-        SwitchStoreDialog(
+        CrossFeatureScreens.SwitchStoreDialog(
             selectedId = "1",
             onDismiss = { showSwitchStore = false },
-            onPicked = { store ->
-                storeName = store.name
+            onPicked = { _, name ->
+                storeName = name
                 showSwitchStore = false
-                showPlatformToast("已切换到 ${store.name}")
+                showPlatformToast("已切换到 $name")
             },
         )
     }
