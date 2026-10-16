@@ -12,7 +12,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 /**
  * Realtime lane 单测的双件。
@@ -74,8 +78,37 @@ internal class ManualRealtimeTicker : RealtimeTicker {
         return ran
     }
 
+    /**
+     * 触发**第一个**该延时的待命任务。
+     * 心跳的 25000 与 ack 的 15000 会同时在表里，按延时取才能选中目标那一个。
+     */
+    suspend fun runWithDelay(delayMs: Long): Boolean {
+        val task = tasks.firstOrNull { it.delayMs == delayMs } ?: return false
+        tasks.remove(task)
+        task.action()
+        return true
+    }
+
     fun clear() {
         tasks.clear()
+    }
+}
+
+/**
+ * 立即触发的调度器：登记延时的**同时**就地跑任务体。
+ *
+ * 用途很窄但必要：[RealtimeStartupGate] 的 12s / 8s 等待走 `CompletableDeferred.await()`，
+ * 若用 [ManualRealtimeTicker] 则没人触发 → 测试协程永久挂起；用生产
+ * [CoroutineRealtimeTicker] 又要真的等 8 秒。这个假件把「期限已到」变成同步事件，
+ * 既记录了真实延时常量（[createdDelays]）又不消耗墙钟时间。
+ */
+internal class ImmediateRealtimeTicker(private val scope: CoroutineScope) : RealtimeTicker {
+    val createdDelays: MutableList<Long> = mutableListOf()
+
+    override fun after(delayMs: Long, action: suspend () -> Unit): RealtimeCancellable {
+        createdDelays += delayMs
+        val job = scope.launch { action() }
+        return RealtimeCancellable { job.cancel() }
     }
 }
 
@@ -254,17 +287,115 @@ internal class RecordingNetworkMonitor : RealtimeNetworkMonitor {
     val hasListener: Boolean get() = onOnline != null
 }
 
-/** 只实装 realtime 用到的 postRaw 的假 client（与 core:network 同名假件同款）。 */
+/**
+ * [AppRealtimeClient] 的手写假件：只记录闸门下发的指令，不跑状态机。
+ *
+ * [RealtimeStartupGate] 只依赖接口（`client.connect()` / `subscribeTopics` / `disconnect`），
+ * 所以闸门逻辑可以完全不碰 HTTP / WS，只断言「下发了什么、顺序对不对」。
+ */
+internal class FakeRealtimeClient(
+    var state: RealtimeConnectionState = RealtimeConnectionState.Disconnected,
+    /** false ⇒ `connect()` 只走到 Connecting（用于演练「连不上」的超时分支）。 */
+    var connectSucceeds: Boolean = true,
+) : AppRealtimeClient {
+    private val _stateFlow = MutableSharedFlow<RealtimeConnectionState>(replay = 1)
+    override val connectionState: Flow<RealtimeConnectionState> = _stateFlow.asSharedFlow()
+
+    var connectCalls: Int = 0
+    var prepareCalls: Int = 0
+    val disconnectCalls: MutableList<Pair<String?, Boolean>> = mutableListOf()
+    val subscribeCalls: MutableList<List<String>> = mutableListOf()
+    val unsubscribeCalls: MutableList<List<String>> = mutableListOf()
+    val sentEvents: MutableList<String> = mutableListOf()
+    var keepAliveCalls: MutableList<Boolean> = mutableListOf()
+
+    override val currentState: RealtimeConnectionState get() = state
+    override val lastSeq: Long get() = 7L
+    override val reconnectCount: Int get() = 0
+    override val outboundQueueDepth: Int get() = 0
+    override val keepAliveInBackground: Boolean get() = keepAliveCalls.lastOrNull() == true
+
+    private fun moveTo(next: RealtimeConnectionState) {
+        state = next
+        _stateFlow.tryEmit(next)
+    }
+
+    override suspend fun prepare() {
+        prepareCalls++
+    }
+
+    override suspend fun connect() {
+        connectCalls++
+        moveTo(if (connectSucceeds) RealtimeConnectionState.Connected else RealtimeConnectionState.Connecting)
+    }
+
+    override suspend fun disconnect(reason: String?, clearQueue: Boolean) {
+        disconnectCalls += reason to clearQueue
+        moveTo(RealtimeConnectionState.Disconnected)
+    }
+
+    override suspend fun subscribeTopics(topics: List<String>) {
+        subscribeCalls += topics
+    }
+
+    override suspend fun unsubscribeTopics(topics: List<String>) {
+        unsubscribeCalls += topics
+    }
+
+    override fun watchTopic(topic: String): Flow<RealtimeEnvelope> = flowOf()
+
+    override fun watchEvents(eventName: String?): Flow<RealtimeEnvelope> = flowOf()
+
+    override suspend fun sendEvent(
+        topic: String,
+        eventName: String,
+        payload: JsonObject?,
+        requireAck: Boolean,
+    ) {
+        sentEvents += "$topic/$eventName"
+    }
+
+    override fun setKeepAliveInBackground(enabled: Boolean) {
+        keepAliveCalls += enabled
+    }
+}
+
+/**
+ * 只实装 realtime 用到的 postRaw 的假 client（与 core:network 同名假件同款）。
+ *
+ * 响应队列与失败都是**可变**的：状态机会在一条用例里换票好几次（重连、恢复重试），
+ * 用构造期固定队列很难对齐次数。
+ */
 internal class RecordingRawApiClient(
-    responses: List<String>,
-    private val failure: Throwable? = null,
+    initialResponses: List<String> = emptyList(),
 ) : ApiClient {
-    private val queue = ArrayDeque(responses)
+    val queue: ArrayDeque<String> = ArrayDeque(initialResponses)
     val calls: MutableList<Pair<String, String>> = mutableListOf()
+    private var failure: Throwable? = null
+    private var failuresLeft: Int = 0
+
+    /**
+     * 让接下来 [times] 次调用抛 [error]，之后回到 [queue] 正常应答。
+     * 「只失败一次」是必须的：鉴权硬失败分支里 `guard.tryRecover()` 成功后会**递归**重跑
+     * `connectInternal`（client:207-214），永久失败的假件会直接把测试拖成栈溢出。
+     */
+    fun failNext(times: Int = 1, error: Throwable) {
+        failure = error
+        failuresLeft = times
+    }
+
+    fun respond(vararg bodies: String) {
+        bodies.forEach { queue.add(it) }
+    }
 
     override suspend fun postRaw(path: String, body: String): String {
         calls += path to body
-        if (failure != null) throw failure
+        val f = failure
+        if (f != null && failuresLeft > 0) {
+            failuresLeft--
+            throw f
+        }
+        check(queue.isNotEmpty()) { "第 ${calls.size} 次调用（$path）没有准备响应体，请 respond(...)" }
         return queue.removeFirst()
     }
 

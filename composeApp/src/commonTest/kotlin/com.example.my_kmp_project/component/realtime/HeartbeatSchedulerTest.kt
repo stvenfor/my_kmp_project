@@ -5,6 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
 
 /**
  * 应用层心跳 —— 真值 Dart `components/realtime/lib/connection/heartbeat_scheduler.dart:16-82`（d7876a1）。
@@ -52,7 +53,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun pingIdIsPingUnderscoreEpochMillisAndIsExposedAsPending() {
+    fun pingIdIsPingUnderscoreEpochMillisAndIsExposedAsPending(): Unit = runBlocking {
         val hb = scheduler()
         hb.start()
         ticker.runFirst()
@@ -62,7 +63,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun afterPingBothTheTimeoutAndTheNextIntervalAreArmedInParallel() {
+    fun afterPingBothTheTimeoutAndTheNextIntervalAreArmedInParallel(): Unit = runBlocking {
         // Dart _firePing 末尾无条件 _scheduleNext()（:81），并行跑 pong 超时计时（:70）。
         scheduler().start()
         ticker.runFirst()
@@ -71,7 +72,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun matchingPongCancelsTheTimeoutAndClearsMissAndPending() {
+    fun matchingPongCancelsTheTimeoutAndClearsMissAndPending(): Unit = runBlocking {
         val hb = scheduler()
         hb.start()
         ticker.runFirst()
@@ -90,7 +91,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun pongWithAWrongIdIsIgnoredEntirely() {
+    fun pongWithAWrongIdIsIgnoredEntirely(): Unit = runBlocking {
         // Dart `if (_pendingPingId != pingId) return;`（:47）。
         val hb = scheduler()
         hb.start()
@@ -101,7 +102,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun aSingleMissDoesNotTriggerReconnectButReschedulesTheLoop() {
+    fun aSingleMissDoesNotTriggerReconnectButReschedulesTheLoop(): Unit = runBlocking {
         val hb = scheduler()
         hb.start()
         ticker.runFirst() // ping 1
@@ -116,7 +117,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun secondConsecutiveMissNotifiesTimeoutOnceAndStopsRescheduling() {
+    fun secondConsecutiveMissNotifiesTimeoutOnceAndStopsRescheduling(): Unit = runBlocking {
         // Dart :72-75：达到 maxMiss ⇒ onTimeout() 后 return，**不再排下一次**。
         val hb = scheduler()
         hb.start()
@@ -133,7 +134,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun pongBetweenTwoMissesResetsTheCounterSoTheThirdMissIsNotFatal() {
+    fun pongBetweenTwoMissesResetsTheCounterSoTheThirdMissIsNotFatal(): Unit = runBlocking {
         val hb = scheduler()
         hb.start()
         ticker.runFirst() // ping 1
@@ -147,7 +148,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun sendFailureIsSwallowedAndTheTimersKeepRunning() {
+    fun sendFailureIsSwallowedAndTheTimersKeepRunning(): Unit = runBlocking {
         // Dart try/catch 只打日志（:61-65）。
         val hb = scheduler(
             onSendPing = { throw IllegalStateException("ws closed") },
@@ -161,7 +162,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun stopCancelsEveryTimerAndResetsCounters() {
+    fun stopCancelsEveryTimerAndResetsCounters(): Unit = runBlocking {
         val hb = scheduler()
         hb.start()
         ticker.runFirst()
@@ -173,7 +174,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun configuredThresholdOfOneMakesTheFirstMissFatal() {
+    fun configuredThresholdOfOneMakesTheFirstMissFatal(): Unit = runBlocking {
         // maxMiss 可注入：Dart 用常量 2，这里验证「达到即停」的边界而不是常量本身。
         val hb = HeartbeatScheduler(
             ticker = ticker,
@@ -191,7 +192,7 @@ class HeartbeatSchedulerTest {
     }
 
     @Test
-    fun heartbeatIntervalAndTimeoutFollowTheConfiguredConstants() {
+    fun heartbeatIntervalAndTimeoutFollowTheConfiguredConstants(): Unit = runBlocking {
         val hb = HeartbeatScheduler(
             ticker = ticker,
             clock = clock,

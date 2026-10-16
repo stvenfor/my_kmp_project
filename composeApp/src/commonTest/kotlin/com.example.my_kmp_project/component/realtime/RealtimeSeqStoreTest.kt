@@ -45,7 +45,10 @@ class RealtimeSeqStoreTest {
     fun loadTolerantlyMapsDirtyAndMissingValuesToZero() {
         // Dart `int.tryParse(raw ?? '') ?? 0`。
         for (dirty in listOf(null, "", "abc", "1.5", " 12 ")) {
-            val store = RealtimeSeqStore(InMemoryRealtimeKeyValueStore(mapOf(RealtimePrefKeys.LAST_SEQ to dirty ?: "")))
+            // null 这一档代表「键根本不存在」；其余是脏值。
+            val initial: Map<String, String> =
+                if (dirty == null) emptyMap() else mapOf(RealtimePrefKeys.LAST_SEQ to dirty)
+            val store = RealtimeSeqStore(InMemoryRealtimeKeyValueStore(initial))
             store.load()
             assertEquals(0L, store.lastSeq, "raw=$dirty")
         }
@@ -160,12 +163,18 @@ class RealtimeSeqStoreTest {
     @Test
     fun corruptStoredJsonResetsTheRingInsteadOfThrowing() {
         // Dart try/catch ⇒ `_ids.clear()`（:53-55）。
+        // 注意顺序：`shouldProcess` 会顺手把整环写回 kv（:67），所以必须在 load 之前不写。
         val kv = InMemoryRealtimeKeyValueStore(mapOf(RealtimePrefKeys.NOTIFY_DEDUP to "not-json"))
         val dedup = NotifyDedupStore(kv)
-        dedup.shouldProcess("keep-me")
         dedup.load()
         assertTrue(dedup.snapshot.isEmpty())
-        assertTrue(dedup.shouldProcess("keep-me"))
+
+        // 环清空后老 id 重新算「没见过」⇒ 会再展示一次（Dart 的容错语义，不抛）。
+        assertTrue(dedup.shouldProcess("n1"))
+        val reloaded = NotifyDedupStore(kv)
+        reloaded.load()
+        assertEquals(listOf("n1"), reloaded.snapshot)
+        assertFalse(reloaded.shouldProcess("n1"))
     }
 
     @Test
