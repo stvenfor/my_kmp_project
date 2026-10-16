@@ -200,10 +200,22 @@ if (( build_status != 0 )); then
 fi
 
 grep -E "^e: |FAILURE:|Execution failed" verify-parity.log && exit 1
-for d in composeApp core/network; do
-  printf '%s test results: ' "$d"
-  find "$d/build/test-results" -name "TEST-*.xml" 2>/dev/null \
-    | xargs -I{} sed -n 's/.*<testsuite[^>]*tests="\([0-9]*\)".*failures="\([0-9]*\)".*/\1 tests, \2 failures/p;/<testsuite /{s/.*tests="\([0-9]*\)".*failures="\([0-9]*\)".*/\1 tests, \2 failures/p;q}/p' {} \; 2>/dev/null \
-    | awk '{t+=$1; f+=$3} END {printf "tests=%d failures=%d\n", t, f}'
-done
+# 逐模块统计 JUnit XML。用 python 解析：sed/awk 版会静默报 tests=0，
+# 那等于「单测没跑也绿灯」，所以 total=0 也判失败。
+python3 - <<'PY' || exit 1
+import glob, sys, xml.etree.ElementTree as ET
+overall = 0
+for d in ("composeApp", "core/network"):
+    t = f = e = c = 0
+    for p in glob.glob(f"{d}/build/test-results/**/TEST-*.xml", recursive=True):
+        r = ET.parse(p).getroot()
+        c += 1
+        t += int(r.get("tests", 0))
+        f += int(r.get("failures", 0))
+        e += int(r.get("errors", 0))
+    print(f"{d} test results: classes={c} tests={t} failures={f} errors={e}")
+    if t == 0 or f or e:
+        overall = 1
+sys.exit(overall)
+PY
 echo "verify-parity: OK"
