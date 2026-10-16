@@ -6,7 +6,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
  * Type-safe routes for the production shell (Spike I).
  * String [AppRoutes] remain for deep-link parsing compatibility.
  */
-internal sealed interface AppRoute {
+public sealed interface AppRoute {
     data object Splash : AppRoute
     data object PrivacyConsent : AppRoute
     data object Login : AppRoute
@@ -26,7 +26,7 @@ internal sealed interface AppRoute {
 /**
  * Shared navigator. Shell binds [onNavigate]; features call [navigate] via [LocalAppNavigator].
  */
-internal class AppNavigator(
+public class AppNavigator(
     private val onNavigate: (AppRoute) -> Unit,
 ) {
     fun navigate(route: AppRoute) = onNavigate(route)
@@ -36,4 +36,4 @@ internal class AppNavigator(
     fun popToRootTab() = Unit // reserved; shell clears overlay
 }
 
-internal val LocalAppNavigator = staticCompositionLocalOf<AppNavigator?> { null }
+public val LocalAppNavigator = staticCompositionLocalOf<AppNavigator?> { null }

@@ -23,6 +23,7 @@ dependencyResolutionManagement {
 include(":composeApp")
 include(":core:network")
 include(":core:account")
+include(":core:router")
 include(":core:design")
 include(":core:base")
 include(":core:analytics")

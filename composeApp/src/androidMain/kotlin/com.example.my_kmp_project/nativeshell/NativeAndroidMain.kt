@@ -528,8 +528,7 @@ internal fun NativeAndroidMain() {
                         keptTabs = keptTabs + MainTab.Mine
                         openMineRoute(pending.route)
                     }
-                    pending.tab != null -> {
-                        val target = pending.tab
+                    else -> pending.tab?.let { target ->
                         if (AuthGate.requiresAuth(target) && !authState.isLoggedIn) {
                             AuthGate.rememberPending(target)
                             authOverlay = AuthOverlay.Login

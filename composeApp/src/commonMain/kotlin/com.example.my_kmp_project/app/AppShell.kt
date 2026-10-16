@@ -259,6 +259,8 @@ private fun MainShell() {
 
     LaunchedEffect(Unit) {
         val pending = DeepLinkRouter.consumePending() ?: return@LaunchedEffect
+        // 本地绑定：pending.tab 现在是跨模块 public 属性，智能转换不可用。
+        val pendingTab = pending.tab
         when {
             pending.route == AppRoutes.Auth.LOGIN -> {
                 authOverlay = AuthOverlay.Login
@@ -284,10 +286,10 @@ private fun MainShell() {
                 authOverlay = AuthOverlay.None
                 tabChrome.updateBottomBarVisible(false)
             }
-            pending.tab != null -> {
+            pendingTab != null -> {
                 // Soft-auth still applies via selectTab when user can interact;
                 // apply tab if public, otherwise stash for login.
-                val target = pending.tab
+                val target = pendingTab
                 if (AuthGate.requiresAuth(target) && !AccountFacade.current().isLoggedIn) {
                     AuthGate.rememberPending(target)
                     authOverlay = AuthOverlay.Login
@@ -445,7 +447,9 @@ private fun MainShell() {
                                     }
                                     parsed?.tab != null -> {
                                         clearShellRoute()
-                                        selectTab(parsed.tab)
+                                        // parsed.tab 是跨模块 public 属性，这里显式取局部值再判空。
+                                        val target = parsed.tab
+                                        if (target != null) selectTab(target)
                                     }
                                     parsed?.route == AppRoutePath.friend -> {
                                         shellRoute = AppRoute.Friend

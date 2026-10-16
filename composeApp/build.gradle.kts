@@ -125,16 +125,9 @@ kotlin {
                 implementation(libs.coil.compose)
             }
         }
-        // CPF uuid: android + ios + ohosArm64 (no ohosX64 klib — stub actual there)
-        val uuidCpfMain = sourceSets.create("uuidCpfMain").apply {
-            dependsOn(commonMain.get())
-            dependencies {
-                implementation(libs.uuid)
-            }
-        }
+        // CPF uuid 已下沉 :core:base（uuidCpfMain 跟着走），这里不再声明。
         sourceSets.getByName("androidMain").dependsOn(chartsVicoMain)
         sourceSets.getByName("androidMain").dependsOn(imageCoilMain)
-        sourceSets.getByName("androidMain").dependsOn(uuidCpfMain)
 
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
@@ -152,6 +145,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.network)
             implementation(projects.core.account)
+            implementation(projects.core.router)
             implementation(projects.core.design)
             implementation(projects.core.base)
             implementation(projects.core.analytics)
@@ -172,7 +166,6 @@ kotlin {
                 dependsOn(commonMain.get())
                 dependsOn(chartsVicoMain)
                 dependsOn(imageCoilMain)
-                dependsOn(uuidCpfMain)
             }
             iosMain.dependencies {
                 implementation(libs.coil.network.ktor3)
@@ -190,7 +183,6 @@ kotlin {
             val ohosArm64Main by getting {
                 dependsOn(ohosMain)
                 dependsOn(imageCoilMain)
-                dependsOn(uuidCpfMain)
                 dependencies {
                     implementation(libs.coil.network.ktor3)
                 }

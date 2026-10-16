@@ -6,7 +6,7 @@ package com.example.my_kmp_project.core.router
  * Used by Native Android / Shared Compose / SecondaryRouteIsland so Mine↔Home↔Content
  * jumps land on the correct overlay (not stuck in the wrong host).
  */
-internal enum class ProductRouteHost {
+public enum class ProductRouteHost {
     /** Stay on / switch to a main tab without secondary overlay. */
     Tab,
     Home,
@@ -22,14 +22,14 @@ internal enum class ProductRouteHost {
     Unknown,
 }
 
-internal data class ProductRouteTarget(
+public data class ProductRouteTarget(
     val path: String,
     val host: ProductRouteHost,
     /** When [host] is [ProductRouteHost.Toast], show this message. */
     val toastMessage: String? = null,
 )
 
-internal object ProductRouteDispatch {
+public object ProductRouteDispatch {
     private val toastOnlyLabels = setOf(
         "电子名片", "商务合作", "提醒事项", "邀请好友", "粉丝群",
         "意见反馈", "帮助中心", "头像", "请先登录",

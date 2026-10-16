@@ -1,7 +1,7 @@
 package com.example.my_kmp_project.core.router
 
 /** Shared route keys for the product shell. */
-internal object AppRoutes {
+public object AppRoutes {
     object Splash {
         const val SPLASH = "/splash"
     }
@@ -34,7 +34,7 @@ internal object AppRoutes {
     }
 }
 
-internal enum class MainTab(
+public enum class MainTab(
     val route: String,
     val label: String,
     val requiresAuth: Boolean = false,

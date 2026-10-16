@@ -172,15 +172,16 @@ if [[ -n "$static_only" ]]; then
   exit 0
 fi
 
-tasks=(":composeApp:compileDebugKotlinAndroid"
-       ":composeApp:testDebugUnitTest"
-       ":core:network:testDebugUnitTest")
+# 任务名不带冒号 = 在**每个**有该任务的子工程里执行。写死 `:composeApp:...`
+# 会让新增模块的单测/native 编译永远不进门禁（拆模块之后这就是漏检的根因）。
+tasks=("testDebugUnitTest"
+       ":composeApp:compileDebugKotlinAndroid")
 if [[ -z "$android_only" ]]; then
-  tasks+=(":composeApp:compileKotlinIosX64"
-          ":composeApp:compileKotlinIosArm64"
-          ":composeApp:compileKotlinIosSimulatorArm64"
-          ":composeApp:compileKotlinOhosArm64"
-          ":composeApp:compileKotlinOhosX64")
+  tasks+=("compileKotlinIosX64"
+          "compileKotlinIosArm64"
+          "compileKotlinIosSimulatorArm64"
+          "compileKotlinOhosArm64"
+          "compileKotlinOhosX64")
 fi
 
 echo "## 2/3 gradle (${#tasks[@]} tasks, offline=${offline:-off})"
@@ -204,18 +205,29 @@ grep -E "^e: |FAILURE:|Execution failed" verify-parity.log && exit 1
 # 那等于「单测没跑也绿灯」，所以 total=0 也判失败。
 python3 - <<'PY' || exit 1
 import glob, sys, xml.etree.ElementTree as ET
+modules = {}
+for p in glob.glob("**/build/test-results/**/TEST-*.xml", recursive=True):
+    if "node_modules" in p or "/harmonyApp/" in p:
+        continue
+    mod = p.split("/build/test-results/")[0]
+    r = ET.parse(p).getroot()
+    m = modules.setdefault(mod, [0, 0, 0, 0])
+    m[0] += int(r.get("tests", 0))
+    m[1] += int(r.get("failures", 0))
+    m[2] += int(r.get("errors", 0))
+    m[3] += 1
 overall = 0
-for d in ("composeApp", "core/network"):
-    t = f = e = c = 0
-    for p in glob.glob(f"{d}/build/test-results/**/TEST-*.xml", recursive=True):
-        r = ET.parse(p).getroot()
-        c += 1
-        t += int(r.get("tests", 0))
-        f += int(r.get("failures", 0))
-        e += int(r.get("errors", 0))
-    print(f"{d} test results: classes={c} tests={t} failures={f} errors={e}")
-    if t == 0 or f or e:
-        overall = 1
+tot_all = fails_all = 0
+for mod, (t, f, e, c) in sorted(modules.items()):
+    print(f"{mod} test results: classes={c} tests={t} failures={f} errors={e}")
+    tot_all += t
+    fails_all += f + e
+if tot_all == 0:
+    print("no JUnit XML found at all — unit tests did not run", file=sys.stderr)
+    overall = 1
+if fails_all:
+    print(f"{fails_all} test failures/errors", file=sys.stderr)
+    overall = 1
 sys.exit(overall)
 PY
 echo "verify-parity: OK"

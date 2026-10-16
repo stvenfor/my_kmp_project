@@ -24,7 +24,7 @@ import androidx.compose.runtime.setValue
  * Android Manifest: optionally add `intent-filter` for the product scheme / App Links so the
  * platform delivers the URI into [accept]; this stub needs no Manifest edits to compile or demo.
  */
-internal object DeepLinkRouter {
+public object DeepLinkRouter {
     /** Last accepted deep link waiting for shell consumption after splash / readiness. */
     var pendingDeepLink by mutableStateOf<ParsedDeepLink?>(null)
         private set
@@ -155,7 +155,7 @@ internal object DeepLinkRouter {
  * Prefer [tab] for main-shell tab switches; use [route] for non-tab destinations
  * (e.g. `/auth/login`) or when a string route key is needed by the shell.
  */
-internal data class ParsedDeepLink(
+public data class ParsedDeepLink(
     val rawUri: String,
     val tab: MainTab?,
     val route: String,
@@ -165,7 +165,7 @@ internal data class ParsedDeepLink(
  * Resolve WebView target from `/web?url=…` deep link; falls back to [fallback]
  * (typically the offline fixture) when query is missing or unsupported.
  */
-internal fun webUrlFromDeepLink(
+public fun webUrlFromDeepLink(
     rawUri: String,
     fallback: String,
 ): String {
