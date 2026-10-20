@@ -11,11 +11,11 @@ plugins {
 
 // 跨平台一键部署/校验任务（借鉴 kmp-cmp-example/deployment.gradle.kts 并按本工程适配）。
 //
-// 注意：这脚本 29 处 `exec { commandLine(...) }` 用的是 `Project.exec`，Gradle 9.0 已把它移除
-// （改用注入的 ExecOperations）。工程当前锁在 wrapper 的 Gradle **8.9**，所以还能编译；
-// 一旦升 Gradle 大版本，这个 apply 会让整个工程配置阶段红（9.4.1 实测 234 个
-// `Unresolved reference 'exec'`，`./gradlew help` 都跑不起来）。届时先按 ExecOperations 重写再挂回。
-// 另外这些任务都是 doLast 里直接起进程，与 configuration cache 不兼容，且依赖真机/模拟器，
+// 注意：wrapper 已升到 Gradle **9.4.1**，`Project.exec` 及脚本级 `exec` 在 Gradle 9.0 被移除
+// （官方迁移指南 "Removal of Project#exec, Project#javaexec, and script-level counterparts"），
+// deployment.gradle.kts 内 29 处已全部改为注入的 `ExecOperations` 服务
+// （`execOperations.exec { ... }`，API 与旧写法一致；取用方式见该文件顶部 ExecOperationsHolder）。
+// 这些任务都是 doLast 里直接起进程，与 configuration cache 不兼容，且依赖真机/模拟器，
 // 门禁从不跑它们（三端日常跑用 scripts/run-{android,ios,harmony}.sh）。
 apply(from = "deployment.gradle.kts")
 

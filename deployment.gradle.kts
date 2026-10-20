@@ -26,6 +26,23 @@
 
 import org.apache.tools.ant.taskdefs.condition.Os
 import java.io.ByteArrayOutputStream
+import javax.inject.Inject
+import org.gradle.process.ExecOperations
+
+// ----- ExecOperations（Gradle 9 迁移） -----
+// Gradle 9.0 移除了 Project.exec / Script.exec / KotlinScript.exec 等脚本级进程启动 API
+// （官方迁移指南 "Removal of Project#exec, Project#javaexec, and script-level counterparts"；
+// wrapper 已从 8.9 升到 9.4.1，旧写法整个配置阶段红：234 个 Unresolved reference 'exec'）。
+// 替代：注入 ExecOperations 服务，exec(Action<ExecSpec>) 与旧 Project.exec 用法完全一致，
+// 本文件 29 处 `exec { ... }` 已全部改为 `execOperations.exec { ... }`，语义不变。
+// 取用方式（ExecOperations javadoc）：javax.inject.Inject 标注属性 getter 的接口，
+// 再由 ObjectFactory.newInstance 实例化。
+interface ExecOperationsHolder {
+    @get:Inject
+    val execOperations: ExecOperations
+}
+
+val execOperations: ExecOperations = objects.newInstance(ExecOperationsHolder::class.java).execOperations
 
 // ----- 工程配置（取自本工程的真实值） -----
 val androidPackage = "com.example.my_kmp_project"                 // composeApp applicationId
@@ -107,7 +124,7 @@ fun findHvigorw(): String {
 // 从 hdc list targets 解析设备序列号
 fun resolveHarmonyDeviceId(hdc: String, project: org.gradle.api.Project): String {
     val out = ByteArrayOutputStream()
-    exec {
+    execOperations.exec {
         commandLine(hdc, "list", "targets")
         standardOutput = out
         isIgnoreExitValue = true
@@ -143,7 +160,7 @@ tasks.register("verifyHarmonyKexe") {
         }
         val hdc = findExecutable("hdc")
         val out = ByteArrayOutputStream()
-        exec {
+        execOperations.exec {
             commandLine(hdc, "list", "targets")
             standardOutput = out
             isIgnoreExitValue = true
@@ -162,11 +179,11 @@ tasks.register("verifyHarmonyKexe") {
             devices.first()
         }
         println("推送到设备: $deviceId")
-        exec {
+        execOperations.exec {
             commandLine(hdc, "-t", deviceId, "file", "send", kexe.absolutePath, "/data/local/tmp/test.kexe")
             isIgnoreExitValue = true
         }
-        exec {
+        execOperations.exec {
             commandLine(hdc, "-t", deviceId, "shell", "chmod", "+x", "/data/local/tmp/test.kexe")
             isIgnoreExitValue = true
         }
@@ -186,7 +203,7 @@ tasks.register("verifyHarmonyKexe") {
             $deviceRemotePath
         """.trimIndent()
 
-        val result = exec {
+        val result = execOperations.exec {
             commandLine(hdc, "-t", deviceId, "shell", "sh", "-c", shellCommand)
             standardOutput = runOut
             errorOutput = runErr
@@ -291,7 +308,7 @@ if (harmonyX64Enabled) {
             }
             val hdc = findExecutable("hdc")
             val out = ByteArrayOutputStream()
-            exec { commandLine(hdc, "list", "targets"); standardOutput = out; isIgnoreExitValue = true }
+            execOperations.exec { commandLine(hdc, "list", "targets"); standardOutput = out; isIgnoreExitValue = true }
             val devices = out.toString().trim().lines().filter { it.isNotBlank() && !it.contains("Empty") }
                 .map { it.split("\\s+".toRegex())[0] }
             if (devices.isEmpty()) {
@@ -301,8 +318,8 @@ if (harmonyX64Enabled) {
             val deviceId = if (project.hasProperty("target")) (project.property("target") as String) else devices.first()
             println("推送到设备: $deviceId")
             val remotePath = "/data/local/tmp/test_x64.kexe"
-            exec { commandLine(hdc, "-t", deviceId, "file", "send", kexe.absolutePath, remotePath); isIgnoreExitValue = true }
-            exec { commandLine(hdc, "-t", deviceId, "shell", "chmod", "+x", remotePath); isIgnoreExitValue = true }
+            execOperations.exec { commandLine(hdc, "-t", deviceId, "file", "send", kexe.absolutePath, remotePath); isIgnoreExitValue = true }
+            execOperations.exec { commandLine(hdc, "-t", deviceId, "shell", "chmod", "+x", remotePath); isIgnoreExitValue = true }
 
             println("运行测试程序 (x64)...")
             val runOut = ByteArrayOutputStream()
@@ -313,7 +330,7 @@ if (harmonyX64Enabled) {
                 export LD_LIBRARY_PATH=/system/lib64/platformsdk:/system/lib64/ark:/system/lib64:${'$'}LD_LIBRARY_PATH
                 $remotePath
             """.trimIndent()
-            val result = exec {
+            val result = execOperations.exec {
                 commandLine(hdc, "-t", deviceId, "shell", "sh", "-c", shellCommand)
                 standardOutput = runOut; errorOutput = runErr; isIgnoreExitValue = true
             }
@@ -386,7 +403,7 @@ tasks.register("deployAndroid") {
 
         // Find device
         val out = ByteArrayOutputStream()
-        exec { commandLine(adb, "devices"); standardOutput = out }
+        execOperations.exec { commandLine(adb, "devices"); standardOutput = out }
         val devices = out.toString().trim().split("\n")
             .filter { it.isNotBlank() && !it.startsWith("List of") }
             .map { it.split("\\s+".toRegex())[0] }
@@ -418,15 +435,15 @@ tasks.register("deployAndroid") {
 
         // Stop App
         println("Stopping app...")
-        exec { commandLine(adb, "-s", deviceId, "shell", "am", "force-stop", androidPackage); isIgnoreExitValue = true }
+        execOperations.exec { commandLine(adb, "-s", deviceId, "shell", "am", "force-stop", androidPackage); isIgnoreExitValue = true }
 
         // Install App
         println("Installing APK...")
-        exec { commandLine(adb, "-s", deviceId, "install", "-r", apkFile.absolutePath) }
+        execOperations.exec { commandLine(adb, "-s", deviceId, "install", "-r", apkFile.absolutePath) }
 
         // Launch App（精确启动 MainActivity）
         println("Launching app...")
-        exec { commandLine(adb, "-s", deviceId, "shell", "am", "start", "-n", "$androidPackage/$androidLaunchActivity") }
+        execOperations.exec { commandLine(adb, "-s", deviceId, "shell", "am", "start", "-n", "$androidPackage/$androidLaunchActivity") }
         println("Android app launched!")
     }
 }
@@ -450,7 +467,7 @@ if (isMac()) {
 
             // Step 2: Build Xcode Project
             println("Building Xcode project...")
-            exec {
+            execOperations.exec {
                 workingDir = iosAppDir
                 commandLine("xcodebuild",
                     "-project", "iosApp.xcodeproj",
@@ -467,7 +484,7 @@ if (isMac()) {
             } else {
                 println("Finding booted simulator...")
                 val simOut = ByteArrayOutputStream()
-                exec { commandLine("xcrun", "simctl", "list", "devices", "booted"); standardOutput = simOut }
+                execOperations.exec { commandLine("xcrun", "simctl", "list", "devices", "booted"); standardOutput = simOut }
                 var foundDeviceId: String? = null
                 val lines = simOut.toString().lines()
                 for (line in lines) {
@@ -494,7 +511,7 @@ if (isMac()) {
             println("Found app bundle: ${appPath.name}")
 
             println("Installing app...")
-            exec { commandLine("xcrun", "simctl", "install", deviceId, appPath.absolutePath) }
+            execOperations.exec { commandLine("xcrun", "simctl", "install", deviceId, appPath.absolutePath) }
 
             // Step 5: Launch App
             var bundleId = iosBundleId
@@ -502,7 +519,7 @@ if (isMac()) {
             if (infoPlist.exists()) {
                 try {
                     val out = ByteArrayOutputStream()
-                    exec {
+                    execOperations.exec {
                         commandLine("/usr/libexec/PlistBuddy", "-c", "Print :CFBundleIdentifier", infoPlist.absolutePath)
                         standardOutput = out
                         isIgnoreExitValue = true
@@ -518,7 +535,7 @@ if (isMac()) {
             }
 
             println("Launching app ($bundleId)...")
-            exec { commandLine("xcrun", "simctl", "launch", deviceId, bundleId) }
+            execOperations.exec { commandLine("xcrun", "simctl", "launch", deviceId, bundleId) }
             println("iOS app launched!")
         }
     }
@@ -566,25 +583,25 @@ if (!androidOnly) {
             println("DEVECO_SDK_HOME: $devecoSdkHome")
 
             // 预停止应用
-            exec { commandLine(hdc, "shell", "aa", "force-stop", harmonyPackage); isIgnoreExitValue = true }
+            execOperations.exec { commandLine(hdc, "shell", "aa", "force-stop", harmonyPackage); isIgnoreExitValue = true }
 
             // Step 2: ohpm install + hvigor 同步 + 打包 HAP
             println("Building HarmonyOS HAP...")
-            exec {
+            execOperations.exec {
                 workingDir = harmonyDir
                 environment("DEVECO_SDK_HOME", devecoSdkHome)
                 environment("PATH", envPath)
                 commandLine("ohpm", "install", "--all")
                 isIgnoreExitValue = true
             }
-            exec {
+            execOperations.exec {
                 workingDir = harmonyDir
                 environment("DEVECO_SDK_HOME", devecoSdkHome)
                 environment("PATH", envPath)
                 commandLine("node", hvigorw, "--sync", "-p", "product=default", "-p", "buildMode=debug",
                     "--analyze=normal", "--parallel", "--incremental", "--daemon")
             }
-            exec {
+            execOperations.exec {
                 workingDir = harmonyDir
                 environment("DEVECO_SDK_HOME", devecoSdkHome)
                 environment("PATH", envPath)
@@ -614,25 +631,25 @@ if (!androidOnly) {
             // Step 5: 安装（推送到临时目录 + bm install；失败则卸载重试）
             println("Installing HAP...")
             val remoteDir = "/data/local/tmp/debug_install"
-            exec { commandLine(hdc, "-t", deviceId, "shell", "mkdir", "-p", remoteDir); isIgnoreExitValue = true }
-            exec { commandLine(hdc, "-t", deviceId, "file", "send", hapFile.absolutePath, remoteDir); isIgnoreExitValue = true }
+            execOperations.exec { commandLine(hdc, "-t", deviceId, "shell", "mkdir", "-p", remoteDir); isIgnoreExitValue = true }
+            execOperations.exec { commandLine(hdc, "-t", deviceId, "file", "send", hapFile.absolutePath, remoteDir); isIgnoreExitValue = true }
 
             val installOut = ByteArrayOutputStream()
-            exec {
+            execOperations.exec {
                 commandLine(hdc, "-t", deviceId, "shell", "bm", "install", "-p", "$remoteDir/${hapFile.name}")
                 standardOutput = installOut; errorOutput = installOut; isIgnoreExitValue = true
             }
             if (installOut.toString().contains("failed")) {
                 println("安装失败，尝试卸载后重装...")
-                exec { commandLine(hdc, "-t", deviceId, "shell", "bm", "uninstall", "-n", harmonyPackage); isIgnoreExitValue = true }
+                execOperations.exec { commandLine(hdc, "-t", deviceId, "shell", "bm", "uninstall", "-n", harmonyPackage); isIgnoreExitValue = true }
                 Thread.sleep(5000)
-                exec { commandLine(hdc, "-t", deviceId, "shell", "bm", "install", "-p", "$remoteDir/${hapFile.name}"); isIgnoreExitValue = true }
+                execOperations.exec { commandLine(hdc, "-t", deviceId, "shell", "bm", "install", "-p", "$remoteDir/${hapFile.name}"); isIgnoreExitValue = true }
             }
-            exec { commandLine(hdc, "-t", deviceId, "shell", "rm", "-rf", remoteDir); isIgnoreExitValue = true }
+            execOperations.exec { commandLine(hdc, "-t", deviceId, "shell", "rm", "-rf", remoteDir); isIgnoreExitValue = true }
 
             // Step 6: 启动
             println("Launching Ability...")
-            exec { commandLine(hdc, "-t", deviceId, "shell", "aa", "start", "-a", harmonyAbility, "-b", harmonyPackage) }
+            execOperations.exec { commandLine(hdc, "-t", deviceId, "shell", "aa", "start", "-a", harmonyAbility, "-b", harmonyPackage) }
             println("HarmonyOS app launched!")
         }
     }
