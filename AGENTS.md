@@ -30,7 +30,7 @@ Ruflo MCP (Cursor): `.cursor/mcp.json` → `npx -y ruflo@latest mcp start`. Heal
 
 | Path | Role |
 |------|------|
-| `core/{base,network,router,account,design,platform,ui,analytics,storage}/` | ④ horizontal commons — 9 real Gradle modules (`:core:*`) |
+| `core/{base,network,router,account,design,platform,ui,analytics,storage,database}/` | ④ horizontal commons — 10 real Gradle modules (`:core:*`) |
 | `component/` | ③ vertical ports: pay / push / chat / webview / auth / routing / realtime (`:component`) |
 | `feature/{home,mine,auth,shell,chat,friend,community,media,classroom,commerce,content,live,scan,web,ai,pay,wallet}/` | ② 17 business modules (`:feature:*`) — **no sibling feature deps**, each testable alone |
 | `composeApp/` | ① assembly only: `app/` shell + 三端入口 + RouteHost 分发; **the only binary producer** (iOS framework + OHOS `libkn.so`) |

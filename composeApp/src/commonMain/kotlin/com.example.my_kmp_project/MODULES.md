@@ -1,4 +1,4 @@
-# Module map (28 Gradle projects)
+# Module map (29 Gradle projects)
 
 历史：`composeApp` 曾经是唯一的 KMP 模块，`core/*` `feature/*` 只是包名。2026-10-16 起按
 「feature 与 core 同级、feature 之间不得互相依赖、单个 feature 可独立测试」拆成真模块。
@@ -13,7 +13,7 @@ OHOS 仍只有一条 `libkn.so`：二进制的产出方**只有** `:composeApp`�
    ↓ 可以看见全部 feature
 :feature:*         ② 业务面（17 个）——↛ 其它 feature，↛ :composeApp
 :component         ③ 纵向桥（push / webview / pay / chat / realtime / routing / auth 端口）
-:core:*            ④ 横向 commons（9 个）
+:core:*            ④ 横向 commons（10 个）
 iosApp harmonyApp  ⑤ 平台薄壳（Swift / ArkTS），只 host 共享 UI
 ```
 
@@ -28,6 +28,7 @@ iosApp harmonyApp  ⑤ 平台薄壳（Swift / ArkTS），只 host 共享 UI
 | `:core:base` | — | 文本/日期/HtmlUtils、`core.uuid`（CPF uuid，ohosX64 stub） |
 | `:core:analytics` | — | 埋点事件模型与门面 |
 | `:core:storage` | — | `KeyValueStore` 唯一 KV 契约 + settings(Android/iOS) + `OH_Preferences`(两 arch) |
+| `:core:database` | — | 结构化/实体持久化：`Database`/`Table` 契约 + 内存 driver + `DatabaseProvider` 缝（平台 SQL driver 待 OHOS klib，见 platform-gap-registry） |
 | `:core:network` | base | HTTP 门面 / 信封 / 分页 / 错误码、`core.sse`、realtime WS 帧与配置 |
 | `:core:router` | — | `AppRoutePath`、路由常量表、Navigator 契约 |
 | `:core:account` | network, storage | `AccountFacade` + session / 隐私同意 store |

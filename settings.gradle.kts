@@ -30,6 +30,7 @@ include(":core:analytics")
 include(":core:storage")
 include(":core:platform")
 include(":core:ui")
+include(":core:database")
 include(":component")
 
 // feature 叶子模块：模块之间禁止相互依赖（R7 + check-layer-deps.sh 第 1/3 条），
