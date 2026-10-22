@@ -26,8 +26,8 @@ Flutter SoT: `my_ai_project`. KMP: shared feature engines / hosts. Pixel SoT bit
 
 | Item | Detail |
 |------|--------|
-| Flutter | `classroom_mock_data.dart` (classes, HW, giftCard, dubbing, video) |
-| KMP | SoT bitmaps for gift/dubbing/video; thin `ClassroomHwMock` |
+| Flutter | `classroom_mock_data.dart` (classes, HW, giftCard, transliter, video) |
+| KMP | SoT bitmaps for gift/transliter/video; thin `ClassroomHwMock` |
 | Level | **SoT-skin** |
 | Gaps | Port mock models; model-driven claim/HW (replace bitmap-only host) |
 | Priority | **P0** |
@@ -46,7 +46,7 @@ Flutter SoT: `my_ai_project`. KMP: shared feature engines / hosts. Pixel SoT bit
 
 | Item | Detail |
 |------|--------|
-| Flutter | short video / dubbing mocks; AI SSE; music mock URLs |
+| Flutter | short video / transliter mocks; AI SSE; music mock URLs |
 | KMP | SoT pages + StubMediaPlayer / toast AI |
 | Level | **SoT-skin** / thin |
 | Gaps | Mock feed/publish; mock SSE chunk stream; bind playable URLs where player exists |

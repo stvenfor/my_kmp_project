@@ -19,7 +19,7 @@
 | Mine | 7 | ready | ready | ready | 共享 Compose 岛（含 http_test） |
 | Settings | 8 | 1 ready / 5 n/a / 2 待定 | 同左 | 同左 | 发票两页待产品定 scope |
 | Mall | 4 | ready | ready | ready | NativeFeature mall/wallet |
-| Video | 9 | partial | partial | partial | 短视频/配音；播放器真适配另列 |
+| Video | 9 | partial | partial | partial | 短视频/跟读；播放器真适配另列 |
 | bfui | 17 | n/a | n/a | n/a | 模板演示，out-of-scope |
 | Music | 2 | partial | partial | stub | OHOS 播放器 stub |
 | Classroom | 8 | partial | partial | partial | mock 数据对等 |
@@ -48,7 +48,7 @@
 | `/home/check_in_mall` | CheckInMallPage | feature/home | ready | ready | ready |
 | `/home/all_services` | AllServicesPage | feature/home | ready | ready | ready |
 | `/home/search` | SearchPage | feature/home | ready | ready | ready |
-| `/home/dubbing_feed` | DubbingHomePage | feature/home | ready | ready | ready |
+| `/home/transliter_feed` | TransliterHomePage | feature/home | ready | ready | ready |
 | `/home/strategy` | StrategyPage | feature/home | ready | ready | ready |
 | `/home/hot_rank_detail` | HotRankDetailPage | feature/home | ready | ready | ready |
 | `/home/used_car` | 二手车列表 | feature/home | ready | ready | ready |
@@ -123,17 +123,17 @@
 | `/video/short/play` | 播放页 | video | feature/media | partial | partial | partial |
 | `/video/short/publish` | 发布 | video | feature/media | partial | partial | partial |
 | `/video/short/help` | 帮助 | video | feature/media | partial | partial | partial |
-| `/video/dubbing/videos` | 配音视频列表 | video | feature/media | partial | partial | partial |
-| `/video/dubbing/videos/detail` | 配音视频详情 | video | feature/media | partial | partial | partial |
-| `/video/dubbing/works` | 作品列表 | video | feature/media | partial | partial | partial |
-| `/video/dubbing/works/detail` | 作品详情 | video | feature/media | partial | partial | partial |
+| `/video/transliter/videos` | 跟读视频列表 | video | feature/media | partial | partial | partial |
+| `/video/transliter/videos/detail` | 跟读视频详情 | video | feature/media | partial | partial | partial |
+| `/video/transliter/works` | 作品列表 | video | feature/media | partial | partial | partial |
+| `/video/transliter/works/detail` | 作品详情 | video | feature/media | partial | partial | partial |
 | `/music/list` | 音乐列表 | music | feature/media | partial | partial | stub |
 | `/music/now_playing` | 播放页 | music | feature/media | partial | partial | stub |
 | `/classroom/my_class` | 我的班级 | classroom | feature/classroom | partial | partial | partial |
 | `/classroom/homework_stats` | 作业统计 | classroom | feature/classroom | partial | partial | partial |
 | `/classroom/homework/detail_teacher` | 作业详情（师） | classroom | feature/classroom | partial | partial | partial |
 | `/classroom/homework/detail_student` | 作业详情（生） | classroom | feature/classroom | partial | partial | partial |
-| `/classroom/homework/dubbing` | 配音作业 | classroom | feature/classroom | partial | partial | partial |
+| `/classroom/homework/transliter` | 跟读作业 | classroom | feature/classroom | partial | partial | partial |
 | `/classroom/homework/review` | 作业批改 | classroom | feature/classroom | partial | partial | partial |
 | `/classroom/gift/claim` | 领礼物卡 | classroom | feature/classroom | partial | partial | partial |
 | `/classroom/video/detail` | 课堂视频 | classroom | feature/classroom | partial | partial | partial |

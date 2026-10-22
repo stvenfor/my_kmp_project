@@ -2,7 +2,7 @@
 <resources>
     <style name="Theme.DemoApp.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_icon</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/launch_image</item>
         <item name="windowSplashScreenAnimationDuration">0</item>
         <item name="postSplashScreenTheme">@style/Theme.DemoApp</item>
         <item name="android:windowBackground">@drawable/splash_screen</item>

@@ -1,4 +1,4 @@
-// feature:media —— 短视频 / 配音 / 音乐三个岛 + 平台播放器 expect-actual。
+// feature:media —— 短视频 / 跟读 / 音乐三个岛 + 平台播放器 expect-actual。
 // android·ios·ohos 的 MediaPlayer actual 已经跟着模块搬进各自 source set，:composeApp 不再持有。
 // 目标集、android 基础配置、coroutines / atomicfu / serialization / kotlin-test 由根
 // build.gradle.kts 的 :feature:* 共享接线提供，本文件只声明模块特有的依赖边。

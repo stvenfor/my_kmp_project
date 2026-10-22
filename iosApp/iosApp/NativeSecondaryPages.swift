@@ -2464,7 +2464,7 @@ struct NativeHomeworkStatsPage: View {
     var onOpen: ((String) -> Void)? = nil
     private let rows: [(String, String, String)] = [
         ("语法练习 3", "书面", "今日 23:59"),
-        ("配音作业 · 致橡树", "配音", "明日 18:00"),
+        ("跟读作业 · 致橡树", "跟读", "明日 18:00"),
         ("听力精听", "听力", "本周六"),
     ]
 
@@ -2483,8 +2483,8 @@ struct NativeHomeworkStatsPage: View {
                         .padding(14)
                         .background(DesignTokens.canvas, in: RoundedRectangle(cornerRadius: 10))
                         .onTapGesture {
-                            if row.1 == "配音" {
-                                onOpen?("/classroom/homework/dubbing")
+                            if row.1 == "跟读" {
+                                onOpen?("/classroom/homework/transliter")
                             } else {
                                 onOpen?("/classroom/homework/detail_teacher")
                             }
@@ -2653,7 +2653,7 @@ struct NativeClassroomPage: View {
     var onOpen: ((String) -> Void)? = nil
     private let classes: [(String, String)] = [
         ("产品知识班", "未交作业 2"),
-        ("配音作业", "待批改 1"),
+        ("跟读作业", "待批改 1"),
         ("销售话术营", "进行中"),
     ]
     var body: some View {
@@ -3032,7 +3032,7 @@ struct NativeLifeServicePage: View {
     var onClose: () -> Void
     private let shortcuts: [(String, Color)] = [
         ("会员专享", DesignTokens.link),
-        ("配音专栏", Color.orange),
+        ("跟读专栏", Color.orange),
         ("其他课程", Color(red: 0.345, green: 0.337, blue: 0.839)),
         ("功能教程", Color(red: 0.204, green: 0.780, blue: 0.349)),
     ]
@@ -3801,7 +3801,7 @@ struct NativeAddressesPage: View {
     }
 }
 
-struct NativeDubbingFeedPage: View {
+struct NativeTransliterFeedPage: View {
     var onClose: () -> Void
     var onOpen: ((String) -> Void)? = nil
     private let categories = ["推荐", "动画", "电影", "启蒙", "跟读"]
@@ -3809,7 +3809,7 @@ struct NativeDubbingFeedPage: View {
     private let recent = [("穿梭在迷宫的勇士", "03:24"), ("萌宠部落", "02:18"), ("完美的世界", "04:05"), ("小猪佩奇", "01:56")]
     private let expert = [
         ("英语启蒙课堂", "蓝儿老师Joyue · 跟读练习 · 初级"),
-        ("趣味配音挑战", "配音达人 · 动画配音 · 中级"),
+        ("趣味跟读挑战", "跟读达人 · 动画跟读 · 中级"),
         ("诵读之星", "朗读爱好者 · 经典诵读"),
     ]
     var body: some View {
@@ -3888,7 +3888,7 @@ struct NativeDubbingFeedPage: View {
                     }
                     .padding(.horizontal, 16)
 
-                    Text("进入配音视频专区", font: .system(size: 15, weight: .semibold), color: DesignTokens.link)
+                    Text("进入跟读视频专区", font: .system(size: 15, weight: .semibold), color: DesignTokens.link)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(DesignTokens.link.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
@@ -3919,7 +3919,7 @@ struct NativeHotRankPage: View {
     private let categories = ["热读榜", "新书榜", "童话榜", "热搜榜", "科普榜", "高分榜"]
     private let ages = ["1-2岁", "3岁到大班", "1-3年级", "4年级以上"]
     private let titles = ["穿条纹睡衣的...", "蛮荒故事", "爱冒险的朵拉", "道奇小狗", "你好，小朋友", "完美的世界", "萌宠部落", "穿梭在迷宫的勇士"]
-    private let subs = ["某日布鲁诺决定...", "一种近似父子的不寻常感情", "开启你的奇幻冒险之旅", "跟佩奇一起快乐学英语", "经典动画配音练习", "趣味英语启蒙课堂"]
+    private let subs = ["某日布鲁诺决定...", "一种近似父子的不寻常感情", "开启你的奇幻冒险之旅", "跟佩奇一起快乐学英语", "经典动画跟读练习", "趣味英语启蒙课堂"]
     private let heats = [39274, 28390, 22007, 19874, 18560, 16230, 14890, 13540]
     private let ranks = [1, 2, 3, 88, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
     var body: some View {
@@ -4142,15 +4142,15 @@ enum HomeNativeMock {
 
     static let searchHistory = ["极限文字一排两个显示", "极限文字超出九个字...", "宫崎骏宫漫作品", "龙猫", "闪光少女"]
     static let searchDiscovery = ["罗振宇2026跨年演讲", "极限文字超出九个字...", "小猪佩奇全系列", "百家讲坛全集", "百家讲坛明朝"]
-    static let searchFilters = ["3-5 个句子的配音", "较慢的语速", "初级难度", "女声", "1 分钟以内的视频"]
+    static let searchFilters = ["3-5 个句子的跟读", "较慢的语速", "初级难度", "女声", "1 分钟以内的视频"]
     static let rankTabs = ["热配榜", "诵读榜", "剧集榜", "记录榜", "合作榜"]
 
     static func rankItems(for tab: Int) -> [(String, String)] {
         switch tab {
         case 1: return [("静夜思", "床前明月光，疑是地上霜..."), ("春晓", "春眠不觉晓，处处闻啼鸟..."), ("登鹳雀楼", "白日依山尽，黄河入海流..."), ("望庐山瀑布", "日照香炉生紫烟..."), ("悯农", "锄禾日当午，汗滴禾下土...")]
         case 2: return [("小猪佩奇", "佩奇和乔治的日常生活..."), ("汪汪队立大功", "莱德队长带领狗狗们救援..."), ("超级飞侠", "乐迪环游世界送包裹..."), ("熊出没", "熊大熊二与光头强..."), ("喜羊羊与灰太狼", "羊村与狼堡的欢乐对决...")]
-        case 3: return [("我的第一次配音", "完成度 98%，发音清晰自然..."), ("英语朗读打卡", "连续打卡 30 天..."), ("亲子共读记录", "与孩子一起完成的温馨朗读..."), ("班级作业精选", "老师推荐的优秀作业..."), ("周末练习成果", "周末集中练习成果汇总...")]
-        case 4: return [("BBC 合作专区", "BBC 精选纪录片配音素材..."), ("迪士尼经典合作", "迪士尼动画经典片段..."), ("国家地理探索", "探索自然与科学的配音..."), ("牛津阅读树", "分级阅读配套配音练习..."), ("剑桥少儿英语", "剑桥体系标准发音示范...")]
+        case 3: return [("我的第一次跟读", "完成度 98%，发音清晰自然..."), ("英语朗读打卡", "连续打卡 30 天..."), ("亲子共读记录", "与孩子一起完成的温馨朗读..."), ("班级作业精选", "老师推荐的优秀作业..."), ("周末练习成果", "周末集中练习成果汇总...")]
+        case 4: return [("BBC 合作专区", "BBC 精选纪录片跟读素材..."), ("迪士尼经典合作", "迪士尼动画经典片段..."), ("国家地理探索", "探索自然与科学的跟读..."), ("牛津阅读树", "分级阅读配套跟读练习..."), ("剑桥少儿英语", "剑桥体系标准发音示范...")]
         default: return [
             ("穿条纹睡衣的男孩", "某日布鲁诺决定，去铁丝网的另外…"),
             ("蛮荒故事", "六个独立故事，荒诞与黑色幽默交织…"),
@@ -4196,7 +4196,7 @@ enum HomeNativeMock {
         // Flutter AllServicesData catalog (教学服务 / 其他服务).
         .init(title: "教学服务", items: [
             .init(id: "classroom", label: "班级教学", asset: "home_all_services_intelligence_task"),
-            .init(id: "dubbing", label: "配音首页", asset: "home_all_services_dubbing_home"),
+            .init(id: "transliter", label: "跟读首页", asset: "home_all_services_transliter_home"),
             .init(id: "videos", label: "视频列表", asset: "home_all_services_small_video"),
             .init(id: "works", label: "作品列表", asset: "home_all_services_exhibition_hall_shooting"),
         ]),
@@ -4211,14 +4211,14 @@ enum HomeNativeMock {
     ]
 
     static let reportHighlights: [(String, String, String, String)] = [
-        ("🎬", "《哈利波特》第3章", "视频配音 · 刚刚发布", "100"),
+        ("🎬", "《哈利波特》第3章", "视频跟读 · 刚刚发布", "100"),
         ("🏆", "解锁「45天」打卡勋章", "里程碑达成 · 太棒了！", "🎉"),
         ("🎵", "\"Wingardium Leviosa!\"", "满分句子 · 可播放原声", "▶"),
     ]
 
     static let reportRecords: [(String, String, String, String, String, Bool)] = [
-        ("🎬", "视频配音", "哈利波特 第3章", "18:32", "已发布", true),
-        ("⚔️", "配音闯关", "Level 8 · 3关", "17:10", "15 min", false),
+        ("🎬", "视频跟读", "哈利波特 第3章", "18:32", "已发布", true),
+        ("⚔️", "跟读闯关", "Level 8 · 3关", "17:10", "15 min", false),
         ("📚", "同步练", "PEP 五年级上册 Unit 3", "16:45", "8 min", false),
         ("🤖", "AI 外教", "自由对话 · Tom老师", "15:20", "12 min", false),
         ("🎧", "听力练习", "英美绕口令 · 5题", "14:00", "5 min", false),
@@ -4655,8 +4655,8 @@ struct NativeMallOrderDetailPage: View {
     }
 }
 
-// W5.i.10 `/video/dubbing/videos` + `/videos/detail`
-struct NativeDubbingVideosPage: View {
+// W5.i.10 `/video/transliter/videos` + `/videos/detail`
+struct NativeTransliterVideosPage: View {
     var onClose: () -> Void
     private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
     private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
@@ -4664,14 +4664,14 @@ struct NativeDubbingVideosPage: View {
     private let items: [(String,String,String)] = [("小王子 · 片段 3","难度初级 · 女声","0:45"),("飞屋环游记 · OP","难度中级 · 男声","1:12")]
     var body: some View {
         VStack(spacing: 0) {
-            subRouteHeader("配音视频", accent: accent, ink: ink, onClose: onClose)
+            subRouteHeader("跟读视频", accent: accent, ink: ink, onClose: onClose)
             ScrollView { VStack(spacing: 8){ ForEach(items.indices, id: \.self){ i in let it = items[i]; HStack{ RoundedRectangle(cornerRadius: 10).fill(accent.opacity(0.12)).frame(width: 56, height: 56).overlay(Text("▶", color: accent)); VStack(alignment: .leading, spacing: 4){ Text(it.0, font: .system(size: 15, weight: .semibold), color: ink); Text(it.1, font: .system(size: 12), color: DesignTokens.mute) }; Spacer(); Text(it.2, font: .system(size: 12), color: DesignTokens.mute) }.padding(12).background(Color.white, in: RoundedRectangle(cornerRadius: 12)).padding(.horizontal, 16) } }.padding(.top, 12).padding(.bottom, 24) }
             .background(bg.ignoresSafeArea())
         }
     }
 }
 
-struct NativeDubbingVideoDetailPage: View {
+struct NativeTransliterVideoDetailPage: View {
     var onClose: () -> Void
     private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
     private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
@@ -4679,20 +4679,20 @@ struct NativeDubbingVideoDetailPage: View {
     private let rows: [(String,String)] = [("素材","小王子 · 片段 3"),("难度","初级"),("音色","女声"),("时长","0:45"),("进度","已完成 86%")]
     var body: some View {
         VStack(spacing: 0) {
-            subRouteHeader("配音详情", accent: accent, ink: ink, onClose: onClose)
+            subRouteHeader("跟读详情", accent: accent, ink: ink, onClose: onClose)
             ScrollView { VStack(spacing: 12){ ForEach(rows.indices, id: \.self){ i in infoRow(rows[i].0, rows[i].1, ink: ink) } }.padding(.top, 12).padding(.bottom, 24) }
             .background(bg.ignoresSafeArea())
         }
     }
 }
 
-// W5.i.11 `/video/dubbing/works` + `/works/detail`
-struct NativeDubbingWorksPage: View {
+// W5.i.11 `/video/transliter/works` + `/works/detail`
+struct NativeTransliterWorksPage: View {
     var onClose: () -> Void
     private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
     private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
     private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
-    private let items: [(String,String)] = [("我的配音作品 · 小王子","2.1k 播放 · 186 赞"),("练习作品 · 飞屋","980 播放")]
+    private let items: [(String,String)] = [("我的跟读作品 · 小王子","2.1k 播放 · 186 赞"),("练习作品 · 飞屋","980 播放")]
     var body: some View {
         VStack(spacing: 0) {
             subRouteHeader("我的作品", accent: accent, ink: ink, onClose: onClose)
@@ -4702,12 +4702,12 @@ struct NativeDubbingWorksPage: View {
     }
 }
 
-struct NativeDubbingWorkDetailPage: View {
+struct NativeTransliterWorkDetailPage: View {
     var onClose: () -> Void
     private let accent = Color(red: 0.643, green: 0.259, blue: 0.929)
     private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
     private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
-    private let rows: [(String,String)] = [("作品","我的配音作品 · 小王子"),("时长","0:45"),("播放","2.1k"),("赞","186")]
+    private let rows: [(String,String)] = [("作品","我的跟读作品 · 小王子"),("时长","0:45"),("播放","2.1k"),("赞","186")]
     var body: some View {
         VStack(spacing: 0) {
             subRouteHeader("作品详情", accent: accent, ink: ink, onClose: onClose)
@@ -4768,7 +4768,7 @@ struct NativeVideoHubPage: View {
     var onOpen: ((String) -> Void)? = nil
     private let ink = Color(red: 0.102, green: 0.102, blue: 0.102)
     private let bg = Color(red: 0.961, green: 0.965, blue: 0.973)
-    private let tiles: [(String,String)] = [("短视频","/video/short"),("配音视频","/video/dubbing/videos"),("我的作品","/video/dubbing/works")]
+    private let tiles: [(String,String)] = [("短视频","/video/short"),("跟读视频","/video/transliter/videos"),("我的作品","/video/transliter/works")]
     var body: some View {
         VStack(spacing: 0) {
             subRouteHeader("视频", accent: DesignTokens.link, ink: ink, onClose: onClose)

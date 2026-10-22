@@ -103,7 +103,7 @@
 - [ ] 1.9.3 `home_feature_content_page` 通用内容容器
 - [ ] 1.9.4 `hot_rank_detail_page` 热榜详情
 - [ ] 1.9.5 `check_in_mall_page` 签到商城
-- [ ] 1.9.6 `dubbing_home_page`（若仍挂 Home）入口或迁 video
+- [ ] 1.9.6 `transliter_home_page`（若仍挂 Home）入口或迁 video
 - [ ] 1.9.7 以上 iOS / Harmony
 
 ### 1.10 Home 验收
@@ -252,7 +252,7 @@
 - [ ] 7.1.1 `video_page` / hub
 - [ ] 7.1.2 `short_video_page` + `short_video_play_page`
 - [ ] 7.1.3 `short_video_publish_page` + `short_video_help_page`
-- [ ] 7.1.4 配音：`dubbing_*` 列表/详情/作品（4 页）
+- [ ] 7.1.4 跟读：`transliter_*` 列表/详情/作品（4 页）
 - [ ] 7.1.5 Home/Mine「小视频」入口接线
 - [ ] 7.1.6 播放器：Android/iOS/OHOS 真 adapter（禁 Stub 验收）
 - [ ] 7.1.7 iOS / Harmony 验收
@@ -262,7 +262,7 @@
 ## 8. Classroom（Flutter 8 pages）— P2
 
 - [ ] 8.1.1 `my_class_list_page`
-- [ ] 8.1.2 作业：学生/教师详情、批改、统计、配音作业
+- [ ] 8.1.2 作业：学生/教师详情、批改、统计、跟读作业
 - [ ] 8.1.3 `claim_gift_card_page`
 - [ ] 8.1.4 `video_detail_page`（课堂）
 - [ ] 8.1.5 Mine「我的课程」接线

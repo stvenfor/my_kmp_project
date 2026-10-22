@@ -27,8 +27,8 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['学习报告', '/home/learning_report'],
   ['签到商城', '/home/check_in_mall'],
   ['积分商城', '/home/check_in_mall'],
-  ['配音', '/home/dubbing_feed'],
-  ['配音首页', '/home/dubbing_feed'],
+  ['跟读', '/home/transliter_feed'],
+  ['跟读首页', '/home/transliter_feed'],
   ['热榜', '/home/hot_rank_detail'],
   ['热配榜', '/home/hot_rank_detail'],
   ['生活服务', '/home/life_service'],
@@ -104,7 +104,7 @@ const LABEL_TO_PATH: Map<string, string> = new Map([
   ['门店', '/home/data_analytics'],
   ['订单中心', '/mall/orders'],
   ['视频列表', '/video'],
-  ['作品列表', '/video/dubbing/works'],
+  ['作品列表', '/video/transliter/works'],
   ['关于', '/mine/about'],
 ]);
 
@@ -277,11 +277,11 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
         row('1', '洗车券 ×1', '200 积分', '可兑'),
         row('2', '香氛挂件', '500 积分'),
       ], '去签到');
-    case '/home/dubbing_feed':
-      return page(path, '配音', '热门配音素材', [
+    case '/home/transliter_feed':
+      return page(path, '跟读', '热门跟读素材', [
         row('1', '小王子 · 片段 3', '难度初级 · 女声', '热'),
         row('2', '飞屋环游记 · OP', '难度中级 · 男声'),
-      ], '开始配音');
+      ], '开始跟读');
     case '/home/hot_rank_detail':
       return page(path, '热搜榜', 'iHome用户近期热搜内容', [
         row('1', '穿条纹睡衣的...', '热度39274', '1'),
@@ -379,7 +379,7 @@ export function featurePageFor(pathOrLabel: string): FeaturePage {
     case '/classroom/my_class':
       return page(path, '我的课程', '班级与作业', [
         row('1', '产品知识班', '未交作业 2'),
-        row('2', '配音作业', '待批改 1'),
+        row('2', '跟读作业', '待批改 1'),
       ], '进入课堂');
     case '/classroom/homework':
       return page(path, '作业详情', '待提交', [
@@ -550,8 +550,8 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   if (path === '/home/check_in_mall') {
     return 'check_in_mall';
   }
-  if (path === '/home/dubbing_feed') {
-    return 'dubbing';
+  if (path === '/home/transliter_feed') {
+    return 'transliter';
   }
   if (path === '/home/hot_rank_detail') {
     return 'hot_rank';
@@ -655,17 +655,17 @@ export function nativePaneIdFor(pathOrLabel: string): string {
   if (path === '/video') {
     return 'video_hub';
   }
-  if (path.startsWith('/video/dubbing/videos/detail')) {
-    return 'dubbing_video_detail';
+  if (path.startsWith('/video/transliter/videos/detail')) {
+    return 'transliter_video_detail';
   }
-  if (path.startsWith('/video/dubbing/videos')) {
-    return 'dubbing_videos';
+  if (path.startsWith('/video/transliter/videos')) {
+    return 'transliter_videos';
   }
-  if (path.startsWith('/video/dubbing/works/detail')) {
-    return 'dubbing_work_detail';
+  if (path.startsWith('/video/transliter/works/detail')) {
+    return 'transliter_work_detail';
   }
-  if (path.startsWith('/video/dubbing/works')) {
-    return 'dubbing_works';
+  if (path.startsWith('/video/transliter/works')) {
+    return 'transliter_works';
   }
   if (path === '/video/short' || path.startsWith('/video/')) {
     return 'short_video';
@@ -680,7 +680,7 @@ export function nativePaneIdFor(pathOrLabel: string): string {
     return 'music';
   }
   // M10.A.1.h: classroom family — homework stats / homework detail / gift claim panes
-  // (Kotlin AppRoutePath: homework_stats, homework/detail_*, homework/dubbing,
+  // (Kotlin AppRoutePath: homework_stats, homework/detail_*, homework/transliter,
   // homework/review, gift/claim, video/detail; '/classroom/homework' kept for iOS parity).
   if (path.startsWith('/classroom/gift')) {
     return 'gift_claim';

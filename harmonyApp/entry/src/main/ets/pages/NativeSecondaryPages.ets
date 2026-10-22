@@ -17,7 +17,7 @@ export struct NativeSearchPane {
   @State discovery: string[] = ['罗振宇2026跨年演讲', '小猪佩奇全系列', '百家讲坛全集', '百家讲坛明朝'];
   @State rankTab: number = 0;
   private rankTabs: string[] = ['热配榜', '诵读榜', '剧集榜', '记录榜', '合作榜'];
-  private filters: string[] = ['3-5 个句子的配音', '较慢的语速', '初级难度', '女声', '1 分钟以内的视频'];
+  private filters: string[] = ['3-5 个句子的跟读', '较慢的语速', '初级难度', '女声', '1 分钟以内的视频'];
 
   private rankItems(): string[][] {
     if (this.rankTab === 1) {
@@ -27,10 +27,10 @@ export struct NativeSearchPane {
       return [['小猪佩奇', '佩奇和乔治…'], ['汪汪队立大功', '莱德队长…'], ['超级飞侠', '乐迪环游…'], ['熊出没', '熊大熊二…'], ['喜羊羊与灰太狼', '羊村与狼堡…']];
     }
     if (this.rankTab === 3) {
-      return [['我的第一次配音', '完成度 98%…'], ['英语朗读打卡', '连续打卡 30 天…'], ['亲子共读记录', '温馨朗读…'], ['班级作业精选', '老师推荐…'], ['周末练习成果', '成果汇总…']];
+      return [['我的第一次跟读', '完成度 98%…'], ['英语朗读打卡', '连续打卡 30 天…'], ['亲子共读记录', '温馨朗读…'], ['班级作业精选', '老师推荐…'], ['周末练习成果', '成果汇总…']];
     }
     if (this.rankTab === 4) {
-      return [['BBC 合作专区', '纪录片配音…'], ['迪士尼经典合作', '动画片段…'], ['国家地理探索', '自然与科学…'], ['牛津阅读树', '分级阅读…'], ['剑桥少儿英语', '标准发音…']];
+      return [['BBC 合作专区', '纪录片跟读…'], ['迪士尼经典合作', '动画片段…'], ['国家地理探索', '自然与科学…'], ['牛津阅读树', '分级阅读…'], ['剑桥少儿英语', '标准发音…']];
     }
     return [
       ['穿条纹睡衣的男孩', '某日布鲁诺决定…'], ['蛮荒故事', '六个独立故事…'], ['爱冒险的朵拉', '奇妙冒险…'],
@@ -207,7 +207,7 @@ export struct NativeAllServicesPane {
         title: '教学服务',
         items: [
           { id: 'classroom', label: '班级教学', asset: $r('app.media.home_all_services_intelligence_task') },
-          { id: 'dubbing', label: '配音首页', asset: $r('app.media.home_all_services_dubbing_home') },
+          { id: 'transliter', label: '跟读首页', asset: $r('app.media.home_all_services_transliter_home') },
           { id: 'videos', label: '视频列表', asset: $r('app.media.home_all_services_small_video') },
           { id: 'works', label: '作品列表', asset: $r('app.media.home_all_services_exhibition_hall_shooting') },
         ],
@@ -311,13 +311,13 @@ export struct NativeAllServicesPane {
 export struct NativeLearningReportPane {
   onClose: () => void = () => {};
   private highlights: string[][] = [
-    ['🎬', '《哈利波特》第3章', '视频配音 · 刚刚发布', '100'],
+    ['🎬', '《哈利波特》第3章', '视频跟读 · 刚刚发布', '100'],
     ['🏆', '解锁「45天」打卡勋章', '里程碑达成 · 太棒了！', '🎉'],
     ['🎵', '"Wingardium Leviosa!"', '满分句子 · 可播放原声', '▶'],
   ];
   private records: string[][] = [
-    ['🎬', '视频配音', '哈利波特 第3章', '18:32', '已发布'],
-    ['⚔️', '配音闯关', 'Level 8 · 3关', '17:10', '15 min'],
+    ['🎬', '视频跟读', '哈利波特 第3章', '18:32', '已发布'],
+    ['⚔️', '跟读闯关', 'Level 8 · 3关', '17:10', '15 min'],
     ['📚', '同步练', 'PEP 五年级上册 Unit 3', '16:45', '8 min'],
     ['🤖', 'AI 外教', '自由对话 · Tom老师', '15:20', '12 min'],
     ['🎧', '听力练习', '英美绕口令 · 5题', '14:00', '5 min'],
@@ -2547,7 +2547,7 @@ export struct NativeHomeworkStatsPane {
   onOpen: (path: string) => void = (_path: string) => {};
   private rows: string[][] = [
     ['语法练习 3', '书面', '今日 23:59'],
-    ['配音作业 · 致橡树', '配音', '明日 18:00'],
+    ['跟读作业 · 致橡树', '跟读', '明日 18:00'],
     ['听力精听', '听力', '本周六'],
   ];
 
@@ -2576,8 +2576,8 @@ export struct NativeHomeworkStatsPane {
             .borderRadius(10)
             .alignItems(HorizontalAlign.Start)
             .onClick(() => {
-              if (row[1] === '配音') {
-                this.onOpen('/classroom/homework/dubbing');
+              if (row[1] === '跟读') {
+                this.onOpen('/classroom/homework/transliter');
               } else {
                 this.onOpen('/classroom/homework/detail_teacher');
               }
@@ -2729,7 +2729,7 @@ export struct NativeClassroomPane {
   onOpen: (path: string) => void = (_p: string) => {};
   private classes: string[][] = [
     ['产品知识班', '未交作业 2'],
-    ['配音作业', '待批改 1'],
+    ['跟读作业', '待批改 1'],
     ['销售话术营', '进行中'],
   ];
 
@@ -3092,7 +3092,7 @@ export struct NativeLifeServicePane {
   onClose: () => void = () => {};
   private shortcuts: string[][] = [
     ['会员专享', '#0070F3'],
-    ['配音专栏', '#FF9500'],
+    ['跟读专栏', '#FF9500'],
     ['其他课程', '#5856D6'],
     ['功能教程', '#34C759'],
   ];
@@ -3851,7 +3851,7 @@ export struct NativeAddressesPane {
 }
 
 @Component
-export struct NativeDubbingFeedPane {
+export struct NativeTransliterFeedPane {
   onClose: () => void = () => {};
   onOpen: (path: string) => void = (_p: string) => {};
   private categories: string[] = ['推荐', '动画', '电影', '启蒙', '跟读'];
@@ -3864,7 +3864,7 @@ export struct NativeDubbingFeedPane {
   ];
   private expert: string[][] = [
     ['英语启蒙课堂', '蓝儿老师Joyue · 跟读练习 · 初级'],
-    ['趣味配音挑战', '配音达人 · 动画配音 · 中级'],
+    ['趣味跟读挑战', '跟读达人 · 动画跟读 · 中级'],
     ['诵读之星', '朗读爱好者 · 经典诵读'],
   ];
   build() {
@@ -3949,7 +3949,7 @@ export struct NativeDubbingFeedPane {
             }, (it: string[]) => it[0])
           }.width('100%').padding({ left: 16, right: 16 })
 
-          Text('进入配音视频专区')
+          Text('进入跟读视频专区')
             .fontSize(15).fontWeight(FontWeight.Medium).fontColor(DesignTokens.link)
             .width('100%').textAlign(TextAlign.Center)
             .padding({ top: 14, bottom: 14 })
@@ -3970,7 +3970,7 @@ export struct NativeHotRankPane {
   private categories: string[] = ['热读榜', '新书榜', '童话榜', '热搜榜', '科普榜', '高分榜'];
   private ages: string[] = ['1-2岁', '3岁到大班', '1-3年级', '4年级以上'];
   private titles: string[] = ['穿条纹睡衣的...', '蛮荒故事', '爱冒险的朵拉', '道奇小狗', '你好，小朋友', '完美的世界', '萌宠部落', '穿梭在迷宫的勇士'];
-  private subs: string[] = ['某日布鲁诺决定...', '一种近似父子的不寻常感情', '开启你的奇幻冒险之旅', '跟佩奇一起快乐学英语', '经典动画配音练习', '趣味英语启蒙课堂'];
+  private subs: string[] = ['某日布鲁诺决定...', '一种近似父子的不寻常感情', '开启你的奇幻冒险之旅', '跟佩奇一起快乐学英语', '经典动画跟读练习', '趣味英语启蒙课堂'];
   private heats: number[] = [39274, 28390, 22007, 19874, 18560, 16230, 14890, 13540];
   private ranks: number[] = [1, 2, 3, 88, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
   build() {
@@ -4654,9 +4654,9 @@ export struct NativeMallOrderDetailPane {
   }
 }
 
-/** `/video/dubbing/videos` + `/videos/detail` */
+/** `/video/transliter/videos` + `/videos/detail` */
 @Component
-export struct NativeDubbingVideosPane {
+export struct NativeTransliterVideosPane {
   onClose: () => void = () => {};
   private accent: string = '#A442ED';
   private items: string[][] = [
@@ -4668,7 +4668,7 @@ export struct NativeDubbingVideosPane {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
-        Text('配音视频').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Text('跟读视频').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
 
@@ -4695,7 +4695,7 @@ export struct NativeDubbingVideosPane {
 }
 
 @Component
-export struct NativeDubbingVideoDetailPane {
+export struct NativeTransliterVideoDetailPane {
   onClose: () => void = () => {};
   private accent: string = '#A442ED';
   private rows: string[][] = [
@@ -4710,7 +4710,7 @@ export struct NativeDubbingVideoDetailPane {
     Column() {
       Row() {
         Text('‹').fontSize(22).fontColor(this.accent).onClick(() => this.onClose())
-        Text('配音详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
+        Text('跟读详情').fontSize(17).fontWeight(FontWeight.Medium).fontColor(DesignTokens.ink).margin({ left: 8 })
         Blank().layoutWeight(1)
       }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).width('100%').backgroundColor(DesignTokens.canvas)
 
@@ -4730,13 +4730,13 @@ export struct NativeDubbingVideoDetailPane {
   }
 }
 
-/** `/video/dubbing/works` + `/works/detail` */
+/** `/video/transliter/works` + `/works/detail` */
 @Component
-export struct NativeDubbingWorksPane {
+export struct NativeTransliterWorksPane {
   onClose: () => void = () => {};
   private accent: string = '#A442ED';
   private items: string[][] = [
-    ['我的配音作品 · 小王子', '2.1k 播放 · 186 赞'],
+    ['我的跟读作品 · 小王子', '2.1k 播放 · 186 赞'],
     ['练习作品 · 飞屋', '980 播放'],
   ];
 
@@ -4770,11 +4770,11 @@ export struct NativeDubbingWorksPane {
 }
 
 @Component
-export struct NativeDubbingWorkDetailPane {
+export struct NativeTransliterWorkDetailPane {
   onClose: () => void = () => {};
   private accent: string = '#A442ED';
   private rows: string[][] = [
-    ['作品', '我的配音作品 · 小王子'],
+    ['作品', '我的跟读作品 · 小王子'],
     ['时长', '0:45'],
     ['播放', '2.1k'],
     ['赞', '186'],
@@ -4919,8 +4919,8 @@ export struct NativeVideoHubPane {
   onOpen: (path: string) => void = (_p: string) => {};
   private tiles: string[][] = [
     ['短视频', '/video/short'],
-    ['配音视频', '/video/dubbing/videos'],
-    ['我的作品', '/video/dubbing/works'],
+    ['跟读视频', '/video/transliter/videos'],
+    ['我的作品', '/video/transliter/works'],
   ];
 
   build() {

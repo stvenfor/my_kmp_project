@@ -583,7 +583,7 @@ private fun CommunityConventionScreen(onBack: () -> Unit) {
 
 @Composable
 private fun CommunityTopicSelectScreen(onBack: () -> Unit, onPick: (String) -> Unit) {
-    val topics = listOf("Flutter开发", "户外", "生活", "汽车", "配音")
+    val topics = listOf("Flutter开发", "户外", "生活", "汽车", "跟读")
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(title = "选择话题", onBack = onBack)

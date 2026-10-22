@@ -178,14 +178,14 @@
 - [x] R.homeSearch.ev.a 证据 `notes/evidence/.../home_search.{flutter,kmp}.png`
 - [x] R.homeSearch.ui.i / R.homeSearch.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
-## `/home/dubbing_feed` — `homeDubbingFeed`
-- [x] R.homeDubbingFeed.ui.a UI 对照 Flutter 同页（并排截图）
-- [x] R.homeDubbingFeed.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [x] R.homeDubbingFeed.nav.a 导航参数/返回栈对齐 RoutePath
-- [x] R.homeDubbingFeed.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [x] R.homeDubbingFeed.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [x] R.homeDubbingFeed.ev.a 证据 `notes/evidence/.../home_dubbing_feed.{flutter,kmp}.png`
-- [x] R.homeDubbingFeed.ui.i / R.homeDubbingFeed.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
+## `/home/transliter_feed` — `homeTransliterFeed`
+- [x] R.homeTransliterFeed.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.homeTransliterFeed.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.homeTransliterFeed.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.homeTransliterFeed.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.homeTransliterFeed.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.homeTransliterFeed.ev.a 证据 `notes/evidence/.../home_transliter_feed.{flutter,kmp}.png`
+- [x] R.homeTransliterFeed.ui.i / R.homeTransliterFeed.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/home/strategy` — `homeStrategy`
 - [x] R.homeStrategy.ui.a UI 对照 Flutter 同页（并排截图）
@@ -599,7 +599,7 @@
 - [x] R.wallet.ev.a 证据 `notes/evidence/.../wallet.{flutter,kmp}.png`
 - [x] R.wallet.ui.i / R.wallet.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
-# H. Media（Video / Music / Dubbing）
+# H. Media（Video / Music / Transliter）
 
 ## `/video` — `video`
 - [x] R.video.ui.a UI 对照 Flutter 同页（并排截图）
@@ -664,41 +664,41 @@
 - [x] R.musicNowPlaying.ev.a 证据 `notes/evidence/.../music_now_playing.{flutter,kmp}.png`
 - [x] R.musicNowPlaying.ui.i / R.musicNowPlaying.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
-## `/video/dubbing/videos` — `dubbingVideoList`
-- [x] R.dubbingVideoList.ui.a UI 对照 Flutter 同页（并排截图）
-- [x] R.dubbingVideoList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [x] R.dubbingVideoList.nav.a 导航参数/返回栈对齐 RoutePath
-- [x] R.dubbingVideoList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [x] R.dubbingVideoList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [x] R.dubbingVideoList.ev.a 证据 `notes/evidence/.../video_dubbing_videos.{flutter,kmp}.png`
-- [x] R.dubbingVideoList.ui.i / R.dubbingVideoList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
+## `/video/transliter/videos` — `transliterVideoList`
+- [x] R.transliterVideoList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.transliterVideoList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.transliterVideoList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.transliterVideoList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.transliterVideoList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.transliterVideoList.ev.a 证据 `notes/evidence/.../video_transliter_videos.{flutter,kmp}.png`
+- [x] R.transliterVideoList.ui.i / R.transliterVideoList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
-## `/video/dubbing/videos/detail` — `dubbingVideoDetail`
-- [x] R.dubbingVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [x] R.dubbingVideoDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [x] R.dubbingVideoDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [x] R.dubbingVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [x] R.dubbingVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [x] R.dubbingVideoDetail.ev.a 证据 `notes/evidence/.../video_dubbing_videos_detail.{flutter,kmp}.png`
-- [x] R.dubbingVideoDetail.ui.i / R.dubbingVideoDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
+## `/video/transliter/videos/detail` — `transliterVideoDetail`
+- [x] R.transliterVideoDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.transliterVideoDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.transliterVideoDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.transliterVideoDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.transliterVideoDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.transliterVideoDetail.ev.a 证据 `notes/evidence/.../video_transliter_videos_detail.{flutter,kmp}.png`
+- [x] R.transliterVideoDetail.ui.i / R.transliterVideoDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
-## `/video/dubbing/works` — `dubbingWorkList`
-- [x] R.dubbingWorkList.ui.a UI 对照 Flutter 同页（并排截图）
-- [x] R.dubbingWorkList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [x] R.dubbingWorkList.nav.a 导航参数/返回栈对齐 RoutePath
-- [x] R.dubbingWorkList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [x] R.dubbingWorkList.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [x] R.dubbingWorkList.ev.a 证据 `notes/evidence/.../video_dubbing_works.{flutter,kmp}.png`
-- [x] R.dubbingWorkList.ui.i / R.dubbingWorkList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
+## `/video/transliter/works` — `transliterWorkList`
+- [x] R.transliterWorkList.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.transliterWorkList.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.transliterWorkList.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.transliterWorkList.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.transliterWorkList.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.transliterWorkList.ev.a 证据 `notes/evidence/.../video_transliter_works.{flutter,kmp}.png`
+- [x] R.transliterWorkList.ui.i / R.transliterWorkList.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
-## `/video/dubbing/works/detail` — `dubbingWorkDetail`
-- [x] R.dubbingWorkDetail.ui.a UI 对照 Flutter 同页（并排截图）
-- [x] R.dubbingWorkDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [x] R.dubbingWorkDetail.nav.a 导航参数/返回栈对齐 RoutePath
-- [x] R.dubbingWorkDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [x] R.dubbingWorkDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [x] R.dubbingWorkDetail.ev.a 证据 `notes/evidence/.../video_dubbing_works_detail.{flutter,kmp}.png`
-- [x] R.dubbingWorkDetail.ui.i / R.dubbingWorkDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
+## `/video/transliter/works/detail` — `transliterWorkDetail`
+- [x] R.transliterWorkDetail.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.transliterWorkDetail.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.transliterWorkDetail.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.transliterWorkDetail.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.transliterWorkDetail.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.transliterWorkDetail.ev.a 证据 `notes/evidence/.../video_transliter_works_detail.{flutter,kmp}.png`
+- [x] R.transliterWorkDetail.ui.i / R.transliterWorkDetail.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 # I. Classroom
 
@@ -738,14 +738,14 @@
 - [x] R.classroomHomeworkDetailStudent.ev.a 证据 `notes/evidence/.../classroom_homework_detail_student.{flutter,kmp}.png`
 - [x] R.classroomHomeworkDetailStudent.ui.i / R.classroomHomeworkDetailStudent.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
-## `/classroom/homework/dubbing` — `classroomDubbingHomework`
-- [x] R.classroomDubbingHomework.ui.a UI 对照 Flutter 同页（并排截图）
-- [x] R.classroomDubbingHomework.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
-- [x] R.classroomDubbingHomework.nav.a 导航参数/返回栈对齐 RoutePath
-- [x] R.classroomDubbingHomework.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
-- [x] R.classroomDubbingHomework.antistub.a 无 SimpleDetail/DeferredStub 冒充
-- [x] R.classroomDubbingHomework.ev.a 证据 `notes/evidence/.../classroom_homework_dubbing.{flutter,kmp}.png`
-- [x] R.classroomDubbingHomework.ui.i / R.classroomDubbingHomework.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
+## `/classroom/homework/transliter` — `classroomTransliterHomework`
+- [x] R.classroomTransliterHomework.ui.a UI 对照 Flutter 同页（并排截图）
+- [x] R.classroomTransliterHomework.entry.a 全部入口可进（列出来源：Tab/宫格/全部服务/深链）
+- [x] R.classroomTransliterHomework.nav.a 导航参数/返回栈对齐 RoutePath
+- [x] R.classroomTransliterHomework.biz.a 业务规则/空失败态对齐（真 API 或 Flutter 同级 mock）
+- [x] R.classroomTransliterHomework.antistub.a 无 SimpleDetail/DeferredStub 冒充
+- [x] R.classroomTransliterHomework.ev.a 证据 `notes/evidence/.../classroom_homework_transliter.{flutter,kmp}.png`
+- [x] R.classroomTransliterHomework.ui.i / R.classroomTransliterHomework.ui.h → registry iOS/OHOS `missing`（本轮 Android-only）
 
 ## `/classroom/homework/review` — `classroomHomeworkReview`
 - [x] R.classroomHomeworkReview.ui.a UI 对照 Flutter 同页（并排截图）

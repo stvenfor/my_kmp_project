@@ -15,6 +15,8 @@ object DemoColors {
     val Accent = argb(DesignTokens.Color.Link)
     val Background = argb(DesignTokens.Color.Canvas)
     val PageBg = argb(DesignTokens.Color.CanvasSoft2)
+    /** Flutter `canvasSoft` #FAFAFA — 指标卡底色，比 [PageBg] 再浅一档。 */
+    val CanvasSoft = argb(DesignTokens.Color.CanvasSoft)
     val OnBackground = argb(DesignTokens.Color.Ink)
     val OnSurface = argb(DesignTokens.Color.Body)
     val Outline = argb(DesignTokens.Color.HairlineStrong)
@@ -25,4 +27,12 @@ object DemoColors {
     val Divider = argb(DesignTokens.Color.Hairline)
     val Toolbar = argb(DesignTokens.Color.Canvas)
     val TabBarBackground = argb(DesignTokens.Color.TabBarBackground)
+
+    // —— Flutter VercelTokens 强调色族（首页服务九宫格轮转用）——
+    val LinkDeep = argb(DesignTokens.Color.LinkDeep)
+    val LinkBgSoft = argb(DesignTokens.Color.LinkBgSoft)
+    val Warning = argb(DesignTokens.Color.Warning)
+    val Violet = argb(DesignTokens.Color.Violet)
+    val Cyan = argb(DesignTokens.Color.Cyan)
+    val HighlightPink = argb(DesignTokens.Color.HighlightPink)
 }

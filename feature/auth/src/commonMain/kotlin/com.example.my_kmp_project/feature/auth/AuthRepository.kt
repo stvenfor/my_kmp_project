@@ -14,7 +14,10 @@ import com.example.my_kmp_project.core.network.postApi
  *
  * HTTP 契约（契约表 #1–#7）由 [UserAuthHttpApi] 承担；本对象只做**会话编排**
  * （校验 → 调用 → [AccountFacade] 落库 / 失效清理），不重复拼请求体。
- * Does not short-circuit to local demo success.
+ *
+ * Mock 分流：[MockAuthConfig.useMockAuth] 为 true 时（debug 默认），手机号/邮箱
+ * 登录走 Flutter `MockAuthService` 同款本地短路——不请求 Go BFF，测试号
+ * `13400000000` + 验证码 `123456` 直接建本地会话。Release 下恒 false，走真实链路。
  */
 object AuthRepository {
 
@@ -29,6 +32,9 @@ object AuthRepository {
         if (password.length < AuthValidators.MIN_PASSWORD_LENGTH) {
             return Result.failure(IllegalArgumentException("密码至少 6 位"))
         }
+        if (MockAuthConfig.useMockAuth) {
+            return mockEmailLogin(user)
+        }
         return UserAuthHttpApi.login(
             username = user,
             password = password,
@@ -42,6 +48,14 @@ object AuthRepository {
         if (!AuthPhoneUtils.isValidChinaMobile(phone)) {
             return Result.failure(IllegalArgumentException("请输入有效的手机号"))
         }
+        if (MockAuthConfig.useMockAuth) {
+            // Flutter `MockAuthService.sendPhoneOtp`：只认白名单，不真发短信。
+            return if (MockAuthConfig.isMockPhone(phone)) {
+                Result.success(Unit)
+            } else {
+                Result.failure(IllegalArgumentException(MockAuthConfig.rejectedPhoneMessage()))
+            }
+        }
         return UserAuthHttpApi
             .sendPhoneOtp(AuthPhoneUtils.toE164China(phone))
             .guardSessionGone()
@@ -54,6 +68,9 @@ object AuthRepository {
         }
         if (!AuthValidators.isValidOtp(code)) {
             return Result.failure(IllegalArgumentException("请输入 6 位验证码"))
+        }
+        if (MockAuthConfig.useMockAuth) {
+            return mockPhoneLogin(phone, code)
         }
         return UserAuthHttpApi.verifyPhoneOtp(
             phone = AuthPhoneUtils.toE164China(phone),
@@ -82,6 +99,10 @@ object AuthRepository {
         }
         val username = displayName.trim().ifBlank {
             normalizedEmail.substringBefore('@').ifBlank { normalizedEmail }
+        }
+        if (MockAuthConfig.useMockAuth) {
+            // Flutter `MockAuthService.signUpWithEmail` = 注册即登录。
+            return mockEmailLogin(normalizedEmail)
         }
         val result = UserAuthHttpApi.register(
             username = username,
@@ -290,6 +311,43 @@ object AuthRepository {
         },
         onFailure = { Result.failure(clearSessionIfGone(it)) },
     )
+
+    // ── Mock 分支（Flutter `commons/core/lib/dev/mock_auth_service.dart` 移植）─────────
+    //
+    // 只在 [MockAuthConfig.useMockAuth] 为 true 时进入；不触网、不落远端会话，
+    // 目的仅是让 debug 包在后端未起时也能走通 UI 链路（首页/我的/登录态）。
+
+    /** Flutter `MockAuthService.verifyPhoneOtp`：白名单 + 固定 OTP。 */
+    private fun mockPhoneLogin(phone: String, code: String): Result<Unit> {
+        val digits = AuthPhoneUtils.normalizeDigits(phone)
+        if (digits !in MockAuthConfig.mockTestPhones) {
+            return Result.failure(IllegalArgumentException(MockAuthConfig.rejectedPhoneMessage()))
+        }
+        if (code.trim() != MockAuthConfig.mockOtpCode) {
+            return Result.failure(IllegalArgumentException("验证码错误或已失效"))
+        }
+        return commitSession(
+            displayName = MockAuthConfig.displayNameFor(digits),
+            userId = "mock_phone_$digits",
+            token = MockAuthConfig.issueToken("phone"),
+            phone = MockAuthConfig.maskedPhone(digits),
+            email = null,
+            avatarUrl = "https://picsum.photos/seed/im_$digits/200/200",
+        )
+    }
+
+    /** Flutter `MockAuthService.signInWithEmail`：任意合法邮箱 + ≥6 位密码即建会话。 */
+    private fun mockEmailLogin(account: String): Result<Unit> {
+        val localPart = account.substringBefore('@').ifBlank { account }
+        return commitSession(
+            displayName = "用户$localPart",
+            userId = "mock_$localPart",
+            token = MockAuthConfig.issueToken("email"),
+            phone = null,
+            email = if (account.contains('@')) account else null,
+            avatarUrl = "https://api.dicebear.com/7.x/avataaars/png?seed=$localPart",
+        )
+    }
 
     private fun <T> Result<T>.guardSessionGone(): Result<T> =
         fold(onSuccess = { Result.success(it) }, onFailure = { Result.failure(clearSessionIfGone(it)) })

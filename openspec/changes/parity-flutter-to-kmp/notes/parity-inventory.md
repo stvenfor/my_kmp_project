@@ -30,7 +30,7 @@ Status: `todo` | `wip` | `logic-pass` | `packet-pass` | `excluded` | `gap-only`
 | Home analytics + life | #9 |
 | Home club/live-commerce + todos | #10 |
 | Home after-sales + new-car | #11 |
-| Home dubbing feed | #12 |
+| Home transliter feed | #12 |
 | Chat detail + friend | #13 |
 | Community write | #14 |
 | Live list + room | #15 |
@@ -39,7 +39,7 @@ Status: `todo` | `wip` | `logic-pass` | `packet-pass` | `excluded` | `gap-only`
 | Mine settings/profile/addresses | #18 |
 | Mine membership/calculator/deal invoice | #19 |
 | AI + music | #20 |
-| Short video + dubbing works | #21 |
+| Short video + transliter works | #21 |
 | Web + classroom | #22 |
 | Contract drop Legacy island | #23 |
 | Closeout | #24 |
@@ -74,7 +74,7 @@ Parent spec: #1
 | `/home/all_services` | home-discover | native-cutover | pass | gate PASS mse=1.9947 (FAB-masked) — `home/Android/home_all_services.diff.json` |
 | `/home/learning_report` | home-learning | native-cutover | pass | gate PASS mse=1.385 — `home/Android/home_learning_report.diff.json` |
 | `/home/check_in_mall` | home-checkin | native-cutover | logic-pass | HomePointsStore check-in/balance/streak; pixel packet retained |
-| `/home/dubbing_feed` | home-dubbing | native-cutover | pass | gate PASS mse=1.8148 — `home/Android/home_dubbing_feed.diff.json` |
+| `/home/transliter_feed` | home-transliter | native-cutover | pass | gate PASS mse=1.8148 — `home/Android/home_transliter_feed.diff.json` |
 | `/home/strategy` | home-strategy | native-cutover | pass | gate PASS mse=1.7472 — `home/Android/home_strategy.diff.json` |
 | `/home/hot_rank_detail` | home-hot-rank | native-cutover | pass | gate PASS mse=1.8644 — `home/Android/home_hot_rank_detail.diff.json` |
 | `/home/used_car` (+ detail/create) | home-used-car | native-cutover | logic-pass | detail-by-id + create validation→HomeSecondaryStore; pixel packet retained |
@@ -128,7 +128,7 @@ Parent spec: #1
 | `/music/list` | music | native-cutover | done | Android Screenshot Diff Gate PASS (0.0); #20 |
 | `/music/now_playing` | music | native-cutover | done | Android Screenshot Diff Gate PASS (0.97); #20 |
 | `/video` / short/* | short-video | native-cutover | done | Android Screenshot Diff Gate PASS (#21); Surface gaps registered |
-| `/video/dubbing/*` | dubbing-works | native-cutover | done | Android Screenshot Diff Gate PASS (#21) |
+| `/video/transliter/*` | transliter-works | native-cutover | done | Android Screenshot Diff Gate PASS (#21) |
 | `/web` | web | native-cutover | packet-pass | gate PASS mse=0.599 — `web/Android/web.diff.json`; #22 |
 | `/classroom/*` | classroom | native-cutover | logic-pass | Logic models + gift one-shot claim (`ClassroomLogicModels`); SoT chrome retained; pixel packet retained — `classroom/Android/` |
 

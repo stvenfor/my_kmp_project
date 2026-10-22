@@ -48,7 +48,7 @@ public object ClassroomLogicModels {
     )
 
     val homeworkRows = listOf(
-        HomeworkStatRow("hw_001", "配音作业 · 侏罗纪世界2", "配音", "今日 23:59"),
+        HomeworkStatRow("hw_001", "跟读作业 · 侏罗纪世界2", "跟读", "今日 23:59"),
         HomeworkStatRow("hw_002", "同步作业 · Unit 3", "同步", "明日 18:00"),
         HomeworkStatRow("hw_003", "打卡作业 · 听力", "打卡", "本周六"),
     )

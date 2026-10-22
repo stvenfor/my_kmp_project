@@ -37,7 +37,7 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_01
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_01
 import my_kmp_project.core.design.generated.resources.music_defaults_music_record
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -75,7 +75,7 @@ fun MediaEntryScreen(onBack: () -> Unit) {
                     MediaChooserCard(
                         title = "视频中心",
                         subtitle = "短视频列表与播放",
-                        cover = Res.drawable.home_dubbing_home_cover_01,
+                        cover = Res.drawable.home_transliter_home_cover_01,
                         onClick = { route = MediaEntryRoute.VideoHub },
                     )
                     MediaChooserCard(

@@ -72,32 +72,32 @@ import com.example.my_kmp_project.core.router.MineRoutes
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.community_avatar
 import my_kmp_project.core.design.generated.resources.community_post_a
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_banner_main
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_bar_icon_top
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_01
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_02
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_03
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_04
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_05
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_06
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_07
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_08
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_09
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_10
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_11
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_12
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_feature_all_videos
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_feature_check_in
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_feature_classic_theater
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_feature_movie_words
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_feature_rank
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_icon_chevron_right
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_icon_duration
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_icon_notification
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_icon_refresh
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_icon_search
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_icon_swap
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_thumb_default
+import my_kmp_project.core.design.generated.resources.home_transliter_home_banner_main
+import my_kmp_project.core.design.generated.resources.home_transliter_home_bar_icon_top
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_01
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_02
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_03
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_04
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_05
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_06
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_07
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_08
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_09
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_10
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_11
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_12
+import my_kmp_project.core.design.generated.resources.home_transliter_home_feature_all_videos
+import my_kmp_project.core.design.generated.resources.home_transliter_home_feature_check_in
+import my_kmp_project.core.design.generated.resources.home_transliter_home_feature_classic_theater
+import my_kmp_project.core.design.generated.resources.home_transliter_home_feature_movie_words
+import my_kmp_project.core.design.generated.resources.home_transliter_home_feature_rank
+import my_kmp_project.core.design.generated.resources.home_transliter_home_icon_chevron_right
+import my_kmp_project.core.design.generated.resources.home_transliter_home_icon_duration
+import my_kmp_project.core.design.generated.resources.home_transliter_home_icon_notification
+import my_kmp_project.core.design.generated.resources.home_transliter_home_icon_refresh
+import my_kmp_project.core.design.generated.resources.home_transliter_home_icon_search
+import my_kmp_project.core.design.generated.resources.home_transliter_home_icon_swap
+import my_kmp_project.core.design.generated.resources.home_transliter_home_thumb_default
 import my_kmp_project.core.design.generated.resources.ic_nav_back
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -126,7 +126,7 @@ fun HomeRouteHost(
             onOpenMembership = { onNavigate("/pay/membership") },
         )
         HomeRoutes.CheckInMall -> CheckInMallScreen(onBack = onBack)
-        HomeRoutes.DubbingFeed -> DubbingFeedScreen(
+        HomeRoutes.TransliterFeed -> TransliterFeedScreen(
             onBack = onBack,
             onOpenHotRank = { onNavigate(HomeRoutes.HotRankDetail) },
         )
@@ -347,7 +347,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
     )
     val shortcuts = listOf(
         LifeShortcut("会员专享", "▶", Color(0xFF0070F3)),
-        LifeShortcut("配音专栏", "▤", Color(0xFFFF9500)),
+        LifeShortcut("跟读专栏", "▤", Color(0xFFFF9500)),
         LifeShortcut("其他课程", "▣", Color(0xFF5856D6)),
         LifeShortcut("功能教程", "✎", Color(0xFF34C759)),
     )
@@ -512,7 +512,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
         }
         Spacer(Modifier.height(8.dp))
         Text(
-            "进入配音视频专区",
+            "进入跟读视频专区",
             color = DemoColors.Accent,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
@@ -522,7 +522,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
                 .clip(RoundedCornerShape(cardRadius))
                 .background(DemoColors.Accent.copy(alpha = 0.08f))
                 .border(1.dp, DemoColors.Accent.copy(alpha = 0.2f), RoundedCornerShape(cardRadius))
-                .clickable { showPlatformToast("配音") }
+                .clickable { showPlatformToast("跟读") }
                 .padding(vertical = 14.dp),
         )
         Spacer(Modifier.height(24.dp))
@@ -1114,28 +1114,28 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
-    // Flutter DubbingHomePage — header / categories / banner / features / recent / expert + lower sections
+private fun TransliterFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
+    // Flutter TransliterHomePage — header / categories / banner / features / recent / expert + lower sections
     val tabAccent = Color(0xFF0070F3) // Flutter VercelTokens.link
     val adBlue = Color(0xFF3B82F6)
     val svipGold = Color(0xFFE6A23C)
     val searchPillBg = Color(0xFFF2F3F5)
-    val categories = listOf("SVIP", "配音", "听力", "小剧场", "专题")
-    val selectedCategory = 1 // 配音
+    val categories = listOf("SVIP", "跟读", "听力", "小剧场", "专题")
+    val selectedCategory = 1 // 跟读
     val features = listOf(
-        Triple("每日打卡", Res.drawable.home_dubbing_home_feature_check_in, false),
-        Triple("影视单词", Res.drawable.home_dubbing_home_feature_movie_words, false),
-        Triple("经典剧场", Res.drawable.home_dubbing_home_feature_classic_theater, false),
-        Triple("排行榜", Res.drawable.home_dubbing_home_feature_rank, true),
-        Triple("全部视频", Res.drawable.home_dubbing_home_feature_all_videos, false),
+        Triple("每日打卡", Res.drawable.home_transliter_home_feature_check_in, false),
+        Triple("影视单词", Res.drawable.home_transliter_home_feature_movie_words, false),
+        Triple("经典剧场", Res.drawable.home_transliter_home_feature_classic_theater, false),
+        Triple("排行榜", Res.drawable.home_transliter_home_feature_rank, true),
+        Triple("全部视频", Res.drawable.home_transliter_home_feature_all_videos, false),
     )
     val recent = listOf(
-        Triple("穿梭在迷宫的勇士", "03:24", Res.drawable.home_dubbing_home_cover_05),
-        Triple("萌宠部落", "02:18", Res.drawable.home_dubbing_home_cover_06),
-        Triple("完美的世界", "04:05", Res.drawable.home_dubbing_home_cover_07),
-        Triple("小猪佩奇", "01:56", Res.drawable.home_dubbing_home_cover_08),
+        Triple("穿梭在迷宫的勇士", "03:24", Res.drawable.home_transliter_home_cover_05),
+        Triple("萌宠部落", "02:18", Res.drawable.home_transliter_home_cover_06),
+        Triple("完美的世界", "04:05", Res.drawable.home_transliter_home_cover_07),
+        Triple("小猪佩奇", "01:56", Res.drawable.home_transliter_home_cover_08),
     )
-    // Flutter DubbingHomeExpertShowcase — 2×2 grid + avatar/user/subtitle
+    // Flutter TransliterHomeExpertShowcase — 2×2 grid + avatar/user/subtitle
     data class ExpertCard(
         val title: String,
         val userName: String,
@@ -1143,26 +1143,26 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
         val cover: DrawableResource,
     )
     val expert = listOf(
-        ExpertCard("英语启蒙课堂", "蓝儿老师Joyue", "跟读练习 · 初级", Res.drawable.home_dubbing_home_cover_09),
-        ExpertCard("趣味配音挑战", "配音达人", "动画配音 · 中级", Res.drawable.home_dubbing_home_cover_10),
-        ExpertCard("诵读之星", "朗读爱好者", "经典诵读", Res.drawable.home_dubbing_home_cover_11),
-        ExpertCard("动画配音秀", "动画迷", "角色模仿", Res.drawable.home_dubbing_home_cover_12),
+        ExpertCard("英语启蒙课堂", "蓝儿老师Joyue", "跟读练习 · 初级", Res.drawable.home_transliter_home_cover_09),
+        ExpertCard("趣味跟读挑战", "跟读达人", "动画跟读 · 中级", Res.drawable.home_transliter_home_cover_10),
+        ExpertCard("诵读之星", "朗读爱好者", "经典诵读", Res.drawable.home_transliter_home_cover_11),
+        ExpertCard("动画跟读秀", "动画迷", "角色模仿", Res.drawable.home_transliter_home_cover_12),
     )
     val editor = listOf(
-        Triple("经典动画配音", "跟佩奇一起快乐学英语", Res.drawable.home_dubbing_home_cover_01),
-        Triple("英语启蒙课堂", "零基础也能开口说", Res.drawable.home_dubbing_home_cover_02),
-        Triple("趣味配音挑战", "模仿经典电影片段", Res.drawable.home_dubbing_home_cover_03),
-        Triple("每日跟读练习", "坚持打卡领奖励", Res.drawable.home_dubbing_home_cover_04),
+        Triple("经典动画跟读", "跟佩奇一起快乐学英语", Res.drawable.home_transliter_home_cover_01),
+        Triple("英语启蒙课堂", "零基础也能开口说", Res.drawable.home_transliter_home_cover_02),
+        Triple("趣味跟读挑战", "模仿经典电影片段", Res.drawable.home_transliter_home_cover_03),
+        Triple("每日跟读练习", "坚持打卡领奖励", Res.drawable.home_transliter_home_cover_04),
     )
     val albums = listOf(
-        Triple("小猪佩奇", "52集", Res.drawable.home_dubbing_home_cover_05),
-        Triple("冰雪奇缘", "12集", Res.drawable.home_dubbing_home_cover_06),
-        Triple("狮子王", "8集", Res.drawable.home_dubbing_home_cover_07),
-        Triple("海底总动员", "16集", Res.drawable.home_dubbing_home_cover_08),
+        Triple("小猪佩奇", "52集", Res.drawable.home_transliter_home_cover_05),
+        Triple("冰雪奇缘", "12集", Res.drawable.home_transliter_home_cover_06),
+        Triple("狮子王", "8集", Res.drawable.home_transliter_home_cover_07),
+        Triple("海底总动员", "16集", Res.drawable.home_transliter_home_cover_08),
     )
     val guess = listOf(
-        Triple("趣味英语配音", "6.8万播放 · 05:12", Res.drawable.home_dubbing_home_cover_09),
-        Triple("经典电影片段", "9.2万播放 · 03:45", Res.drawable.home_dubbing_home_cover_10),
+        Triple("趣味英语跟读", "6.8万播放 · 05:12", Res.drawable.home_transliter_home_cover_09),
+        Triple("经典电影片段", "9.2万播放 · 03:45", Res.drawable.home_transliter_home_cover_10),
     )
 
     ReportMainTabRoot(isRoot = false)
@@ -1203,7 +1203,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
-                        painter = painterResource(Res.drawable.home_dubbing_home_icon_search),
+                        painter = painterResource(Res.drawable.home_transliter_home_icon_search),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
                         contentScale = ContentScale.Fit,
@@ -1212,12 +1212,12 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                     Text("学英语", fontSize = 14.sp, color = DemoColors.Muted)
                 }
                 IconButton(onClick = { showPlatformToast("历史") }) {
-                    DubbingHistoryClockIcon(Modifier.size(22.dp), tint = DemoColors.TextPrimary)
+                    TransliterHistoryClockIcon(Modifier.size(22.dp), tint = DemoColors.TextPrimary)
                 }
                 Box {
                     IconButton(onClick = { showPlatformToast("通知") }) {
                         Image(
-                            painter = painterResource(Res.drawable.home_dubbing_home_icon_notification),
+                            painter = painterResource(Res.drawable.home_transliter_home_icon_notification),
                             contentDescription = "通知",
                             modifier = Modifier.size(22.dp),
                             contentScale = ContentScale.Fit,
@@ -1277,7 +1277,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                     }
                 }
                 Image(
-                    painter = painterResource(Res.drawable.home_dubbing_home_bar_icon_top),
+                    painter = painterResource(Res.drawable.home_transliter_home_bar_icon_top),
                     contentDescription = "菜单",
                     modifier = Modifier
                         .padding(start = 4.dp)
@@ -1294,7 +1294,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp),
         ) {
-            // Flutter DubbingHomeBannerCarousel: padding LTRB(16,8,16,8), height 156, radius 8
+            // Flutter TransliterHomeBannerCarousel: padding LTRB(16,8,16,8), height 156, radius 8
             Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)) {
                 Box(
                     Modifier
@@ -1303,7 +1303,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                         .clip(RoundedCornerShape(8.dp)),
                 ) {
                     Image(
-                        painter = painterResource(Res.drawable.home_dubbing_home_banner_main),
+                        painter = painterResource(Res.drawable.home_transliter_home_banner_main),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
@@ -1341,7 +1341,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 }
             }
 
-            // Flutter DubbingHomeFeatureRow: pad LTRB(4,4,4,12), icon 52, gap 8
+            // Flutter TransliterHomeFeatureRow: pad LTRB(4,4,4,12), icon 52, gap 8
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -1369,11 +1369,11 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 }
             }
 
-            DubbingSectionTitle(
+            TransliterSectionTitle(
                 title = "最近在学",
                 trailing = {
                     Image(
-                        painter = painterResource(Res.drawable.home_dubbing_home_icon_chevron_right),
+                        painter = painterResource(Res.drawable.home_transliter_home_icon_chevron_right),
                         contentDescription = null,
                         modifier = Modifier
                             .size(16.dp)
@@ -1392,7 +1392,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 recent.forEach { (title, dur, cover) ->
                     // Flutter RecentLearning: width 120.w, cover 68.h, title 12.sp
                     Column(Modifier.width(120.dp)) {
-                        DubbingCoverWithDuration(
+                        TransliterCoverWithDuration(
                             cover = cover,
                             duration = dur,
                             modifier = Modifier
@@ -1413,16 +1413,16 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 }
             }
 
-            DubbingSectionTitle(
+            TransliterSectionTitle(
                 title = "新手赛场",
                 trailing = {
-                    // Flutter DubbingSectionHeaderStyle.refresh
+                    // Flutter TransliterSectionHeaderStyle.refresh
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.clickable { showPlatformToast("换一换") },
                     ) {
                         Image(
-                            painter = painterResource(Res.drawable.home_dubbing_home_icon_swap),
+                            painter = painterResource(Res.drawable.home_transliter_home_icon_swap),
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             contentScale = ContentScale.Fit,
@@ -1449,7 +1449,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                                         .width(cardW)
                                         .height(cardH),
                                 ) {
-                                    DubbingCoverWithDuration(
+                                    TransliterCoverWithDuration(
                                         cover = card.cover,
                                         duration = "02:30",
                                         modifier = Modifier
@@ -1459,7 +1459,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                                     Spacer(Modifier.height(8.dp))
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Image(
-                                            painter = painterResource(Res.drawable.home_dubbing_home_thumb_default),
+                                            painter = painterResource(Res.drawable.home_transliter_home_thumb_default),
                                             contentDescription = null,
                                             modifier = Modifier
                                                 .size(18.dp)
@@ -1503,7 +1503,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 }
             }
 
-            DubbingSectionTitle(
+            TransliterSectionTitle(
                 title = "热榜",
                 action = "查看 >",
                 onAction = onOpenHotRank,
@@ -1537,7 +1537,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 }
             }
 
-            DubbingSectionTitle("小编精选")
+            TransliterSectionTitle("小编精选")
             Row(
                 Modifier
                     .horizontalScroll(rememberScrollState())
@@ -1574,7 +1574,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 }
             }
 
-            DubbingSectionTitle(title = "专属为你", subtitle = "根据你的学习兴趣为你推荐")
+            TransliterSectionTitle(title = "专属为你", subtitle = "根据你的学习兴趣为你推荐")
             Row(
                 Modifier
                     .horizontalScroll(rememberScrollState())
@@ -1599,7 +1599,7 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
                 }
             }
 
-            DubbingSectionTitle("猜你喜欢")
+            TransliterSectionTitle("猜你喜欢")
             Column(
                 Modifier.padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1634,12 +1634,12 @@ private fun DubbingFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
 }
 
 @Composable
-private fun DubbingCoverWithDuration(
+private fun TransliterCoverWithDuration(
     cover: DrawableResource,
     duration: String,
     modifier: Modifier = Modifier,
 ) {
-    // Flutter DubbingHomeTheme.thumbRadius = 8
+    // Flutter TransliterHomeTheme.thumbRadius = 8
     Box(modifier.clip(RoundedCornerShape(8.dp))) {
         Image(
             painter = painterResource(cover),
@@ -1657,7 +1657,7 @@ private fun DubbingCoverWithDuration(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
-                painter = painterResource(Res.drawable.home_dubbing_home_icon_duration),
+                painter = painterResource(Res.drawable.home_transliter_home_icon_duration),
                 contentDescription = null,
                 modifier = Modifier.size(10.dp),
                 contentScale = ContentScale.Fit,
@@ -1669,7 +1669,7 @@ private fun DubbingCoverWithDuration(
 }
 
 @Composable
-private fun DubbingHistoryClockIcon(modifier: Modifier = Modifier, tint: Color = DemoColors.TextPrimary) {
+private fun TransliterHistoryClockIcon(modifier: Modifier = Modifier, tint: Color = DemoColors.TextPrimary) {
     Canvas(modifier) {
         val stroke = 1.7.dp.toPx()
         val r = size.minDimension / 2f - stroke
@@ -1693,7 +1693,7 @@ private fun DubbingHistoryClockIcon(modifier: Modifier = Modifier, tint: Color =
 }
 
 @Composable
-private fun DubbingSectionTitle(
+private fun TransliterSectionTitle(
     title: String,
     subtitle: String? = null,
     action: String? = null,
@@ -1703,7 +1703,7 @@ private fun DubbingSectionTitle(
     Row(
         Modifier
             .fillMaxWidth()
-            // Flutter DubbingHomeSectionHeader: fromLTRB(16, 24, 16, 12)
+            // Flutter TransliterHomeSectionHeader: fromLTRB(16, 24, 16, 12)
             .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

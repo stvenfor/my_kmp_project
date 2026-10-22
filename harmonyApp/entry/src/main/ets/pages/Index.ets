@@ -59,7 +59,7 @@ import {
   NativeFeedbackPane,
   NativeProfilePane,
   NativeAddressesPane,
-  NativeDubbingFeedPane,
+  NativeTransliterFeedPane,
   NativeHotRankPane,
   NativeDataAnalyticsPane,
   NativeBusinessCardPane,
@@ -72,10 +72,10 @@ import {
   NativeAfterSalesCreatePane,
   NativeAfterSalesDetailPane,
   NativeMallOrderDetailPane,
-  NativeDubbingVideosPane,
-  NativeDubbingVideoDetailPane,
-  NativeDubbingWorksPane,
-  NativeDubbingWorkDetailPane,
+  NativeTransliterVideosPane,
+  NativeTransliterVideoDetailPane,
+  NativeTransliterWorksPane,
+  NativeTransliterWorkDetailPane,
   NativeCommunityConventionPane,
   NativeLiveRoomPane,
   NativeMusicNowPlayingPane,
@@ -1082,8 +1082,8 @@ struct Index {
     if (p === '/classroom/homework/detail_student') {
       return '学生作业详情';
     }
-    if (p === '/classroom/homework/dubbing') {
-      return '配音作业';
+    if (p === '/classroom/homework/transliter') {
+      return '跟读作业';
     }
     if (p === '/classroom/homework/review') {
       return '作业点评';
@@ -1102,7 +1102,7 @@ struct Index {
     if (p === '/classroom/homework/detail_student') {
       return '已提交 · 待批改 · 附件 2';
     }
-    if (p === '/classroom/homework/dubbing') {
+    if (p === '/classroom/homework/transliter') {
       return '录制入口 stub · 见 media gap';
     }
     if (p === '/classroom/homework/review') {
@@ -1115,7 +1115,7 @@ struct Index {
   }
 
   private homeworkDetailAction(): string {
-    if (this.featureRoutePath() === '/classroom/homework/dubbing') {
+    if (this.featureRoutePath() === '/classroom/homework/transliter') {
       return '开始录制';
     }
     return '';
@@ -2244,8 +2244,8 @@ struct Index {
         NativeAddressesPane({ onClose: (): void => { this.nativePane = ''; } })
       }
 
-      if (this.nativePane === 'dubbing') {
-        NativeDubbingFeedPane({
+      if (this.nativePane === 'transliter') {
+        NativeTransliterFeedPane({
           onClose: (): void => { this.nativePane = ''; },
           onOpen: (p: string): void => {
             this.nativePane = '';
@@ -2300,17 +2300,17 @@ struct Index {
       if (this.nativePane === 'mall_orders_detail') {
         NativeMallOrderDetailPane({ onClose: (): void => { this.nativePane = ''; } })
       }
-      if (this.nativePane === 'dubbing_videos') {
-        NativeDubbingVideosPane({ onClose: (): void => { this.nativePane = ''; } })
+      if (this.nativePane === 'transliter_videos') {
+        NativeTransliterVideosPane({ onClose: (): void => { this.nativePane = ''; } })
       }
-      if (this.nativePane === 'dubbing_video_detail') {
-        NativeDubbingVideoDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      if (this.nativePane === 'transliter_video_detail') {
+        NativeTransliterVideoDetailPane({ onClose: (): void => { this.nativePane = ''; } })
       }
-      if (this.nativePane === 'dubbing_works') {
-        NativeDubbingWorksPane({ onClose: (): void => { this.nativePane = ''; } })
+      if (this.nativePane === 'transliter_works') {
+        NativeTransliterWorksPane({ onClose: (): void => { this.nativePane = ''; } })
       }
-      if (this.nativePane === 'dubbing_work_detail') {
-        NativeDubbingWorkDetailPane({ onClose: (): void => { this.nativePane = ''; } })
+      if (this.nativePane === 'transliter_work_detail') {
+        NativeTransliterWorkDetailPane({ onClose: (): void => { this.nativePane = ''; } })
       }
       if (this.nativePane === 'community_convention') {
         NativeCommunityConventionPane({ onClose: (): void => { this.nativePane = ''; } })

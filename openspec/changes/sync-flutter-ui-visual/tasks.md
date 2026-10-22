@@ -48,7 +48,7 @@
 - [x] 6.1 Apply Flutter `module_pay` assets to membership (headers/plan badges/channel icons); keep unavailable-channel honesty
   - WeChat/Alipay channel icons wired; full header watermarks still optional follow-up
 - [x] 6.2 Rebuild media hub / music shell chrome with synced Flutter video/music assets
-  - Chooser cards use dubbing cover + music_record
+  - Chooser cards use transliter cover + music_record
 - [x] 6.3 Android evidence for membership + media hub; compile Android
   - Membership: `commerce/Android/kmp_membership.png`; media hub compile-verified (capture optional follow-up)
 

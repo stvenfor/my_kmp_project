@@ -78,19 +78,22 @@ Maven/plugins resolve from `https://maven.eazytec-cloud.com/nexus/repository/mav
 
 Use `expect` / `actual` for platform splits. Keep shells thin: `iosApp` and `harmonyApp` host the shared UI; feature work belongs in `composeApp`.
 
-Compose resources live under `composeApp/src/commonMain/composeResources/`.
+Compose resources live under `core/design/src/commonMain/composeResources/`（`:core:design` 持有全部 drawable/font；`composeApp` 不再有自己的 composeResources）。
 
 ### Launch icon & splash assets
 
+设计源：Flutter SoT `my_ai_project`（AI 主题图标 + `#F7FAFC` 启动底 + AI 启动图），2026-10-20 全量同步，三端一致。
+
 | Asset | Location |
 |-------|----------|
-| Launcher (mdpi…xxxhdpi + adaptive) | `composeApp/.../mipmap-*`, `drawable-nodpi`/`drawable-xxhdpi/ic_launcher_foreground.png`, `values/colors.xml` |
-| Android 12+ splash | `Theme.DemoApp.Splash` + `ic_splash_icon`; `MainActivity` calls `installSplashScreen()`; `postSplashScreenTheme` → `Theme.DemoApp` |
-| Pre-12 cold start | `drawable/splash_screen.xml` as `windowBackground` |
-| Shared splash drawables | `composeResources/drawable/{ic_splash_logo,bg_splash}.png` |
-| Harmony app icon | **`AppScope`** + `entry` `media/{foreground,background}.png` |
-| Harmony start window | `entry/.../media/startIcon.png` |
-| iOS | `iosApp/.../AppIcon.appiconset/` |
+| Android launcher | `composeApp/.../mipmap-*/ic_launcher.png`（mdpi…xxxhdpi 五密度；无 adaptive/round——对齐 Flutter SoT） |
+| Android 12+ splash | `Theme.DemoApp.Splash` + `@mipmap/launch_image`；`MainActivity` calls `installSplashScreen()`；`postSplashScreenTheme` → `Theme.DemoApp` |
+| Pre-12 cold start | `drawable/splash_screen.xml`（`#F7FAFC` 底 + 居中 `@mipmap/launch_image`） |
+| 启动图本体 | `mipmap-*/launch_image.png`（SoT 五密度）；`values/colors.xml` `splash_background` = `#F7FAFC` |
+| Shared splash drawables | `core/design/.../composeResources/drawable/{ic_splash_logo,bg_splash}.png`（NativeSplash 1.2s：bg=`#F7FAFC` 纯色、logo=AI 启动图） |
+| Harmony app icon | `AppScope/app.json5` + ability `module.json5` → `$media:app_icon`（AI 设计 1024） |
+| Harmony start window | `entry/.../media/startIcon.png`（AI 启动图）+ `start_window_background` = `#F7FAFC`（亮/暗同值，对齐 Flutter） |
+| iOS | `iosApp/.../AppIcon.appiconset/`（15 尺寸全套）+ `LaunchImage.imageset` + `LaunchScreen.storyboard`（`#F7FAFC` + 居中 LaunchImage；pbxproj `UILaunchStoryboardName=LaunchScreen`） |
 
 After icon changes, **uninstall/reinstall** if the launcher shows a cached icon.
 

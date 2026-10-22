@@ -1,7 +1,8 @@
 # Asset sync map (Flutter → Compose)
 
-Source root: `/Users/mac/Desktop/github/my_ai_project`
-Destination: `composeApp/src/commonMain/composeResources/drawable/`
+Source root: `/Users/qpy/Desktop/github/my_ai_project`
+Destination: `core/design/src/commonMain/composeResources/drawable/`
+Fan-out: `iosApp/iosApp/Assets.xcassets/` + `harmonyApp/entry/src/main/resources/base/media/`
 Copied files: **114**
 Regenerate: `./scripts/sync-flutter-assets.sh`
 
@@ -9,84 +10,84 @@ Excluded: bfui, DoKit, feature-package launcher sets.
 
 | module | flutter_path | compose_id | screens | file |
 |---|---|---|---|---|
-| home | `features/home/assets/all_services/after_sales_area.png` | `Res.drawable.home_all_services_after_sales_area` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_after_sales_area.png` |
-| home | `features/home/assets/all_services/all_functions.png` | `Res.drawable.home_all_services_all_functions` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_all_functions.png` |
-| home | `features/home/assets/all_services/business_poster.png` | `Res.drawable.home_all_services_business_poster` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_business_poster.png` |
-| home | `features/home/assets/all_services/calculator.png` | `Res.drawable.home_all_services_calculator` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_calculator.png` |
-| home | `features/home/assets/all_services/customer_profile.png` | `Res.drawable.home_all_services_customer_profile` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_customer_profile.png` |
-| home | `features/home/assets/all_services/dubbing_home.png` | `Res.drawable.home_all_services_dubbing_home` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_dubbing_home.png` |
-| home | `features/home/assets/all_services/exhibition_hall_shooting.png` | `Res.drawable.home_all_services_exhibition_hall_shooting` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_exhibition_hall_shooting.png` |
-| home | `features/home/assets/all_services/intelligence_task.png` | `Res.drawable.home_all_services_intelligence_task` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_intelligence_task.png` |
-| home | `features/home/assets/all_services/marketing.png` | `Res.drawable.home_all_services_marketing` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_marketing.png` |
-| home | `features/home/assets/all_services/nav_back_black.png` | `Res.drawable.home_all_services_nav_back_black` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_nav_back_black.png` |
-| home | `features/home/assets/all_services/new_car_deal.png` | `Res.drawable.home_all_services_new_car_deal` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_new_car_deal.png` |
-| home | `features/home/assets/all_services/new_car_in_store.png` | `Res.drawable.home_all_services_new_car_in_store` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_new_car_in_store.png` |
-| home | `features/home/assets/all_services/online_customer_acquisition.png` | `Res.drawable.home_all_services_online_customer_acquisition` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_online_customer_acquisition.png` |
-| home | `features/home/assets/all_services/service_management.png` | `Res.drawable.home_all_services_service_management` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_service_management.png` |
-| home | `features/home/assets/all_services/small_video.png` | `Res.drawable.home_all_services_small_video` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_small_video.png` |
-| home | `features/home/assets/all_services/smart_number.png` | `Res.drawable.home_all_services_smart_number` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_smart_number.png` |
-| home | `features/home/assets/all_services/smart_online_marketing.png` | `Res.drawable.home_all_services_smart_online_marketing` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_smart_online_marketing.png` |
-| home | `features/home/assets/all_services/smart_sale.png` | `Res.drawable.home_all_services_smart_sale` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_smart_sale.png` |
-| home | `features/home/assets/all_services/used_car.png` | `Res.drawable.home_all_services_used_car` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_used_car.png` |
-| home | `features/home/assets/all_services/v_store.png` | `Res.drawable.home_all_services_v_store` | HomeScreen / AllServices / Search / Dubbing | `home_all_services_v_store.png` |
-| home | `features/home/assets/dubbing_home/badge_vip.png` | `Res.drawable.home_dubbing_home_badge_vip` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_badge_vip.png` |
-| home | `features/home/assets/dubbing_home/banner_main.png` | `Res.drawable.home_dubbing_home_banner_main` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_banner_main.png` |
-| home | `features/home/assets/dubbing_home/bar_icon_top.png` | `Res.drawable.home_dubbing_home_bar_icon_top` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_bar_icon_top.png` |
-| home | `features/home/assets/dubbing_home/cover_01.png` | `Res.drawable.home_dubbing_home_cover_01` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_01.png` |
-| home | `features/home/assets/dubbing_home/cover_02.png` | `Res.drawable.home_dubbing_home_cover_02` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_02.png` |
-| home | `features/home/assets/dubbing_home/cover_03.png` | `Res.drawable.home_dubbing_home_cover_03` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_03.png` |
-| home | `features/home/assets/dubbing_home/cover_04.png` | `Res.drawable.home_dubbing_home_cover_04` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_04.png` |
-| home | `features/home/assets/dubbing_home/cover_05.png` | `Res.drawable.home_dubbing_home_cover_05` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_05.png` |
-| home | `features/home/assets/dubbing_home/cover_06.png` | `Res.drawable.home_dubbing_home_cover_06` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_06.png` |
-| home | `features/home/assets/dubbing_home/cover_07.png` | `Res.drawable.home_dubbing_home_cover_07` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_07.png` |
-| home | `features/home/assets/dubbing_home/cover_08.png` | `Res.drawable.home_dubbing_home_cover_08` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_08.png` |
-| home | `features/home/assets/dubbing_home/cover_09.png` | `Res.drawable.home_dubbing_home_cover_09` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_09.png` |
-| home | `features/home/assets/dubbing_home/cover_10.png` | `Res.drawable.home_dubbing_home_cover_10` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_10.png` |
-| home | `features/home/assets/dubbing_home/cover_11.png` | `Res.drawable.home_dubbing_home_cover_11` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_11.png` |
-| home | `features/home/assets/dubbing_home/cover_12.png` | `Res.drawable.home_dubbing_home_cover_12` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_12.png` |
-| home | `features/home/assets/dubbing_home/cover_assessment.png` | `Res.drawable.home_dubbing_home_cover_assessment` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_cover_assessment.png` |
-| home | `features/home/assets/dubbing_home/feature_all_videos.png` | `Res.drawable.home_dubbing_home_feature_all_videos` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_feature_all_videos.png` |
-| home | `features/home/assets/dubbing_home/feature_check_in.png` | `Res.drawable.home_dubbing_home_feature_check_in` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_feature_check_in.png` |
-| home | `features/home/assets/dubbing_home/feature_classic_theater.png` | `Res.drawable.home_dubbing_home_feature_classic_theater` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_feature_classic_theater.png` |
-| home | `features/home/assets/dubbing_home/feature_dubbing.png` | `Res.drawable.home_dubbing_home_feature_dubbing` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_feature_dubbing.png` |
-| home | `features/home/assets/dubbing_home/feature_movie_words.png` | `Res.drawable.home_dubbing_home_feature_movie_words` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_feature_movie_words.png` |
-| home | `features/home/assets/dubbing_home/feature_rank.png` | `Res.drawable.home_dubbing_home_feature_rank` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_feature_rank.png` |
-| home | `features/home/assets/dubbing_home/hot_rank/badge_top20.png` | `Res.drawable.home_dubbing_home_hot_rank_badge_top20` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_hot_rank_badge_top20.png` |
-| home | `features/home/assets/dubbing_home/hot_rank/icon_collapse.png` | `Res.drawable.home_dubbing_home_hot_rank_icon_collapse` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_hot_rank_icon_collapse.png` |
-| home | `features/home/assets/dubbing_home/hot_rank/icon_like.png` | `Res.drawable.home_dubbing_home_hot_rank_icon_like` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_hot_rank_icon_like.png` |
-| home | `features/home/assets/dubbing_home/hot_rank/icon_share.png` | `Res.drawable.home_dubbing_home_hot_rank_icon_share` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_hot_rank_icon_share.png` |
-| home | `features/home/assets/dubbing_home/hot_rank/wheat_large_left.png` | `Res.drawable.home_dubbing_home_hot_rank_wheat_large_left` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_hot_rank_wheat_large_left.png` |
-| home | `features/home/assets/dubbing_home/hot_rank/wheat_large_right.png` | `Res.drawable.home_dubbing_home_hot_rank_wheat_large_right` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_hot_rank_wheat_large_right.png` |
-| home | `features/home/assets/dubbing_home/icon_chevron_right.png` | `Res.drawable.home_dubbing_home_icon_chevron_right` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_chevron_right.png` |
-| home | `features/home/assets/dubbing_home/icon_downward.png` | `Res.drawable.home_dubbing_home_icon_downward` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_downward.png` |
-| home | `features/home/assets/dubbing_home/icon_duration.png` | `Res.drawable.home_dubbing_home_icon_duration` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_duration.png` |
-| home | `features/home/assets/dubbing_home/icon_hot.png` | `Res.drawable.home_dubbing_home_icon_hot` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_hot.png` |
-| home | `features/home/assets/dubbing_home/icon_menu.png` | `Res.drawable.home_dubbing_home_icon_menu` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_menu.png` |
-| home | `features/home/assets/dubbing_home/icon_notification.png` | `Res.drawable.home_dubbing_home_icon_notification` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_notification.png` |
-| home | `features/home/assets/dubbing_home/icon_play_badge.png` | `Res.drawable.home_dubbing_home_icon_play_badge` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_play_badge.png` |
-| home | `features/home/assets/dubbing_home/icon_refresh.png` | `Res.drawable.home_dubbing_home_icon_refresh` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_refresh.png` |
-| home | `features/home/assets/dubbing_home/icon_search.png` | `Res.drawable.home_dubbing_home_icon_search` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_search.png` |
-| home | `features/home/assets/dubbing_home/icon_swap.png` | `Res.drawable.home_dubbing_home_icon_swap` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_swap.png` |
-| home | `features/home/assets/dubbing_home/icon_view_all.png` | `Res.drawable.home_dubbing_home_icon_view_all` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_icon_view_all.png` |
-| home | `features/home/assets/dubbing_home/rank_badge_1.png` | `Res.drawable.home_dubbing_home_rank_badge_1` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_badge_1.png` |
-| home | `features/home/assets/dubbing_home/rank_badge_2.png` | `Res.drawable.home_dubbing_home_rank_badge_2` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_badge_2.png` |
-| home | `features/home/assets/dubbing_home/rank_badge_3.png` | `Res.drawable.home_dubbing_home_rank_badge_3` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_badge_3.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_1.png` | `Res.drawable.home_dubbing_home_rank_icon_1` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_1.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_10.png` | `Res.drawable.home_dubbing_home_rank_icon_10` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_10.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_2.png` | `Res.drawable.home_dubbing_home_rank_icon_2` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_2.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_6.png` | `Res.drawable.home_dubbing_home_rank_icon_6` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_6.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_7.png` | `Res.drawable.home_dubbing_home_rank_icon_7` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_7.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_8.png` | `Res.drawable.home_dubbing_home_rank_icon_8` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_8.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_9.png` | `Res.drawable.home_dubbing_home_rank_icon_9` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_9.png` |
-| home | `features/home/assets/dubbing_home/rank_icon_dub.png` | `Res.drawable.home_dubbing_home_rank_icon_dub` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_rank_icon_dub.png` |
-| home | `features/home/assets/dubbing_home/thumb_default.png` | `Res.drawable.home_dubbing_home_thumb_default` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_thumb_default.png` |
-| home | `features/home/assets/dubbing_home/wheat_left.png` | `Res.drawable.home_dubbing_home_wheat_left` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_wheat_left.png` |
-| home | `features/home/assets/dubbing_home/wheat_right.png` | `Res.drawable.home_dubbing_home_wheat_right` | HomeScreen / AllServices / Search / Dubbing | `home_dubbing_home_wheat_right.png` |
-| home | `features/home/assets/search/icon_clear_history.png` | `Res.drawable.home_search_icon_clear_history` | HomeScreen / AllServices / Search / Dubbing | `home_search_icon_clear_history.png` |
-| home | `features/home/assets/search/icon_filter.png` | `Res.drawable.home_search_icon_filter` | HomeScreen / AllServices / Search / Dubbing | `home_search_icon_filter.png` |
-| home | `features/home/assets/search/icon_refresh.png` | `Res.drawable.home_search_icon_refresh` | HomeScreen / AllServices / Search / Dubbing | `home_search_icon_refresh.png` |
-| home | `features/home/assets/search/microphone.png` | `Res.drawable.home_search_microphone` | HomeScreen / AllServices / Search / Dubbing | `home_search_microphone.png` |
-| home | `features/home/assets/search/rank_badge_bg.png` | `Res.drawable.home_search_rank_badge_bg` | HomeScreen / AllServices / Search / Dubbing | `home_search_rank_badge_bg.png` |
+| home | `features/home/assets/all_services/after_sales_area.png` | `Res.drawable.home_all_services_after_sales_area` | HomeScreen / AllServices / Search / Transliter | `home_all_services_after_sales_area.png` |
+| home | `features/home/assets/all_services/all_functions.png` | `Res.drawable.home_all_services_all_functions` | HomeScreen / AllServices / Search / Transliter | `home_all_services_all_functions.png` |
+| home | `features/home/assets/all_services/business_poster.png` | `Res.drawable.home_all_services_business_poster` | HomeScreen / AllServices / Search / Transliter | `home_all_services_business_poster.png` |
+| home | `features/home/assets/all_services/calculator.png` | `Res.drawable.home_all_services_calculator` | HomeScreen / AllServices / Search / Transliter | `home_all_services_calculator.png` |
+| home | `features/home/assets/all_services/customer_profile.png` | `Res.drawable.home_all_services_customer_profile` | HomeScreen / AllServices / Search / Transliter | `home_all_services_customer_profile.png` |
+| home | `features/home/assets/all_services/transliter_home.png` | `Res.drawable.home_all_services_transliter_home` | HomeScreen / AllServices / Search / Transliter | `home_all_services_transliter_home.png` |
+| home | `features/home/assets/all_services/exhibition_hall_shooting.png` | `Res.drawable.home_all_services_exhibition_hall_shooting` | HomeScreen / AllServices / Search / Transliter | `home_all_services_exhibition_hall_shooting.png` |
+| home | `features/home/assets/all_services/intelligence_task.png` | `Res.drawable.home_all_services_intelligence_task` | HomeScreen / AllServices / Search / Transliter | `home_all_services_intelligence_task.png` |
+| home | `features/home/assets/all_services/marketing.png` | `Res.drawable.home_all_services_marketing` | HomeScreen / AllServices / Search / Transliter | `home_all_services_marketing.png` |
+| home | `features/home/assets/all_services/nav_back_black.png` | `Res.drawable.home_all_services_nav_back_black` | HomeScreen / AllServices / Search / Transliter | `home_all_services_nav_back_black.png` |
+| home | `features/home/assets/all_services/new_car_deal.png` | `Res.drawable.home_all_services_new_car_deal` | HomeScreen / AllServices / Search / Transliter | `home_all_services_new_car_deal.png` |
+| home | `features/home/assets/all_services/new_car_in_store.png` | `Res.drawable.home_all_services_new_car_in_store` | HomeScreen / AllServices / Search / Transliter | `home_all_services_new_car_in_store.png` |
+| home | `features/home/assets/all_services/online_customer_acquisition.png` | `Res.drawable.home_all_services_online_customer_acquisition` | HomeScreen / AllServices / Search / Transliter | `home_all_services_online_customer_acquisition.png` |
+| home | `features/home/assets/all_services/service_management.png` | `Res.drawable.home_all_services_service_management` | HomeScreen / AllServices / Search / Transliter | `home_all_services_service_management.png` |
+| home | `features/home/assets/all_services/small_video.png` | `Res.drawable.home_all_services_small_video` | HomeScreen / AllServices / Search / Transliter | `home_all_services_small_video.png` |
+| home | `features/home/assets/all_services/smart_number.png` | `Res.drawable.home_all_services_smart_number` | HomeScreen / AllServices / Search / Transliter | `home_all_services_smart_number.png` |
+| home | `features/home/assets/all_services/smart_online_marketing.png` | `Res.drawable.home_all_services_smart_online_marketing` | HomeScreen / AllServices / Search / Transliter | `home_all_services_smart_online_marketing.png` |
+| home | `features/home/assets/all_services/smart_sale.png` | `Res.drawable.home_all_services_smart_sale` | HomeScreen / AllServices / Search / Transliter | `home_all_services_smart_sale.png` |
+| home | `features/home/assets/all_services/used_car.png` | `Res.drawable.home_all_services_used_car` | HomeScreen / AllServices / Search / Transliter | `home_all_services_used_car.png` |
+| home | `features/home/assets/all_services/v_store.png` | `Res.drawable.home_all_services_v_store` | HomeScreen / AllServices / Search / Transliter | `home_all_services_v_store.png` |
+| home | `features/home/assets/transliter_home/badge_vip.png` | `Res.drawable.home_transliter_home_badge_vip` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_badge_vip.png` |
+| home | `features/home/assets/transliter_home/banner_main.png` | `Res.drawable.home_transliter_home_banner_main` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_banner_main.png` |
+| home | `features/home/assets/transliter_home/bar_icon_top.png` | `Res.drawable.home_transliter_home_bar_icon_top` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_bar_icon_top.png` |
+| home | `features/home/assets/transliter_home/cover_01.png` | `Res.drawable.home_transliter_home_cover_01` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_01.png` |
+| home | `features/home/assets/transliter_home/cover_02.png` | `Res.drawable.home_transliter_home_cover_02` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_02.png` |
+| home | `features/home/assets/transliter_home/cover_03.png` | `Res.drawable.home_transliter_home_cover_03` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_03.png` |
+| home | `features/home/assets/transliter_home/cover_04.png` | `Res.drawable.home_transliter_home_cover_04` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_04.png` |
+| home | `features/home/assets/transliter_home/cover_05.png` | `Res.drawable.home_transliter_home_cover_05` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_05.png` |
+| home | `features/home/assets/transliter_home/cover_06.png` | `Res.drawable.home_transliter_home_cover_06` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_06.png` |
+| home | `features/home/assets/transliter_home/cover_07.png` | `Res.drawable.home_transliter_home_cover_07` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_07.png` |
+| home | `features/home/assets/transliter_home/cover_08.png` | `Res.drawable.home_transliter_home_cover_08` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_08.png` |
+| home | `features/home/assets/transliter_home/cover_09.png` | `Res.drawable.home_transliter_home_cover_09` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_09.png` |
+| home | `features/home/assets/transliter_home/cover_10.png` | `Res.drawable.home_transliter_home_cover_10` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_10.png` |
+| home | `features/home/assets/transliter_home/cover_11.png` | `Res.drawable.home_transliter_home_cover_11` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_11.png` |
+| home | `features/home/assets/transliter_home/cover_12.png` | `Res.drawable.home_transliter_home_cover_12` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_12.png` |
+| home | `features/home/assets/transliter_home/cover_assessment.png` | `Res.drawable.home_transliter_home_cover_assessment` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_cover_assessment.png` |
+| home | `features/home/assets/transliter_home/feature_all_videos.png` | `Res.drawable.home_transliter_home_feature_all_videos` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_feature_all_videos.png` |
+| home | `features/home/assets/transliter_home/feature_check_in.png` | `Res.drawable.home_transliter_home_feature_check_in` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_feature_check_in.png` |
+| home | `features/home/assets/transliter_home/feature_classic_theater.png` | `Res.drawable.home_transliter_home_feature_classic_theater` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_feature_classic_theater.png` |
+| home | `features/home/assets/transliter_home/feature_transliter.png` | `Res.drawable.home_transliter_home_feature_transliter` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_feature_transliter.png` |
+| home | `features/home/assets/transliter_home/feature_movie_words.png` | `Res.drawable.home_transliter_home_feature_movie_words` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_feature_movie_words.png` |
+| home | `features/home/assets/transliter_home/feature_rank.png` | `Res.drawable.home_transliter_home_feature_rank` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_feature_rank.png` |
+| home | `features/home/assets/transliter_home/hot_rank/badge_top20.png` | `Res.drawable.home_transliter_home_hot_rank_badge_top20` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_hot_rank_badge_top20.png` |
+| home | `features/home/assets/transliter_home/hot_rank/icon_collapse.png` | `Res.drawable.home_transliter_home_hot_rank_icon_collapse` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_hot_rank_icon_collapse.png` |
+| home | `features/home/assets/transliter_home/hot_rank/icon_like.png` | `Res.drawable.home_transliter_home_hot_rank_icon_like` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_hot_rank_icon_like.png` |
+| home | `features/home/assets/transliter_home/hot_rank/icon_share.png` | `Res.drawable.home_transliter_home_hot_rank_icon_share` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_hot_rank_icon_share.png` |
+| home | `features/home/assets/transliter_home/hot_rank/wheat_large_left.png` | `Res.drawable.home_transliter_home_hot_rank_wheat_large_left` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_hot_rank_wheat_large_left.png` |
+| home | `features/home/assets/transliter_home/hot_rank/wheat_large_right.png` | `Res.drawable.home_transliter_home_hot_rank_wheat_large_right` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_hot_rank_wheat_large_right.png` |
+| home | `features/home/assets/transliter_home/icon_chevron_right.png` | `Res.drawable.home_transliter_home_icon_chevron_right` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_chevron_right.png` |
+| home | `features/home/assets/transliter_home/icon_downward.png` | `Res.drawable.home_transliter_home_icon_downward` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_downward.png` |
+| home | `features/home/assets/transliter_home/icon_duration.png` | `Res.drawable.home_transliter_home_icon_duration` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_duration.png` |
+| home | `features/home/assets/transliter_home/icon_hot.png` | `Res.drawable.home_transliter_home_icon_hot` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_hot.png` |
+| home | `features/home/assets/transliter_home/icon_menu.png` | `Res.drawable.home_transliter_home_icon_menu` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_menu.png` |
+| home | `features/home/assets/transliter_home/icon_notification.png` | `Res.drawable.home_transliter_home_icon_notification` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_notification.png` |
+| home | `features/home/assets/transliter_home/icon_play_badge.png` | `Res.drawable.home_transliter_home_icon_play_badge` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_play_badge.png` |
+| home | `features/home/assets/transliter_home/icon_refresh.png` | `Res.drawable.home_transliter_home_icon_refresh` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_refresh.png` |
+| home | `features/home/assets/transliter_home/icon_search.png` | `Res.drawable.home_transliter_home_icon_search` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_search.png` |
+| home | `features/home/assets/transliter_home/icon_swap.png` | `Res.drawable.home_transliter_home_icon_swap` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_swap.png` |
+| home | `features/home/assets/transliter_home/icon_view_all.png` | `Res.drawable.home_transliter_home_icon_view_all` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_icon_view_all.png` |
+| home | `features/home/assets/transliter_home/rank_badge_1.png` | `Res.drawable.home_transliter_home_rank_badge_1` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_badge_1.png` |
+| home | `features/home/assets/transliter_home/rank_badge_2.png` | `Res.drawable.home_transliter_home_rank_badge_2` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_badge_2.png` |
+| home | `features/home/assets/transliter_home/rank_badge_3.png` | `Res.drawable.home_transliter_home_rank_badge_3` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_badge_3.png` |
+| home | `features/home/assets/transliter_home/rank_icon_1.png` | `Res.drawable.home_transliter_home_rank_icon_1` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_1.png` |
+| home | `features/home/assets/transliter_home/rank_icon_10.png` | `Res.drawable.home_transliter_home_rank_icon_10` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_10.png` |
+| home | `features/home/assets/transliter_home/rank_icon_2.png` | `Res.drawable.home_transliter_home_rank_icon_2` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_2.png` |
+| home | `features/home/assets/transliter_home/rank_icon_6.png` | `Res.drawable.home_transliter_home_rank_icon_6` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_6.png` |
+| home | `features/home/assets/transliter_home/rank_icon_7.png` | `Res.drawable.home_transliter_home_rank_icon_7` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_7.png` |
+| home | `features/home/assets/transliter_home/rank_icon_8.png` | `Res.drawable.home_transliter_home_rank_icon_8` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_8.png` |
+| home | `features/home/assets/transliter_home/rank_icon_9.png` | `Res.drawable.home_transliter_home_rank_icon_9` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_9.png` |
+| home | `features/home/assets/transliter_home/rank_icon_dub.png` | `Res.drawable.home_transliter_home_rank_icon_dub` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_rank_icon_dub.png` |
+| home | `features/home/assets/transliter_home/thumb_default.png` | `Res.drawable.home_transliter_home_thumb_default` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_thumb_default.png` |
+| home | `features/home/assets/transliter_home/wheat_left.png` | `Res.drawable.home_transliter_home_wheat_left` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_wheat_left.png` |
+| home | `features/home/assets/transliter_home/wheat_right.png` | `Res.drawable.home_transliter_home_wheat_right` | HomeScreen / AllServices / Search / Transliter | `home_transliter_home_wheat_right.png` |
+| home | `features/home/assets/search/icon_clear_history.png` | `Res.drawable.home_search_icon_clear_history` | HomeScreen / AllServices / Search / Transliter | `home_search_icon_clear_history.png` |
+| home | `features/home/assets/search/icon_filter.png` | `Res.drawable.home_search_icon_filter` | HomeScreen / AllServices / Search / Transliter | `home_search_icon_filter.png` |
+| home | `features/home/assets/search/icon_refresh.png` | `Res.drawable.home_search_icon_refresh` | HomeScreen / AllServices / Search / Transliter | `home_search_icon_refresh.png` |
+| home | `features/home/assets/search/microphone.png` | `Res.drawable.home_search_microphone` | HomeScreen / AllServices / Search / Transliter | `home_search_microphone.png` |
+| home | `features/home/assets/search/rank_badge_bg.png` | `Res.drawable.home_search_rank_badge_bg` | HomeScreen / AllServices / Search / Transliter | `home_search_rank_badge_bg.png` |
 | pay | `features/pay/assets/membership/badge_trial_price.png` | `Res.drawable.pay_membership_badge_trial_price` | MembershipScreen | `pay_membership_badge_trial_price.png` |
 | pay | `features/pay/assets/membership/header_ai_svip.png` | `Res.drawable.pay_membership_header_ai_svip` | MembershipScreen | `pay_membership_header_ai_svip.png` |
 | pay | `features/pay/assets/membership/header_ai_svip_watermark.png` | `Res.drawable.pay_membership_header_ai_svip_watermark` | MembershipScreen | `pay_membership_header_ai_svip_watermark.png` |

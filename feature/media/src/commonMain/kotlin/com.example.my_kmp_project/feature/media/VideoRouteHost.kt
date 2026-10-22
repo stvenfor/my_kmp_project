@@ -56,24 +56,24 @@ import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
-import my_kmp_project.core.design.generated.resources.video_dubbing_videos_detail_body
-import my_kmp_project.core.design.generated.resources.video_dubbing_works_body
-import my_kmp_project.core.design.generated.resources.video_dubbing_works_detail_body
+import my_kmp_project.core.design.generated.resources.video_transliter_videos_detail_body
+import my_kmp_project.core.design.generated.resources.video_transliter_works_body
+import my_kmp_project.core.design.generated.resources.video_transliter_works_detail_body
 import my_kmp_project.core.design.generated.resources.video_short_body
 import my_kmp_project.core.design.generated.resources.video_short_publish_body
 import my_kmp_project.core.design.generated.resources.community_avatar
-import my_kmp_project.core.design.generated.resources.home_all_services_dubbing_home
+import my_kmp_project.core.design.generated.resources.home_all_services_transliter_home
 import my_kmp_project.core.design.generated.resources.home_all_services_small_video
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_01
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_02
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_03
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_04
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_05
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_06
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_07
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_08
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_09
-import my_kmp_project.core.design.generated.resources.home_dubbing_home_cover_10
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_01
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_02
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_03
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_04
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_05
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_06
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_07
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_08
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_09
+import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_10
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import com.example.my_kmp_project.core.router.VideoRoutes
@@ -95,30 +95,30 @@ private data class ShortItem(
     val aspectRatio: Float = 1.35f,
 )
 
-private data class DubbingItem(
+private data class TransliterItem(
     val id: String,
     val title: String,
     val tags: String,
     val desc: String,
-    val cover: DrawableResource = Res.drawable.home_dubbing_home_cover_05,
+    val cover: DrawableResource = Res.drawable.home_transliter_home_cover_05,
 )
 
 private object VideoMock {
     val shorts = listOf(
-        ShortItem("s1", "口语跟读 · 第一课", "02:15", "已发布", 128, Res.drawable.home_dubbing_home_cover_01, 1.45f),
-        ShortItem("s2", "周末活动花絮", "00:48", "已发布", 56, Res.drawable.home_dubbing_home_cover_02, 1.2f),
-        ShortItem("s3", "学习打卡", "01:32", "上传中", 0, Res.drawable.home_dubbing_home_cover_03, 1.5f),
-        ShortItem("s4", "校园开放日", "03:05", "已发布", 210, Res.drawable.home_dubbing_home_cover_04, 1.3f),
-        ShortItem("s5", "社团晚会精选", "01:08", "审核中", 42, Res.drawable.home_dubbing_home_cover_06, 1.4f),
+        ShortItem("s1", "口语跟读 · 第一课", "02:15", "已发布", 128, Res.drawable.home_transliter_home_cover_01, 1.45f),
+        ShortItem("s2", "周末活动花絮", "00:48", "已发布", 56, Res.drawable.home_transliter_home_cover_02, 1.2f),
+        ShortItem("s3", "学习打卡", "01:32", "上传中", 0, Res.drawable.home_transliter_home_cover_03, 1.5f),
+        ShortItem("s4", "校园开放日", "03:05", "已发布", 210, Res.drawable.home_transliter_home_cover_04, 1.3f),
+        ShortItem("s5", "社团晚会精选", "01:08", "审核中", 42, Res.drawable.home_transliter_home_cover_06, 1.4f),
     )
-    val dubbing = listOf(
-        DubbingItem("d1", "经典台词 · 致橡树", "朗读 · 情感", "适合跟读练习", Res.drawable.home_dubbing_home_cover_05),
-        DubbingItem("d2", "日常口语 · 点餐", "口语 · 场景", "场景对话配音", Res.drawable.home_dubbing_home_cover_07),
-        DubbingItem("d3", "新闻播报片段", "播音 · 正式", "语速与停顿训练", Res.drawable.home_dubbing_home_cover_08),
+    val transliter = listOf(
+        TransliterItem("d1", "经典台词 · 致橡树", "朗读 · 情感", "适合跟读练习", Res.drawable.home_transliter_home_cover_05),
+        TransliterItem("d2", "日常口语 · 点餐", "口语 · 场景", "场景对话跟读", Res.drawable.home_transliter_home_cover_07),
+        TransliterItem("d3", "新闻播报片段", "播音 · 正式", "语速与停顿训练", Res.drawable.home_transliter_home_cover_08),
     )
     val works = listOf(
-        DubbingItem("w1", "我的作品 · 致橡树", "已完成", "时长 01:20", Res.drawable.home_dubbing_home_cover_09),
-        DubbingItem("w2", "点餐练习 v2", "待审核", "时长 00:45", Res.drawable.home_dubbing_home_cover_10),
+        TransliterItem("w1", "我的作品 · 致橡树", "已完成", "时长 01:20", Res.drawable.home_transliter_home_cover_09),
+        TransliterItem("w2", "点餐练习 v2", "待审核", "时长 00:45", Res.drawable.home_transliter_home_cover_10),
     )
 }
 
@@ -132,7 +132,7 @@ fun VideoRouteHost(
         VideoRoutes.Hub -> VideoHubLanding(
             onBack = onBack,
             onShort = { onNavigate(VideoRoutes.Short) },
-            onDubbing = { onNavigate(VideoRoutes.DubbingVideos) },
+            onTransliter = { onNavigate(VideoRoutes.TransliterVideos) },
         )
         VideoRoutes.Short -> ShortVideoPage(
             onBack = onBack,
@@ -146,24 +146,24 @@ fun VideoRouteHost(
             onBack()
         }
         VideoRoutes.ShortHelp -> ShortVideoHelpPage(onBack = onBack)
-        VideoRoutes.DubbingVideos -> DubbingVideoListPage(
+        VideoRoutes.TransliterVideos -> TransliterVideoListPage(
             onBack = onBack,
-            onOpen = { onNavigate(VideoRoutes.DubbingVideoDetail) },
-            onWorks = { onNavigate(VideoRoutes.DubbingWorks) },
+            onOpen = { onNavigate(VideoRoutes.TransliterVideoDetail) },
+            onWorks = { onNavigate(VideoRoutes.TransliterWorks) },
         )
-        VideoRoutes.DubbingVideoDetail -> DubbingVideoDetailPage(
+        VideoRoutes.TransliterVideoDetail -> TransliterVideoDetailPage(
             onBack = onBack,
-            onWorks = { onNavigate(VideoRoutes.DubbingWorks) },
+            onWorks = { onNavigate(VideoRoutes.TransliterWorks) },
         )
-        VideoRoutes.DubbingWorks -> DubbingWorkListPage(
+        VideoRoutes.TransliterWorks -> TransliterWorkListPage(
             onBack = onBack,
-            onOpen = { onNavigate(VideoRoutes.DubbingWorkDetail) },
+            onOpen = { onNavigate(VideoRoutes.TransliterWorkDetail) },
         )
-        VideoRoutes.DubbingWorkDetail -> DubbingWorkDetailPage(onBack = onBack)
+        VideoRoutes.TransliterWorkDetail -> TransliterWorkDetailPage(onBack = onBack)
         else -> VideoHubLanding(
             onBack = onBack,
             onShort = { onNavigate(VideoRoutes.Short) },
-            onDubbing = { onNavigate(VideoRoutes.DubbingVideos) },
+            onTransliter = { onNavigate(VideoRoutes.TransliterVideos) },
         )
     }
 }
@@ -172,7 +172,7 @@ fun VideoRouteHost(
 private fun VideoHubLanding(
     onBack: () -> Unit,
     onShort: () -> Unit,
-    onDubbing: () -> Unit,
+    onTransliter: () -> Unit,
 ) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
@@ -185,10 +185,10 @@ private fun VideoHubLanding(
                 onClick = onShort,
             )
             HubMediaCard(
-                title = "配音",
+                title = "跟读",
                 subtitle = "素材库 · 作品 · 排行",
-                cover = Res.drawable.home_all_services_dubbing_home,
-                onClick = onDubbing,
+                cover = Res.drawable.home_all_services_transliter_home,
+                onClick = onTransliter,
             )
         }
     }
@@ -508,7 +508,7 @@ private fun ShortVideoHelpPage(onBack: () -> Unit) {
 }
 
 @Composable
-private fun DubbingVideoListPage(
+private fun TransliterVideoListPage(
     onBack: () -> Unit,
     onOpen: () -> Unit,
     onWorks: () -> Unit,
@@ -516,14 +516,14 @@ private fun DubbingVideoListPage(
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(
-            title = "配音视频",
+            title = "跟读视频",
             onBack = onBack,
             actions = {
                 TextButton(onClick = onWorks) { Text("作品", color = DemoColors.Accent) }
             },
         )
         LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(VideoMock.dubbing, key = { it.id }) { item ->
+            items(VideoMock.transliter, key = { it.id }) { item ->
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -555,33 +555,33 @@ private fun DubbingVideoListPage(
 }
 
 @Composable
-private fun DubbingVideoDetailPage(onBack: () -> Unit, onWorks: () -> Unit) {
+private fun TransliterVideoDetailPage(onBack: () -> Unit, onWorks: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     FlutterSoTFullFrame(
-        drawable = Res.drawable.video_dubbing_videos_detail_body,
-        contentDescription = "配音视频详情",
+        drawable = Res.drawable.video_transliter_videos_detail_body,
+        contentDescription = "跟读视频详情",
         onBack = onBack,
         onTap = onWorks,
     )
 }
 
 @Composable
-private fun DubbingWorkListPage(onBack: () -> Unit, onOpen: () -> Unit) {
+private fun TransliterWorkListPage(onBack: () -> Unit, onOpen: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     FlutterSoTFullFrame(
-        drawable = Res.drawable.video_dubbing_works_body,
-        contentDescription = "配音作品列表",
+        drawable = Res.drawable.video_transliter_works_body,
+        contentDescription = "跟读作品列表",
         onBack = onBack,
         onTap = onOpen,
     )
 }
 
 @Composable
-private fun DubbingWorkDetailPage(onBack: () -> Unit) {
+private fun TransliterWorkDetailPage(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     FlutterSoTFullFrame(
-        drawable = Res.drawable.video_dubbing_works_detail_body,
-        contentDescription = "配音作品详情",
+        drawable = Res.drawable.video_transliter_works_detail_body,
+        contentDescription = "跟读作品详情",
         onBack = onBack,
     )
 }

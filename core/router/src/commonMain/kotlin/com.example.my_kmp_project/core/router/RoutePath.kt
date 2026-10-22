@@ -20,7 +20,7 @@ object RoutePath {
         val Strategy = HomeRoutes.Strategy
         val LearningReport = HomeRoutes.LearningReport
         val CheckInMall = HomeRoutes.CheckInMall
-        val DubbingFeed = HomeRoutes.DubbingFeed
+        val TransliterFeed = HomeRoutes.TransliterFeed
         val AllServices = AppRoutePath.homeAllServices
         val LifeService = AppRoutePath.homeLifeService
         val LiveCommerce = AppRoutePath.homeLiveCommerce
@@ -33,10 +33,10 @@ object RoutePath {
         val ShortPlay = VideoRoutes.ShortPlay
         val ShortPublish = VideoRoutes.ShortPublish
         val ShortHelp = VideoRoutes.ShortHelp
-        val DubbingVideos = VideoRoutes.DubbingVideos
-        val DubbingVideoDetail = VideoRoutes.DubbingVideoDetail
-        val DubbingWorks = VideoRoutes.DubbingWorks
-        val DubbingWorkDetail = VideoRoutes.DubbingWorkDetail
+        val TransliterVideos = VideoRoutes.TransliterVideos
+        val TransliterVideoDetail = VideoRoutes.TransliterVideoDetail
+        val TransliterWorks = VideoRoutes.TransliterWorks
+        val TransliterWorkDetail = VideoRoutes.TransliterWorkDetail
     }
 
     object Classroom {

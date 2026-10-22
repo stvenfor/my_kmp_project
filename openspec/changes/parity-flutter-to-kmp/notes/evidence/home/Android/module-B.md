@@ -16,7 +16,7 @@ Date: 2026-09-25
 | 公司数据 | `/home/ledger` | PASS |
 | 投资策略 | `/home/strategy` | PASS |
 | 学习报告 | `/home/learning_report` | PASS |
-| 配音/热榜 | dubbing_feed / hot_rank | PASS |
+| 跟读/热榜 | transliter_feed / hot_rank | PASS |
 | 下拉刷新 | PullToRefreshBox | PASS |
 
 ## Compile

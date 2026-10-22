@@ -46,7 +46,7 @@ import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.classroom_gift_claim_body
-import my_kmp_project.core.design.generated.resources.classroom_homework_dubbing_body
+import my_kmp_project.core.design.generated.resources.classroom_homework_transliter_body
 import my_kmp_project.core.design.generated.resources.classroom_video_detail_body
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -82,16 +82,16 @@ public fun ClassroomRouteHost(
             onBack = onBack,
             onTeacher = { onNavigate(ClassroomRoutes.HomeworkTeacher) },
             onStudent = { onNavigate(ClassroomRoutes.HomeworkStudent) },
-            onDubbing = { onNavigate(ClassroomRoutes.HomeworkDubbing) },
+            onTransliter = { onNavigate(ClassroomRoutes.HomeworkTransliter) },
             onReview = { onNavigate(ClassroomRoutes.HomeworkReview) },
             onVideo = { onNavigate(ClassroomRoutes.VideoDetail) },
             onGift = { onNavigate(ClassroomRoutes.GiftClaim) },
         )
         ClassroomRoutes.HomeworkTeacher -> HomeworkDetailPage("教师作业详情", "批改进度 12/30 · 平均分 86", onBack)
         ClassroomRoutes.HomeworkStudent -> HomeworkDetailPage("学生作业详情", "已提交 · 待批改 · 附件 2", onBack)
-        ClassroomRoutes.HomeworkDubbing -> ClassroomSoTPage(
-            Res.drawable.classroom_homework_dubbing_body,
-            "配音作业",
+        ClassroomRoutes.HomeworkTransliter -> ClassroomSoTPage(
+            Res.drawable.classroom_homework_transliter_body,
+            "跟读作业",
             onBack,
         ) { showPlatformToast("开始录制（mock）") }
         ClassroomRoutes.HomeworkReview -> HomeworkDetailPage("作业点评", "教师评语：语速适中，注意连读。", onBack)
@@ -121,7 +121,7 @@ private fun HomeworkStatsPage(
     onBack: () -> Unit,
     onTeacher: () -> Unit,
     onStudent: () -> Unit,
-    onDubbing: () -> Unit,
+    onTransliter: () -> Unit,
     onReview: () -> Unit,
     onVideo: () -> Unit,
     onGift: () -> Unit,
@@ -142,7 +142,7 @@ private fun HomeworkStatsPage(
                         .background(DemoColors.Background)
                         .clickable {
                             when (row.type) {
-                                "配音" -> onDubbing()
+                                "跟读" -> onTransliter()
                                 else -> onTeacher()
                             }
                         }

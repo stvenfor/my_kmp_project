@@ -19,7 +19,7 @@ public object HomeRoutes {
     const val Strategy = "/home/strategy"
     const val LearningReport = "/home/learning_report"
     const val CheckInMall = "/home/check_in_mall"
-    const val DubbingFeed = "/home/dubbing_feed"
+    const val TransliterFeed = "/home/transliter_feed"
     const val HotRankDetail = "/home/hot_rank_detail"
     const val LifeService = "/home/life_service"
     const val LiveCommerce = "/home/live_commerce"
@@ -51,7 +51,7 @@ public object HomeRoutes {
         "投资策略", "策略", "朋友圈营销", "朋友圈" -> Strategy
         "学习报告" -> LearningReport
         "签到商城", "积分商城", "签到日历", "签到", "营销活动" -> CheckInMall
-        "配音", "配音首页" -> DubbingFeed
+        "跟读", "跟读首页" -> TransliterFeed
         "热榜", "热配榜" -> HotRankDetail
         "生活服务" -> LifeService
         "直播带货" -> LiveCommerce
@@ -183,16 +183,16 @@ public object VideoRoutes {
     const val ShortPlay = "/video/short/play"
     const val ShortPublish = "/video/short/publish"
     const val ShortHelp = "/video/short/help"
-    const val DubbingVideos = "/video/dubbing/videos"
-    const val DubbingVideoDetail = "/video/dubbing/videos/detail"
-    const val DubbingWorks = "/video/dubbing/works"
-    const val DubbingWorkDetail = "/video/dubbing/works/detail"
+    const val TransliterVideos = "/video/transliter/videos"
+    const val TransliterVideoDetail = "/video/transliter/videos/detail"
+    const val TransliterWorks = "/video/transliter/works"
+    const val TransliterWorkDetail = "/video/transliter/works/detail"
 
     fun fromLabel(label: String): String? = when (label.trim()) {
         "视频", "视频中心", "Video", "视频号", "素材库", "视频列表" -> Hub
         "小视频", "短视频" -> Short
-        "配音视频", "配音列表" -> DubbingVideos
-        "配音作品", "作品列表" -> DubbingWorks
+        "跟读视频", "跟读列表" -> TransliterVideos
+        "跟读作品", "作品列表" -> TransliterWorks
         else -> null
     }
 }
@@ -221,7 +221,7 @@ public object ClassroomRoutes {
     const val HomeworkStats = "/classroom/homework_stats"
     const val HomeworkTeacher = "/classroom/homework/detail_teacher"
     const val HomeworkStudent = "/classroom/homework/detail_student"
-    const val HomeworkDubbing = "/classroom/homework/dubbing"
+    const val HomeworkTransliter = "/classroom/homework/transliter"
     const val HomeworkReview = "/classroom/homework/review"
     const val GiftClaim = "/classroom/gift/claim"
     const val VideoDetail = "/classroom/video/detail"

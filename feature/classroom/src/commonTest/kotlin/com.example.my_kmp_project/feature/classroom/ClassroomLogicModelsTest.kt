@@ -37,8 +37,8 @@ class ClassroomLogicModelsTest {
     }
 
     @Test
-    fun homework_rows_include_dubbing() {
-        assertTrue(ClassroomLogicModels.homeworkRows.any { it.type == "配音" })
+    fun homework_rows_include_transliter() {
+        assertTrue(ClassroomLogicModels.homeworkRows.any { it.type == "跟读" })
         assertEquals("hw_001", ClassroomLogicModels.homeworkRows.first().id)
     }
 }

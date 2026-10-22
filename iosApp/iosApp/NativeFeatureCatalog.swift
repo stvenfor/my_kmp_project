@@ -44,15 +44,25 @@ enum NativeRouteResolver {
         return candidate
     }
 
+    /// Rules are **specific-prefix-first**: a generic `hasPrefix` family rule must not
+    /// swallow a deeper route that already owns a dedicated `Native…Page` struct
+    /// (`/live/room` → `/live`, `/music/now_playing` → `/music/list`,
+    /// `/mall/orders/detail` → `/mall/orders` all collapsed to the parent before M10.A.2.i,
+    /// so those pages were unreachable). Same bug class as the Harmony `nativePaneIdFor`
+    /// guard; enforced by `scripts/check-ios-page-dispatch.sh`.
     private static func normalizePath(_ path: String) -> String {
         if path == "/video/short" || path.hasPrefix("/video/short?") { return "/video/short" }
+        if path.hasPrefix("/video/short/") { return path }
+        if path.hasPrefix("/live/room") { return "/live/room" }
         if path.hasPrefix("/live") { return "/live" }
         if path.hasPrefix("/friend") { return "/friend" }
+        if path.hasPrefix("/mall/orders/detail") { return "/mall/orders/detail" }
         if path.hasPrefix("/mall/orders") { return "/mall/orders" }
         if path.hasPrefix("/mall/detail") { return "/mall/detail" }
         if path.hasPrefix("/mall") { return "/mall" }
         if path.hasPrefix("/wallet") { return "/wallet" }
         if path.hasPrefix("/ai") { return "/ai/stream" }
+        if path.hasPrefix("/music/now_playing") { return "/music/now_playing" }
         if path.hasPrefix("/music") { return "/music/list" }
         if path.hasPrefix("/classroom/homework") || path.hasPrefix("/classroom/video") || path.hasPrefix("/classroom/gift") {
             return path
@@ -82,7 +92,7 @@ enum NativeRouteResolver {
         "投资策略": "/home/strategy", "策略": "/home/strategy",
         "学习报告": "/home/learning_report",
         "签到商城": "/home/check_in_mall", "积分商城": "/home/check_in_mall",
-        "配音": "/home/dubbing_feed", "配音首页": "/home/dubbing_feed",
+        "跟读": "/home/transliter_feed", "跟读首页": "/home/transliter_feed",
         "热榜": "/home/hot_rank_detail", "热配榜": "/home/hot_rank_detail",
         "生活服务": "/home/life_service",
         "直播带货": "/home/live_commerce", "直播": "/home/live_commerce",
@@ -131,7 +141,7 @@ enum NativeRouteResolver {
         "会员": "/pay/membership", "会员续费": "/pay/membership",
         "关于": "/mine/about",
         "门店": "/home/data_analytics",
-        "视频列表": "/video", "作品列表": "/video/dubbing/works",
+        "视频列表": "/video", "作品列表": "/video/transliter/works",
     ]
 }
 
@@ -226,11 +236,11 @@ enum NativeFeatureCatalog {
                 .init(id: "2", title: "香氛挂件", detail: "500 积分", badge: nil),
             ], primaryAction: "去签到")
         },
-        "/home/dubbing_feed": {
-            .init(id: "/home/dubbing_feed", title: "配音", subtitle: "热门配音素材", rows: [
+        "/home/transliter_feed": {
+            .init(id: "/home/transliter_feed", title: "跟读", subtitle: "热门跟读素材", rows: [
                 .init(id: "1", title: "小王子 · 片段 3", detail: "难度初级 · 女声", badge: "热"),
                 .init(id: "2", title: "飞屋环游记 · OP", detail: "难度中级 · 男声", badge: nil),
-            ], primaryAction: "开始配音")
+            ], primaryAction: "开始跟读")
         },
         "/home/hot_rank_detail": {
             .init(id: "/home/hot_rank_detail", title: "热搜榜", subtitle: "iHome用户近期热搜内容", rows: [
@@ -347,7 +357,7 @@ enum NativeFeatureCatalog {
         "/classroom/my_class": {
             .init(id: "/classroom/my_class", title: "我的课程", subtitle: "班级与作业", rows: [
                 .init(id: "1", title: "产品知识班", detail: "未交作业 2", badge: nil),
-                .init(id: "2", title: "配音作业", detail: "待批改 1", badge: nil),
+                .init(id: "2", title: "跟读作业", detail: "待批改 1", badge: nil),
             ], primaryAction: "进入课堂")
         },
         "/classroom/homework": {
@@ -504,14 +514,14 @@ struct NativeFeatureHost: View {
             NativeShortVideoHelpPage(onClose: onClose)
         } else if path == "/video/short" {
             NativeShortVideoPage(onClose: onClose, onOpen: onOpen)
-        } else if path == "/video/dubbing/videos" {
-            NativeDubbingVideosPage(onClose: onClose)
-        } else if path == "/video/dubbing/videos/detail" {
-            NativeDubbingVideoDetailPage(onClose: onClose)
-        } else if path == "/video/dubbing/works" {
-            NativeDubbingWorksPage(onClose: onClose)
-        } else if path == "/video/dubbing/works/detail" {
-            NativeDubbingWorkDetailPage(onClose: onClose)
+        } else if path == "/video/transliter/videos" {
+            NativeTransliterVideosPage(onClose: onClose)
+        } else if path == "/video/transliter/videos/detail" {
+            NativeTransliterVideoDetailPage(onClose: onClose)
+        } else if path == "/video/transliter/works" {
+            NativeTransliterWorksPage(onClose: onClose)
+        } else if path == "/video/transliter/works/detail" {
+            NativeTransliterWorkDetailPage(onClose: onClose)
         } else if path == "/video" {
             NativeVideoHubPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/live" {
@@ -539,12 +549,16 @@ struct NativeFeatureHost: View {
             NativeHomeworkDetailPage(title: "教师作业详情", detail: "批改进度 12/30 · 平均分 86", onClose: onClose)
         } else if path == "/classroom/homework/detail_student" {
             NativeHomeworkDetailPage(title: "学生作业详情", detail: "已提交 · 待批改 · 附件 2", onClose: onClose)
-        } else if path == "/classroom/homework/dubbing" {
-            NativeHomeworkDetailPage(title: "配音作业", detail: "录制入口 stub · 见 media gap", onClose: onClose, action: "开始录制")
+        } else if path == "/classroom/homework/transliter" {
+            NativeHomeworkDetailPage(title: "跟读作业", detail: "录制入口 stub · 见 media gap", onClose: onClose, action: "开始录制")
         } else if path == "/classroom/homework/review" {
             NativeHomeworkDetailPage(title: "作业点评", detail: "教师评语：语速适中，注意连读。", onClose: onClose)
         } else if path == "/classroom/video" {
             NativeHomeworkDetailPage(title: "课堂视频", detail: "播放头 mock · 非 short 链路", onClose: onClose)
+        } else if path == "/classroom/video/detail" {
+            // AppRoutePath.classroomVideoDetail — previously fell through to genericList
+            // while NativeHomeworkDetailPage already modelled the screen (M10.A.2.i).
+            NativeHomeworkDetailPage(title: "课堂视频详情", detail: "播放进度 04:12 / 18:30 · 已完成 2 节", onClose: onClose)
         } else if path == "/classroom/gift/claim" {
             NativeGiftClaimPage(onClose: onClose)
         } else if path == "/classroom/my_class" {
@@ -596,17 +610,19 @@ struct NativeFeatureHost: View {
             NativeLedgerPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/ledger/detail" {
             NativeLedgerDetailPage(onClose: onClose)
-        } else if path == "/mine/sms_template" {
+        } else if path == "/mine/sms_templates" {
+            // MineRoutes.canonicalize / normalizePath rewrites `/mine/sms_template` →
+            // `/mine/sms_templates`; the old alias literal could never match (M10.A.2.i).
             NativeSmsTemplatePage(onClose: onClose)
-        } else if path == "/mine/store_qr" {
+        } else if path == "/mine/shop_qr" {
             NativeStoreQrPage(onClose: onClose)
         } else if path == "/mine/qa" || path == "/mine/http_test" {
             NativeQaPage(onClose: onClose)
         } else if path == "/mine/poster" {
             NativePosterPage(onClose: onClose)
-        } else if path == "/mine/business" {
+        } else if path == "/mine/cooperation" {
             NativeBusinessPage(onClose: onClose)
-        } else if path == "/mine/reminders" {
+        } else if path == "/mine/reminder" {
             NativeRemindersPage(onClose: onClose)
         } else if path == "/mine/feedback" {
             NativeFeedbackPage(onClose: onClose)
@@ -614,8 +630,8 @@ struct NativeFeatureHost: View {
             NativeProfilePage(onClose: onClose)
         } else if path == "/mine/addresses" {
             NativeAddressesPage(onClose: onClose)
-        } else if path == "/home/dubbing_feed" {
-            NativeDubbingFeedPage(onClose: onClose, onOpen: onOpen)
+        } else if path == "/home/transliter_feed" {
+            NativeTransliterFeedPage(onClose: onClose, onOpen: onOpen)
         } else if path == "/home/hot_rank_detail" {
             NativeHotRankPage(onClose: onClose)
         } else if path == "/home/data_analytics" {

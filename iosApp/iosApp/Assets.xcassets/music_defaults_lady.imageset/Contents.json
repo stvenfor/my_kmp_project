@@ -1,0 +1,13 @@
+{
+  "images": [
+    {
+      "filename": "music_defaults_lady.jpg",
+      "idiom": "universal",
+      "scale": "1x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

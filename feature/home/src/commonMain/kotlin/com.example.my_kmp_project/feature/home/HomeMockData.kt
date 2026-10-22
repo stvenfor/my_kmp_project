@@ -202,7 +202,7 @@ object HomeMockData {
             title = "教学服务",
             items = listOf(
                 AllServiceItem("classroom", "班级教学", "intelligence_task.png"),
-                AllServiceItem("dubbing", "配音首页", "dubbing_home.png"),
+                AllServiceItem("transliter", "跟读首页", "transliter_home.png"),
                 AllServiceItem("videos", "视频列表", "small_video.png"),
                 AllServiceItem("works", "作品列表", "exhibition_hall_shooting.png"),
             ),
@@ -238,7 +238,7 @@ object HomeMockData {
     )
 
     val filterTags = listOf(
-        "3-5 个句子的配音",
+        "3-5 个句子的跟读",
         "较慢的语速",
         "初级难度",
         "女声",
@@ -269,7 +269,7 @@ object HomeMockData {
         "一种近似父子的不寻常感情",
         "开启你的奇幻冒险之旅",
         "跟佩奇一起快乐学英语",
-        "经典动画配音练习",
+        "经典动画跟读练习",
         "趣味英语启蒙课堂",
     )
     private val hotRankHeats = listOf(39274, 28390, 22007, 19874, 18560, 16230, 14890, 13540)
@@ -305,17 +305,17 @@ object HomeMockData {
             SearchRankItem("s4", 5, "喜羊羊与灰太狼", "羊村与狼堡的欢乐对决..."),
         )
         3 -> listOf(
-            SearchRankItem("d0", 1, "我的第一次配音", "完成度 98%，发音清晰自然..."),
+            SearchRankItem("d0", 1, "我的第一次跟读", "完成度 98%，发音清晰自然..."),
             SearchRankItem("d1", 2, "英语朗读打卡", "连续打卡 30 天，进步明显..."),
             SearchRankItem("d2", 3, "亲子共读记录", "与孩子一起完成的温馨朗读..."),
             SearchRankItem("d3", 4, "班级作业精选", "老师推荐的优秀作业展示..."),
             SearchRankItem("d4", 5, "周末练习成果", "周末集中练习的成果汇总..."),
         )
         4 -> listOf(
-            SearchRankItem("c0", 1, "BBC 合作专区", "BBC 精选纪录片配音素材..."),
+            SearchRankItem("c0", 1, "BBC 合作专区", "BBC 精选纪录片跟读素材..."),
             SearchRankItem("c1", 2, "迪士尼经典合作", "迪士尼动画经典片段..."),
-            SearchRankItem("c2", 3, "国家地理探索", "探索自然与科学的配音..."),
-            SearchRankItem("c3", 4, "牛津阅读树", "分级阅读配套配音练习..."),
+            SearchRankItem("c2", 3, "国家地理探索", "探索自然与科学的跟读..."),
+            SearchRankItem("c3", 4, "牛津阅读树", "分级阅读配套跟读练习..."),
             SearchRankItem("c4", 5, "剑桥少儿英语", "剑桥体系标准发音示范..."),
         )
         else -> listOf(
@@ -331,14 +331,14 @@ object HomeMockData {
     }
 
     val reportHighlights = listOf(
-        ReportHighlight("🎬", "《哈利波特》第3章", "视频配音 · 刚刚发布", "100"),
+        ReportHighlight("🎬", "《哈利波特》第3章", "视频跟读 · 刚刚发布", "100"),
         ReportHighlight("🏆", "解锁「45天」打卡勋章", "里程碑达成 · 太棒了！", "🎉"),
         ReportHighlight("🎵", "\"Wingardium Leviosa!\"", "满分句子 · 可播放原声", "▶"),
     )
 
     val reportRecords = listOf(
-        ReportRecord("🎬", "视频配音", "哈利波特 第3章", "18:32", "已发布", statusHighlight = true),
-        ReportRecord("⚔️", "配音闯关", "Level 8 · 3关", "17:10", "15 min"),
+        ReportRecord("🎬", "视频跟读", "哈利波特 第3章", "18:32", "已发布", statusHighlight = true),
+        ReportRecord("⚔️", "跟读闯关", "Level 8 · 3关", "17:10", "15 min"),
         ReportRecord("📚", "同步练", "PEP 五年级上册 Unit 3", "16:45", "8 min"),
         ReportRecord("🤖", "AI 外教", "自由对话 · Tom老师", "15:20", "12 min"),
         ReportRecord("🎧", "听力练习", "英美绕口令 · 5题", "14:00", "5 min"),

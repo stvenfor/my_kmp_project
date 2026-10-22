@@ -35,7 +35,7 @@ Enter **Full Parity Phase**: build a Flutter-route **Parity Inventory**, cut wor
 19. As a product owner, I want Parity Domain Tickets (~2–4 related routes), so that AFK agents can finish a ticket in one session.
 20. As a product owner, I want Mine-island track and native-cutover track in parallel against one inventory, so that work is not falsely serialized.
 21. As a developer, I want inventory draft in-repo and GitHub child issues synced, so that agents and humans share one list.
-22. As an end user, I want Home services (search, all services, learning report, check-in mall, strategy, hot rank, used car, ledger/收支, data analytics, life service, club/live commerce, after-sales, new-car follow, todos, dubbing feed) to open and match Flutter SoT under the acceptance packet.
+22. As an end user, I want Home services (search, all services, learning report, check-in mall, strategy, hot rank, used car, ledger/收支, data analytics, life service, club/live commerce, after-sales, new-car follow, todos, transliter feed) to open and match Flutter SoT under the acceptance packet.
 23. As an end user, I want Chat list/detail mock-parity with Flutter MockIm, so that messaging UX works without claiming RongCloud ready.
 24. As an end user, I want Community feed/publish/search/convention mock-parity, so that social tab matches Flutter mock depth.
 25. As an end user, I want Friend directory mock-parity, so that contacts work without vendor IM SDK.

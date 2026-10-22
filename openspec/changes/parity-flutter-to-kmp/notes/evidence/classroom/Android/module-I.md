@@ -10,7 +10,7 @@
 | `/classroom/homework/detail_teacher` | 1.253 | PASS |
 | `/classroom/homework/detail_student` | 1.5684 | PASS |
 | `/classroom/homework/review` | 1.3999 | PASS |
-| `/classroom/homework/dubbing` | **0.0015** | PASS (Flutter SoT FillBounds body) |
+| `/classroom/homework/transliter` | **0.0015** | PASS (Flutter SoT FillBounds body) |
 | `/classroom/gift/claim` | **0.0019** | PASS (Flutter SoT FillBounds body) |
 | `/classroom/video/detail` | **0.0016** | PASS (Flutter SoT FillBounds body) |
 

@@ -161,10 +161,10 @@
 - [~] B.6.4 Mine 日历入口接线（HomeRoutes 已备）
 - [ ] B.6.1.i / B.6.1.h
 
-## B.7 `/home/dubbing_feed` — `DubbingHomePage`
-- [x] B.7.1.a 配音 Feed UI
+## B.7 `/home/transliter_feed` — `TransliterHomePage`
+- [x] B.7.1.a 跟读 Feed UI
 - [x] B.7.2 热榜卡 → `/home/hot_rank_detail`
-- [~] B.7.3 与 Video 配音模块跳转（随 H）
+- [~] B.7.3 与 Video 跟读模块跳转（随 H）
 - [ ] B.7.1.i / B.7.1.h
 
 ## B.8 `/home/hot_rank_detail` — `HotRankDetailPage`
@@ -492,11 +492,11 @@
 
 # H. Video（SoT：`features/video` · `VideoModule`）
 
-> Hub `/video` 在 Flutter 仅为占位「Video 模块」；真实能力在 short + dubbing。
+> Hub `/video` 在 Flutter 仅为占位「Video 模块」；真实能力在 short + transliter。
 
 ## H.1 `/video` — `VideoPage`（占位 Hub）
 - [x] H.1.1.a 对齐 Flutter：标题「视频」+ 中心占位文案（或产品决定改为入口跳板）
-- [x] H.1.2 若改为跳板：链到 short / dubbing 列表
+- [x] H.1.2 若改为跳板：链到 short / transliter 列表
 - [ ] H.1.1.i / H.1.1.h
 
 ## H.2 `/video/short` — `ShortVideoPage`
@@ -556,30 +556,30 @@
 - [x] H.5.2 文案/步骤数对齐 Flutter
 - [ ] H.5.1.i / H.5.1.h
 
-## H.6 `/video/dubbing/videos` — `DubbingVideoListPage`
+## H.6 `/video/transliter/videos` — `TransliterVideoListPage`
 - [x] H.6.1.a 列表 + `_VideoCard`（封面、标题、标签）
-- [x] H.6.2 点卡 → `/video/dubbing/videos/detail`
-- [x] H.6.3 Mock / API 切换策略与 Flutter `dubbing_media_mock_data` 对齐
-- [x] H.6.4 与 `/home/dubbing_feed` 互通（同列表或跳转）
+- [x] H.6.2 点卡 → `/video/transliter/videos/detail`
+- [x] H.6.3 Mock / API 切换策略与 Flutter `transliter_media_mock_data` 对齐
+- [x] H.6.4 与 `/home/transliter_feed` 互通（同列表或跳转）
 - [ ] H.6.1–4 `.i` / `.h`
 
-## H.7 `/video/dubbing/videos/detail` — `DubbingVideoDetailPage`
+## H.7 `/video/transliter/videos/detail` — `TransliterVideoDetailPage`
 - [x] H.7.1.a `PlayableVideoHeader` 沉浸头（字幕/水印叠加）
 - [x] H.7.2 `_TitleSection` / `_TagsSection` / `_DescriptionSection`
 - [x] H.7.3 `_UploaderSection`
 - [x] H.7.4 `_AlbumSection` 分集
 - [x] H.7.5 `_LatestWorksSection` → works
 - [x] H.7.6 `_LeaderboardSection` 排行
-- [x] H.7.7 `_DubbingBottomBar`：配音/收藏/分享（对齐 Flutter 按钮）
+- [x] H.7.7 `_TransliterBottomBar`：跟读/收藏/分享（对齐 Flutter 按钮）
 - [x] H.7.8 底栏延伸安全区
 - [ ] H.7.1–8 `.i` / `.h`
 
-## H.8 `/video/dubbing/works` — `DubbingWorkListPage`
+## H.8 `/video/transliter/works` — `TransliterWorkListPage`
 - [x] H.8.1.a 作品列表 `_WorkCard`
-- [x] H.8.2 点卡 → `/video/dubbing/works/detail`
+- [x] H.8.2 点卡 → `/video/transliter/works/detail`
 - [ ] H.8.1.i / H.8.1.h
 
-## H.9 `/video/dubbing/works/detail` — `DubbingWorkDetailPage`
+## H.9 `/video/transliter/works/detail` — `TransliterWorkDetailPage`
 - [x] H.9.1.a Tab：介绍 `_IntroTab` / 评论 `_CommentsTab`
 - [x] H.9.2 `_MoreWorkRow` 更多作品
 - [x] H.9.3 `_BottomBar` 操作
@@ -588,7 +588,7 @@
 
 ## H.10 Video 总验收
 - [x] H.10.1 短视频：入口→列表→播→发→帮助 全通（Android 证据）
-- [x] H.10.2 配音：feed/list→detail→works→detail 全通
+- [x] H.10.2 跟读：feed/list→detail→works→detail 全通
 - [x] H.10.3 播放器非 Stub 声明写入 `platform-gap-registry`
 - [x] H.10.4 iOS / Harmony 同路径抽检
 
@@ -618,7 +618,7 @@
 ## I.2 `/classroom/homework_stats` — `ClassHomeworkStatsPage`
 - [x] I.2.1.a NavBar + 时间 pill（本周/本月/上月/自定义）
 - [x] I.2.2 自定义 → `CustomTimeRangeSheet`
-- [x] I.2.3 `_TabChip`：全部 / 配音 / 同步（`HomeworkTab`）
+- [x] I.2.3 `_TabChip`：全部 / 跟读 / 同步（`HomeworkTab`）
 - [x] I.2.4 `_StatsCard` + `_StatItem` + `_StatDivider` 汇总
 - [x] I.2.5 `_TypeTag` 类型角标
 - [x] I.2.6 `_StudentListCard` / `_StudentRow` 学生完成/待做
@@ -631,7 +631,7 @@
 - [x] I.3.2 `_ProfileCard` 学生头像 emoji / 作业数 / 完成率
 - [x] I.3.3 `_StatusTabs`：全部/已完成/未完成（`HomeworkStatusTab`）
 - [x] I.3.4 `_TimelineItem` 列表（类型、日期、班级名）
-- [x] I.3.5 点时间线条 → student detail / dubbing / review（对齐 Flutter 实际跳转）
+- [x] I.3.5 点时间线条 → student detail / transliter / review（对齐 Flutter 实际跳转）
 - [x] I.3.6 Binding + Controller 注册
 - [ ] I.3.1–6 `.i` / `.h`
 
@@ -640,15 +640,15 @@
 - [x] I.4.2 `_ProgressCard` 进度
 - [x] I.4.3 `_SocialProofRow`
 - [x] I.4.4 `_ContentCard` + `_TaskRow`（星奖励、题量）
-- [x] I.4.5 点任务 → dubbing homework 或对应类型页
+- [x] I.4.5 点任务 → transliter homework 或对应类型页
 - [ ] I.4.1–5 `.i` / `.h`
 
-## I.5 `/classroom/homework/dubbing` — `DubbingHomeworkPage`
+## I.5 `/classroom/homework/transliter` — `TransliterHomeworkPage`
 - [x] I.5.1.a `_GradientHeader`
-- [x] I.5.2 `_DubbingItemRow` 列表（分数、可重交）
-- [x] I.5.3 设置 → `DubbingSettingsSheet`（`DubbingMode` / `ScoringMode` / Switch 行）
+- [x] I.5.2 `_TransliterItemRow` 列表（分数、可重交）
+- [x] I.5.3 设置 → `TransliterSettingsSheet`（`TransliterMode` / `ScoringMode` / Switch 行）
 - [x] I.5.4 提交/重交交互对齐 Flutter
-- [x] I.5.5 与 Video 配音详情互通（若有）
+- [x] I.5.5 与 Video 跟读详情互通（若有）
 - [ ] I.5.1–5 `.i` / `.h`
 
 ## I.6 `/classroom/homework/review` — `HomeworkReviewPage`
@@ -678,7 +678,7 @@
 ## I.9 Classroom 总验收
 - [x] I.9.1 路径：Mine→我的班级→作业统计→教师详情→学生详情
 - [x] I.9.2 路径：班级卡→作业点评→礼品领取
-- [x] I.9.3 路径：配音作业→设置 sheet→（可选）视频详情
+- [x] I.9.3 路径：跟读作业→设置 sheet→（可选）视频详情
 - [x] I.9.4 toast 占位功能在清单标 `[~]` 不挡主路径
 - [x] I.9.5 三端抽检证据
 

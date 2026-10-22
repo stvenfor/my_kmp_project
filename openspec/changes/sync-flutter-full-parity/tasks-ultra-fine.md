@@ -83,11 +83,11 @@
 - [ ] B.1.31 音乐 mini-player 底 inset（随 J.3）
 - [~] B.1.32 像素精修 vs Flutter（Banner 圆角/间距/字阶）
 
-## B.2–B.8 二级页（all_services / search / strategy / learning_report / check_in_mall / dubbing_feed / hot_rank_detail）
+## B.2–B.8 二级页（all_services / search / strategy / learning_report / check_in_mall / transliter_feed / hot_rank_detail）
 - [x] B.2.1–B.8.3.a 每页 UI + 数据 + 导航
 - [ ] B.2–B.8 `.i` / `.h` 展开
 - [~] B.3.x 搜索历史/热词/空态与 Flutter 一致
-- [~] B.7.x dubbing_feed 与 H.6 配音列表同源数据契约定稿
+- [~] B.7.x transliter_feed 与 H.6 跟读列表同源数据契约定稿
 
 ## B.9 容器页（life_service / live_commerce / club）
 - [x] B.9.1–3.a 容器 + tab 内容切换
@@ -232,7 +232,7 @@
 - [x] H.5.1–2.a 帮助
 - [ ] H.3–H.5 `.i` / `.h`
 
-## H.6–H.9 配音视频/作品（4 条路由）
+## H.6–H.9 跟读视频/作品（4 条路由）
 - [x] H.6.1–4.a 列表 / 详情
 - [x] H.8.1–2.a 作品列表
 - [ ] H.6–H.9 `.i` / `.h`
@@ -252,7 +252,7 @@
 - [x] I.2.1–8.a 作业统计
 - [x] I.3.1–6.a 作业详情（师）
 - [x] I.4.1–5.a 作业详情（生）
-- [x] I.5.1–5.a 配音作业
+- [x] I.5.1–5.a 跟读作业
 - [x] I.6.1–6.a 作业批改
 - [x] I.7.1–4.a 领礼物卡（一次性领取）
 - [x] I.8.1–5.a 课堂视频详情
@@ -391,8 +391,8 @@
 - [x] W5.i.7 `/home/after_sales/create` 建工单表单 — 已实现并接入
 - [x] W5.i.8 `/home/after_sales/detail` 售后详情 — 已实现并接入
 - [x] W5.i.9 `/mall/orders/detail` 订单详情 — 已实现并接入
-- [x] W5.i.10 `/video/dubbing/videos` + `/videos/detail` 配音视频列表/详情 — 已实现并接入
-- [x] W5.i.11 `/video/dubbing/works` + `/works/detail` 作品列表/详情 — 已实现并接入
+- [x] W5.i.10 `/video/transliter/videos` + `/videos/detail` 跟读视频列表/详情 — 已实现并接入
+- [x] W5.i.11 `/video/transliter/works` + `/works/detail` 作品列表/详情 — 已实现并接入
 - [x] W5.i.12 `/community/convention` 公约富文本 — 已实现并接入
 - [x] W5.i.13 `/live/room` 直播间内页 — 已实现并接入
 - [x] W5.i.14 `/music/now_playing` 播放页 — 已实现并接入

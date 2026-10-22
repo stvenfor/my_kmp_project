@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pre-Android 12 cold start: brand splash background + centered logo. -->
+<!-- 对齐 Flutter launch_background.xml：#F7FAFC 纯色底 + 居中 @mipmap/launch_image（AI 启动图）。
+     Android 12+ 走 Theme.SplashScreen API（MainActivity installSplashScreen()），pre-12 走本层。 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
     <item>
         <bitmap
-            android:gravity="fill"
-            android:src="@drawable/bg_splash" />
-    </item>
-    <item android:gravity="center">
-        <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_splash_logo" />
+            android:src="@mipmap/launch_image" />
     </item>
 </layer-list>

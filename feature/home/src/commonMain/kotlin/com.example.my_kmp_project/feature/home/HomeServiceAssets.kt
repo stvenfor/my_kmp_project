@@ -13,7 +13,7 @@ import my_kmp_project.core.design.generated.resources.home_all_services_all_func
 import my_kmp_project.core.design.generated.resources.home_all_services_business_poster
 import my_kmp_project.core.design.generated.resources.home_all_services_calculator
 import my_kmp_project.core.design.generated.resources.home_all_services_customer_profile
-import my_kmp_project.core.design.generated.resources.home_all_services_dubbing_home
+import my_kmp_project.core.design.generated.resources.home_all_services_transliter_home
 import my_kmp_project.core.design.generated.resources.home_all_services_exhibition_hall_shooting
 import my_kmp_project.core.design.generated.resources.home_all_services_intelligence_task
 import my_kmp_project.core.design.generated.resources.home_all_services_marketing
@@ -62,7 +62,7 @@ object HomeServiceAssets {
             "new_car_in_store" -> Res.drawable.home_all_services_new_car_in_store
             "v_store" -> Res.drawable.home_all_services_v_store
             "small_video" -> Res.drawable.home_all_services_small_video
-            "dubbing_home" -> Res.drawable.home_all_services_dubbing_home
+            "transliter_home" -> Res.drawable.home_all_services_transliter_home
             "all_functions" -> Res.drawable.home_all_services_all_functions
             else -> null
         }

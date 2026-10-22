@@ -1,28 +1,11 @@
 package com.example.my_kmp_project.nativeshell
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -33,40 +16,42 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.platform.showPlatformToast
-import com.example.my_kmp_project.feature.home.HomeIcons
 import com.example.my_kmp_project.feature.home.DailyCheckInDialog
-import com.example.my_kmp_project.feature.home.HomeAssetIcon
-import com.example.my_kmp_project.feature.home.HomeFeatureItem
+import com.example.my_kmp_project.feature.home.HomeBannerSection
+import com.example.my_kmp_project.feature.home.HomeContactList
+import com.example.my_kmp_project.feature.home.HomeFeatureGrid
+import com.example.my_kmp_project.feature.home.HomeGreetingSection
+import com.example.my_kmp_project.feature.home.HomeHubEntryCard
+import com.example.my_kmp_project.feature.home.HomeIcons
 import com.example.my_kmp_project.feature.home.HomeMockData
-import com.example.my_kmp_project.feature.home.HomeServiceAssets
+import com.example.my_kmp_project.feature.home.HomeNewsList
+import com.example.my_kmp_project.feature.home.HomeSearchBar
+import com.example.my_kmp_project.feature.home.HomeServiceGrid
+import com.example.my_kmp_project.feature.home.HomeStoreMetricsCard
+import com.example.my_kmp_project.feature.home.HomeTodoCardStrip
 import com.example.my_kmp_project.feature.mine.SwitchStoreDialog
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import my_kmp_project.core.design.generated.resources.Res
-import my_kmp_project.core.design.generated.resources.home_banner_sot
-import org.jetbrains.compose.resources.painterResource
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-/** Jetpack Home root — layout aligned to Flutter `HomePage` dashboard. */
+/**
+ * Android 原生壳首页宿主（Jetpack Compose）。
+ *
+ * **只保留宿主职责**：安全区、下拉刷新、签到弹窗（Android 侧用 SharedPreferences
+ * 持久化 ack 日期）、门店切换弹窗、以及把各区块串进 LazyColumn。
+ * 所有区块的视觉实现统一在 `feature/home/HomeSections.kt`，与共享
+ * `HomeScreen` 用的是同一套 composable —— 改前这里另有一份逐行重复的
+ * `JetpackHomeBanner` / `JetpackFeatureGrid` / `JetpackStoreMetrics` 等，
+ * 视觉修正必然双份漂移。
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun JetpackHomeRoot(
@@ -85,6 +70,7 @@ internal fun JetpackHomeRoot(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
+
     LaunchedEffect(Unit) {
         delay(50)
         showTodos = true
@@ -115,20 +101,17 @@ internal fun JetpackHomeRoot(
             todayReward = 10,
             streak = 3,
             onCheckIn = {
-                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-                context.getSharedPreferences("home_check_in", 0)
-                    .edit().putString("check_in_dialog_ack_date", today).apply()
+                markCheckInAcked(context)
                 showPlatformToast("签到成功，+10积分")
                 showCheckIn = false
             },
             onDismiss = {
-                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-                context.getSharedPreferences("home_check_in", 0)
-                    .edit().putString("check_in_dialog_ack_date", today).apply()
+                markCheckInAcked(context)
                 showCheckIn = false
             },
         )
     }
+
     PullToRefreshBox(
         isRefreshing = refreshing,
         onRefresh = {
@@ -148,365 +131,88 @@ internal fun JetpackHomeRoot(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 24.dp),
+            // 与 Flutter ListView(top = safeTop + 16) 对齐：safeTop 由外层
+            // statusBarsPadding 提供，16 在这里，首块 Greeting 自带 24。
+            contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp),
         ) {
+            item { HomeGreetingSection(greeting = greeting) }
             item {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 40.dp),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    Text(
-                        greeting,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 28.sp,
-                        lineHeight = (28 * 36f / 32f).sp,
-                        color = DemoColors.TextPrimary,
-                        letterSpacing = (-1.6).sp,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(DemoColors.Accent.copy(alpha = 0.1f))
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                    ) {
-                        Icon(
-                            imageVector = HomeIcons.NotificationsNone,
-                            contentDescription = null,
-                            tint = DemoColors.Accent,
-                            modifier = Modifier.size(14.dp),
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            "3条新消息",
-                            color = DemoColors.Accent,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                }
+                HomeSearchBar(
+                    placeholder = HomeMockData.searchPlaceholder,
+                    onSearch = { onDeferred("搜索") },
+                    onScan = { onDeferred("扫一扫") },
+                )
             }
+            item { HomeBannerSection() }
             item {
-                Row(
-                    Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Row(
-                        Modifier
-                            .weight(1f)
-                            .height(44.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DemoColors.Background)
-                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
-                            .clickable { onDeferred("搜索") }
-                            .padding(horizontal = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            imageVector = HomeIcons.Search,
-                            contentDescription = null,
-                            tint = DemoColors.Muted,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(HomeMockData.searchPlaceholder, color = DemoColors.Muted, fontSize = 15.sp)
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Box(
-                        Modifier
-                            .size(44.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(DemoColors.Background)
-                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
-                            .clickable { onDeferred("扫一扫") },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            imageVector = HomeIcons.QrScan,
-                            contentDescription = "扫一扫",
-                            tint = DemoColors.Accent,
-                            modifier = Modifier.size(20.dp),
-                        )
-                    }
-                }
-            }
-            item { JetpackHomeBanner() }
-            item { JetpackFeatureGrid(onDeferred) }
-            if (showTodos) {
-                item { JetpackTodoStrip(onDeferred) }
-            }
-            item {
-                JetpackStoreMetrics(
-                    selected = metricTab,
-                    storeName = storeName,
-                    onDeferred = onDeferred,
-                    onStoreTap = {
-                        if (loggedIn) showSwitchStore = true
-                        else onDeferred("请先登录")
+                HomeFeatureGrid(
+                    items = HomeMockData.features,
+                    onFeature = { label ->
+                        if (label == "更多") onDeferred("全部服务") else onDeferred(label)
                     },
-                    onSelect = { metricTab = it },
                 )
             }
-            item { JetpackStrategyEntry(onDeferred) }
-            item { JetpackServiceGrid(onDeferred) }
-            item { JetpackContactList(onDeferred) }
-            item { JetpackNewsList() }
-            item { JetpackLearningReportEntry(onDeferred) }
-        }
-    }
-}
-
-@Composable
-private fun JetpackHomeBanner() {
-    // Flutter HomeBannerSection: display-only (no onTap). Asset includes title/CTA paint.
-    Image(
-        painter = painterResource(Res.drawable.home_banner_sot),
-        contentDescription = "朋友圈营销",
-        contentScale = ContentScale.FillBounds,
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            .fillMaxWidth()
-            .height(132.dp)
-            .clip(RoundedCornerShape(8.dp)),
-    )
-}
-
-@Composable
-private fun JetpackFeatureGrid(onDeferred: (String) -> Unit) {
-    val visible = remember { visibleHomeFeatures(HomeMockData.features) }
-    Column(
-        Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
-            .padding(horizontal = 4.dp, vertical = 8.dp),
-    ) {
-        visible.chunked(5).forEachIndexed { rowIndex, row ->
-            if (rowIndex > 0) Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth()) {
-                row.forEach { item ->
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .clickable { onFeatureTap(item.label, onDeferred) },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Box(
-                            Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(DemoColors.PageBg),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            HomeAssetIcon(
-                                resource = HomeServiceAssets.featureForLabel(item.label),
-                                size = 44.dp,
-                                contentDescription = item.label,
-                            )
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            item.label,
-                            fontSize = 11.sp,
-                            color = DemoColors.TextPrimary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-                repeat(5 - row.size) {
-                    Spacer(Modifier.weight(1f))
+            if (showTodos) {
+                item {
+                    HomeTodoCardStrip(onOpen = { card -> onDeferred(card.title) })
                 }
             }
-        }
-    }
-}
-
-private fun visibleHomeFeatures(items: List<HomeFeatureItem>): List<HomeFeatureItem> {
-    val maxItems = 9
-    val more = items.filter { it.label == "更多" }
-    val head = items.filter { it.label != "更多" }
-        .take(if (more.isEmpty()) maxItems else maxItems - 1)
-    return if (more.isEmpty()) head else head + more.last()
-}
-
-private fun onFeatureTap(label: String, onDeferred: (String) -> Unit) {
-    when (label) {
-        "更多" -> onDeferred("全部服务")
-        else -> onDeferred(label)
-    }
-}
-
-@Composable
-private fun JetpackStoreMetrics(
-    selected: Int,
-    storeName: String,
-    onDeferred: (String) -> Unit,
-    onStoreTap: () -> Unit,
-    onSelect: (Int) -> Unit,
-) {
-    // Flutter HomeStoreMetricsCard + HomeController.metricTabs
-    val tabs = listOf("今日", "昨日", "近30天")
-    val metrics = when (selected) {
-        1 -> HomeMockData.metricsYesterday
-        2 -> HomeMockData.metricsMonth
-        else -> HomeMockData.metricsToday
-    }
-    Column(
-        Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            .fillMaxWidth(),
-    ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                "公司数据",
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
-                color = DemoColors.TextPrimary,
-            )
-            Spacer(Modifier.weight(1f))
-            Text(
-                "查看更多",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = DemoColors.Accent,
-            )
-            Text("›", fontSize = 16.sp, color = DemoColors.Accent)
-        }
-        Spacer(Modifier.height(12.dp))
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(DemoColors.Background)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
-                .padding(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 16.dp),
-        ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DemoColors.PageBg)
-                    .clickable(onClick = onStoreTap)
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(
-                    Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(DemoColors.Accent.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("店", color = DemoColors.Accent, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                }
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    storeName,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = DemoColors.TextPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
+            item {
+                HomeStoreMetricsCard(
+                    storeName = storeName,
+                    selectedTab = metricTab,
+                    tabs = MetricTabs,
+                    metrics = when (metricTab) {
+                        1 -> HomeMockData.metricsYesterday
+                        2 -> HomeMockData.metricsMonth
+                        else -> HomeMockData.metricsToday
+                    },
+                    details = HomeMockData.metricDetails,
+                    onTabSelected = { metricTab = it },
+                    onStoreTap = {
+                        if (loggedIn) showSwitchStore = true else onDeferred("请先登录")
+                    },
+                    onOpenLedger = { onDeferred("数据台账") },
                 )
-                Text("▾", color = DemoColors.TextSecondary, fontSize = 14.sp)
-                Spacer(Modifier.width(2.dp))
-                Text("⇄", color = DemoColors.Muted, fontSize = 14.sp)
             }
-            Spacer(Modifier.height(14.dp))
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DemoColors.PageBg)
-                    .padding(4.dp),
-            ) {
-                tabs.forEachIndexed { i, t ->
-                    val sel = i == selected
-                    Text(
-                        t,
-                        fontSize = 13.sp,
-                        fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (sel) DemoColors.TextPrimary else DemoColors.TextSecondary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (sel) DemoColors.Background else Color.Transparent)
-                            .clickable { onSelect(i) }
-                            .padding(vertical = 8.dp),
-                    )
-                }
+            item {
+                HomeHubEntryCard(
+                    title = "投资策略",
+                    subtitle = "资产九宫格 · 恐贪定投 · 趋势策略",
+                    icon = HomeIcons.GridView,
+                    onClick = { onDeferred("投资策略") },
+                )
             }
-            Spacer(Modifier.height(14.dp))
-            metrics.chunked(2).forEachIndexed { rowIndex, row ->
-                if (rowIndex > 0) Spacer(Modifier.height(10.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    row.forEach { m ->
-                        Column(
-                            Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(DemoColors.PageBg)
-                                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
-                                .padding(horizontal = 12.dp, vertical = 12.dp),
-                        ) {
-                            Text(
-                                m.value,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 22.sp,
-                                color = DemoColors.TextPrimary,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(m.label, fontSize = 12.sp, color = DemoColors.TextSecondary)
-                        }
-                    }
-                    if (row.size == 1) Spacer(Modifier.weight(1f))
-                }
+            item {
+                HomeServiceGrid(
+                    items = HomeMockData.services,
+                    onService = { label ->
+                        if (label == "更多" || label == "全部") onDeferred("全部服务")
+                    },
+                    onOpenAll = { onDeferred("全部服务") },
+                )
             }
-            if (HomeMockData.metricDetails.isNotEmpty()) {
-                Spacer(Modifier.height(14.dp))
-                HorizontalDivider(color = DemoColors.Divider, thickness = 0.5.dp)
-                Spacer(Modifier.height(14.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    HomeMockData.metricDetails.forEach { detail ->
-                        Column(
-                            Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(DemoColors.Accent.copy(alpha = 0.06f))
-                                .padding(horizontal = 8.dp, vertical = 10.dp),
-                        ) {
-                            Text(
-                                detail.value,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp,
-                                color = DemoColors.Accent,
-                            )
-                            Spacer(Modifier.height(2.dp))
-                            Text(detail.label, fontSize = 11.sp, color = DemoColors.TextSecondary)
-                            Text("详情", fontSize = 11.sp, color = DemoColors.Accent, fontWeight = FontWeight.Medium)
-                        }
-                    }
-                }
+            item { HomeContactList(items = HomeMockData.contacts, onContact = {}) }
+            item { HomeNewsList(items = HomeMockData.news, onOpenAll = {}) }
+            item {
+                HomeHubEntryCard(
+                    title = "学习报告",
+                    subtitle = "今日高光 · 学习记录",
+                    icon = HomeIcons.Analytics,
+                    onClick = { onDeferred("学习报告") },
+                )
             }
         }
     }
+}
+
+/** Flutter `HomeController.metricTabs` */
+private val MetricTabs = listOf("今日", "昨日", "近30天")
+
+private fun markCheckInAcked(context: android.content.Context) {
+    val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+    context.getSharedPreferences("home_check_in", 0)
+        .edit().putString("check_in_dialog_ack_date", today).apply()
 }
 
 private fun flutterStyleGreeting(displayName: String?): String {
