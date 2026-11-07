@@ -32,7 +32,11 @@ import kotlinx.serialization.json.JsonObject
  * **`POST /api/v1/payments/prepay` 不在本类里**（契约表 #95）：Dart 只有
  * `MembershipPaymentGateway.prepayPath` 这个常量、**全仓零调用点**（死码），
  * 真实 prepay 参数是 #91 `/membership/buyout` 响应里的 `prepay_params`。
- * 按 M1 纪律「不得为死常量编造调用」，此处不落地该端点。
+ * 按 M1 纪律「不得为死常量编造调用」，本类的两步买断流程不调用它。
+ *
+ * 以 **Go 后端为唯一真相源**时该路由真实存在（`payment/router.go:49`），其独立契约
+ * （路径常量 / 请求响应模型 / 契约测试）已登记在 [PaymentPrepayApi]，见
+ * `notes/backend-contract-matrix.md`；本类仍不接线、不自造调用点。
  */
 public class PayApi(
     public val client: ApiClient = NetworkFacade.api(),

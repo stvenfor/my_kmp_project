@@ -1,10 +1,14 @@
+> ## ⚠ 历史账本 — 只用于查漏，不再驱动执行
+>
+> 本文件**已停止作为执行账本**。wave1 起唯一执行账本是 [`sync-flutter-full-parity/tasks-ultra-fine-v2.md`](../sync-flutter-full-parity/tasks-ultra-fine-v2.md)；门禁 `scripts/parity_task_audit.py` 默认只读 v2。本文件保留仅供查漏与追溯，**不再驱动执行、不再作为勾选或报绿依据、不再参与门禁**；与 v2 冲突一律以 v2 为准。详见 v2 顶部「唯一执行账本」声明。
+
 # Flutter → KMP 全量执行清单（细粒度 · 含收口回检）
 
 > **SoT**：`/Users/mac/Desktop/github/my_ai_project`  
 > **路由权威**：`commons/wys_router/lib/src/route/route_path.dart`（共 103 条）  
 > **目标**：`my_kmp_project` · ADR 0002 · 业务一致 + UI 像素对齐 Flutter（禁止臆造 stub 冒充完成）  
 > **关联**：粗粒度 [`tasks.md`](./tasks.md) · 旧细粒度 [`tasks-fine.md`](./tasks-fine.md) · 旧超细 [`tasks-ultra-fine.md`](./tasks-ultra-fine.md)  
-> **本文为执行权威**：实现与勾选以本文为准；发现与 Flutter 不符必须改回 `[ ]`。
+> **执行权威已迁移**（见顶部）：实现与勾选以唯一执行账本 v2 为准；本文件仅供查漏，不再据其改回 `[ ]` 或报绿。
 
 ## 状态约定
 

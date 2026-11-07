@@ -167,6 +167,14 @@ PY
 
 bash scripts/check-layer-deps.sh || exit 1
 
+# Native pane/page dispatch guards: route→id→render (OHOS) and route→resolve→guard→struct
+# (iOS) must stay wired. Both are pure static scans (no Gradle), safe in --static-only.
+bash scripts/check-harmony-pane-dispatch.sh || exit 1
+bash scripts/check-ios-page-dispatch.sh || exit 1
+
+# NOTE: scripts/audit-flutter-drift.sh is intentionally NOT a blocking gate yet.
+# Endpoint/route drift is not zeroed (missing/extra remain), so wiring it in here would turn
+# every static run red. Track that drift in the sole execution ledger (v2), not as a gate.
 if [[ -n "$static_only" ]]; then
   echo "verify-parity: static gates only, gradle skipped"
   exit 0

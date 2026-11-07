@@ -51,7 +51,7 @@ public object AccountFacade {
         session = value
         persist(value)
         if (value.isLoggedIn) {
-            NetworkFacade.bindAccessToken(value.token)
+            NetworkFacade.bindAccessToken(value.token, value.sessionId, value.deviceId)
         } else {
             NetworkFacade.clearAccessToken()
         }
@@ -182,7 +182,7 @@ public object AccountFacade {
         val restored = snapshot?.toSession() ?: LoggedOut
         session = restored
         if (restored.isLoggedIn) {
-            NetworkFacade.bindAccessToken(restored.token)
+            NetworkFacade.bindAccessToken(restored.token, restored.sessionId, restored.deviceId)
         }
         hydrated = true
     }

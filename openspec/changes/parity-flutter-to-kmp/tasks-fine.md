@@ -1,8 +1,12 @@
+> ## ⚠ 历史账本 — 只用于查漏，不再驱动执行
+>
+> 本文件**已停止作为执行账本**。wave1 起唯一执行账本是 [`sync-flutter-full-parity/tasks-ultra-fine-v2.md`](../sync-flutter-full-parity/tasks-ultra-fine-v2.md)；门禁 `scripts/parity_task_audit.py` 默认只读 v2。本文件与 `tasks-execution.md` 均保留仅供查漏，**不再驱动执行、不再作为勾选或报绿依据**；与 v2 冲突一律以 v2 为准。
+
 # Flutter → KMP 细粒度任务拆分（按模块）
 
 > **更细一版（按 `RoutePath` / UI 区块 / `.a.i.h` 三端）→ [`tasks-ultra-fine.md`](./tasks-ultra-fine.md)**（约 570 一级项，三端展开约 1320；H/I/J 已按 widget/API 展开）。
 >
-> **2026-09-25 起执行权威 → [`tasks-execution.md`](./tasks-execution.md)**（103 路由全覆盖 + Z 收口回检；误标完成已诚实重置）。
+> **执行权威已于 wave1 迁移**（见顶部）：本文与 `tasks-execution.md` 均为历史账本，仅用于查漏；唯一执行账本为 v2。
 
 > SoT：`my_ai_project` · 目标：`my_kmp_project` · ADR 0002  
 > **完成定义**：可点击路径 + 数据契约对齐；MSE 仅作回归信号，不算模块完成。  

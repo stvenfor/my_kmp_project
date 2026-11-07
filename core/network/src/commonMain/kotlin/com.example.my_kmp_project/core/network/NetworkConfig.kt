@@ -29,6 +29,14 @@ public object NetworkConfig {
     @Volatile
     var accessToken: String = ""
 
+    /** 单设备会话 id；[DemoRequestHeaders.HEADER_SESSION_ID] 逐请求透传。 */
+    @Volatile
+    var sessionId: String = ""
+
+    /** 登录设备 id；[DemoRequestHeaders.HEADER_DEVICE_ID] 逐请求透传。 */
+    @Volatile
+    var deviceId: String = ""
+
     @Volatile
     var clientType: String = "android"
 

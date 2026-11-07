@@ -29,10 +29,10 @@ public class AuthHttpFailure(
  * `Result<DTO>`；不落库、不 commit 会话、不清会话（那是 [AuthRepository] /
  * [AuthTokenRefresh] 的事），因此 UI 之外的调用方也能复用同一份契约。
  *
- * 头注入差异：Dart 的 `logout` 手工带 `Authorization` / `X-Session-ID` / `X-Device-ID`
- * （:118-125）。KMP 只有 `core/network` 的 `DemoRequestHeaders` 注入 `Authorization`，
- * `ApiClient` 无逐请求头出口。
- * `// GAP(R5)`: `X-Session-ID` / `X-Device-ID` 需 `core/network` 增加逐请求头能力后补齐。
+ * 头注入：Dart 的 `logout` 手工带 `Authorization` / `X-Session-ID` / `X-Device-ID`
+ * （:118-125）。KMP 由 `core/network` 的 `DemoRequestHeaders` 在逐请求层统一注入三头
+ * （登录态 + 非免鉴权 host 时齐备），`ApiClient` 无需额外头出口；会话三件套由
+ * `NetworkFacade.bindAccessToken` 在会话变更（登录 / refresh / 冷启动恢复）时绑定。
  */
 public object UserAuthHttpApi {
 
@@ -167,9 +167,9 @@ public object UserAuthHttpApi {
      * 契约表 #4 `POST /user/logout`（:110-130）：**无 body**、只看 `code == 0`。
      *
      * `skipAuthRefresh` 由 `core/network` 的豁免路径列表（含 `/user/logout`）保证，
-     * 本方法不再重复实现；`Authorization` 由 `DemoRequestHeaders` 用当前 access token 注入，
-     * 因此调用方**必须**在清本地会话之前发出（否则头就空了）。
-     * `X-Session-ID` / `X-Device-ID` 见文件级 `// GAP(R5)`。
+     * 本方法不再重复实现；`Authorization` / `X-Session-ID` / `X-Device-ID` 由
+     * `DemoRequestHeaders` 逐请求注入，因此调用方**必须**在清本地会话之前发出
+     * （否则三头都空了）。
      */
     suspend fun logout(): Result<Unit> = guard {
         val response = NetworkFacade.api().postApi<Unit>(

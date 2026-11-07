@@ -16,7 +16,7 @@ package com.example.my_kmp_project.core.network
  */
 public object LanHost {
     /** 旧名兼容（避免外部引用断裂）；恒为空。 */
-    public const val fallback: String = "192.168.2.175"
+    public const val fallback: String = ""
 
     @Deprecated("机器 IP 不入库；见 NetworkConfig.backendHostOverride", ReplaceWith("NetworkConfig.backendHostOverride"))
     public const val debugFallback: String = fallback

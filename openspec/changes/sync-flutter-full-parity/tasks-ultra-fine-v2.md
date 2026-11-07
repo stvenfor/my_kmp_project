@@ -1,3 +1,19 @@
+> ## 唯一执行账本（Single Source of Truth）
+>
+> **本文件（`sync-flutter-full-parity/tasks-ultra-fine-v2.md`）是 wave1 起唯一执行账本**：勾选、剩余量统计、门禁判定一律以本文件的 `[ ]` / `[~]` / `[x]` / `[n/a]` 为准。`scripts/parity_task_audit.py` 默认读本文件，真实剩余（`[ ]` + `[~]`）> 0 即失败，不再对旧账本放行。
+>
+> **与历史账本的作废关系**（下列三份均已停止驱动执行，仅保留供查漏与历史追溯，禁止再据其勾选或报绿）：
+>
+> | 历史账本 | 相对本文件 | 处置 |
+> |---|---|---|
+> | `sync-flutter-full-parity/tasks-ultra-fine.md`（v1 超细） | 已被 v2 取代 | 作废执行口径；A–L 段仅作查漏 |
+> | `parity-flutter-to-kmp/tasks-execution.md`（原「执行权威」） | 已清零 `[ ]`/`[~]` 的历史快照，未含 v2 的增量审计结论（M0–M13） | 作废，不得作为门禁输入 |
+> | `parity-flutter-to-kmp/tasks-fine.md`（细粒度） | 早期拆分 | 作废，仅作查漏 |
+>
+> 判绿口径：能力状态只用 `Migrated` / `Degraded` / `Placeholder` / `Deferred` / `Partial`；**页面可开 ≠ 能力 Migrated**（数据契约 / 三端证据未齐一律按 `Partial` 或 `Placeholder` 记）。发现本文件与历史账本冲突，一律以本文件为准。
+>
+> 证据与缺口登记见 [`notes/evidence/index.md`](../parity-flutter-to-kmp/notes/evidence/index.md)；能力缺口见 [`platform-gap-registry.md`](../parity-flutter-to-kmp/notes/platform-gap-registry.md)。
+
 # my_ai_project → my_kmp_project 同步 v2 · 超细粒度任务清单
 
 > SoT：`my_ai_project` @ `d7876a1`（工作树干净，**无新增 commit**，103 条路由与 KMP 常量表 1:1 对齐）

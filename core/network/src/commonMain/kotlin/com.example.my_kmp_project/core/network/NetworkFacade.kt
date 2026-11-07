@@ -73,13 +73,29 @@ public object NetworkFacade {
         client = decorate(rawClient)
     }
 
-    fun bindAccessToken(token: String) {
+    /**
+     * 绑定登录会话三件套：access token + 单设备会话头（`X-Session-ID` / `X-Device-ID`）。
+     *
+     * 后端 `LocalSessionAuth` / `SupabaseSessionAuth` 读这两个头交给
+     * `DeviceSessionUsecase.Validate` 做单设备登录校验；会话变更（登录 / 静默续期 /
+     * 冷启动恢复）必须把三者一起绑定，否则真机上只发 `Authorization`、会话/设备口径不一致。
+     * `sessionId` / `deviceId` 缺省为空 = 无会话头，兼容仅换 token 的旧调用。
+     */
+    fun bindAccessToken(
+        token: String,
+        sessionId: String = "",
+        deviceId: String = "",
+    ) {
         NetworkConfig.accessToken = token
+        NetworkConfig.sessionId = sessionId
+        NetworkConfig.deviceId = deviceId
         rebuildClient()
     }
 
     fun clearAccessToken() {
         NetworkConfig.accessToken = ""
+        NetworkConfig.sessionId = ""
+        NetworkConfig.deviceId = ""
         rebuildClient()
     }
 
