@@ -32,11 +32,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,6 +71,8 @@ import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.core.router.HomeRoutes
 import com.example.my_kmp_project.core.router.MineRoutes
 import com.example.my_kmp_project.core.router.VideoRoutes
+import com.example.my_kmp_project.feature.community.http.HttpCommunityPostRepository
+import kotlinx.coroutines.launch
 
 
 /** In-memory publish bridge — topic pick + last publish for feed ingest. */
@@ -89,18 +91,32 @@ fun CommunityRouteHost(
     previewIndex: Int = 0,
     videoUrl: String? = null,
 ) {
+    val repository = remember { HttpCommunityPostRepository() }
+    val scope = rememberCoroutineScope()
+
     when (route) {
         CommunityRoutes.Publish -> CommunityPublishScreen(
             onBack = onBack,
             onPickTopic = { onNavigate(CommunityRoutes.TopicSelect) },
             onOpenConvention = { onNavigate(CommunityRoutes.Convention) },
             onPublished = { body, mediaType ->
-                CommunityMockStore.engine.createPost(body, mediaType = mediaType, source = "来自 Android")
-                CommunityPublishBus.lastPublishedBody = body
-                CommunityPublishBus.lastMediaType = mediaType
-                CommunityPublishBus.pendingTopic = null
-                showPlatformToast("发布成功")
-                onBack()
+                scope.launch {
+                    val ok = try {
+                        repository.createPost(body, mediaType = mediaType, source = "来自 Android")
+                        true
+                    } catch (e: Exception) {
+                        false
+                    }
+                    if (ok) {
+                        CommunityPublishBus.lastPublishedBody = body
+                        CommunityPublishBus.lastMediaType = mediaType
+                        CommunityPublishBus.pendingTopic = null
+                        showPlatformToast("发布成功")
+                        onBack()
+                    } else {
+                        showPlatformToast("发布失败")
+                    }
+                }
             },
         )
         CommunityRoutes.Search -> CommunitySearchScreen(onBack = onBack)
@@ -125,14 +141,13 @@ fun CommunityRouteHost(
             onBack = onBack,
         )
         CommunityRoutes.Comment -> CommunityCommentScreen(
-            postId = CommunityMockStore.engine.defaultPostId(),
+            postId = "",
             onBack = onBack,
         )
         else -> {
             if (route.startsWith("/community/comment")) {
                 val id = route.substringAfter("postId=", missingDelimiterValue = "")
                     .substringBefore('&')
-                    .ifBlank { CommunityMockStore.engine.defaultPostId() }
                 CommunityCommentScreen(postId = id, onBack = onBack)
             } else {
                 ReportMainTabRoot(isRoot = false)
@@ -363,19 +378,38 @@ private const val ConventionAckKey = "community_convention_ack_date"
 @Composable
 private fun CommunitySearchScreen(onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
+    val repository = remember { HttpCommunityPostRepository() }
+    val scope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
     var tab by remember { mutableStateOf(0) }
     var revision by remember { mutableStateOf(0) }
     val tabs = listOf("全部", "动态", "话题", "用户")
-    val engine = CommunityMockStore.engine
-    DisposableEffect(engine) {
-        val unsub = engine.observe { revision++ }
-        onDispose { unsub() }
+    var all by remember {
+        mutableStateOf(CommunitySearchAllResult("", emptyList(), emptyList(), emptyList()))
     }
-    val all = remember(query, revision) { engine.searchAll(query) }
-    val postsOnly = remember(query, revision) { engine.searchPosts(query) }
-    val topicsOnly = remember(query, revision) { engine.searchTopics(query) }
-    val usersOnly = remember(query, revision) { engine.searchUsers(query) }
+    var postsOnly by remember { mutableStateOf<List<CommunityFeedItem>>(emptyList()) }
+    var topicsOnly by remember { mutableStateOf<List<CommunityTopicHit>>(emptyList()) }
+    var usersOnly by remember { mutableStateOf<List<CommunityUserHit>>(emptyList()) }
+
+    LaunchedEffect(query, revision) {
+        val q = query
+        val allHttp = try { repository.searchAll(q) } catch (e: Exception) { null }
+        all = CommunitySearchAllResult(
+            q = q.trim(),
+            posts = allHttp?.posts?.items?.map { it.toFeedItem() }.orEmpty(),
+            topics = allHttp?.topics?.items?.map { it.toTopicHit() }.orEmpty(),
+            users = allHttp?.users?.items?.map { it.toUserHit() }.orEmpty(),
+        )
+        postsOnly = try {
+            repository.searchPosts(q).items.map { it.toFeedItem() }
+        } catch (e: Exception) { emptyList() }
+        topicsOnly = try {
+            repository.searchTopics(q).map { it.toTopicHit() }
+        } catch (e: Exception) { emptyList() }
+        usersOnly = try {
+            repository.searchUsers(q).items.map { it.toUserHit() }
+        } catch (e: Exception) { emptyList() }
+    }
 
     @Composable
     fun UserFollowRow(u: CommunityUserHit) {
@@ -397,9 +431,15 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
                         RoundedCornerShape(14.dp),
                     )
                     .clickable {
-                        if (u.isFollowed) engine.unfollowUser(u.userId)
-                        else engine.followUser(u.userId)
-                        showPlatformToast(if (u.isFollowed) "已取消关注" else "已关注")
+                        scope.launch {
+                            val ok = try {
+                                if (u.isFollowed) repository.unfollowUser(u.userId)
+                                else repository.followUser(u.userId)
+                                true
+                            } catch (e: Exception) { false }
+                            if (ok) revision++
+                            showPlatformToast(if (u.isFollowed) "已取消关注" else "已关注")
+                        }
                     }
                     .padding(horizontal = 12.dp, vertical = 4.dp),
             )
@@ -472,7 +512,7 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
                 item {
                     Text("热门话题", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 }
-                items(engine.searchTopics("")) { topic ->
+                items(topicsOnly) { topic ->
                     Text(
                         "#${topic.name} · ${topic.heat}",
                         color = Color(0xFF1677FF),
@@ -689,13 +729,19 @@ private fun CommunityVideoPlayScreen(coverUrl: String, onBack: () -> Unit) {
 @Composable
 private fun CommunityCommentScreen(postId: String, onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
-    val engine = CommunityMockStore.engine
+    val repository = remember { HttpCommunityPostRepository() }
+    val scope = rememberCoroutineScope()
     var draft by remember { mutableStateOf("") }
-    var revision by remember { mutableStateOf(0) }
-    LaunchedEffect(Unit) {
-        engine.observe { revision++ }
+    var comments by remember { mutableStateOf<List<CommunityFeedComment>>(emptyList()) }
+    LaunchedEffect(postId) {
+        comments = if (postId.isBlank()) {
+            emptyList()
+        } else {
+            try {
+                repository.fetchComments(postId).map { it.toFeedComment() }
+            } catch (e: Exception) { emptyList() }
+        }
     }
-    val comments = remember(postId, revision) { engine.comments(postId) }
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(title = "评论 ${comments.size}", onBack = onBack)
         LazyColumn(
@@ -767,12 +813,17 @@ private fun CommunityCommentScreen(postId: String, onBack: () -> Unit) {
                     if (text.isEmpty()) {
                         showPlatformToast("请输入评论")
                     } else {
-                        val added = engine.addComment(postId, text)
-                        if (added == null) {
-                            showPlatformToast("评论失败")
-                        } else {
-                            draft = ""
-                            showPlatformToast("评论成功")
+                        scope.launch {
+                            val added = try {
+                                repository.addComment(postId, text)
+                            } catch (e: Exception) { null }
+                            if (added == null) {
+                                showPlatformToast("评论失败")
+                            } else {
+                                comments = listOf(added.toFeedComment()) + comments
+                                draft = ""
+                                showPlatformToast("评论成功")
+                            }
                         }
                     }
                 },

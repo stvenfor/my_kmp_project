@@ -22,11 +22,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,43 +45,119 @@ import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.core.router.HomeRoutes
 import com.example.my_kmp_project.core.router.MineRoutes
 import com.example.my_kmp_project.core.router.VideoRoutes
+import com.example.my_kmp_project.feature.community.http.CommentModel
+import com.example.my_kmp_project.feature.community.http.CommunityUserHit as HttpUserHit
+import com.example.my_kmp_project.feature.community.http.HttpCommunityPostRepository
+import com.example.my_kmp_project.feature.community.http.PostModel
+import com.example.my_kmp_project.feature.community.http.TopicModel
+import kotlinx.coroutines.launch
 
 /**
- * Community tab — bound to [CommunityMockStore] (Flutter MockPostRepository tabs /
- * like / comment / publish), matching Android [JetpackCommunityRoot] logic.
+ * HTTP 契约模型 → UI 行类型适配。社区屏幕仍以 [CommunityFeedItem] 等既有行类型渲染
+ * （保持 UI 不变），数据源统一走 [HttpCommunityPostRepository]。同包供 CommunityRouteHost 复用。
+ */
+internal fun PostModel.toFeedItem(): CommunityFeedItem = CommunityFeedItem(
+    id = id,
+    userId = userId,
+    nickname = nickname,
+    avatar = avatar,
+    content = content,
+    publishAtMs = publishTimeMs(),
+    source = source,
+    images = images,
+    videoUrl = videoUrl,
+    videoCoverUrl = videoCoverUrl,
+    likeCount = likeCount,
+    commentCount = commentCount,
+    isLiked = isLiked,
+    isMine = isMine,
+    previewComments = previewComments.map { it.toFeedComment() },
+)
+
+internal fun CommentModel.toFeedComment(): CommunityFeedComment = CommunityFeedComment(
+    id = id,
+    postId = postId,
+    nickname = nickname,
+    avatar = avatar,
+    content = content,
+    createAtMs = createTimeMs(),
+    replyToNickname = replyToNickname,
+)
+
+internal fun TopicModel.toTopicHit(): CommunityTopicHit = CommunityTopicHit(
+    name = name,
+    heat = heat,
+)
+
+internal fun HttpUserHit.toUserHit(): CommunityUserHit = CommunityUserHit(
+    userId = userId,
+    nickname = nickname,
+    avatar = avatar,
+    isFollowed = isFollowed,
+)
+
+/**
+ * Community tab — feed / like / publish / search / comment 入口统一走
+ * [HttpCommunityPostRepository]（真实 HTTP）。[MockCommunityEngine] 保留给既有单测
+ * 与 Android native shell；此处只复用其 companion 的时间格式化纯函数。
  */
 @Composable
 fun CommunityScreen() {
     var destination by remember { mutableStateOf<String?>(null) }
-    val engine = remember { CommunityMockStore.engine }
-    var revision by remember { mutableIntStateOf(0) }
+    val repository = remember { HttpCommunityPostRepository() }
+    val scope = rememberCoroutineScope()
     var feedTab by remember { mutableIntStateOf(0) }
+    var posts by remember { mutableStateOf<List<CommunityFeedItem>>(emptyList()) }
 
-    DisposableEffect(engine) {
-        val unsub = engine.observe { revision++ }
-        onDispose { unsub() }
+    // 切入子页时保留当前列表；返回（含发帖成功 onBack）或切 tab 时重新拉取。
+    LaunchedEffect(feedTab, destination) {
+        if (destination != null) return@LaunchedEffect
+        val tabKey = when (feedTab) {
+            1 -> "hot"
+            2 -> "following"
+            else -> "latest"
+        }
+        posts = try {
+            repository.fetchPosts(page = 0, tab = tabKey).map { it.toFeedItem() }
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     when (val dest = destination) {
         null -> {
             ReportMainTabRoot(isRoot = true)
-            val tabKey = when (feedTab) {
-                1 -> "hot"
-                2 -> "following"
-                else -> "latest"
-            }
-            val posts = remember(feedTab, revision) { engine.posts(tab = tabKey) }
             CommunityFeedContent(
                 posts = posts,
                 feedTab = feedTab,
                 onFeedTab = { feedTab = it },
                 onPublish = { destination = CommunityRoutes.Publish },
                 onSearch = { destination = CommunityRoutes.Search },
-                onToggleLike = { post -> engine.toggleLike(post.id, liked = !post.isLiked) },
+                onToggleLike = { post ->
+                    scope.launch {
+                        val fragment = try {
+                            repository.toggleLike(post.id, liked = !post.isLiked)
+                        } catch (e: Exception) {
+                            null
+                        }
+                        if (fragment != null) {
+                            posts = posts.map { item ->
+                                if (item.id == post.id) {
+                                    item.copy(
+                                        isLiked = fragment.isLiked,
+                                        likeCount = fragment.likeCount,
+                                    )
+                                } else item
+                            }
+                        }
+                    }
+                },
                 onOpenComment = { post ->
                     destination = "${CommunityRoutes.Comment}?postId=${post.id}"
                 },
-                metaLabel = { engine.metaLabel(it) },
+                metaLabel = { post ->
+                    "${MockCommunityEngine.formatPublishTime(post.publishAtMs)} · ${post.source}"
+                },
             )
         }
         else -> {

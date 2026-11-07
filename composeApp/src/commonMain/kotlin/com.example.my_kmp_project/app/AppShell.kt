@@ -120,6 +120,8 @@ internal fun AppShell() {
             PrivacyConsentPhase(
                 onAccept = {
                     privacyConsentStore.setAccepted(true)
+                    // 隐私同意后补一次 realtime 首连（未登录则由闸门跳过）。
+                    RealtimeRuntime.onPrivacyGranted()
                     privacyAccepted = true
                     phase = AppPhase.Main
                 },
@@ -323,6 +325,8 @@ private fun MainShell() {
 
     fun afterAuthSuccess() {
         refreshSession()
+        // 登录后补连 realtime（闸门检查隐私 + 登录态 + 是否活跃）。
+        RealtimeRuntime.onAfterLogin()
         val resume = AuthGate.consumePending() ?: MainTab.Home
         shellRoute = null
         authOverlay = AuthOverlay.None
@@ -409,6 +413,8 @@ private fun MainShell() {
                                 },
                                 onLogoutClick = {
                                     AuthRepository.logout()
+                                    // 登出清 WS 连接、不清离线队列。
+                                    RealtimeRuntime.onAfterLogout()
                                     refreshSession()
                                     shellRoute = null
                                     tab = MainTab.Home
