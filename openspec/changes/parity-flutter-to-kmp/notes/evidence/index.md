@@ -20,13 +20,13 @@
 
 | 模块 | A/i/O | 证据状态 | 代表证据（已存在） | 登记缺口 |
 |---|---|---|---|---|
-| ai | ✓/✓/✓ | `Placeholder` | [ai/Android/ai_stream.kmp.png](./ai/Android/ai_stream.kmp.png) | SSE 传输已落但 `AiStreamScreen` 仍 mock，UI 未接线（见 registry「AI stream / SSE 流式传输」） |
+| ai | ✓/✓/✓ | `Partial` | [ai/Android/ai_stream.kmp.png](./ai/Android/ai_stream.kmp.png) | UI 已接真实 `AiSseApi`（Wave 2，`8ce00f1`），但三端真机 SSE e2e 与像素证据仍缺；ohosX64 流式不支持（见 registry「AI stream」） |
 | auth | ✓/—/— | `Partial` | [auth/Android/login_password.diff.json](./auth/Android/login_password.diff.json) | iOS/OHOS 登录证据缺；public register 受 Supabase 配额限制 |
 | bridges | ✓/✓/✓ | `Partial` | [bridges/Android/deeplink_chat.png](./bridges/Android/deeplink_chat.png) | OHOS camera 缺；deeplink 仅路由可达，数据契约另评 |
 | chat | ✓/✓/✓ | `Partial` | [chat/Android/chat_detail.diff.json](./chat/Android/chat_detail.diff.json) | IM 仍 MockImEngine；厂商 SDK 未接 |
 | classroom | ✓/✓/✓ | `Partial` | [classroom/Android/classroom_gift_claim.diff.json](./classroom/Android/classroom_gift_claim.diff.json) | 部分路由仍是 SoT chrome；realtime classroom 未接 |
 | commerce | ✓/✓/✓ | `Partial` | [commerce/Android/channel_unavailable.png](./commerce/Android/channel_unavailable.png) | 真 SDK 支付未接；UI 保持不可用态 |
-| community | ✓/✓/✓ | `Partial` | [community/Android/community_convention.diff.json](./community/Android/community_convention.diff.json) | 仍 MockCommunityEngine；live feed 未接 |
+| community | ✓/✓/✓ | `Partial` | [community/Android/community_convention.diff.json](./community/Android/community_convention.diff.json) | 已切 `HttpCommunityPostRepository`（Wave 2，`8ce00f1`）；`MockCommunityEngine` 仅存于单测与 native shell；真机 HTTP 往返与三端像素证据缺 |
 | content | ✓/—/— | `Deferred` | [content/Android/module-J.md](./content/Android/module-J.md) | 仅 1 份 Android 结论；无三端证据 |
 | contract | ✓/—/— | `Deferred` | [contract/Android/module-23.md](./contract/Android/module-23.md) | 仅 1 份 Android 结论 |
 | engineering | ✓/—/— | `Deferred` | [engineering/Android/module-K.md](./engineering/Android/module-K.md) | 仅 1 份 Android 结论 |
