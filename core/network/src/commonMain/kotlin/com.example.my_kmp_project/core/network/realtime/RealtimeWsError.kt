@@ -1,5 +1,8 @@
 package com.example.my_kmp_project.core.network.realtime
 
+import com.example.my_kmp_project.core.network.ApiEnvelope
+import com.example.my_kmp_project.core.network.NetworkJson
+
 /**
  * Realtime 子系统专用异常（HTTP 换票 / 增量补投 / WS 传输能力）。
  *
@@ -40,6 +43,33 @@ public sealed class RealtimeWsError(
     public class TicketInvalid(
         message: String,
     ) : RealtimeWsError(message)
+
+    /**
+     * 后端以 `BackendErrorBody{error,code}`（`response/backend.go`）拒绝了裸 body 接口
+     * （换票 / 补投的 401 / 4xx）。此前解码失败一律落到 [BodyUnparsable]，
+     * 把后端明确的 401 吞成「响应体不可解析」；这里保留后端 code 与文案，
+     * 供上层按 code 分支（清会话 / 不重试等）。
+     */
+    public class BackendRejected(
+        val code: Int?,
+        val backendMessage: String,
+    ) : RealtimeWsError("Realtime 后端拒绝：code=$code, error=$backendMessage")
+}
+
+/**
+ * 尝试把裸 body 解析为后端 `BackendErrorBody{error,code}` 错误体。
+ *
+ * 复用 [ApiEnvelope]（其 `error` / 带 FlexibleInt 宽松转换的 `code` 字段已能解析该形状，
+ * 且 `ignoreUnknownKeys` 宽容多余字段）。**仅当 `error` 非空**才算命中：
+ * 统一信封 `{code,message,data}` 没有 `error`，不应误判为后端拒绝，
+ * 仍应回落到 [RealtimeWsError.BodyUnparsable]。
+ */
+internal fun parseBackendRejection(raw: String): RealtimeWsError.BackendRejected? {
+    val envelope = runCatching {
+        NetworkJson.decodeFromString(ApiEnvelope.serializer(), raw)
+    }.getOrNull() ?: return null
+    val errorText = envelope.error?.takeIf { it.isNotBlank() } ?: return null
+    return RealtimeWsError.BackendRejected(envelope.code, errorText)
 }
 
 /** 错误文案里只带响应体前 200 字符，避免整包 JSON 进日志。 */

@@ -31,9 +31,17 @@ public class PushRegistrationApi(
     private val analytics: PushRegistrationAnalytics = NoopPushRegistrationAnalytics,
     private val log: (String) -> Unit = { println(it) },
 ) {
-    /** Dart `report({required registrationId, alias, deviceId, platform, mock})`（:17-52）。 */
+    /**
+     * Dart `report({required registrationId, alias, deviceId, platform, mock})`（:17-52）。
+     *
+     * **`alias` 是无效参数**：后端 `jpush_controller.go:53-59` `RegisterDevice` 为越权防护
+     * **强制忽略客户端 alias**，写入时以 `Alias: user.ID`（会话用户）覆盖（h4 验收口径）。
+     * 即客户端传任何 alias 都不影响注册结果。此处保留该键只为对齐既有请求体形状
+     * （Dart 侧仍发 `alias`），**不改请求行为**、不删字段；后端收敛时再一并移除。
+     */
     public suspend fun report(
         registrationId: String,
+        /** 后端强制以会话用户覆盖，传值无效（见函数 KDoc）；仅保留在请求体形状里。 */
         alias: String? = null,
         deviceId: String? = null,
         platform: String? = null,

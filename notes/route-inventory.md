@@ -31,13 +31,39 @@ endpoints missing=1 extra=3 · routes missing=7 extra=40 · exit 1
 > 说明：修复 2 只动 **比较层**，不改任何常量定义。修复 3 是「登记假阳性」而非「隐藏差异」——
 > 该端点在后端与 Flutter 两侧都真实存在。allowlist 为**精确逐条枚举**，未登记的新差异仍计入 drift（已用临时探针验证）。
 
-## 3. 三条 extra endpoint 分类表（逐条给理由）
+## 3. 19 条 extra endpoint 分类表（逐条给理由）
+
+Wave 1 登记的 3 条（逐条给理由）：
 
 | KMP 路径 | KMP file:line | 后端真相（matrix 结论） | 审计为何 extra | 处置 | 理由 |
 |---|---|---|---|---|---|
 | `/api/v1/im/friends/requests/:v/respond` | `feature/friend/ImFriendApi.kt:37` | `im_routes.go:22`，**aligned** | Flutter `im_friend_api.dart:159` 也调用，resolver 漏采 Dart 的 `Class.CONST` 插值 | **书面 allowlist**（非真实 drift） | 后端有、Flutter 有、KMP 有，三方对齐；纯解析器盲区，登记而非删除/隐藏 |
 | `/api/v1/mall` | `feature/commerce/MallApi.kt:232` | 后端 mall 组无裸路由，`mock(自造)`（组合前缀常量） | Flutter 用完整字面量拼 `/api/v1/mall/*`，没有裸 `/api/v1/mall` 串 | **书面 allowlist**（非真实端点） | 私有 `BASE` 常量，仅用于拼装子路径；不是被调用接口；保留作前缀，登记理由 |
 | `/api/v1/user/huawei/login` | `feature/auth/AuthApiContracts.kt:31` | `user_routes.go:21`，**aligned** | Flutter `d7876a1` 未接入华为登录渠道 | **书面 allowlist**（extended/产品确认） | KMP 对齐后端、领先 Flutter；以 Go 后端为 SoT 属已确认的真实端点，不删除 |
+
+Wave 3 新增 16 条：matrix B 区「客户端应接、后端真实存在」的端点由 A/B/C 槽按 `PaymentPrepayApi.kt` 样板完成契约接线后，KMP 端点集合新增、Flutter `d7876a1` 无同名条目 → 审计轴成 extra。**性质与 `/api/v1/user/huawei/login` 同类：KMP 对齐后端、领先 Flutter（extended/产品确认）**，逐条书面 allowlist 登记，不是隐藏差异。后端 file:line 取自 matrix B 区，稳定不漂移；以「路径 + matrix 编号」为准，KMP 符号名不作硬编码。
+
+| KMP 路径 | matrix B#N | 后端 file:line | 处置 |
+|---|---|---|---|
+| `/api/v1/cs-agent/chat` | B#1 | `cs_agent_routes.go:13` | 书面 allowlist（extended/产品确认） |
+| `/api/v1/mall/products` | B#2 | `mall/router.go:42` | 同上 |
+| `/api/v1/mall/products/:v/skus` | B#3 | `mall/router.go:43` | 同上 |
+| `/api/v1/mall/skus/:v/codes` | B#4 | `mall/router.go:44` | 同上 |
+| `/api/v1/me/permissions` | B#5 | `access/router.go:55` | 同上 |
+| `/api/v1/me/profile` | B#6 | `profile_routes.go:24-25` | 同上 |
+| `/api/v1/new-car-follow-files/customers` | B#8 | `new_car_follow/router.go:40` | 同上 |
+| `/api/v1/short-videos/:v/review` | B#14 | `short_video/router.go:49` | 同上 |
+| `/api/v1/stores` | B#15 | `access/router.go:40` | 同上 |
+| `/api/v1/stores/:v/join-applications` | B#16 | `home/router.go:48` | 同上 |
+| `/api/v1/stores/:v/members` | B#17 | `access/router.go:41` | 同上 |
+| `/api/v1/stores/:v/members/:v` | B#18 | `access/router.go:42` | 同上 |
+| `/api/v1/transactions/manage` | B#19 | `transaction/router.go:58-59` | 同上 |
+| `/api/v1/transactions/manage/:v` | B#20 | `transaction/router.go:60-62` | 同上 |
+| `/api/v1/transactions/search` | B#21 | `transaction/router.go:48` | 同上 |
+| `/api/v1/user/deactivate` | B#22 | `user_routes.go:26` | 同上 |
+
+> **排除项（不得入 allowlist）**：matrix B#7 `membership/huawei/notifications`、B#9/B#10 `payments/notify/*`、B#11 `push/send`、B#12 `realtime/push`、B#13 `roles/assignments`——公网渠道回调 / 恒 501 占位 / 服务端管理触发口，非客户端调用目标，Wave 3 未接线，也不会成为 extra。
+> **口径**：脚本 `ALLOWLIST` heredoc 为**精确枚举**，未登记的新差异仍计入 drift（Wave 1 已用 `/api/v1/zzz_undocumented_probe` 探针验证 exit 1）；本表 16 条逐条登记，不放宽阈值。
 
 ## 4. `dubbing` ↔ `transliter` 别名映射表（6 对）
 
@@ -104,6 +130,8 @@ endpoints missing=1 extra=3 · routes missing=7 extra=40 · exit 1
 
 ## 6. 差异收敛算术（40 extra / 7 missing 的去向）
 
+> 本节是 **Wave 1 修复时的历史快照**，记录当时 `routes extra 40 / missing 7`、`endpoints extra 3` 的去向，数字保持原样、不改写为后续 wave 的值。Wave 3 新增的 16 条 endpoint allowlist 见 §3 与 §7。
+
 ```
 routes missing 7 = 6（dubbing 别名，§4 归一后对齐）+ 1（homework_stats collation 假象，§2-1 消除）
 routes extra  40 = 33（KMP 原生页，§5 书面 allowlist）
@@ -113,18 +141,19 @@ endpoints missing 1 = /api/v1/payments/prepay → §2-4 补契约，归零
 endpoints extra  3 = 3 条书面 allowlist（§3）
 ```
 
-## 7. 书面 allowlist 汇总（36 条，脚本内每行带理由）
+## 7. 书面 allowlist 汇总（52 条，脚本内每行带理由）
 
-`scripts/audit-flutter-drift.sh` 的 `ALLOWLIST` heredoc = 3 条 endpoint（§3）+ 33 条 route（§5），
+`scripts/audit-flutter-drift.sh` 的 `ALLOWLIST` heredoc = 19 条 endpoint（§3：Wave 1 的 3 条 + Wave 3 的 16 条）+ 33 条 route（§5），
 每条 `path|理由`。`allowlist_filter` 只豁免**精确枚举**项：已登记项照常打印（带理由）但不计 drift，
 未登记项仍计入 drift_total。已用临时注入 `/api/v1/zzz_undocumented_probe` 验证：脚本 exit 1、
-`drift axes flagged: 1`，证明不是放宽阈值。
+`drift axes flagged: 1`，证明不是放宽阈值。Wave 3 的 16 条逐条带 matrix B#N 编号与后端 file:line，
+性质为「KMP 对齐后端、领先 Flutter（extended/产品确认）」，非隐藏差异。
 
 ## 8. 验收
 
 | 命令 | 结果 |
 |---|---|
-| `bash scripts/audit-flutter-drift.sh` | exit 0；`no unallowlisted drift`；`documented allowlist: 36 item(s)`；headlines 全 0 |
+| `bash scripts/audit-flutter-drift.sh` | exit 0；`no unallowlisted drift`；`documented allowlist: 52 item(s)`；headlines 全 0 |
 | `bash scripts/verify-parity.sh --static-only` | exit 0 |
 | `bash scripts/check-layer-deps.sh` | exit 0 |
 | `./gradlew :feature:pay:testDebugUnitTest`（最窄编译/测试任务） | **BUILD SUCCESSFUL**；新增 `PaymentPrepayContractTest` 3 用例 + 既有 `MembershipPayContractTest` 18 用例全过，0 failures/errors |
@@ -147,3 +176,47 @@ ComparisonFailure: expected:<[]> but was:<[192.168.2.175]>
 - 该文件是**主机地址常量**，不是 `/api/v1/*` 路径常量，不在本轮白名单；依「只交付点名范围 / 不顺手重构 / 最小改动」**未修**。
 - 验收命令里 `./gradlew :core:network:testDebugUnitTest` 与「最窄的编译任务」是**或**关系：本轮采用后者（`:feature:pay:testDebugUnitTest`）并通过。
 - 注意：不经 `--static-only` 的完整 `verify-parity.sh` 会因这 2 个前置用例失败，与本轮改动无关。
+
+## 9. 非端点常量与测试夹具（Wave 3 登记，不计入 drift）
+
+> 本小节把「看起来像 `/api/v1/*` 端点、其实不是被调用接口」的字符串一次性登记清楚，避免被误算成 KMP↔后端 或 KMP↔Flutter 的真实差异。
+> 完整逐条对照见 [backend-contract-matrix.md](backend-contract-matrix.md) 的 C 区（C.1/C.2）与 B.1 节；本小节只回答三件事：**是什么 / 为何保留 / 为何不计入 drift**。
+> 三类合计 14 条：**3 条自造组合前缀 + 7 条测试夹具 + 4 条解析器盲区**——均**不是真实端点差异**。
+
+### 9.1 3 条自造组合前缀常量（matrix C.1）
+
+| KMP 路径 | KMP file:line | 是什么 | 为何保留 | 为何不计入 drift |
+|---|---|---|---|---|
+| `/api/v1/after-sales` | `home/aftersales/AfterSalesApi.kt:26` | `const val BASE/PREFIX/ROOT`，仅拼装子路径 | 后端 `<group>` 下无 `GET("")`/`POST("")` 裸路由；作前缀可读且 Dart 侧同款 | 不是被调用接口；Dart 侧同款 → KMP↔Flutter 审计对齐，无需 allowlist |
+| `/api/v1/community` | `community/http/HttpCommunityPostRepository.kt:32` | 同上 | 同上，后端无裸路由 | 同上，Dart 侧同款 → 审计对齐 |
+| `/api/v1/mall` | `commerce/MallApi.kt:232` | 同上 | 私有 `BASE` 常量，仅拼 `/api/v1/mall/*` | Flutter 用完整字面量拼子路径、无裸 `/api/v1/mall` 串 → §3 书面 allowlist（endpoint 条目之一）；保留作前缀 |
+
+### 9.2 7 条契约测试夹具路径（matrix C.2）
+
+> 来源：`core/network/src/commonTest/.../AuthRefreshingApiClientTest.kt`，用任意 URL 验证 401→刷新→重试逻辑。
+> 这些路径**后端不存在、也不是契约端点**；审计脚本 `dart_kt_ep_files` 按 `Test.kt` 过滤，生产端点集合里看不到它们。
+
+| KMP 路径 | KMP file:line | 为何保留 | 为何不计入 drift |
+|---|---|---|---|
+| `/api/v1/chat/list` | `AuthRefreshingApiClientTest.kt:114,199,233,264,273` | 401 刷新/重试夹具，需要任意可达 URL | `commonTest` 且文件名含 `Test.kt` → 被 `dart_kt_ep_files` 过滤 |
+| `/api/v1/chat/unread` | `AuthRefreshingApiClientTest.kt:200` | 同上 | 同上 |
+| `/api/v1/mine/profile` | `AuthRefreshingApiClientTest.kt:125,302,319,320` | 同上 | 同上 |
+| `/api/v1/mine/invoice` | `AuthRefreshingApiClientTest.kt:250` | 同上 | 同上 |
+| `/api/v1/mine/nickname` | `AuthRefreshingApiClientTest.kt:303` | 同上 | 同上 |
+| `/api/v1/mine/address` | `AuthRefreshingApiClientTest.kt:304,321` | 同上 | 同上 |
+| `/api/v1/home/feed` | `AuthRefreshingApiClientTest.kt:282` | 同上 | 同上 |
+
+> 处置：**保留、书面说明，不删除、不自造后端接口**。登记为「产品确认的本地 mock（测试夹具）」；后端相近路径（`/api/v1/me/profile`、`/api/v1/im/*`、`/api/v1/home/*`）与这些夹具字面不同，不构成端点差异。
+
+### 9.3 4 条 `resolve.py` 解析器盲区（matrix B.1，KMP 已接线）
+
+> KMP 生产代码确实会发出以下 4 条请求，但 `resolve.py` 无法把 `${RongImConfig.GROUPS_FREE_PATH}`（`ClassName.CONST`）与运行时 `$action` 变量归一化成具体路径，故端点集合里看不到它们——**不是后端/KMP 差异**，KMP 侧已接线。
+
+| 后端 method+path | 后端 file:line | KMP 接线处 | 为何保留 / 不计入 drift |
+|---|---|---|---|
+| POST `/api/v1/im/groups/free/:v/invite` | `delivery/http/router/im_routes.go:25` | `chat/ImGroupApi.kt:118-120` + `chat/RongImConfig.kt:77` | 已接线；解析器不识别插值 → 盲区，非差异。强行改 resolver 会连带把模板路径暴露成额外漂移（§2-3 已论证） |
+| POST `/api/v1/im/groups/free/:v/kick` | `delivery/http/router/im_routes.go:26` | `chat/ImGroupApi.kt:128-130` + `chat/RongImConfig.kt:77` | 同上 |
+| POST `/api/v1/im/groups/free/:v/quit` | `delivery/http/router/im_routes.go:27` | `chat/ImGroupApi.kt:138-139` + `chat/RongImConfig.kt:77` | 同上 |
+| POST `/api/v1/im/groups/free/:v/dismiss` | `delivery/http/router/im_routes.go:28` | `chat/ImGroupApi.kt:145-146` + `chat/RongImConfig.kt:77` | 同上 |
+
+> 结论：14 条全部登记为「非端点常量 / 测试夹具 / 解析器盲区」，不计入 `audit-flutter-drift.sh` 的 drift，也不在 [backend-contract-matrix.md](backend-contract-matrix.md) B 区 22 条 `missing(待接线)` 内。脚本只扫 `.kt`/`.dart` 生产源文件，本小节的 Markdown 登记不影响基线。

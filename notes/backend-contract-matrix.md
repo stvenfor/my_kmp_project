@@ -204,3 +204,60 @@ KMP 生产代码确实会发出以下 4 条请求，但 `resolve.py` 无法把 `
 - 审计脚本的 1 条 `missing endpoint` = `/api/v1/payments/prepay`：本轮已补 KMP 契约（A 区 #54），KMP↔Flutter 归零。
 - 审计脚本的 3 条 `extra endpoint` 与 40 条 `extra route`（经 `LC_ALL=C` 与别名归一后余 33 条）的逐条分类、别名映射、allowlist 理由见 `notes/route-inventory.md`。
 - 本表不修改后端、不发明后端接口；B 区每行均可回溯到 `app/internal/**/router.go` 的真实注册行。
+
+## F. 对齐状态（Wave 3，纯双方逐字段核对结论）
+
+> 本小节由 Wave 3 D 槽登记。范围：**仅 KMP ↔ Go 后端 `my_go_study` 双方**、不涉及任何第三方；后端仓库全程只读。
+> A/B/C 区 22 条 `missing(待接线)` 的原有措辞**未改**，仅在 F.3 追加状态列备注。
+>
+> **范围排除（外部前置，非本轮范围）**：极光/JPush、微信/支付宝 OpenSDK、Apple/Huawei/Google IAP、融云 IM、Supabase、短信/OTP 服务商、LLM provider、对象存储、第三方渠道回调与恒 501 占位、Prometheus。这些不列为「需对齐」；B 区 #7/#9/#10/#11/#12 行原已注明「公网渠道回调 / 服务端占位（恒 501），非客户端调用目标」。
+>
+> **状态词**（只用五个）：`Migrated | Degraded | Placeholder | Deferred | Partial`。按 [platform-gap-registry.md](../openspec/changes/parity-flutter-to-kmp/notes/platform-gap-registry.md) 的 `Rule (2A)`：`Migrated` 仅当三端落地 + 数据契约对齐 + 链接证据；**页面可开 ≠ 数据契约接线 ≠ Migrated**。以下「已对齐」指**字段/协议层逐字段核对一致**，不等于能力 `Migrated`（真机 e2e / 三端像素证据仍缺）。
+>
+> **行号口径**：下列 `file:line` 是 Wave 3 D 槽核对时（2026-11-11）的**代码快照**。本轮 A/B/C 槽并发改动同一批 `core/network` / `feature/auth` / `feature/pay` 文件，行号可能随改动微调；定位以「文件路径 + 符号名」为准，行号仅作跳转辅助，不作唯一依据。
+
+### F.1 已逐字段核对为「对齐」（勿误判为差距）
+
+| # | 契约点 | KMP 证据（file:line） | 后端证据（file:line） | 结论 |
+|---|---|---|---|---|
+| 1 | realtime 换票/补投**裸 body** camelCase：`{ticket,wsUrl,expiresInSeconds,connId}` / `{events,latestSeq}`，**非** `{code,message,data}` 信封 | `core/network/realtime/RealtimeWsTicketApi.kt:57-58,69-73`、`RealtimeWsSyncApi.kt:17,52-55,65-67` | `app/internal/delivery/http/dto/response/realtime.go:5-17` | aligned |
+| 2 | WS `RealtimeEnvelope{id,type,topic,ts,seq,payload}` 与 `sys.notify` / `presence.bulk` 主题 | `core/network/realtime/RealtimeEnvelope.kt:27,74-76,98`、`RealtimeConfig.kt:81-82` | `model/entity/realtime_envelope.go:16-38`、`app/internal/delivery/ws/handler.go:78` | aligned |
+| 3 | SSE `event: meta/delta/done/error` 与 `CompletionRequest` camelCase（`prompt`/`conversationId`/`clientRequestId`） | `core/network/.../core/sse/AiSseDecoder.kt:44-58`（`meta/delta/done/error`）、`feature/ai/AiSseApi.kt:74-84`（`completionsRequestBody`） | `model/entity/sse_event.go:5-10`、`app/internal/delivery/http/dto/request/sse_completion.go:4-9`、`app/internal/delivery/http/controller/sse_controller.go:111-114` | aligned（与 `/api/v1` 其余 snake_case 不同，勿顺手统一） |
+| 4 | prepay 五键 `channel/amount_fen/subject/ref_type/ref_id` → `PrepayResult{channel,out_trade_no,params}` | `feature/pay/PaymentPrepayApi.kt:21-23,55-75,78-83`（`PrepayRequest` / `PrepayResponse`） | `app/internal/payment/handler.go:30-33`、`app/internal/payment/service.go:66-70` | aligned（A 区 #54） |
+| 5 | push devices 五键 `registration_id/alias/device_id/platform/mock` | `component/src/commonMain/.../push/PushRegistrationApi.kt:60-64,78-82,85-97`（`buildJsonObject` / `KEY_*` / `PLATFORM_*`） | `app/internal/delivery/http/controller/jpush_controller.go:36-40` | aligned |
+| 6 | 分页 `Pagination{page,size,total,totalPages}`、`page` 从 1 起（`Offset=(page-1)*size`） | `core/network/ListPage.kt:20-24,70-77` | `app/internal/delivery/http/dto/response/common.go:44-45,59-62` | aligned |
+| 7 | 登录/刷新 DTO snake_case（`device_id`/`refresh_token`/`session_id`）、刷新请求空键省略 | `feature/auth/AuthApiContracts.kt:43-48,63-73,230-239`（登录/注册/刷新 DTO 的 `@SerialName`） | `app/internal/delivery/http/dto/request/user_request.go:8-9,31` | aligned |
+| 8 | 会话三件套 `X-Session-ID` / `X-Device-ID` 与 `Authorization` 同一 gating | `core/network/DemoRequestHeaders.kt:11-12`、`NetworkFacade.kt:77` | `app/internal/delivery/http/middleware/supabase_session_auth.go:15-16,36-37` | aligned（Wave 1 已落） |
+| 9 | `AuthBizCode` 10021–10024 与单飞 401 静默刷新 | `feature/auth/AuthBizCode.kt:8,23-32,37-46`、`AuthHttpDecision.kt:8-9,40,53`、`core/network/TokenRefresh.kt:10-11` | `app/internal/delivery/http/dto/response/common.go:22-27` | aligned |
+
+> 逐条结论同步进 [platform-gap-registry.md](../openspec/changes/parity-flutter-to-kmp/notes/platform-gap-registry.md) 对应行备注（D3）；未由 A/B/C 覆盖的结构性 gap 见 [backend-alignment-gaps.md](backend-alignment-gaps.md)（D5）。
+
+### F.2 纯双方仍未对齐（本轮 A/B/C 槽已改代码，D 槽只登记结论与证据锚点）
+
+> 以下均为**双方契约层**差异，本轮由 A/B/C 槽在代码侧处置；D 槽不改代码、只登记结论与 file:line 锚点，具体改动的最终验收由 coordinator 统一跑。
+> 未完成项一律保留 blocker + follow_up，不判绿。
+
+| # | 差异 | 现状证据（file:line） | 状态 | blocker | follow_up |
+|---|---|---|---|---|---|
+| 1 | 错误码双轨：`core/network/NetworkCodes` 遗留小码表（`OK=200`/`EXPIRE_TOKEN=401`/`FORBIDDEN=403`）vs 后端五位数码表（`10002–10005`/`10021–10024`/`50000`）；`10005`（HTTP 501 能力未接入）无分支；非 401 的 `{error,code}` 分类；信封 `timestamp` | `core/network/NetworkCodes.kt:21-57`（`object NetworkCodes`）、`app/internal/delivery/http/dto/response/common.go:17-30` | `Partial` | 小码表与五位数码表并存，`0` 同值不同义 | A 槽统一码表分支 + 契约测试；信封 `timestamp` 补解析 |
+| 2 | OHOS `body.platform` 被映射成 `android`（后端 `binding:"required,oneof=android ios"` 只认二值） | `feature/auth/AuthApiContracts.kt:357-380`（`AuthDeviceContext.platformForBody` / `platform()`）、`app/internal/delivery/http/dto/request/user_request.go:9,18,31,38,45`、`app/internal/usecase/device_session_usecase.go:60-61` | `Partial` | 后端不接受 `ohos`/`harmony`，客户端只能伪报 | 后端扩 `oneof` 或客户端登记伪值语义，勿静默伪装 |
+| 3 | `Client-Type`/`Client-Version`/`Client-BuildNumber` 三头后端不读（仅 `X-Session-ID`/`X-Device-ID`/`Authorization` 被读） | `core/network/DemoRequestHeaders.kt:16-19`、`app/internal/delivery/http/middleware/local_session_auth.go:36-37`（后端全仓无 `Client-Type` 读取点） | `Partial` | 后端未消费三头，客户端发了也无人读 | 三头用途书面登记；若确需后端消费再提后端变更（后端只读） |
+| 4 | realtime 少发 `connId`（换票响应带 `connId`，客户端后续链路未回带） | `core/network/realtime/RealtimeWsTicketApi.kt:73`、`app/internal/delivery/http/dto/response/realtime.go:10` | `Partial` | 客户端未把 `connId` 串进后续链路 | B 槽补 `connId` 回带 + 契约测试 |
+| 5 | alias 被后端强制覆盖（越权防护：忽略客户端 `alias`，强制绑定会话用户） | `component/src/commonMain/.../push/PushRegistrationApi.kt:41`、`app/internal/delivery/http/controller/jpush_controller.go:53` | `Partial` | 客户端语义与后端实际落库不一致 | 文档/契约测试注明「alias 由服务端覆盖」，勿依赖客户端传值 |
+| 6 | realtime 错误体非统一信封（`{"error":…}` / WS `type=error`，与 `{code,message,data}` 不同） | `core/network/Sse.kt:83-97`、`core/network/realtime/RealtimeEnvelope.kt:89` | `Partial` | 错误体形态分叉 | B 槽补错误体解析分支 + 契约测试 |
+| 7 | transactions 双分页（`ListPage` 新 `pagination` 包装 vs `listLegacy` 的 `{"items":[...]}` 旧形） | `core/network/ListPage.kt:16`、`app/internal/transaction/handler.go:75-105` | `Partial` | 新旧两种分页响应并存 | 逐端点标注走哪套，勿混用 |
+| 8 | 两层鉴权链（SessionAuth 中间件 + AccountGate/DeviceSessionUsecase），客户端只建模一层 | `app/internal/delivery/http/middleware/supabase_session_auth.go:36-37`、`app/internal/usecase/device_session_usecase.go:60-61` | `Partial` | 客户端 403/401 分支未区分两层 | C 槽补 KDoc + 403「账号不可用」用例 |
+| 9 | 403「账号不可用」业务语义（区别于 10003 无权限 / 10021 互踢） | `app/internal/delivery/http/dto/response/common.go:17-27`、`core/network/NetworkCodes.kt`（`FORBIDDEN` / `EXPIRE_TOKEN`） | `Partial` | `FORBIDDEN=403` 现不登出、不刷新，仅业务提示 | 明确 403 与业务码映射，补契约测试 |
+| 10 | 金额三套口径（元 `amount` / 分 `amount_fen` / 字符串展示），亚分精度边界见 [backend-alignment-gaps.md](backend-alignment-gaps.md) | `app/internal/transaction/repo_postgres.go:15-17`、`app/internal/transaction/money_fen_integration_test.go:161-176` | `Partial` | 客户端未统一金额口径 | 统一以分为存储口径、元为展示口径并写边界 |
+| 11 | 14 条后端自有端点待接（B 区属客户端目标者）+ `PUT/DELETE /transactions/:v`、`/user/deactivate` | B 区表 + `notes/backend-contract-matrix.md:196-200`（D 区方法级差异） | `Deferred` | 客户端契约未登记 / 方法级未接线 | 逐条补契约（不编造后端路由，均带 `router.go` 行号） |
+
+### F.3 B 区 22 条 `missing(待接线)` 的 Wave 3 状态列备注（措辞未改）
+
+| 分组 | B 区行号 | Wave 3 状态 | 说明 |
+|---|---|---|---|
+| 客户端目标（待补契约） | #1–#4、#6、#8、#14、#19–#22 | `Deferred` | 后端真实路由、KMP 暂未接线；A/B/C 槽本轮按 F.2 逐条补契约，未完成的保留 blocker + follow_up |
+| 公网渠道回调 / 服务端占位（恒 501） | #7、#9、#10 | `Deferred` | **外部前置，非本轮范围**：非客户端调用目标，仅登记 gap |
+| 服务端推送 / 管理触发口 | #11、#12 | `Deferred` | 非客户端调用目标，仅登记 gap |
+| access 域门店/角色管理 | #5、#13、#15–#18 | `Deferred` | 后端管理接口，客户端 KMP 暂未接线；见 [backend-alignment-gaps.md](backend-alignment-gaps.md) |
+
+> 22 条措辞与 `aligned/missing/mock` 结论均保持 wave1 B 槽原文；本表仅为状态列备注（不改 A/B/C 区正文、不新增后端路由）。

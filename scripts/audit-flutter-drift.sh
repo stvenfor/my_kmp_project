@@ -121,10 +121,29 @@ resolve_paths() {  # $1 = 'ep'|'route'; stdin = file list; stdout = sorted paths
 # 与 notes/backend-contract-matrix.md。
 ALLOWLIST="$TMP/allowlist.tsv"
 cat > "$ALLOWLIST" <<'ALLOW'
-# ---- (b) endpoint：KMP 有、Flutter 无（3 条）----
+# ---- (b) endpoint：KMP 有、Flutter 无（19 条）----
 /api/v1/im/friends/requests/:v/respond|后端真实路由 im_routes.go:22；Flutter im_friend_api.dart:159 也调用，resolver 不识别 Dart 的 Class.CONST 插值而漏采，误报为 KMP extra，非真实 drift（见 matrix）。
 /api/v1/mall|MallApi.kt:232 私有组合前缀常量，仅用于拼 /api/v1/mall/* 子路径；后端 mall 组无裸路由、Flutter 用完整字面量，非真实端点（见 matrix 非端点常量节）。
 /api/v1/user/huawei/login|后端真实路由 user_routes.go:21（华为登录），KMP AuthApiContracts.kt:31 已登记；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+# ---- Wave 3 新增 16 条：matrix B 区客户端应接端点已由 KMP 接线，Flutter d7876a1 未接入 ----
+# 逐条带 matrix B#N 编号，后端 file:line 稳定不漂移；均为 extended/产品确认，非隐藏差异。
+# 注意：B#7/#9/#10/#11/#12/#13 为公网渠道回调 / 恒 501 占位 / 服务端管理口，非客户端目标，不得入 allowlist。
+/api/v1/cs-agent/chat|matrix B#1 后端 delivery/http/router/cs_agent_routes.go:13；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/mall/products|matrix B#2 后端 mall/router.go:42；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/mall/products/:v/skus|matrix B#3 后端 mall/router.go:43；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/mall/skus/:v/codes|matrix B#4 后端 mall/router.go:44；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/me/permissions|matrix B#5 后端 access/router.go:55；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/me/profile|matrix B#6 后端 delivery/http/router/profile_routes.go:24-25；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/new-car-follow-files/customers|matrix B#8 后端 new_car_follow/router.go:40；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/short-videos/:v/review|matrix B#14 后端 short_video/router.go:49；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/stores|matrix B#15 后端 access/router.go:40；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/stores/:v/join-applications|matrix B#16 后端 home/router.go:48；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/stores/:v/members|matrix B#17 后端 access/router.go:41；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/stores/:v/members/:v|matrix B#18 后端 access/router.go:42；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/transactions/manage|matrix B#19 后端 transaction/router.go:58-59；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/transactions/manage/:v|matrix B#20 后端 transaction/router.go:60-62；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/transactions/search|matrix B#21 后端 transaction/router.go:48；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
+/api/v1/user/deactivate|matrix B#22 后端 delivery/http/router/user_routes.go:26；Flutter d7876a1 未接入，KMP 对齐后端、领先 Flutter（extended/产品确认）。
 # ---- (c) route：KMP core/router 原生页，Flutter route_path.dart 无对应条目（33 条）----
 /ai|KMP 内容域聚合前缀（ProductRouteDispatch.kt:128），Flutter 按具体页登记；extended/产品确认。
 /app|KMP 深链装配前缀（DeepLinkRouter.kt:142 removePrefix /app），Flutter 无此前缀；extended/产品确认。

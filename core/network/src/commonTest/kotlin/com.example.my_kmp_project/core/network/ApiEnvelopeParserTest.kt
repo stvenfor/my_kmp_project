@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.my_kmp_project.core.network
 
 import kotlin.test.Test
@@ -11,9 +13,10 @@ class ApiEnvelopeParserTest {
 
     @Test
     fun success_parses_data() {
-        val raw = """{"code":200,"message":"ok","data":"hello"}"""
+        // Go BFF 成功码是 0（不再是遗留表的 200），见 NetworkCodes / BackendCodes。
+        val raw = """{"code":0,"message":"ok","data":"hello"}"""
         val resp = ApiEnvelopeParser.parse(raw, parseData = { it?.jsonPrimitive?.contentOrNull })
-        assertEquals(NetworkCodes.OK, resp.code)
+        assertEquals(NetworkCodes.BFF_OK, resp.code)
         assertTrue(resp.isSuccess)
         assertEquals("hello", resp.data)
     }
@@ -93,11 +96,35 @@ class ApiEnvelopeParserTest {
     }
 
     @Test
-    fun string_code_200_parses_ok() {
+    fun string_code_200_parses_but_is_not_success() {
+        // FlexibleInt 仍接受字符串码；但遗留 200 已不参与 isSuccess 判定（后端从不返回业务码 200）。
         val raw = """{"code":"200","message":"ok","data":null}"""
         val resp = ApiEnvelopeParser.parse(raw, parseData = { null })
-        assertEquals(NetworkCodes.OK, resp.code)
+        assertEquals(200, resp.code)
+        assertTrue(!resp.isSuccess)
+    }
+
+    // ---- Go 后端五位数码契约 ----
+
+    @Test
+    fun standard_envelope_exposes_timestamp() {
+        // Go response.Response.Timestamp（common.go:36，Unix 秒）解析后应挂在 ApiResponse 上。
+        val raw = """{"code":0,"message":"success","data":{},"timestamp":1700000000}"""
+        val resp = ApiEnvelopeParser.parse(raw, parseData = { null })
+        assertEquals(NetworkCodes.BFF_OK, resp.code)
         assertTrue(resp.isSuccess)
+        assertEquals(1700000000L, resp.timestamp)
+    }
+
+    @Test
+    fun backend_error_body_without_401_keeps_code_and_error_message() {
+        // 非 401 的 BackendErrorBody{error,code}：code 取 10001、message 取 error，
+        // 不回退 PASSTHROUGH(-1)（ApiEnvelope 已有 error 字段承载）。
+        val raw = """{"error":"参数错误","code":10001}"""
+        val resp = ApiEnvelopeParser.parse(raw, parseData = { null })
+        assertEquals(BackendCodes.INVALID_PARAMS, resp.code)
+        assertEquals("参数错误", resp.message)
+        assertTrue(!resp.isSuccess)
     }
 
     // ---- Flutter `forbidden_status_test.dart` parity (d7876a1) ----

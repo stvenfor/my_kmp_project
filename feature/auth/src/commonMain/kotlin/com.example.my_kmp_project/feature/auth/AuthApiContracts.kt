@@ -35,6 +35,9 @@ public object AuthApiPaths {
 
     /** access token 静默续期（契约表 #3，`user_auth_api.dart:9,95` refreshPath）。 */
     const val REFRESH = "/api/v1/user/refresh"
+
+    /** Go `user_routes.go:26`：`POST /api/v1/user/deactivate`（SessionAuth 链，契约表外扩展）。 */
+    const val DEACTIVATE = "/api/v1/user/deactivate"
 }
 
 /** 契约表 #1 请求体：`{username,password,device_id,platform}` 四键**总发**（`user_auth_api.dart:24-29`）。 */
@@ -86,7 +89,8 @@ public data class AuthWechatLoginRequest(
 public data class AuthHuaweiLoginRequest(
     val code: String,
     @SerialName("device_id") val deviceId: String,
-    val platform: String = "android",
+    /** 见 [AuthDeviceContext.platform]：body.platform 只能取 android/ios（后端 oneof）。 */
+    val platform: String = AuthDeviceContext.platform(),
 )
 
 /**
@@ -346,21 +350,34 @@ public object AuthValidators {
     fun isValidOtp(raw: String): Boolean = Regex("^\\d{6}$").matches(raw.trim())
 }
 
+/**
+ * 请求体 `platform` 口径（**只用于 body，不用于 Client-Type 请求头**）。
+ *
+ * Go BFF 的登录/注册/OTP/微信/华为/刷新各请求体 `platform` 都是
+ * `binding:"required,oneof=android ios"`（见后端
+ * `app/internal/delivery/http/dto/request/user_request.go:5-53`），**只接受 android / ios**。
+ * 因此 OHOS / Harmony 真机在 body 里必须映射成 `android`，否则后端直接 400。
+ *
+ * 勿与 `Client-Type` 请求头混淆：`Client-Type` 用 [platformClientType()] 的**真实**
+ * 平台值（android / ios / ohos，见各平台 actual），由 core/network 的
+ * `DemoRequestHeaders` 逐请求注入；两者语义不同、取值可不同，勿把 body 映射结果
+ * 回灌 Client-Type，也勿拿 Client-Type 的真实值直接当 body.platform 发出去。
+ */
 public object AuthDeviceContext {
     fun deviceId(): String = "kmp-${platform()}-device"
 
-    fun platform(): String {
-        // 拆模块后 :composeApp 的 internal getPlatform() 不可见，改用 core.network 公开的
-        // platformClientType()（android / ios / ohos），三端映射结果与原来一致。
-        val name = platformClientType().lowercase()
+    /** 三端 body.platform 归一（纯函数，便于契约测试，不依赖平台 actual）。 */
+    fun platformForBody(clientType: String): String {
+        val name = clientType.lowercase()
         return when {
             name.contains("android") -> "android"
             name.contains("ios") || name.contains("iphone") || name.contains("ipad") -> "ios"
-            // Go LoginRequest currently oneof=android|ios — map OHOS to android for BFF.
             name.contains("harmony") || name.contains("ohos") -> "android"
             else -> "android"
         }
     }
+
+    fun platform(): String = platformForBody(platformClientType())
 }
 
 /**
@@ -390,6 +407,9 @@ public fun mapAuthFailure(
             }
         }
         AuthHttpDecision.TryRefresh -> return AuthFailure.SessionCleared().message
+        // 403「账号不可用」：账号已注销/停用，清会话回登录（见 AuthHttpDecision）。
+        // 不能落到后面 code==10003 的「账号未注册」分支——两者共用 code，语义不同。
+        AuthHttpDecision.AccountUnavailable -> return text.ifBlank { "账号不可用，请重新登录" }
         AuthHttpDecision.Forbidden -> {
             // 403：权限问题，不走登出；但 10003 与「账号未注册」共用，先判注册语义。
             if (code == AuthBizCode.ACCOUNT_NOT_REGISTERED ||

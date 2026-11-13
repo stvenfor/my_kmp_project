@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.my_kmp_project.core.network
 
 import kotlinx.serialization.json.JsonElement
@@ -8,6 +10,10 @@ import kotlinx.serialization.json.decodeFromJsonElement
  *
  * Standard shape is decoded via [@Serializable] [ApiEnvelope]. Non-envelope bodies
  * (e.g. OAuth HTTP 401) use [Envelope Fallback] only — not a second business parser.
+ *
+ * [onError] 是 Go 后端五位数码（[BackendCodes]）的分类结果回调：这些码没有专属
+ * `businessHandlers` 槽位，用它可以观察 [NetworkError.NotImplemented] / [NetworkError.Business]
+ * 分类而不影响既有 `onTokenExpired` / `businessHandlers` 行为（缺省 null，无副作用）。
  */
 public object ApiEnvelopeParser {
     fun <T> parse(
@@ -16,6 +22,7 @@ public object ApiEnvelopeParser {
         onTokenExpired: TokenExpiredHandler? = null,
         businessHandlers: NetworkBusinessHandlers? = null,
         httpStatus: Int? = null,
+        onError: ((NetworkError) -> Unit)? = null,
     ): ApiResponse<T> {
         val envelope = runCatching {
             NetworkJson.decodeFromString(ApiEnvelope.serializer(), raw)
@@ -34,6 +41,7 @@ public object ApiEnvelopeParser {
                     message = message,
                     raw = raw,
                     httpStatus = httpStatus,
+                    timestamp = envelope?.timestamp,
                 )
             }
         }
@@ -78,8 +86,37 @@ public object ApiEnvelopeParser {
             }
             NetworkCodes.FORBIDDEN -> {
                 // 403（业务码或 HTTP 回退）：无权限，不登出、不刷新（Flutter d7876a1）。
+                // 仅 HTTP 403 / 遗留码 403 走这里；后端 code 10003 见下方显式分支。
                 val err = NetworkError.Business(code, message ?: "无权限")
                 businessHandlers?.onForbidden?.invoke(err)
+            }
+
+            // ---- Go 后端五位数码（response/common.go:12-29），由 [BackendCodes] 定义 ----
+            BackendCodes.NOT_IMPLEMENTED -> {
+                // 10005 能力未接入（HTTP 501）：不可重试 / 不刷新 / 不登出，
+                // 客户端不得按成功或重试处理（Go common.go:18-20）。
+                // 不触碰 onTokenExpired / onForbidden，也不进入任何刷新分支。
+                onError?.invoke(NetworkError.NotImplemented(message ?: "能力未接入"))
+            }
+            BackendCodes.INVALID_PARAMS,
+            BackendCodes.UNAUTHORIZED,
+            BackendCodes.NOT_FOUND,
+            BackendCodes.INVALID_OTP,
+            BackendCodes.INTERNAL_ERROR -> {
+                // 普通业务错误：只分类为 Business，既不触发 onTokenExpired（不登出 / 刷新）
+                // 也不触发 onForbidden（无权限）。
+                onError?.invoke(NetworkError.Business(code, message ?: "业务错误"))
+            }
+            BackendCodes.SESSION_REPLACED,
+            BackendCodes.SESSION_INVALID,
+            BackendCodes.TOKEN_INVALID -> {
+                // 10021 / 10022 / 10023 是会话 / token 码：本层不重复决策，
+                // 由 feature/auth 的 AuthRefreshingApiClient + classifyAuthHttp 装饰器统一
+                // 判定 ForceLogout / Refresh。显式列出仅为分类完整，不调用任何 handler。
+            }
+            BackendCodes.FORBIDDEN -> {
+                // 10003 后端 CodeForbidden 有歧义（KMP 侧也曾用于「账号未注册」）：
+                // 只认 HTTP 403 判无权限，绝不在此按 code == 10003 触发 onForbidden。
             }
         }
 
@@ -89,6 +126,7 @@ public object ApiEnvelopeParser {
             data = parseData(dataElement),
             raw = raw,
             httpStatus = httpStatus,
+            timestamp = envelope.timestamp,
         )
     }
 

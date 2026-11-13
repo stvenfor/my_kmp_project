@@ -16,8 +16,11 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.contentOrNull
 
 /**
- * Standard BFF envelope `{ code, message, data }` plus OAuth-style fields for
+ * Standard BFF envelope `{ code, message, data, timestamp }` plus OAuth-style fields for
  * [Envelope Fallback] when the gateway returns HTTP 401 without a business `code`.
+ *
+ * `timestamp` 对应 Go `response.Response.Timestamp`（`common.go:36`，Unix 秒），
+ * 后端统一信封必带；缺省时按 null 宽容处理。
  */
 @Serializable
 public data class ApiEnvelope(
@@ -28,6 +31,7 @@ public data class ApiEnvelope(
     val error: String? = null,
     @SerialName("error_description")
     val errorDescription: String? = null,
+    val timestamp: Long? = null,
 )
 
 /**

@@ -12,6 +12,10 @@ public object DemoRequestHeaders {
     public const val HEADER_DEVICE_ID: String = "X-Device-ID"
 
     fun forUrl(url: String): Map<String, String> = buildMap {
+        /**
+         * Client-Type / Client-Version / Client-BuildNumber：后端当前**不读取**这三个头，
+         * 保留仅为契约兼容（对齐 Flutter 头注入 legacy），勿据此做服务端分支。
+         */
         put("Client-Type", NetworkConfig.clientType)
         NetworkConfig.clientVersion?.let { put("Client-Version", it) }
         NetworkConfig.clientBuildNumber?.let { put("Client-BuildNumber", it) }

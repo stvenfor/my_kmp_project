@@ -95,6 +95,15 @@ public data class WalletBindCardRequest(
  * **`amount` 是十进制「元」定价串**（Dart `{amount: '12.34', channel: int, card_id?: int}`），
  * 不是分；`card_id` 仅在非 null 时带上——[com.example.my_kmp_project.core.network.NetworkJson]
  * 关掉了 `explicitNulls`，null 字段自动省略，与 Dart 的 `if (cardId != null)` 同形。
+ *
+ * 金额口径：后端 `docs/placeholder-inventory.md` §28 登记「金额三套口径并存」，
+ * 本 `amount` 对应其中 **B decimal-as-string**（`numeric(10,2)`，wire 上是 JSON string）。
+ * 另有两套并存：**A 整数分 `int64`**（`PrepayRequest.amountFen`，JSON number）、
+ * **C float64**（transaction 域，`TransactionModel.amount`，JSON number）。
+ * `transactions` 已落 `amount_fen` 整数分 + 双写（h6b），used_car / auto_finance / mall
+ * 仍各自口径。后端收敛金额口径时，`PrepayRequest.amountFen`、
+ * `MallOrderModels.amount`、本 `WalletRechargeRequest.amount` 三处要一起改，
+ * 勿单独「顺手统一」。契约测试 `WalletMoneyShapeTest` 锁定本形状为 JSON string。
  */
 @Serializable
 public data class WalletRechargeRequest(

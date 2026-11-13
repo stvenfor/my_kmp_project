@@ -56,6 +56,19 @@ public object PaymentPrepayPaths {
 @Serializable
 public data class PrepayRequest(
     val channel: String,
+    /**
+     * 金额：整数分（JSON number）。
+     *
+     * 后端 `docs/placeholder-inventory.md` §28 登记「金额三套口径并存」，本字段对应其中
+     * **A 整数分 `int64`**（payment / membership / wallet / auto_finance 域，`bigint` 列）；
+     * 而 `MallOrderModels.amount`、`WalletModels.amount` 是 **B decimal-as-string**（`numeric(10,2)`，
+     * mall 域，JSON string），`TransactionModel.amount` 是 **C float64**（transaction 域，JSON number）。
+     * `transactions` 已落 `amount_fen` 整数分 + 双写（h6b），used_car / auto_finance / mall 仍各自口径。
+     *
+     * 三处形状刻意不统一：后端收敛金额口径时，`PrepayRequest.amountFen`、
+     * `MallOrderModels.amount`、`WalletModels.amount` 三处要一起改，勿单独「顺手统一」。
+     * 契约测试 `PaymentPrepayContractTest` 锁定本字段序列化为 JSON number（无引号）。
+     */
     @SerialName("amount_fen") val amountFen: Long,
     val subject: String,
     @SerialName("ref_type") val refType: String,

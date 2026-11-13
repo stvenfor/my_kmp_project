@@ -70,3 +70,17 @@ public typealias TransactionListResult = ListPage<TransactionModel>
 
 /** Dart `typedef TransactionDetailResult = ResultModel<TransactionModel>`（:47）。 */
 public typealias TransactionDetailResult = TransactionModel
+
+/**
+ * `PUT /api/v1/transactions/:id` body（后端 `transaction/handler.go:244-268` `UpdateLegacy` →
+ * `entity.UpdateTransactionInput`：`model/entity/transaction.go:56-62`，五键全 `*string`/`*float64`
+ * 即**稀疏**）。`NetworkJson` 关掉 `explicitNulls`，null 键整键省略，与 Go 指针语义一致。
+ */
+@Serializable
+public data class TransactionUpdateRequest(
+    val type: String? = null,
+    val category: String? = null,
+    val amount: Double? = null,
+    val date: String? = null,
+    val note: String? = null,
+)

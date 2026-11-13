@@ -1,6 +1,13 @@
 package com.example.my_kmp_project.feature.auth
 
+import com.example.my_kmp_project.core.network.ApiClient
+import com.example.my_kmp_project.core.network.ApiEnvelope
+import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.FlexibleIntSerializer
+import com.example.my_kmp_project.core.network.NetworkError
+import com.example.my_kmp_project.core.network.NetworkFacade
+import com.example.my_kmp_project.core.network.NetworkJson
+import com.example.my_kmp_project.core.network.decodeEnvelopeData
 import com.example.my_kmp_project.core.network.queryOf
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -20,6 +27,12 @@ public object ProfileApiPaths {
 
     /** 契约表 #11（`user_profile_api.dart:10` storesPath）——**不是** `/profiles/me/stores`。 */
     const val MY_STORES = "/api/v1/me/stores"
+
+    /** Go `profile_routes.go:24-25`：`GET|PATCH /api/v1/me/profile`（BackendJSON 直出，非信封）。 */
+    const val ME_PROFILE = "/api/v1/me/profile"
+
+    /** Go `access/router.go:55`：`GET /api/v1/me/permissions`（统一信封，data.permissions）。 */
+    const val ME_PERMISSIONS = "/api/v1/me/permissions"
 }
 
 /**
@@ -304,4 +317,120 @@ public fun mapProfileFailure(
     // 其余：有 message 时复用 auth 的成文文案，无 message 时按 Dart 回落到「资料请求失败」。
     if (text.isEmpty()) return "资料请求失败"
     return mapAuthFailure(code, message, statusCode)
+}
+
+// ── Go 后端 legacy 资料 / 权限契约（与 §2.2 的 `/profiles/me` 不是同一组端点）─────
+
+/**
+ * `GET /me/profile?store_id=` 与 `GET /me/permissions?store_id=` 的 query 构造：
+ * 空白 / null 时整个 key 省略（[queryOf] 丢弃规则）。后端 `me/profile` 用
+ * `c.Query("store_id")`（字符串），`me/permissions` 用 `strconv.Atoi`（正整数）。
+ */
+public fun meProfileQuery(storeId: String?): Map<String, String> =
+    queryOf("store_id" to storeId?.trim())
+
+public fun mePermissionsQuery(storeId: Int?): Map<String, String> =
+    queryOf("store_id" to storeId?.takeIf { it > 0 }?.toString())
+
+/**
+ * Go `response.ProfileLegacyBody`（`dto/response/profile.go:109-122`）：
+ * `/me/profile` 的 **snake_case 直出**（与 §2.2 的 camelCase 别名 `UserProfileData` 不同）。
+ * [status] 用 [FlexibleIntSerializer] 容忍数字/数字串；`stats` 复用 [UserStoreStatsData]
+ * （后端 `ProfileStatsItem` 即 snake_case 的同一组统计键）。
+ */
+@Serializable
+public data class MeProfileData(
+    val id: String? = null,
+    @SerialName("user_id") val userId: String? = null,
+    @SerialName("user_name") val userName: String? = null,
+    val email: String? = null,
+    @Serializable(with = FlexibleIntSerializer::class)
+    val status: Int? = null,
+    @SerialName("display_name") val displayName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    val phone: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+    val stats: UserStoreStatsData? = null,
+) {
+    val resolvedId: String get() = firstPresent(id, userId)
+
+    val resolvedUserName: String get() = firstPresent(userName, displayName)
+
+    val resolvedStats: UserStoreStatsData get() = stats ?: UserStoreStatsData.ZERO
+}
+
+/**
+ * Go `entity.UpdateProfileInput`（`model/entity/profile.go:26-35`）稀疏 PATCH 请求体。
+ * null 键由 [NetworkJson] 的 `explicitNulls = false` 整个省略，绝不发 null。
+ */
+@Serializable
+public data class MeProfilePatchBody(
+    @SerialName("user_name") val userName: String? = null,
+    val username: String? = null,
+    @SerialName("display_name") val displayName: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    @SerialName("avatar_base64") val avatarBase64: String? = null,
+    @SerialName("avatar_mime") val avatarMime: String? = null,
+    val phone: String? = null,
+    val status: Int? = null,
+)
+
+/** Go `access/handler.go:155` `gin.H{"permissions": codes}` 经 `response.Success` 包成信封的 data。 */
+@Serializable
+public data class MePermissionsData(
+    val permissions: List<String> = emptyList(),
+)
+
+/**
+ * Go 后端「legacy 资料 + 权限」契约（**与 §2.2 的 `/profiles/me` 不是同一组端点**）。
+ *
+ * 只登记后端真实存在的路由，不自造 UI 调用点、不改后端：
+ * - `profile_routes.go:24-25` `GET|PATCH /api/v1/me/profile` → `ProfileController.GetMeLegacy`
+ *   / `UpdateMeLegacy`，用 `response.BackendJSON` **直接 JSON 直出**（非 `{code,message,data}`
+ *   信封），故本类用 `getRaw` / `patchRaw` 自行反序列化 [MeProfileData]；
+ *   错误体是 `response.BackendError` → `{error,code}`，由 [decodeLegacy] 识别。
+ * - `access/router.go:55` `GET /api/v1/me/permissions` → `handler.ListMyPermissions`，
+ *   用 `response.Success` 包成标准信封，data = `{permissions:[...]}`，故走 `getApi`。
+ *
+ * 逐条对照见 `notes/backend-contract-matrix.md`。
+ */
+public class MeProfileApi(
+    private val client: ApiClient = NetworkFacade.api(),
+) {
+    /** `GET /api/v1/me/profile`（BackendJSON 直出）。 */
+    public suspend fun getProfile(storeId: String? = null): MeProfileData =
+        decodeLegacy(client.getRaw(ProfileApiPaths.ME_PROFILE, meProfileQuery(storeId)))
+
+    /** `PATCH /api/v1/me/profile`（BackendJSON 直出）。 */
+    public suspend fun updateProfile(body: MeProfilePatchBody): MeProfileData =
+        decodeLegacy(client.patchRaw(ProfileApiPaths.ME_PROFILE, NetworkJson.encodeToString(MeProfilePatchBody.serializer(), body)))
+
+    /** `GET /api/v1/me/permissions`（统一信封，data = `{permissions:[...]}`）。 */
+    public suspend fun getPermissions(storeId: Int? = null): MePermissionsData {
+        val response: ApiResponse<MePermissionsData> = client.getApi(
+            path = ProfileApiPaths.ME_PERMISSIONS,
+            query = mePermissionsQuery(storeId),
+            parseData = { el -> decodeEnvelopeData<MePermissionsData>(el) },
+        )
+        if (!response.isSuccess || response.data == null) {
+            throw NetworkError.Business(
+                response.code,
+                response.message?.takeIf { it.isNotEmpty() } ?: "获取权限失败",
+            )
+        }
+        return response.data!!
+    }
+
+    private fun decodeLegacy(raw: String): MeProfileData {
+        val envelope = runCatching {
+            NetworkJson.decodeFromString(ApiEnvelope.serializer(), raw)
+        }.getOrNull()
+        if (envelope?.error != null) {
+            throw NetworkError.Business(envelope.code ?: -1, envelope.error!!)
+        }
+        return runCatching {
+            NetworkJson.decodeFromString(MeProfileData.serializer(), raw)
+        }.getOrElse { throw NetworkError.Business(-1, "资料请求失败") }
+    }
 }

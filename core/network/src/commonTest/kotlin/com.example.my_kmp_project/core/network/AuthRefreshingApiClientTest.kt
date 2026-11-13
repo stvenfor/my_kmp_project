@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.my_kmp_project.core.network
 
 import kotlinx.coroutines.async
@@ -251,6 +253,46 @@ class AuthRefreshingApiClientTest {
         assertEquals(NetworkCodes.FORBIDDEN, resp.code)
         assertEquals(0, refreshCalls)
         assertTrue(!cleared)
+    }
+
+    // ---- A8：后端两层鉴权链 SessionAuth(401) + AccountGate(403)，403 → PassThrough ----
+
+    @Test
+    fun policy_decides_http_403_as_pass_through() {
+        // 403 来自 AccountGate / 权限（不是 SessionAuth 的 401），策略必须 PassThrough。
+        assertEquals(
+            AuthRefreshDecision.PassThrough,
+            flutterPolicy.decide(statusCode = 403, code = 10003, message = "无权限"),
+        )
+        assertEquals(
+            AuthRefreshDecision.PassThrough,
+            flutterPolicy.decide(statusCode = 403, code = null, message = "无权限"),
+        )
+        // 对照：SessionAuth 的 401 才进入 Refresh。
+        assertEquals(
+            AuthRefreshDecision.Refresh,
+            flutterPolicy.decide(statusCode = 401, code = 10023, message = "token 失效"),
+        )
+    }
+
+    @Test
+    fun account_gate_403_is_pass_through_no_refresh_no_logout_no_retry() = runBlocking {
+        // HTTP 403 + 后端 code 10003：两层链的第二层产生，装饰器不刷新、不登出、不重试。
+        val delegate = FakeApiClient(listOf(ApiResponse(10003, "无权限", null, httpStatus = 403)))
+        var refreshCalls = 0
+        var cleared = false
+        val client = AuthRefreshingApiClient(
+            delegate = delegate,
+            policy = flutterPolicy,
+            refresher = TokenRefreshHandler { refreshCalls++; "t" },
+            onSessionCleared = { cleared = true },
+        )
+        val resp = client.postApi<String>("/api/v1/mine/invoice", "{}") { null }
+        assertEquals(10003, resp.code)
+        assertEquals(403, resp.httpStatus)
+        assertEquals(0, refreshCalls, "403 不刷新")
+        assertTrue(!cleared, "403 不登出 / 不清会话")
+        assertEquals(1, delegate.postPaths.size, "403 不重试，原样透传")
     }
 
     @Test

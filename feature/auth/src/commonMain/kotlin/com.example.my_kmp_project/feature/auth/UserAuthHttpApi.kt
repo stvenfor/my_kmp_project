@@ -185,6 +185,28 @@ public object UserAuthHttpApi {
     }
 
     /**
+     * `POST /api/v1/user/deactivate`（Go `user_routes.go:26`，SessionAuth 链）：无 body、
+     * 只看 `code == 0`。与 [logout] 同形状，但语义是「注销账号」——服务端写 `deleted_at`
+     * 并撤销 refresh token（Go `user_handler.go:155` `Deactivate`），成功后由
+     * `AuthRepository.deactivate` 清本地会话。
+     *
+     * 会话三头（Authorization / X-Session-ID / X-Device-ID）由默认 client 逐请求注入
+     * （core/network 的 DemoRequestHeaders）；[client] 仅作为测试注入口，生产调用方勿传。
+     */
+    suspend fun deactivate(client: ApiClient = NetworkFacade.api()): Result<Unit> = guard {
+        val response = client.postApi<Unit>(
+            path = AuthApiPaths.DEACTIVATE,
+            body = "",
+            parseData = { },
+        )
+        if (isAuthBusinessSuccess(response.code)) {
+            Result.success(Unit)
+        } else {
+            Result.failure(authFailure(response))
+        }
+    }
+
+    /**
      * Dart `_requireData` 对等：非成功码 / `data` 缺失 / `token` 空串一律失败，
      * 文案走 [mapAuthFailure]（保留会话由调用方决定）。
      */

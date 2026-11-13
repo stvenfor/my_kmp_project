@@ -387,4 +387,35 @@ class ShortVideoHttpRepositoryTest {
         transportFake.transportError = IllegalStateException("socket closed")
         assertNull(repoTransport.reportView("9"))
     }
+
+    // ── C2：/short-videos/:v 与 /like 的四个 verb 显式登记 ────────────────────
+    // 矩阵 D 区此前「复用 item()/like()，verb 由调用方隐式给定」的盲区：改为在
+    // HttpShortVideoRepository 内为每个动词各给一个显式方法，逐一断言 verb + path。
+
+    @Test
+    fun c2ExplicitVerbsForItemAndLikePaths() = runBlocking {
+        // GET /short-videos/:v（#67 GET）
+        val (getRepo, getFake) = repoWith("GET /api/v1/short-videos/7" to envelope(itemFixture))
+        getRepo.get("7")
+        assertEquals(Call("GET", "/api/v1/short-videos/7", emptyMap(), null), getFake.calls.single())
+
+        // DELETE /short-videos/:v（#67 DELETE）
+        val (delRepo, delFake) = repoWith("DELETE /api/v1/short-videos/7" to envelope("{}"))
+        delRepo.delete("7")
+        assertEquals(Call("DELETE", "/api/v1/short-videos/7", emptyMap(), null), delFake.calls.single())
+
+        // POST /short-videos/:v/like（#68 POST）
+        val (likeRepo, likeFake) = repoWith(
+            "POST /api/v1/short-videos/9/like" to envelope("""{"id":9,"like_count":13,"is_liked":true}"""),
+        )
+        likeRepo.like("9")
+        assertEquals(Call("POST", "/api/v1/short-videos/9/like", emptyMap(), ""), likeFake.calls.single())
+
+        // DELETE /short-videos/:v/like（#68 DELETE）
+        val (unlikeRepo, unlikeFake) = repoWith(
+            "DELETE /api/v1/short-videos/9/like" to envelope("""{"id":9,"like_count":12,"is_liked":false}"""),
+        )
+        unlikeRepo.unlike("9")
+        assertEquals(Call("DELETE", "/api/v1/short-videos/9/like", emptyMap(), null), unlikeFake.calls.single())
+    }
 }

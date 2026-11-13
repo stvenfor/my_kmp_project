@@ -281,4 +281,49 @@ class RealtimeWsApiContractTest {
         assertTrue(resolved.startsWith("wss://"), resolved)
         assertTrue(resolved.endsWith(":8443/ws/realtime?connId=c1"), resolved)
     }
+
+    // ---- A6：connId 可选 + 后端 {error,code} 错误体不再被吞成 BodyUnparsable ----
+
+    @Test
+    fun fetchTicket_connId_is_omitted_when_null_and_sent_when_provided(): Unit = runBlocking {
+        val bare = """{"ticket":"t","wsUrl":"wss://h/ws","expiresInSeconds":1,"connId":"c"}"""
+        val withoutConn = RecordingApiClient(listOf(bare))
+        // 四键响应解析不受影响（"勿破坏现有四键响应解析"）。
+        assertEquals("c", RealtimeWsTicketApi(withoutConn).fetchTicket("access-token").connId)
+        assertEquals("""{"platform":"mobile"}""", withoutConn.postBodies.single().second)
+
+        val withConn = RecordingApiClient(listOf(bare))
+        RealtimeWsTicketApi(withConn).fetchTicket("access-token", connId = "conn-42")
+        assertEquals("""{"platform":"mobile","connId":"conn-42"}""", withConn.postBodies.single().second)
+    }
+
+    @Test
+    fun fetchTicket_twoPaths_normalBareBodyVsBackend401ErrorBody(): Unit = runBlocking {
+        // 路径 A：正常裸 body 仍按四键解码，不被误判为后端拒绝。
+        val okClient = RecordingApiClient(
+            listOf("""{"ticket":"t1","wsUrl":"wss://rt.example.com/ws","expiresInSeconds":60,"connId":"c1"}"""),
+        )
+        val ticket = RealtimeWsTicketApi(okClient).fetchTicket("access-token")
+        assertEquals("t1", ticket.ticket)
+        assertEquals("c1", ticket.connId)
+
+        // 路径 B：后端 401 的 BackendErrorBody{error,code} → BackendRejected，保留码与文案。
+        val errClient = RecordingApiClient(listOf("""{"error":"未授权","code":10023}"""))
+        val err = assertFailsWith<RealtimeWsError.BackendRejected> {
+            RealtimeWsTicketApi(errClient).fetchTicket("access-token")
+        }
+        assertEquals(10023, err.code)
+        assertEquals("未授权", err.backendMessage)
+        assertTrue(err.message!!.contains("未授权"), err.message ?: "")
+    }
+
+    @Test
+    fun sync_backend401ErrorBody_surfacesBackendRejected(): Unit = runBlocking {
+        val client = RecordingApiClient(listOf("""{"error":"未授权","code":10023}"""))
+        val err = assertFailsWith<RealtimeWsError.BackendRejected> {
+            RealtimeWsSyncApi(client).sync(sinceSeq = 0, topics = emptyList())
+        }
+        assertEquals(10023, err.code)
+        assertEquals("未授权", err.backendMessage)
+    }
 }

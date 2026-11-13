@@ -3,6 +3,8 @@
 > 唯一执行账本：[sync-flutter-full-parity/tasks-ultra-fine-v2.md](../../../sync-flutter-full-parity/tasks-ultra-fine-v2.md)。[tasks-execution.md](../../tasks-execution.md) 与 [tasks-fine.md](../../tasks-fine.md) 为历史账本，仅用于查漏，不再驱动执行；能力缺口见 [platform-gap-registry.md](../platform-gap-registry.md)。
 >
 > 状态词只用 `Migrated` / `Degraded` / `Placeholder` / `Deferred` / `Partial`（本页指**证据成熟度**，非能力判定）。**页面可开 ≠ 数据契约已接线**：路由能打开静态页不等于能力 `Migrated`。
+>
+> **Wave 3 同步（2026-11-11，ai/community 之外）**：纯双方 KMP↔后端逐字段结论见 [backend-contract-matrix.md](../../../../../notes/backend-contract-matrix.md) § F；未由代码改动覆盖的结构性 gap 见 [backend-alignment-gaps.md](../../../../../notes/backend-alignment-gaps.md)；65×2 原生页路由→数据契约表见 [native-page-data-contract.md](../../../../../notes/native-page-data-contract.md)；非端点常量 / 测试夹具 / 解析器盲区见 [route-inventory.md](../../../../../notes/route-inventory.md) §9。本页 **ai / community** 两行的证据描述沿用 Wave 2（`8ce00f1`）结论，本轮未改；相关 gap 均保留 blocker + follow_up，**不判绿**。
 
 本页按 **模块 / 平台 / 路由** 登记 `notes/evidence/` 下已有证据与缺口；所有链接均指向本仓库内已存在文件，无悬空链接、无外链。证据以 `<route>.{flutter|kmp}.png` 截图、`<route>.diff.json` 像素差异、`module-*.md` 结论为主（命名约定见 [pixel-acceptance-sop.md](../pixel-acceptance-sop.md)）。
 
@@ -52,14 +54,18 @@
 - **iOS**：13 个模块有 `iOS/` 子目录（ai / bridges / chat / classroom / commerce / community / friend / home / live / media / mine / shell / web）；`NativeSecondaryPages.swift` 的 65 个 Native 页为静态元组，页面可开 ≠ 数据契约接线。分发守卫 `scripts/check-ios-page-dispatch.sh`（route→resolve→guard→struct）。
 - **OHOS**：13 个模块有 `OHOS/` 子目录（同上 13 个）；Native pane 分发守卫 `scripts/check-harmony-pane-dispatch.sh`（route→id→render）。camera / WebView / MediaKit 仍为 `Deferred`。
 - **平台缺口**：auth / content / contract / engineering / harness / mall / music / video / wallet 共 9 个模块缺 iOS/OHOS 平台子目录；`sot-flutter` 为无平台子目录的 Flutter 基准。
+- **Wave 3 补注**：`check-ios-page-dispatch.sh` / `check-harmony-pane-dispatch.sh` 只是 **route→render 文本接线守卫**，不校验数据契约；65×2 页逐路由状态、3 个试点页与 B1/F1 blocker/follow_up 见 [native-page-data-contract.md](../../../../../notes/native-page-data-contract.md)；本轮后端契约逐字段结论与剩余 gap 分别见 [backend-contract-matrix.md](../../../../../notes/backend-contract-matrix.md) 与 [backend-alignment-gaps.md](../../../../../notes/backend-alignment-gaps.md)，**不判绿**。
 
 ## 3. 按路由 / 缺口（route & gap）
 
 | 路由 / 范围 | 状态 | 登记缺口 | 依据（已存在） |
 |---|---|---|---|
-| 65 条 Native 二级路由（如 `/mine/addresses`、`/home/ledger/detail`） | `Placeholder` | 页面可开 ≠ 数据契约接线：iOS `NativeSecondaryPages.swift` / OHOS `NativeFeaturePane` 为静态元组，无 store/API | [platform-gap-registry.md](../platform-gap-registry.md)「in-scope RoutePath UI (78)」；守卫 `scripts/check-ios-page-dispatch.sh` / `scripts/check-harmony-pane-dispatch.sh` |
+| 65 条 Native 二级路由（如 `/mine/addresses`、`/home/ledger/detail`） | `Placeholder` | 页面可开 ≠ 数据契约接线：iOS `NativeSecondaryPages.swift` / OHOS `NativeSecondaryPages.ets` 与 `NativeFeaturePane` 为 15–43 行静态元组（硬编码 `@State`、无 store/API）；`check-*-dispatch.sh` 只做 route→render **文本守卫**，不校验数据契约；3 个试点页（`/mine/addresses`、`/mall/orders`、`/wallet`）见 [native-page-data-contract.md](../../../../../notes/native-page-data-contract.md) | [platform-gap-registry.md](../platform-gap-registry.md)「in-scope RoutePath UI (78)」+ Wave 3.1；[native-page-data-contract.md](../../../../../notes/native-page-data-contract.md) §1/§3/§4；守卫 `scripts/check-ios-page-dispatch.sh` / `scripts/check-harmony-pane-dispatch.sh` |
 | `/video/dubbing/videos` 等 dubbing 系列路由 | `Deferred` | Flutter 有、KMP `core/router` 无（drift 未清零，KMP 缺路由侧） | `scripts/audit-flutter-drift.sh` §(c)；暂未接阻塞门禁，缺口登记在 v2 |
 | `/mine/settings`、`/scan` 等 extra 路由 | `Partial` | KMP 有、Flutter 路由表无（drift extra 侧），需逐条核对是否重复 / 占位 | `scripts/audit-flutter-drift.sh` §(c) |
 | `/ai/stream` | `Placeholder` | SSE 传输层已落但 `AiStreamScreen` 仍 mock，UI 未接线 | [ai/Android/ai_stream.kmp.png](./ai/Android/ai_stream.kmp.png)；registry「AI stream」 |
 | `/web`、`/wallet` 等主路由 | `Partial` | 三端可开且部分有像素证据，但数据契约 / 真 SDK 未齐 | [web/Android/web.diff.json](./web/Android/web.diff.json)、[wallet/Android/pay.diff.json](./wallet/Android/pay.diff.json) |
 | 全量收口 | `Partial` | 真实剩余以唯一执行账本 v2 的 `[ ]`/`[~]` 为准；门禁 `scripts/parity_task_audit.py` 默认读 v2、真实剩余 > 0 即失败 | [tasks-ultra-fine-v2.md](../../../sync-flutter-full-parity/tasks-ultra-fine-v2.md)；[acceptance-matrix.md](../acceptance-matrix.md)、[parity-inventory.md](../parity-inventory.md) |
+| KMP ↔ 后端契约（Wave 3，纯双方） | `Partial` | 已逐字段对齐（realtime/SSE/prepay/push/分页/登录 DTO/会话三件套/`AuthBizCode`）≠ 能力 `Migrated`；错误码双轨、OHOS `body.platform` 伪值、三头无人读、realtime `connId`、transactions 双分页、两层鉴权链等仍 `Partial` | [backend-contract-matrix.md](../../../../../notes/backend-contract-matrix.md) § F.1/F.2；[platform-gap-registry.md](../platform-gap-registry.md) Wave 3 |
+| 未由 A/B/C 覆盖的结构性 gap | `Deferred` / `Degraded` / `Placeholder` | Repository/离线/SSOT、InMemory DB、明文凭据、65×2 静态页、analytics gRPC、`/health` 探活、双方 trace-id、后端占位语义边界（亚分金额 >2dp 返回 502、种子 lab-only、对账 local_missing 未实现）——均保留 blocker + follow_up | [backend-alignment-gaps.md](../../../../../notes/backend-alignment-gaps.md) §1/§3；[native-page-data-contract.md](../../../../../notes/native-page-data-contract.md) |
+| 非端点常量 / 测试夹具 / 解析器盲区 | `Deferred` | 3 条自造组合前缀 + 7 条 `AuthRefreshingApiClientTest.kt` 夹具 + 4 条 `resolve.py` 盲区，**不是真实端点差异**，不计入 `audit-flutter-drift.sh` 的 drift | [route-inventory.md](../../../../../notes/route-inventory.md) §9；[backend-contract-matrix.md](../../../../../notes/backend-contract-matrix.md) C 区 / B.1 |

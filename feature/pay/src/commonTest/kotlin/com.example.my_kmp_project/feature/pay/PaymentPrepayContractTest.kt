@@ -1,9 +1,13 @@
 package com.example.my_kmp_project.feature.pay
 
+import com.example.my_kmp_project.core.network.NetworkJson
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * `POST /api/v1/payments/prepay` 契约回归（契约表 #95）。
@@ -52,6 +56,17 @@ class PaymentPrepayContractTest {
             FakePayClient { _, _, _, _ -> """{"code":5001,"message":"渠道维护中","data":null}""" },
         )
         assertEquals("渠道维护中", runCatching { serverCopy.prepay(request()) }.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun amountFenIsIntegerFenJsonNumber_notString() {
+        // C5：后端金额三套口径中的 A 整数分 → wire 上必须是 JSON number（无引号）。
+        // 与 MallOrderModels.amount / WalletModels.amount 的 JSON string 形状刻意不同；
+        // 后端收敛口径时三处要一起改，见 PrepayRequest.amountFen 的 KDoc。
+        val json = NetworkJson.encodeToString(request())
+        // JSON number（无引号），不是 "19900"；与另两处的 JSON string 形状刻意不同。
+        assertTrue(json.contains("\"amount_fen\":19900"), json)
+        assertFalse(json.contains("\"amount_fen\":\""), json)
     }
 
     private fun request() = PrepayRequest("wechat", 19_900, "会员年费", "membership", "OT-1")

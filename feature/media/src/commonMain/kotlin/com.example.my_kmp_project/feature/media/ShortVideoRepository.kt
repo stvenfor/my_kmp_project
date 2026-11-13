@@ -50,16 +50,39 @@ public interface ShortVideoRepository {
     public suspend fun create(title: String, topicId: String? = null): ShortVideoItemModel
 
     /**
-     * #75 DELETE `/short-videos/:id`（Dart http_short_video_repository.dart:82-93）：
+     * #67 GET `/short-videos/:id`（`short_video/router.go:44`）—— 单条详情。
+     *
+     * 与 [delete] 共用 `ShortVideoApiPaths.item(id)` 路径，但 **verb 在本方法内显式给定**（GET），
+     * 不再由调用方隐式挑选；矩阵 D 区此前「复用 item()、verb 由调用方给」的盲区由此消除。
+     */
+    public suspend fun get(id: String): ShortVideoItemModel
+
+    /**
+     * #67 DELETE `/short-videos/:id`（Dart http_short_video_repository.dart:82-93）：
      * 返回原始 map 且**可能为空**——只看 `code`（`_dataAllowEmpty` :92,159-169）。
+     * verb 在本方法内显式给定（DELETE）。
      */
     public suspend fun delete(id: String)
 
     /**
+     * #68 POST `/short-videos/:id/like`（`short_video/router.go:46`）—— 点赞。
+     * verb 显式给定（POST），与 [unlike] 分开，不再依赖 `toggleLike` 的布尔参数隐式决定动词。
+     */
+    public suspend fun like(id: String): ShortVideoItemModel
+
+    /**
+     * #68 DELETE `/short-videos/:id/like`（`short_video/router.go:47`）—— 取消点赞。
+     * verb 显式给定（DELETE）。
+     */
+    public suspend fun unlike(id: String): ShortVideoItemModel
+
+    /**
      * #76/#77 like/unlike **同 path 切动词**（Dart http_short_video_repository.dart:96-119）：
-     * `liked == true` 走 POST，否则 DELETE `/short-videos/:id/like`；
+     * `liked == true` 走 [like]（POST），否则 [unlike]（DELETE）`/short-videos/:id/like`；
      * 返回 `{id, like_count, is_liked}` 片段（消费方用 [ShortVideoItemModel.withCounts] 就地合并，
      * 不重新拉列表 —— controller :261-275）。
+     *
+     * 保留为兼容包装：动词本身已由 [like] / [unlike] 显式登记，本方法只做布尔分派。
      */
     public suspend fun toggleLike(id: String, liked: Boolean): ShortVideoItemModel
 
@@ -167,7 +190,13 @@ public class HttpShortVideoRepository(
         return requireData(response, FALLBACK_CREATE)
     }
 
-    /** #75 —— Dart :82-93：`_dataAllowEmpty` 只看 `code`，data 可为空 map/缺失。 */
+    /** #67 GET —— 单条详情；verb 显式（GET），与 [delete] 共用 item 路径。 */
+    override suspend fun get(id: String): ShortVideoItemModel {
+        val response = api.getApi(ShortVideoApiPaths.item(id)) { shortVideoItemFromJson(it) }
+        return requireData(response, FALLBACK_GET)
+    }
+
+    /** #67 DELETE —— Dart :82-93：`_dataAllowEmpty` 只看 `code`，data 可为空 map/缺失。verb 显式（DELETE）。 */
     override suspend fun delete(id: String) {
         val response = api.deleteApi(ShortVideoApiPaths.item(id), emptyMap()) { }
         if (!response.isSuccess) {
@@ -175,16 +204,21 @@ public class HttpShortVideoRepository(
         }
     }
 
-    /** #76/#77 —— Dart :96-119：liked 决定 POST/DELETE，同 path。 */
-    override suspend fun toggleLike(id: String, liked: Boolean): ShortVideoItemModel {
-        val path = ShortVideoApiPaths.like(id)
-        val response = if (liked) {
-            api.postApi(path, "") { shortVideoLikeFragmentFromJson(it) }
-        } else {
-            api.deleteApi(path, emptyMap()) { shortVideoLikeFragmentFromJson(it) }
-        }
+    /** #68 POST —— 点赞；verb 显式（POST），`short_video/router.go:46`。 */
+    override suspend fun like(id: String): ShortVideoItemModel {
+        val response = api.postApi(ShortVideoApiPaths.like(id), "") { shortVideoLikeFragmentFromJson(it) }
         return requireData(response, FALLBACK_TOGGLE)
     }
+
+    /** #68 DELETE —— 取消点赞；verb 显式（DELETE），`short_video/router.go:47`。 */
+    override suspend fun unlike(id: String): ShortVideoItemModel {
+        val response = api.deleteApi(ShortVideoApiPaths.like(id), emptyMap()) { shortVideoLikeFragmentFromJson(it) }
+        return requireData(response, FALLBACK_TOGGLE)
+    }
+
+    /** #76/#77 —— 兼容包装：布尔分派到已显式登记动词的 [like] / [unlike]。 */
+    override suspend fun toggleLike(id: String, liked: Boolean): ShortVideoItemModel =
+        if (liked) like(id) else unlike(id)
 
     /** #78 —— Dart :122-134 + controller :277-285（吞错语义见接口 KDoc）。 */
     override suspend fun reportView(id: String): Int? = runCatching {
@@ -217,6 +251,7 @@ public class HttpShortVideoRepository(
         const val FALLBACK_PROFILE = "加载资料失败"
         const val FALLBACK_LIST = "加载小视频失败"
         const val FALLBACK_CREATE = "发布失败"
+        const val FALLBACK_GET = "加载详情失败"
         const val FALLBACK_DELETE = "删除失败"
         const val FALLBACK_TOGGLE = "操作失败"
     }

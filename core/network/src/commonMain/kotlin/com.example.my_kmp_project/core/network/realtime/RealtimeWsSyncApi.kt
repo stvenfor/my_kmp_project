@@ -33,7 +33,11 @@ public class RealtimeWsSyncApi(
         )
         return runCatching {
             NetworkJson.decodeFromString(RealtimeSyncData.serializer(), raw)
-        }.getOrElse { throw RealtimeWsError.BodyUnparsable(raw, it) }
+        }.getOrElse { cause ->
+            // 解码失败先判后端 {error,code} 错误体（如 401 未授权），命中则保留码与文案，
+            // 否则才回落到「响应体不可解析」，避免把后端 401 吞成解析错误。
+            throw (parseBackendRejection(raw) ?: RealtimeWsError.BodyUnparsable(raw, cause))
+        }
     }
 }
 

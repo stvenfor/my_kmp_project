@@ -32,10 +32,12 @@ public fun HttpClientConfig<*>.installDemoDefaults() {
         socketTimeoutMillis = NetworkConfig.TIMEOUT_MS
     }
     install(Logging) {
-        level = LogLevel.INFO
+        // Release 不打请求/响应日志（避免任何会话凭证外泄）；Debug 才开 INFO。
+        level = if (NetworkConfig.buildMode == BuildMode.Release) LogLevel.NONE else LogLevel.INFO
         logger = object : Logger {
             override fun log(message: String) {
-                println("[Ktor] $message")
+                // 脱敏后再落盘：移除三个会话头与 token/session/device 字面值。
+                println("[Ktor] ${redact(message)}")
             }
         }
     }

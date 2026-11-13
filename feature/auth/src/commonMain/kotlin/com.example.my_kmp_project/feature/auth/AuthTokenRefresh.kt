@@ -31,7 +31,8 @@ public object AuthTokenRefresh {
     val policy = AuthRefreshPolicy { statusCode, code, message ->
         when (classifyAuthHttp(statusCode = statusCode, code = code, message = message.orEmpty())) {
             AuthHttpDecision.TryRefresh -> AuthRefreshDecision.Refresh
-            AuthHttpDecision.ForceLogout -> AuthRefreshDecision.ForceLogout
+            // 互踢/会话无效 与 403「账号不可用」都意味着本地会话已废 → 清会话回登录。
+            AuthHttpDecision.ForceLogout, AuthHttpDecision.AccountUnavailable -> AuthRefreshDecision.ForceLogout
             AuthHttpDecision.Forbidden, AuthHttpDecision.None -> AuthRefreshDecision.PassThrough
         }
     }

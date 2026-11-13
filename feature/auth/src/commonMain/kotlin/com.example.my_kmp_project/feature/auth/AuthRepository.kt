@@ -236,10 +236,36 @@ object AuthRepository {
     }
 
     /**
+     * `POST /api/v1/user/deactivate`（Go `user_routes.go:26`）的会话编排：
+     * **Server-Confirmed Logout**——远端确认账号注销成功后一律清本地会话
+     * （三件套 [clearLocalSession]，对齐 `AuthTokenRefresh.handleRefreshExhausted`），
+     * 因为账号已废、本地 token 不再可用；失败时按 [shouldClearSessionFor]
+     * （即 `classifyAuthHttp` 决策）处理：会话已废 / 账号不可用才清，
+     * 普通 403 / 网络错保留会话供重试。
+     *
+     * [remote] / [onClearLocal] 为测试注入口：生产调用 `deactivate()` 走
+     * [UserAuthHttpApi.deactivate] 与真实清会话三件套；不依赖 Android Context 的
+     * 单元测试可注入假结果观察编排。
+     */
+    suspend fun deactivate(
+        remote: suspend () -> Result<Unit> = { UserAuthHttpApi.deactivate() },
+        onClearLocal: () -> Unit = ::clearLocalSession,
+    ): Result<Unit> = remote().fold(
+        onSuccess = {
+            onClearLocal()
+            Result.success(Unit)
+        },
+        onFailure = { error ->
+            if (shouldClearSessionFor(error)) onClearLocal()
+            Result.failure(error)
+        },
+    )
+
+    /**
      * Flutter `isLogoutSessionGone`（`backend_auth_service.dart:255-275`）：
      * 服务端会话确实已废 / 无权限的失败——清本地是安全的。
      */
-    private fun isLogoutSessionGone(error: Throwable): Boolean {
+    internal fun isLogoutSessionGone(error: Throwable): Boolean {
         val code = (error as? AuthHttpFailure)?.code
         if (code != null &&
             (code == AuthBizCode.UNAUTHORIZED ||
@@ -267,25 +293,49 @@ object AuthRepository {
      */
     private fun handleAuthFailure(code: Int?, statusCode: Int?, message: String?): IllegalStateException {
         val failure = AuthFailure.fromBizCode(code)
-        if (AuthBizCode.isSessionGone(code) || failure.isSessionGoneFailure()) {
-            AccountFacade.logout()
-            AuthSessionState.clearLocal()
-            AuthGate.clearPending()
+        if (AuthBizCode.isSessionGone(code) ||
+            failure.isSessionGoneFailure() ||
+            classifyAuthHttp(statusCode, code, message.orEmpty()) == AuthHttpDecision.AccountUnavailable
+        ) {
+            clearLocalSession()
         }
         return IllegalStateException(mapAuthFailure(code, message, statusCode))
     }
 
     /** [handleAuthFailure] 的 `AuthHttpFailure` 版本：文案已由 [UserAuthHttpApi] 映射，只补会话清理。 */
     private fun clearSessionIfGone(error: Throwable): Throwable {
-        val code = (error as? AuthHttpFailure)?.code
+        if (shouldClearSessionFor(error)) clearLocalSession()
+        return error
+    }
+
+    /** 三件套清本地会话（对齐 `AuthTokenRefresh.handleRefreshExhausted` 的写法）。 */
+    internal fun clearLocalSession() {
+        AccountFacade.logout()
+        AuthSessionState.clearLocal()
+        AuthGate.clearPending()
+    }
+
+    /**
+     * 纯判定：该错误是否意味着本地会话已废、需要清会话回登录。
+     * 覆盖互踢 / token 废（业务码 10021/10022/10023）与 403「账号不可用」
+     * （[AuthHttpDecision.AccountUnavailable]，按 message 而非 code 判定）。
+     * 普通 403（Forbidden）/ 网络错 / 无 code 的普通异常 → 不清，保留会话供重试。
+     */
+    internal fun shouldClearSessionFor(error: Throwable): Boolean {
+        val failure = error as? AuthHttpFailure
+        val code = failure?.code
         if (code != null &&
             (AuthBizCode.isSessionGone(code) || AuthFailure.fromBizCode(code).isSessionGoneFailure())
         ) {
-            AccountFacade.logout()
-            AuthSessionState.clearLocal()
-            AuthGate.clearPending()
+            return true
         }
-        return error
+        val decision = classifyAuthHttp(
+            statusCode = failure?.statusCode,
+            code = code,
+            message = failure?.message.orEmpty(),
+        )
+        return decision == AuthHttpDecision.ForceLogout ||
+            decision == AuthHttpDecision.AccountUnavailable
     }
 
     /**

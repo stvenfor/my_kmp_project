@@ -6,6 +6,14 @@ import kotlinx.serialization.json.JsonElement
 /**
  * 401 出口决策（core 层枚举；具体策略由 feature 层注入，core 不依赖 feature）。
  *
+ * 后端 `sessionAuthChain` 是**两层**：Go `shared.SessionAuthChain`（`app/internal/shared/http.go:10`）
+ * 拼 `[SessionAuth（必选）, 可选 AccountGate]`。
+ * - **SessionAuth** 校验 access token + 单设备 session，失败给 **401**（业务码 10023）；
+ * - **AccountGate**（账号状态门 / 权限）失败给 **403**。
+ *
+ * 两层的处置必须分开：401 走 [Refresh] / [ForceLogout]；**403 来自 AccountGate / 权限，
+ * 不刷新、不登出** → 一律 [PassThrough]，业务自理。
+ *
  * Flutter `AuthTokenRefreshInterceptor` + `SessionGuardHook.classify`（d7876a1）：
  * - [Refresh]：10023 / HTTP 401（非互踢）→ 静默 refresh 成功后代发原请求一次
  * - [ForceLogout]：10021 / 10022 → 清会话回登录，不重试
@@ -16,6 +24,10 @@ public enum class AuthRefreshDecision { Refresh, ForceLogout, PassThrough }
 /**
  * 策略注入点：feature/auth 用 `classifyAuthHttp` 实现（Flutter `SessionGuardHook.classify`）。
  * [statusCode] 为 HTTP status（服务器应答错误时非空），[code] 为业务码（可能与 status 重合）。
+ *
+ * 后端两层鉴权链 `SessionAuth + 可选 AccountGate`：401 出自 SessionAuth（token / session），
+ * 403 出自 AccountGate（账号状态 / 权限）。因此实现方对 403 必须返回 [AuthRefreshDecision.PassThrough]，
+ * 不刷新、不登出；详见 [AuthRefreshDecision] 的 KDoc。
  */
 public fun interface AuthRefreshPolicy {
     fun decide(statusCode: Int?, code: Int?, message: String?): AuthRefreshDecision

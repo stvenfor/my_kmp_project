@@ -152,4 +152,55 @@ class HomeTransactionApiTest {
         val error = assertFailsWith<NetworkError.Business> { runBlocking { api.getTransaction(9) } }
         assertEquals("交易记录不存在", error.message)
     }
+
+    // ---- C2：PUT|DELETE /transactions/:v ----
+
+    @Test
+    fun updateUsesPutApiAndDeleteUsesDeleteApi() = runBlocking {
+        val c = HomeRecordingApiClient()
+        c.stub("""{"code":0,"message":"ok","data":{"id":7,"type":"expense","amount":1.0,"date":"2026-10-01"}}""")
+        val txApi = TransactionApi(c)
+
+        txApi.update(7, TransactionUpdateRequest(note = "补记"))
+        assertEquals("PUT", c.last.method)
+        assertEquals("/api/v1/transactions/7", c.last.path)
+        // 稀疏 body：只发非 null 字段（Go entity.UpdateTransactionInput 指针语义）
+        assertEquals("""{"note":"补记"}""", c.last.body)
+
+        txApi.delete(7)
+        assertEquals("DELETE", c.last.method)
+        assertEquals("/api/v1/transactions/7", c.last.path)
+        assertEquals("", c.last.body)
+    }
+
+    // ---- C3：带 page→manage / 不带→legacy 的双分页 ----
+
+    @Test
+    fun dualPaginationQueryShapesAreMutuallyExclusive() {
+        // 带 page → page/size（manage 分页）
+        val manage = transactionListQuery(managePage = 1, size = 20)
+        assertEquals(mapOf("page" to "1", "size" to "20"), manage)
+        assertFalse(manage.containsKey("limit"))
+        assertFalse(manage.containsKey("offset"))
+
+        // 不带 page → limit/offset（legacy，offset = legacyPage * size）
+        val legacy = transactionListQuery(managePage = null, size = 20, legacyPage = 2)
+        assertEquals(mapOf("limit" to "20", "offset" to "40"), legacy)
+        assertFalse(legacy.containsKey("page"))
+        assertFalse(legacy.containsKey("size"))
+    }
+
+    @Test
+    fun fetchPageDualEmitsManageQueryForPageAndLegacyOtherwise() = runBlocking {
+        val c = HomeRecordingApiClient()
+        c.stub("""{"code":0,"message":"success","data":{"list":[]}}""")
+        val txApi = TransactionApi(c)
+
+        txApi.fetchPageDual(managePage = 1, size = 20)
+        assertEquals("/api/v1/transactions", c.last.path)
+        assertEquals(mapOf("page" to "1", "size" to "20"), c.last.query)
+
+        txApi.fetchPageDual(managePage = null, size = 20, legacyPage = 2)
+        assertEquals(mapOf("limit" to "20", "offset" to "40"), c.last.query)
+    }
 }

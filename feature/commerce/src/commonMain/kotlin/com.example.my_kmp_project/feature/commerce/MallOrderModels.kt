@@ -12,6 +12,16 @@ import kotlin.time.Instant
  *
  * 状态域（`mall_order.dart:179`）：0 待支付 / 1 已支付 / 2 已履约 / 3 已取消 / 4 已关闭。
  * 列表行与详情共用 [MallOrderItem]（Dart 里两端点一模型，见契约表 §6）。
+ *
+ * 金额口径：本文件所有 `amount: String`（如 `"0.00"`）对应后端
+ * `docs/placeholder-inventory.md` §28 的 **B decimal-as-string**（mall 域 `numeric(10,2)`，
+ * wire 上是 JSON string）。另有两套并存：**A 整数分 `int64`**（payment / membership /
+ * wallet / auto_finance 域，`PrepayRequest.amountFen`，JSON number）、**C float64**
+ * （transaction 域，`TransactionModel.amount`，JSON number）。`transactions` 已落
+ * `amount_fen` 整数分 + 双写（h6b），used_car / auto_finance / mall 仍各自口径。
+ * 后端收敛金额口径时，`PrepayRequest.amountFen`、`MallOrderModels.amount`、
+ * `WalletModels.amount` 三处要一起改，勿单独「顺手统一」。契约测试
+ * `MallAdminApiContractTest.mallAmountIsDecimalAsJsonString` 锁定本形状。
  */
 
 /** `MallOrderItem`（`mall_order.dart:2`）。 */
@@ -41,7 +51,7 @@ public data class MallOrderHead(
     @SerialName("order_no") val orderNo: String = "",
     @SerialName("store_id") val storeId: Int = 0,
     val status: Int = 0,
-    /** 订单金额，BFF 字符串。 */
+    /** 订单金额：**B decimal-as-string**（mall 域，JSON string，见文件头金额口径说明）。 */
     val amount: String = "0.00",
     @SerialName("created_at") val createdAt: String = "",
     @SerialName("receiver_name") val receiverName: String = "",
@@ -98,6 +108,7 @@ public data class MallOrderListRow(
     @SerialName("order_no") val orderNo: String = "",
     @SerialName("store_id") val storeId: Int = 0,
     val status: Int = 0,
+    /** 订单金额：**B decimal-as-string**（mall 域，JSON string，见文件头金额口径说明）。 */
     val amount: String = "0.00",
     @SerialName("created_at") val createdAt: String = "",
     @SerialName("pay_deadline_at") val payDeadlineAt: String = "",
