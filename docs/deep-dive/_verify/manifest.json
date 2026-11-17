@@ -1,0 +1,201 @@
+{
+  "09-build-and-config.md": {
+    "files": [
+      "settings.gradle.kts",
+      "build.gradle.kts",
+      "deployment.gradle.kts",
+      "gradle.properties",
+      "gradle/libs.versions.toml",
+      "gradle/wrapper/gradle-wrapper.properties",
+      "ohosAggregate/build.gradle.kts",
+      "composeApp/build.gradle.kts"
+    ]
+  },
+  "10-core-base-platform-analytics.md": {
+    "dirs": [
+      "core/base",
+      "core/platform",
+      "core/analytics"
+    ]
+  },
+  "11-core-design-ui.md": {
+    "dirs": [
+      "core/design",
+      "core/ui"
+    ]
+  },
+  "12-core-storage-database-router.md": {
+    "dirs": [
+      "core/storage",
+      "core/database",
+      "core/router"
+    ]
+  },
+  "13-core-network-engine.md": {
+    "dirs": [
+      "core/network"
+    ],
+    "shared_with": "14-core-network-endpoints.md"
+  },
+  "14-core-network-endpoints.md": {
+    "dirs": [
+      "core/network"
+    ],
+    "shared_with": "13-core-network-engine.md"
+  },
+  "15-component-ports.md": {
+    "dirs": [
+      "component"
+    ]
+  },
+  "16-feature-home.md": {
+    "dirs": [
+      "feature/home"
+    ]
+  },
+  "17-feature-mine-shell.md": {
+    "dirs": [
+      "feature/mine",
+      "feature/shell"
+    ]
+  },
+  "18-feature-auth-account-friend.md": {
+    "dirs": [
+      "feature/auth",
+      "core/account",
+      "feature/friend"
+    ]
+  },
+  "19-feature-media-community-chat.md": {
+    "dirs": [
+      "feature/media",
+      "feature/community",
+      "feature/chat"
+    ]
+  },
+  "20-feature-commerce-wallet-pay-ai.md": {
+    "dirs": [
+      "feature/commerce",
+      "feature/wallet",
+      "feature/pay",
+      "feature/ai"
+    ]
+  },
+  "21-feature-small-modules.md": {
+    "dirs": [
+      "feature/content",
+      "feature/web",
+      "feature/live",
+      "feature/scan",
+      "feature/classroom"
+    ]
+  },
+  "22-composeapp-assembly-routing.md": {
+    "dirs": [
+      "composeApp/src/commonMain"
+    ]
+  },
+  "23-native-shells.md": {
+    "dirs": [
+      "composeApp/src/androidMain",
+      "composeApp/src/iosMain",
+      "composeApp/src/ohosMain"
+    ]
+  },
+  "24-gates-ci-adr.md": {
+    "dirs": [
+      "scripts"
+    ]
+  },
+  "25-platform-differences-matrix.md": {
+    "files": [
+      "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/Platform.kt",
+      "composeApp/src/androidMain/kotlin/com.example.my_kmp_project/Platform.android.kt",
+      "composeApp/src/iosMain/kotlin/com.example.my_kmp_project/Platform.ios.kt",
+      "composeApp/src/ohosMain/kotlin/com.example.my_kmp_project/Platform.ohos.kt",
+      "core/base/src/uuidCpfMain/kotlin/com.example.my_kmp_project/core/uuid/AppUuid.cpf.kt",
+      "core/ui/src/imageCoilMain/kotlin/com.example.my_kmp_project/core/ui/PlatformNetworkImage.coil.kt",
+      "core/network/src/networkKtorMain/kotlin/com.example.my_kmp_project/core/network/KtorApiClient.kt",
+      "core/storage/src/settingsMain/kotlin/com.example.my_kmp_project/core/storage/SettingsKeyValueStore.kt",
+      "feature/home/src/chartsVicoMain/kotlin/com.example.my_kmp_project/feature/home/AnalyticsCharts.vico.kt",
+      "core/network/src/ohosMain/cinterop/net_http.def",
+      "composeApp/src/ohosMain/cinterop/avplayer.def",
+      "composeApp/src/ohosMain/cinterop/resource.def",
+      "component/src/androidMain/kotlin/com.example.my_kmp_project/component/pay/PlatformPayAdapters.android.kt",
+      "component/src/iosMain/kotlin/com.example.my_kmp_project/component/pay/PlatformPayAdapters.ios.kt",
+      "component/src/ohosMain/kotlin/com.example.my_kmp_project/component/pay/PlatformPayAdapters.ohos.kt",
+      "component/src/androidMain/kotlin/com.example.my_kmp_project/component/push/PlatformPushSdk.android.kt",
+      "component/src/iosMain/kotlin/com.example.my_kmp_project/component/push/PlatformPushSdk.ios.kt",
+      "component/src/ohosMain/kotlin/com.example.my_kmp_project/component/push/PlatformPushSdk.ohos.kt",
+      "gradle/libs.versions.toml"
+    ]
+  },
+  "26-cold-start-and-first-frame.md": {
+    "files": [
+      "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/App.kt",
+      "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/AppContainer.kt",
+      "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/AppShell.kt",
+      "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/DemoApp.kt",
+      "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/ShellBootstrap.kt",
+      "composeApp/src/androidMain/kotlin/com.example.my_kmp_project/MainActivity.kt",
+      "composeApp/src/androidMain/kotlin/com.example.my_kmp_project/nativeshell/NativeAndroidApp.kt",
+      "composeApp/src/androidMain/kotlin/com.example.my_kmp_project/nativeshell/NativeAndroidMain.kt",
+      "composeApp/src/androidMain/AndroidManifest.xml",
+      "composeApp/src/androidMain/res/values/themes.xml",
+      "composeApp/src/androidMain/res/values/colors.xml",
+      "composeApp/src/androidMain/res/drawable/splash_screen.xml",
+      "composeApp/src/androidMain/res/xml/network_security_config.xml",
+      "iosApp/iosApp/iOSApp.swift",
+      "iosApp/iosApp/ContentView.swift",
+      "iosApp/iosApp/Info.plist",
+      "iosApp/iosApp/LaunchScreen.storyboard",
+      "composeApp/src/iosMain/kotlin/com.example.my_kmp_project/MainViewController.kt",
+      "harmonyApp/AppScope/app.json5",
+      "harmonyApp/entry/src/main/module.json5",
+      "harmonyApp/entry/src/main/ets/entryability/EntryAbility.ets",
+      "harmonyApp/entry/src/main/ets/pages/Index.ets",
+      "harmonyApp/entry/src/main/resources/base/profile/main_pages.json",
+      "composeApp/src/ohosMain/kotlin/com.example.my_kmp_project/MainArkUIViewController.kt"
+    ]
+  },
+  "27-module-gradle-wiring.md": {
+    "files": [
+      "settings.gradle.kts",
+      "build.gradle.kts",
+      "deployment.gradle.kts",
+      "core/base/build.gradle.kts",
+      "core/design/build.gradle.kts",
+      "core/network/build.gradle.kts",
+      "core/storage/build.gradle.kts",
+      "core/database/build.gradle.kts",
+      "component/build.gradle.kts",
+      "feature/home/build.gradle.kts",
+      "feature/media/build.gradle.kts",
+      "feature/pay/build.gradle.kts",
+      "feature/chat/build.gradle.kts",
+      "composeApp/build.gradle.kts",
+      "scripts/check-layer-deps.sh",
+      "scripts/with-gradle-lock.sh"
+    ]
+  },
+  "28-config-files-line-by-line.md": {
+    "files": [
+      "gradle.properties",
+      "gradle/wrapper/gradle-wrapper.properties",
+      "harmonyApp/build-profile.json5",
+      "harmonyApp/entry/build-profile.json5",
+      "harmonyApp/hvigorfile.ts",
+      "harmonyApp/entry/hvigorfile.ts",
+      "harmonyApp/entry/src/main/cpp/types/libentry/oh-package.json5",
+      "harmonyApp/entry/src/main/resources/base/element/color.json",
+      "harmonyApp/entry/src/main/resources/base/element/float.json",
+      "harmonyApp/entry/src/main/resources/base/element/string.json",
+      "harmonyApp/entry/src/main/resources/base/profile/backup_config.json",
+      "iosApp/iosApp.xcodeproj/project.pbxproj",
+      ".github/workflows/ci.yml",
+      "openspec/config.yaml",
+      ".gitignore",
+      "AGENTS.md"
+    ]
+  }
+}

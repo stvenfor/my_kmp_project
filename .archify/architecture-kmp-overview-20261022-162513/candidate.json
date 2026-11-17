@@ -1,0 +1,359 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "My_kmp_project 整体架构",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-kmp-overview-20261022-162513/kmp-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "git@github.com:stvenfor/my_kmp_project.git",
+      "link_mode": "local-only",
+      "revision": "8e3027a2e6f47ddec03cf694cc5299d30ac2ffec"
+    },
+    "views": [
+      {
+        "id": "runtime-spine",
+        "label": "运行主干线",
+        "focus": ["compose_app", "feature_layer", "component_layer", "core_network", "backend_api"],
+        "note": "装配 → 业务屏 → 端口 → 网络门面 → Go BFF，一条线读完运行时依赖。"
+      },
+      {
+        "id": "shell-island",
+        "label": "三端壳与 Compose 岛",
+        "focus": ["android_shell", "ios_shell", "harmony_shell", "compose_app"],
+        "note": "Android 原生 tab 直接挂共享屏；iOS/Harmony 以原生页为主，共享 UI 只在岛里出现。"
+      },
+      {
+        "id": "three-channels",
+        "label": "三条长连接",
+        "focus": ["core_network", "sse_channel", "realtime_ws", "im_sdk"],
+        "note": "ADR 0005：REST / SSE / WS 各归各的传输，失败语义不得互译。"
+      },
+      {
+        "id": "binary-owner",
+        "label": "唯一二进制产出方",
+        "focus": ["compose_app", "kn_artifact", "harmony_shell"],
+        "note": "libkn.so、iOS framework、APK 都只由 :composeApp 产出，再投递进 harmonyApp。"
+      },
+      {
+        "id": "gates",
+        "label": "分层门禁",
+        "focus": ["feature_layer", "component_layer", "ci_gates"],
+        "note": "check-layer-deps.sh 三轴 + verify-parity.sh 串行验证；iOS/ArkTS 分发另有脚本断言。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "users",
+      "type": "external",
+      "label": "三端用户",
+      "sublabel": "Android · iOS · HarmonyOS",
+      "pos": [350, 30],
+      "size": [180, 60]
+    },
+    {
+      "id": "android_shell",
+      "type": "frontend",
+      "label": "Android 壳",
+      "sublabel": "Jetpack tab + 共享屏",
+      "pos": [40, 165],
+      "size": [180, 68],
+      "sources": [
+        { "path": "composeApp/src/androidMain/kotlin/com.example.my_kmp_project/MainActivity.kt", "line": 21, "end_line": 41 },
+        { "path": "composeApp/src/androidMain/kotlin/com.example.my_kmp_project/nativeshell/NativeAndroidMain.kt", "line": 563, "end_line": 595 }
+      ]
+    },
+    {
+      "id": "ios_shell",
+      "type": "frontend",
+      "label": "iOS 壳 (SwiftUI)",
+      "sublabel": "65 原生页 + Compose 岛",
+      "pos": [340, 160],
+      "size": [200, 76],
+      "sources": [
+        { "path": "iosApp/iosApp/ContentView.swift", "line": 232, "end_line": 246 },
+        { "path": "iosApp/iosApp/ContentView.swift", "line": 435, "end_line": 450 },
+        { "path": "iosApp/iosApp/NativeFeatureCatalog.swift", "line": 470, "end_line": 474 }
+      ]
+    },
+    {
+      "id": "harmony_shell",
+      "type": "frontend",
+      "label": "HarmonyOS 壳 (ArkTS)",
+      "sublabel": "65 原生 Pane + Compose 岛",
+      "pos": [660, 165],
+      "size": [190, 68],
+      "sources": [
+        { "path": "harmonyApp/entry/src/main/ets/pages/Index.ets", "line": 836, "end_line": 842 },
+        { "path": "harmonyApp/entry/src/main/ets/pages/Index.ets", "line": 996, "end_line": 1000 },
+        { "path": "harmonyApp/entry/src/main/ets/pages/NativeFeatureCatalog.ets", "line": 484, "end_line": 488 }
+      ]
+    },
+    {
+      "id": "compose_app",
+      "type": "frontend",
+      "label": ":composeApp 装配层",
+      "sublabel": "App → AppShell → RouteHost",
+      "tag": "唯一二进制产出方",
+      "pos": [340, 310],
+      "size": [200, 84],
+      "sources": [
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/App.kt", "line": 8, "end_line": 15 },
+        { "path": "composeApp/build.gradle.kts", "line": 121, "end_line": 149 },
+        { "path": "composeApp/build.gradle.kts", "line": 44, "end_line": 56 }
+      ]
+    },
+    {
+      "id": "core_router",
+      "type": "backend",
+      "label": ":core:router",
+      "sublabel": "AppRoutePath · FeatureRoutes",
+      "tag": "④ commons",
+      "pos": [40, 320],
+      "size": [180, 64],
+      "sources": [
+        { "path": "core/router/src/commonMain/kotlin/com.example.my_kmp_project/core/router/AppRoutePath.kt", "line": 7, "end_line": 11 },
+        { "path": "core/router/src/commonMain/kotlin/com.example.my_kmp_project/core/router/FeatureRoutes.kt", "line": 93, "end_line": 107 }
+      ]
+    },
+    {
+      "id": "kn_artifact",
+      "type": "cloud",
+      "label": "构建产物投递",
+      "sublabel": "framework + APK 同出口",
+      "tag": "libkn.so",
+      "pos": [660, 320],
+      "size": [190, 64],
+      "sources": [
+        { "path": "composeApp/build.gradle.kts", "line": 261, "end_line": 271 },
+        { "path": "composeApp/build.gradle.kts", "line": 287, "end_line": 291 }
+      ]
+    },
+    {
+      "id": "feature_layer",
+      "type": "frontend",
+      "label": ":feature:* ×17",
+      "sublabel": "业务屏 + 契约 + 单测",
+      "tag": "② 互不依赖",
+      "pos": [340, 455],
+      "size": [200, 78],
+      "sources": [
+        { "path": "settings.gradle.kts", "line": 36, "end_line": 43 },
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/MODULES.md", "line": 12, "end_line": 22 },
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/MODULES.md", "line": 39, "end_line": 40 }
+      ]
+    },
+    {
+      "id": "core_ui",
+      "type": "frontend",
+      "label": ":core:design · ui · platform",
+      "sublabel": "设计件 + Coil 图 + 相机",
+      "tag": "④ commons",
+      "pos": [660, 462],
+      "size": [190, 64],
+      "sources": [
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/MODULES.md", "line": 35, "end_line": 37 },
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/MODULES.md", "line": 43, "end_line": 47 }
+      ]
+    },
+    {
+      "id": "component_layer",
+      "type": "backend",
+      "label": ":component 端口层",
+      "sublabel": "pay·push·chat·webview·realtime",
+      "tag": "③ 端口",
+      "pos": [340, 600],
+      "size": [200, 78],
+      "sources": [
+        { "path": "component/build.gradle.kts", "line": 38, "end_line": 41 },
+        { "path": "component/src/commonMain/kotlin/com.example.my_kmp_project/component/routing/CrossFeatureScreenPort.kt", "line": 18, "end_line": 28 },
+        { "path": "component/src/commonMain/kotlin/com.example.my_kmp_project/component/chat/ChatPort.kt", "line": 7, "end_line": 13 }
+      ]
+    },
+    {
+      "id": "im_sdk",
+      "type": "external",
+      "label": "融云 IM",
+      "sublabel": "未接入 · 现走 MockImEngine",
+      "tag": "GAP R5",
+      "pos": [40, 607],
+      "size": [180, 64],
+      "sources": [
+        { "path": "component/src/commonMain/kotlin/com.example.my_kmp_project/component/chat/ChatPort.kt", "line": 12, "end_line": 13 },
+        { "path": "component/src/commonMain/kotlin/com.example.my_kmp_project/component/chat/ImEngine.kt", "line": 17, "end_line": 18 },
+        { "path": "component/src/commonMain/kotlin/com.example.my_kmp_project/component/chat/ImEngine.kt", "line": 149, "end_line": 151 }
+      ]
+    },
+    {
+      "id": "realtime_ws",
+      "type": "messagebus",
+      "label": "Realtime WS 通道",
+      "sublabel": "ticket→心跳→重连→seq→队列",
+      "tag": "ADR 0005",
+      "pos": [660, 607],
+      "size": [190, 64],
+      "sources": [
+        { "path": "component/src/commonMain/kotlin/com.example.my_kmp_project/component/realtime/AppRealtimeClientImpl.kt", "line": 117, "end_line": 137 },
+        { "path": "core/network/src/commonMain/kotlin/com.example.my_kmp_project/core/network/realtime/RealtimeConfig.kt", "line": 21, "end_line": 22 }
+      ]
+    },
+    {
+      "id": "core_account",
+      "type": "security",
+      "label": ":core:account",
+      "sublabel": "session + 隐私同意",
+      "tag": "鉴权",
+      "pos": [40, 752],
+      "size": [180, 64],
+      "sources": [
+        { "path": "core/account/src/commonMain/kotlin/com.example.my_kmp_project/core/account/AccountFacade.kt", "line": 35, "end_line": 39 },
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/ShellBootstrap.kt", "line": 15, "end_line": 20 }
+      ]
+    },
+    {
+      "id": "core_network",
+      "type": "backend",
+      "label": ":core:network",
+      "sublabel": "ApiClient + 信封/分页/错误码",
+      "tag": "④ commons",
+      "pos": [340, 745],
+      "size": [200, 78],
+      "sources": [
+        { "path": "core/network/src/commonMain/kotlin/com.example.my_kmp_project/core/network/NetworkFacade.kt", "line": 9, "end_line": 34 },
+        { "path": "core/network/src/commonMain/kotlin/com.example.my_kmp_project/core/network/ApiClient.kt", "line": 17, "end_line": 21 },
+        { "path": "core/network/src/networkKtorMain/kotlin/com.example.my_kmp_project/core/network/KtorApiClient.kt", "line": 37, "end_line": 41 }
+      ]
+    },
+    {
+      "id": "sse_channel",
+      "type": "messagebus",
+      "label": "SSE 流式通道",
+      "sublabel": "POST /api/v1/sse/completions",
+      "tag": "ADR 0005",
+      "pos": [660, 752],
+      "size": [190, 64],
+      "sources": [
+        { "path": "core/network/src/commonMain/kotlin/com.example.my_kmp_project/core/network/Sse.kt", "line": 11, "end_line": 15 },
+        { "path": "feature/ai/src/commonMain/kotlin/com.example.my_kmp_project/feature/ai/AiSseApi.kt", "line": 16, "end_line": 32 }
+      ]
+    },
+    {
+      "id": "core_storage",
+      "type": "database",
+      "label": ":core:storage · database",
+      "sublabel": "KeyValueStore + DB 契约",
+      "tag": "④ commons",
+      "pos": [40, 900],
+      "size": [180, 64],
+      "sources": [
+        { "path": "core/storage/src/commonMain/kotlin/com.example.my_kmp_project/core/storage/KeyValueStore.kt", "line": 3, "end_line": 28 },
+        { "path": "core/storage/src/ohosMain/kotlin/com.example.my_kmp_project/core/storage/KeyValueStore.ohos.kt", "line": 30, "end_line": 32 },
+        { "path": "core/database/src/commonMain/kotlin/com.example.my_kmp_project/core/database/Database.kt", "line": 13, "end_line": 15 }
+      ]
+    },
+    {
+      "id": "backend_api",
+      "type": "external",
+      "label": "Go BFF",
+      "sublabel": "契约表 111 verb / 94 模板",
+      "tag": "SoT d7876a1",
+      "pos": [340, 895],
+      "size": [200, 72],
+      "sources": [
+        { "path": "openspec/changes/sync-flutter-full-parity/notes/api-contract-2026-10-16.md", "line": 1, "end_line": 5 }
+      ]
+    },
+    {
+      "id": "ci_gates",
+      "type": "cloud",
+      "label": "门禁 + CI",
+      "sublabel": "五目标编译 · 单测 · R7",
+      "tag": "机器把关",
+      "pos": [40, 462],
+      "size": [180, 64],
+      "sources": [
+        { "path": "scripts/check-layer-deps.sh", "line": 2, "end_line": 10 },
+        { "path": "scripts/verify-parity.sh", "line": 1, "end_line": 5 },
+        { "path": ".github/workflows/ci.yml", "line": 75, "end_line": 80 }
+      ]
+    }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "⑤ 三端原生壳 · 只 host 共享 UI", "wraps": ["android_shell", "ios_shell", "harmony_shell"] }
+  ],
+  "connections": [
+    { "id": "u-a", "from": "users", "to": "android_shell", "label": "启动", "fromSide": "bottom", "toSide": "top" },
+    { "id": "u-i", "from": "users", "to": "ios_shell", "label": "启动", "fromSide": "bottom", "toSide": "top" },
+    { "id": "u-h", "from": "users", "to": "harmony_shell", "label": "启动", "fromSide": "bottom", "toSide": "top" },
+    { "id": "a-c", "from": "android_shell", "to": "compose_app", "label": "共享屏", "fromSide": "bottom", "toSide": "top" },
+    { "id": "i-c", "from": "ios_shell", "to": "compose_app", "label": "岛", "fromSide": "bottom", "toSide": "top" },
+    { "id": "h-c", "from": "harmony_shell", "to": "compose_app", "label": "岛", "fromSide": "bottom", "toSide": "top" },
+    { "id": "c-r", "from": "compose_app", "to": "core_router", "label": "路由分发", "fromSide": "left", "toSide": "right" },
+    { "id": "c-k", "from": "compose_app", "to": "kn_artifact", "label": "sharedLib", "fromSide": "right", "toSide": "left" },
+    { "id": "k-h", "from": "kn_artifact", "to": "harmony_shell", "label": "publish", "variant": "dashed", "fromSide": "top", "toSide": "bottom" },
+    { "id": "c-f", "from": "compose_app", "to": "feature_layer", "label": "RouteHost", "fromSide": "bottom", "toSide": "top" },
+    { "id": "f-u", "from": "feature_layer", "to": "core_ui", "label": "设计件", "fromSide": "right", "toSide": "left" },
+    { "id": "f-p", "from": "feature_layer", "to": "component_layer", "label": "调端口", "fromSide": "bottom", "toSide": "top" },
+    { "id": "p-i", "from": "component_layer", "to": "im_sdk", "label": "ChatPort", "fromSide": "left", "toSide": "right" },
+    { "id": "p-r", "from": "component_layer", "to": "realtime_ws", "label": "WS", "fromSide": "right", "toSide": "left" },
+    { "id": "p-n", "from": "component_layer", "to": "core_network", "label": "HTTP", "fromSide": "bottom", "toSide": "top" },
+    { "id": "a-n", "from": "core_account", "to": "core_network", "label": "token/401", "fromSide": "right", "toSide": "left" },
+    { "id": "n-s", "from": "core_network", "to": "sse_channel", "label": "SSE", "fromSide": "right", "toSide": "left" },
+    { "id": "a-d", "from": "core_account", "to": "core_storage", "label": "落盘", "fromSide": "bottom", "toSide": "top" },
+    { "id": "n-k", "from": "core_network", "to": "backend_api", "label": "HTTPS /api/v1", "fromSide": "bottom", "toSide": "top" },
+    { "id": "g-f", "from": "ci_gates", "to": "feature_layer", "label": "R7 门禁", "variant": "dashed", "fromSide": "right", "toSide": "left" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "五层与依赖方向",
+      "items": [
+        "① :composeApp 只做装配，是唯一二进制产出方；② 17 个 feature 互不依赖、也不得反向依赖 :composeApp",
+        "③ :component 依赖 core 的 api(projects.core.network/base/account/router)；④ :core:* 十个 commons 永不 import feature.* 或 app.*",
+        "跨功能跳转只在 :composeApp 的 app/AppCrossFeatureScreens.kt 接线，业务侧通过 CrossFeatureScreenPort 反向注入",
+        ":core:base（文本/日期/UUID）与 :core:analytics（埋点）不单列节点：base 由 :component api 透传，analytics 只被 :composeApp implementation 装配（composeApp/build.gradle.kts:126-127）"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "三端壳的真实形态",
+      "items": [
+        "Android：MainActivity → NativeAndroidApp，Jetpack tab 直接挂共享 HomeRouteHost / MineRouteHost / CommunityRouteHost / ContentRouteHost，共享 CMP 只作 Mine 岛",
+        "iOS：SwiftUI 壳 + 65 个 Native…Page，共享 UI 只在 MineIslandViewController / SecondaryRouteViewController 两个全屏岛里出现",
+        "HarmonyOS：ArkTS Index.ets 用 nativePaneIdFor / featurePageFor 渲染 65 个 Pane，岛由 libentry.so 的 MainArkUIViewController 创建（ADR 0002）",
+        "iOS/ArkTS 的「定义数 == 分发数」由 check-ios-page-dispatch.sh 与 check-harmony-pane-dispatch.sh 断言，防止页面写了没接"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "三条长连接不得互译（ADR 0005）",
+      "items": [
+        "REST：ApiClient — android/ios/ohosArm64 走 Ktor + CIO（networkKtorMain），ohosX64 回落 net_http cinterop",
+        "SSE：core/network/Sse.kt + core/sse/SseParser，唯一用途是 /api/v1/sse/completions（AI 小石头）",
+        "WS：component/realtime 心跳 + 指数重连 + seq 去重 + 断线出站队列，换票 /api/v1/realtime/ws-ticket、补拉 /api/v1/realtime/sync",
+        "IM：ChatPort 目前是 StubChatPort(isReady=false)，聊天走 MockImEngine；真融云属 M11，按 R5 登记 missing"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "持久化与产物投递",
+      "items": [
+        "KeyValueStore 是全项目唯一 KV 契约：Android/iOS 用 multiplatform-settings(settingsMain)，两个 OHOS arch 直接实现 OH_Preferences NDK，/tmp 回落已删除",
+        ":core:database 目前只有 Database/Table 契约 + 内存 driver，平台 SQL driver 等 OHOS 侧 klib，按 R5 登记为未 ready",
+        "publishDebugBinariesToHarmonyApp 把 libkn.so + libkn_api.h 投到 entry/libs/{arm64-v8a,x86_64} 与 cpp/include，composeResources 投到 rawfile"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "工程门禁与本地约束",
+      "items": [
+        "scripts/verify-parity.sh 是带 advisory lock 的串行验证入口（--offline / --android-only / --static-only），避免并发 Gradle 撞守护进程锁",
+        "门禁任务名一律不带前导冒号，让每个子工程都跑到；写死 :composeApp: 会静默漏检新模块 —— 这是历史上「绿灯但没跑」的根因",
+        "CI 只跑 verify-parity.sh --static-only + testDebugUnitTest + :composeApp:assembleDebug；iOS/OHOS 不 hosted 构建",
+        "buildSrc 在本机不可用（~/.gradle/init.gradle 钉住镜像，取不到 kotlin-dsl），共享 KMP 接线写在根 build.gradle.kts 的 subprojects{}；wrapper 已是 Gradle 9.4.1，exec 全部改用注入的 ExecOperations"
+      ]
+    }
+  ]
+}

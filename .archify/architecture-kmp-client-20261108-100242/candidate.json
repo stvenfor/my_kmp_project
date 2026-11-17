@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "My_kmp_project 系统架构：三端入口 → 共享分层 → Go 后端契约",
+    "locale": "zh-CN",
+    "output": ".archify/architecture-kmp-client-20261108-100242/kmp-client-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "git@github.com:stvenfor/my_kmp_project.git",
+      "revision": "55116c5ca7c3953a94fbb04f2347d133fc1fcc36",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "用户 · 三端设备",
+      "sublabel": "Android · iOS · HarmonyOS",
+      "pos": [430, 40],
+      "size": [200, 60],
+      "sources": [
+        { "path": "AGENTS.md", "line": 1, "end_line": 3, "label": "三端目标平台" }
+      ]
+    },
+    {
+      "id": "shells",
+      "type": "frontend",
+      "label": "三端原生壳",
+      "sublabel": "Android / iOS / OHOS 入口",
+      "pos": [430, 150],
+      "size": [200, 70],
+      "sources": [
+        { "path": "composeApp/src/androidMain/kotlin/com.example.my_kmp_project/MainActivity.kt", "line": 21, "end_line": 40, "label": "Android 入口" },
+        { "path": "composeApp/src/iosMain/kotlin/com.example.my_kmp_project/MainViewController.kt", "line": 17, "end_line": 21, "label": "iOS 入口" },
+        { "path": "composeApp/src/ohosMain/kotlin/com.example.my_kmp_project/MainArkUIViewController.kt", "line": 33, "end_line": 43, "label": "OHOS 入口" }
+      ]
+    },
+    {
+      "id": "appshell",
+      "type": "frontend",
+      "label": "composeApp 装配层",
+      "sublabel": "AppShell · ShellBootstrap",
+      "pos": [430, 280],
+      "size": [200, 70],
+      "sources": [
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/DemoApp.kt", "line": 9, "end_line": 12, "label": "AppShell 别名" },
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/ShellBootstrap.kt", "line": 16, "end_line": 29, "label": "幂等装配" },
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/AppShell.kt", "line": 79, "end_line": 90, "label": "壳状态机" }
+      ]
+    },
+    {
+      "id": "routehost",
+      "type": "frontend",
+      "label": "路由分发",
+      "sublabel": "AppCrossFeatureScreens 路由表",
+      "pos": [150, 280],
+      "size": [200, 70],
+      "sources": [
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/AppCrossFeatureScreens.kt", "line": 21, "end_line": 45, "label": "跨 feature 屏幕端口" },
+        { "path": "settings.gradle.kts", "line": 26, "end_line": 26, "label": ":core:router" }
+      ]
+    },
+    {
+      "id": "features",
+      "type": "frontend",
+      "label": "17 个 feature 模块",
+      "sublabel": ":feature:* 无同级依赖",
+      "pos": [430, 410],
+      "size": [200, 70],
+      "sources": [
+        { "path": "settings.gradle.kts", "line": 36, "end_line": 43, "label": "17 个 feature include" },
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/AppCrossFeatureScreens.kt", "line": 21, "end_line": 28, "label": "无同级依赖规则" }
+      ]
+    },
+    {
+      "id": "component",
+      "type": "backend",
+      "label": "component 端口层",
+      "sublabel": "7 类能力端口",
+      "pos": [710, 410],
+      "size": [200, 70],
+      "sources": [
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/AppContainer.kt", "line": 38, "end_line": 43, "label": "端口装配" },
+        { "path": "settings.gradle.kts", "line": 34, "end_line": 34, "label": ":component" }
+      ]
+    },
+    {
+      "id": "core",
+      "type": "backend",
+      "label": "10 个 core 模块",
+      "sublabel": "commonMain 共享层",
+      "pos": [430, 540],
+      "size": [200, 70],
+      "sources": [
+        { "path": "settings.gradle.kts", "line": 23, "end_line": 33, "label": "core:* include" },
+        { "path": "build.gradle.kts", "line": 35, "end_line": 38, "label": "库模块共享接线" }
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "core:storage KV",
+      "sublabel": "settings / OH_Preferences",
+      "pos": [150, 540],
+      "size": [200, 70],
+      "sources": [
+        { "path": "core/storage/src/commonMain/kotlin/com.example.my_kmp_project/core/storage/KeyValueStore.kt", "line": 3, "end_line": 28, "label": "唯一 KV 契约" }
+      ]
+    },
+    {
+      "id": "database",
+      "type": "database",
+      "label": "core:database",
+      "sublabel": "DatabaseProvider · InMemory",
+      "pos": [710, 540],
+      "size": [200, 70],
+      "sources": [
+        { "path": "core/database/src/commonMain/kotlin/com.example.my_kmp_project/core/database/DatabaseProvider.kt", "line": 3, "end_line": 19, "label": "注入缝" }
+      ]
+    },
+    {
+      "id": "network",
+      "type": "backend",
+      "label": "core:network 网络引擎",
+      "sublabel": "Ktor CIO · ApiClient · SSE",
+      "pos": [430, 670],
+      "size": [200, 70],
+      "sources": [
+        { "path": "core/network/src/commonMain/kotlin/com.example.my_kmp_project/core/network/NetworkFacade.kt", "line": 5, "end_line": 34, "label": "网络门面" },
+        { "path": "core/network/src/commonMain/kotlin/com.example.my_kmp_project/core/network/DemoRequestHeaders.kt", "line": 11, "end_line": 26, "label": "逐请求头" }
+      ]
+    },
+    {
+      "id": "account",
+      "type": "security",
+      "label": "会话与鉴权",
+      "sublabel": "AccountFacade · 会话三件套",
+      "pos": [150, 670],
+      "size": [200, 70],
+      "sources": [
+        { "path": "core/account/src/commonMain/kotlin/com.example.my_kmp_project/core/account/AccountFacade.kt", "line": 13, "end_line": 33, "label": "会话模型" },
+        { "path": "core/account/src/commonMain/kotlin/com.example.my_kmp_project/core/account/AccountFacade.kt", "line": 49, "end_line": 58, "label": "三件套绑定" }
+      ]
+    },
+    {
+      "id": "realtime",
+      "type": "messagebus",
+      "label": "realtime / SSE 长连",
+      "sublabel": "WS 换票 · SSE 增量流",
+      "pos": [710, 670],
+      "size": [200, 70],
+      "sources": [
+        { "path": "composeApp/src/commonMain/kotlin/com.example.my_kmp_project/app/RealtimeRuntime.kt", "line": 24, "end_line": 90, "label": "生产构造点" },
+        { "path": "core/network/src/commonMain/kotlin/com.example.my_kmp_project/core/network/Sse.kt", "line": 10, "end_line": 21, "label": "SSE 传输" }
+      ]
+    },
+    {
+      "id": "backend",
+      "type": "external",
+      "label": "Go 后端 my_go_study",
+      "sublabel": "16 域 · /api/v1/* 唯一真相源",
+      "pos": [430, 800],
+      "size": [200, 70],
+      "sources": [
+        { "path": "notes/backend-contract-matrix.md", "line": 1, "end_line": 23, "label": "16 域契约对照" }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "composeApp · 唯一二进制产物（三端入口 + 装配）",
+      "wraps": ["shells", "appshell", "routehost"]
+    },
+    {
+      "kind": "region",
+      "label": "业务层（17 feature + component 端口）",
+      "wraps": ["features", "component"]
+    }
+  ],
+  "connections": [
+    { "id": "user-to-shells", "from": "user", "to": "shells", "label": "启动", "variant": "emphasis" },
+    { "id": "shells-to-appshell", "from": "shells", "to": "appshell", "label": "宿主装配", "variant": "emphasis" },
+    { "id": "appshell-to-features", "from": "appshell", "to": "features", "label": "RouteHost 分发", "variant": "emphasis" },
+    { "id": "features-to-core", "from": "features", "to": "core", "label": "共享层依赖" },
+    { "id": "core-to-network", "from": "core", "to": "network", "label": "网络出口" },
+    { "id": "network-to-backend", "from": "network", "to": "backend", "label": "HTTPS /api/v1/*", "variant": "emphasis" },
+    { "id": "appshell-to-routehost", "from": "appshell", "to": "routehost", "label": "路由表" },
+    { "id": "features-to-component", "from": "features", "to": "component", "label": "端口调用" },
+    { "id": "core-to-storage", "from": "core", "to": "storage", "label": "持久化" },
+    { "id": "core-to-database", "from": "core", "to": "database", "label": "结构化表" },
+    { "id": "account-to-network", "from": "account", "to": "network", "label": "绑定凭据", "variant": "security" },
+    { "id": "network-to-realtime", "from": "network", "to": "realtime", "label": "WS / SSE" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "分层与依赖方向",
+      "items": [
+        "composeApp 装配 → 17 个 feature 业务模块 → component 端口 → 10 个 core 模块，依赖单向向下",
+        "feature 之间禁止互相依赖，由 scripts/check-layer-deps.sh 静态门禁强制",
+        "库模块均不产二进制：iOS framework 与 OHOS libkn.so 只由 :composeApp 产出"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "三端入口细节",
+      "items": [
+        "Android：MainActivity 走 installSplashScreen → enableEdgeToEdge → setContent",
+        "iOS：MainViewController / SwiftUI ContentView 承载 Compose Island（ADR 0002）",
+        "OHOS：MainArkUIViewController 由 ArkTS Index.ets 经 libkn.so 加载"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "网络与会话链路",
+      "items": [
+        "Ktor：ohosArm64 用 CIO，ohosX64 走 net_http cinterop 回退",
+        "逐请求头注入 Authorization + X-Session-ID + X-Device-ID，空白值省略",
+        "401 静默刷新由 AuthRefreshingApiClient 独占；SSE / WS 走增量流"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "后端契约与持久化",
+      "items": [
+        "94 条 /api/v1/* 逐条对照 Go 后端 16 域路由，后端为唯一真相源",
+        "audit-flutter-drift.sh 以 36 条书面 allowlist 归零，未登记差异仍 exit 1",
+        "KV 走 core:storage（OHOS 为 OH_Preferences），结构化表默认 InMemory driver"
+      ]
+    }
+  ]
+}

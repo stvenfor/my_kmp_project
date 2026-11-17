@@ -1,0 +1,10 @@
+{
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "claude-flow"
+  ],
+  "disabledMcpjsonServers": [],
+  "permissions": {
+    "allow": []
+  }
+}

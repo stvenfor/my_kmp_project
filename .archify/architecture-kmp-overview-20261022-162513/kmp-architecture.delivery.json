@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1e3fe83d-084a-4699-a569-ccec41c1f0e9",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/qpy/Desktop/github/my_kmp_project/.archify/architecture-kmp-overview-20261022-162513/candidate.json",
+  "output": "/Users/qpy/Desktop/github/my_kmp_project/.archify/architecture-kmp-overview-20261022-162513/kmp-architecture.html",
+  "specification": {
+    "sha256": "fd1a6e63308f26520ebd226a467f4dceffdb7b8f41b03793490faccb18be702b",
+    "bytes": 17579
+  },
+  "artifact": {
+    "sha256": "967de00e736d115aa6060c94da1499df4bb5c43831824bada4dc853895a7e9de",
+    "bytes": 860498
+  }
+}

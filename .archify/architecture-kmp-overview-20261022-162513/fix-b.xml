@@ -1,0 +1,1 @@
+<li>Gradle project 总数：<b>30</b>（<code>settings.gradle.kts:23-44</code>：13 个显式 <code>include</code> + 17 个 <code>:feature:*</code> 由 <code>forEach</code> 循环 include；实测 <code>grep -c "^include(" settings.gradle.kts</code> = 13）</li>

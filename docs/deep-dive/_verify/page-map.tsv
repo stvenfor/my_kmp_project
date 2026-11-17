@@ -1,0 +1,20 @@
+09-build-and-config.md	09 构建与配置 —— settings / 根工程 / deployment / catalog / wrapper / OHOS 脚本 / composeApp	XWVOw2Kv8i3ffSkx8wvcPG3lnre	SBTFd9gxOoebEsxBYDYc7wcknIc
+10-core-base-platform-analytics.md	10 · core:base / core:platform / core:analytics 深度解析	HVDNwcBUsic1XnkJzfjcrsH6nsV	TRK7djc3ooxXErxdMi4coqlInZf
+11-core-design-ui.md	11 · core:design 与 core:ui 深度文档	Idstwpgf9iVQlHkNFcicXqLindj	P2P3d8rX1odnsTxbzMacJPz8nhf
+12-core-storage-database-router.md	12 · core/storage · core/database · core/router 深度解析	NIvewShQ9iwxW0k2flncoSJunR9	UqhadRHQEoaYl8xI2jccyDkcnt5
+13-core-network-engine.md	13 · core/network 深度文档（引擎 / 基础设施层）	NQDSwmqIyifCfckqS8scBuEinSf	A09TdCaK3oDgVOxH4fqc5OADn2e
+14-core-network-endpoints.md	14 · 业务端点层与契约对账（core/network 消费侧）	GkhNwBzIAip3urkoA7UcfDoGnAf	Kmg0dUXVso18rkxVZZ4c6KnlnoV
+15-component-ports.md	15 · component —— ③ 垂直端口层（auth / chat / pay / push / realtime / routing / webview）	IYBWwBPpXitHO3kt5N6c21h8nIe	HpgNd8a5KomCXzx4BVXc60jcnwc
+16-feature-home.md	16 · feature:home 详解	TvL6wLk5CiK7z3kbrXrcBmOrnLg	PsXldHgkWoN0bixSVGpcTCvcnKS
+17-feature-mine-shell.md	17 · feature/mine + feature/shell 深度解析	Dlodwra5NiywBWkaUX1c8iOtnWg	UpkddQ4DWoejImxCIBccB7yZnRg
+18-feature-auth-account-friend.md	18 · 登录鉴权域：feature/auth + core/account + feature/friend	Ln9ZwhOhNiJqPFk1vfwcq8cAnk0	CHOkdyFTvorVdTxt1jRc9jXOnBb
+19-feature-media-community-chat.md	19 · 社交内容域全解：feature/media + feature/community + feature/chat	VDr6wW5nDi4aphkoKWscb0D4nqg	OBWXdqObhoAKoQxgiFNcX4A1nih
+20-feature-commerce-wallet-pay-ai.md	Deep dive 20 · feature/commerce · wallet · pay · ai	BLgQwcDzxiHU5WkMusrcNxxvnRb	CAQBdF7zloMbmJxYo4UcRyqnnFd
+21-feature-small-modules.md	21 — Feature 薄壳模块深读 + Feature 层整体盘点	PxLAwRVyKiLMyBku3bicWxmynRf	T5UbdCjiVoa72FxrXSacG2TCnIh
+22-composeapp-assembly-routing.md	22 · composeApp 装配层与路由跳转全景	XJrRwOaBTiYSbikcCHkc1ohsnkc	Vw6xdNzqzoORzSxS0Fcc7NKkneU
+23-native-shells.md	23 · 三端原生壳与产物投递（Android / iOS / HarmonyOS）	STjvwoL1SitxhpkYUuCc8xB1nuc	XGxQdWBJNougYMxWg3Vcr2uqnvw
+24-gates-ci-adr.md	24 · 工程门禁、CI、决策记录与 parity 工作法	FxVSwaXvPiNeXNkNVlRcOEs2n7b	VDnwdkPego9ZHixOnpTclHlfnKE
+25-platform-differences-matrix.md	25 · 三端差异性总表（target、依赖可用性、expect/actual、行为与产物）	BUw9wZuR1i8WqBk698Gc9L2Snie	N019dNGp9oK0rHxmEIlcY7I3nIb
+26-cold-start-and-first-frame.md	26 · 三端冷启动与首帧流程	Is9HwUFPEiAZQUkVz8pcXs53nme	NwcZdmlVdocDtGxxou4cSfeOnOd
+27-module-gradle-wiring.md	27 · 公共库与独立库的 Gradle 接线对照	BRx9wKid8iLYQ1kv9DHc82mRnob	XxWudldUOoJNK5xAwsVckcQMn9e
+28-config-files-line-by-line.md	28 · 主要配置文件逐行解释（三端壳配置、CI、openspec、gitignore）	AO3iw0pwBiEo4nkfDhVcME2Dnue	KMMedZYhRo6K9ixI5g5cUMQgnIb

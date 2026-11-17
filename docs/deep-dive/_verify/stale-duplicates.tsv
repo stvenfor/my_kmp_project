@@ -1,0 +1,14 @@
+VeqrwrCneiOI3vkQODycvL7Rn6d	PxAVda1R9ozmgcxNToxc4R9Gnmh	09 构建与配置 —— settings / 根工程 / deployment / catalog / wrapper / OHOS 脚本 / composeApp
+T6hJwabC0iPLPckVwImc9kkHn6b	KlL7d3fiboydM8xw2lJcc4J3nIe	10 · core:base / core:platform / core:analytics 深度解析
+MHCOwqlXViE0i2kk8ETclafWnWh	UQCpdbqb1oREqYx0kFZcY0IbnKe	11 · core:design 与 core:ui 深度文档
+EG7wwyvTiiKIhikZfLScSHR7nOd	PkgidbEkoosyKoxY5m5c2Q0onyh	12 · core/storage · core/database · core/router 深度解析
+So9hwCZp1iwi2akF3MYc1WLCnyd	XwW9dAmhyo2OZxxxzM0ctLbjnKd	13 · core/network 深度文档（引擎 / 基础设施层）
+MJLnwCGmWiqIrDkhWWmcQ0dPn5c	FaGkdMdNhoRXmvxNIwCcJ7pbnxZ	14 · 业务端点层与契约对账（core/network 消费侧）
+LwbzwVNsGi9h6PksGNAcdhQHneb	Oy5AdInq1oVt8zx5ceycvfGwn9e	15 · component —— ③ 垂直端口层（auth / chat / pay / push / realtime / routing / webview）
+KQdjwkp4QikXxPkiUxZcvwA3nsb	RBYLdN2D9onctRxZg2ccTWhCnph	17 · feature/mine + feature/shell 深度解析
+U8VWwqFTKiScp1kYpRHcFQjLnig	ACcad541woViiCx6QVDcZ3gznAc	18 · 登录鉴权域：feature/auth + core/account + feature/friend
+EQcUwt9Rbi1dtpk3WWpcYBbznze	MLA1dOI9TodEVwxrV4lcmk94n7e	19 · 社交内容域全解：feature/media + feature/community + feature/chat
+LN11wzPu6iR2qBkYKZqcyywpnub	M0h6dn1U7oXUiuxJ6bnclfajntc	21 — Feature 薄壳模块深读 + Feature 层整体盘点
+JJJOw4gMoimRfVkemsBcyGaun1b	Ud1qdVWAjoJSgvxB1M5cqVgSnOg	23 · 三端原生壳与产物投递（Android / iOS / HarmonyOS）
+AJCNwTSWiiYtKJkmu4GcJxUun4g	IFIpda0tfo85RXxbboycsg03nug	24 · 工程门禁、CI、决策记录与 parity 工作法
+LUPcwiSosiNyVhkth3ocz1ZInGe	CETEd6MGRoov4ixBi2FcVVfvnyf	Deep dive 20 · feature/commerce · wallet · pay · ai

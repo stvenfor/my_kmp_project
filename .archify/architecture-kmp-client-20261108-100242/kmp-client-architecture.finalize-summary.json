@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/qpy/Desktop/github/my_kmp_project/.archify/architecture-kmp-client-20261108-100242/candidate.json",
+    "sha256": "6778b751a64cc6180b1d44b92cc99c976a56146acc7b171f5d0f4ae46706cc52",
+    "bytes": 10077
+  },
+  "artifact": {
+    "path": "/Users/qpy/Desktop/github/my_kmp_project/.archify/architecture-kmp-client-20261108-100242/kmp-client-architecture.html",
+    "sha256": "6e3ee873519414b0bc98a9bcdb76270dfbea9d8eda637cec277e8f0b3eafbebe",
+    "bytes": 840568
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/qpy/Desktop/github/my_kmp_project/.archify/architecture-kmp-client-20261108-100242/kmp-client-architecture.finalize.json",
+    "summaryReceipt": "/Users/qpy/Desktop/github/my_kmp_project/.archify/architecture-kmp-client-20261108-100242/kmp-client-architecture.finalize-summary.json",
+    "browserCheckReceipt": "/Users/qpy/Desktop/github/my_kmp_project/.archify/architecture-kmp-client-20261108-100242/kmp-client-architecture.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-08T02:07:46.105Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 10818,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}
