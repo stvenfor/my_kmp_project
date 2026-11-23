@@ -8,8 +8,8 @@ Kotlin Multiplatform + Compose Multiplatform 演示工程，同时面向 **Andro
 
 | 项 | 值 | 出处 |
 |---|---|---|
-| Kotlin（OHOS fork） | `2.2.21-0.3.0` | `gradle/libs.versions.toml:27` |
-| Compose Multiplatform | `1.9.2-0.3.0` | `gradle/libs.versions.toml:23` |
+| Kotlin（OHOS fork） | `2.2.21-0.4.0` | `gradle/libs.versions.toml:27` |
+| Compose Multiplatform | `1.9.2-0.4.0` | `gradle/libs.versions.toml:23` |
 | AGP / compileSdk / minSdk | `8.6.0` / `36` / `26` | `gradle/libs.versions.toml:3-5` |
 | Ktor（CPF OH 线） | `3.3.3-0.3.0` | `gradle/libs.versions.toml:33` |
 | Gradle wrapper / JDK | `9.4.1` / 17 | `build.gradle.kts:14`、`composeApp/build.gradle.kts:34` |

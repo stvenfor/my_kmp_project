@@ -190,9 +190,9 @@ private fun TodoCardShell(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
             .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
+            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(HomeSectionStyle.RadiusMd))
             .clickable(onClick = onTap)
             .padding(14.dp),
         content = content,
@@ -204,7 +204,7 @@ private fun TodoThumb(size: Dp, label: String) {
     Box(
         modifier = Modifier
             .size(size)
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
             .background(DemoColors.PageBg),
         contentAlignment = Alignment.Center,
     ) {
@@ -256,7 +256,7 @@ private fun SmallTodoCard(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     card.subtitle,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     color = DemoColors.Muted,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -277,9 +277,9 @@ private fun MediumTodoCard(card: HomeTodoCard, onTap: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
             .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
+            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(HomeSectionStyle.RadiusMd))
             .clickable(onClick = onTap)
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -314,9 +314,9 @@ private fun LargeTodoCard(card: HomeTodoCard, onTap: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
             .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
+            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(HomeSectionStyle.RadiusMd))
             .clickable(onClick = onTap)
             .padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 16.dp),
     ) {

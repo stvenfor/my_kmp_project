@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.feature.community
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,6 +36,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -78,6 +81,8 @@ import kotlinx.coroutines.launch
 /** In-memory publish bridge — topic pick + last publish for feed ingest. */
 object CommunityPublishBus {
     var lastPublishedBody: String? = null
+    /** 发布成功自增的 Compose snapshot state，供根页以 LaunchedEffect 响应，替代轮询。 */
+    var publishRevision by mutableIntStateOf(0)
     var lastMediaType: String = "none"
     var pendingTopic: String? = null
 }
@@ -90,6 +95,7 @@ fun CommunityRouteHost(
     previewUrls: List<String> = emptyList(),
     previewIndex: Int = 0,
     videoUrl: String? = null,
+    videoPlayer: (@Composable (url: String?, isPlaying: Boolean, modifier: Modifier, onPlayingChange: (Boolean) -> Unit) -> Unit)? = null,
 ) {
     val repository = remember { HttpCommunityPostRepository() }
     val scope = rememberCoroutineScope()
@@ -110,6 +116,7 @@ fun CommunityRouteHost(
                     if (ok) {
                         CommunityPublishBus.lastPublishedBody = body
                         CommunityPublishBus.lastMediaType = mediaType
+                        CommunityPublishBus.publishRevision++
                         CommunityPublishBus.pendingTopic = null
                         showPlatformToast("发布成功")
                         onBack()
@@ -137,7 +144,8 @@ fun CommunityRouteHost(
             onBack = onBack,
         )
         CommunityRoutes.VideoPlay -> CommunityVideoPlayScreen(
-            coverUrl = videoUrl ?: "https://picsum.photos/seed/video_0/640/360",
+            videoUrl = videoUrl,
+            videoPlayer = videoPlayer,
             onBack = onBack,
         )
         CommunityRoutes.Comment -> CommunityCommentScreen(
@@ -245,7 +253,7 @@ private fun CommunityPublishScreen(
                     },
                     modifier = Modifier.fillMaxWidth().height(44.dp),
                     shape = RoundedCornerShape(22.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1677FF)),
+                    colors = ButtonDefaults.buttonColors(containerColor = DemoColors.Primary),
                 ) {
                     Text("我知道了", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 }
@@ -279,7 +287,7 @@ private fun CommunityPublishScreen(
                 fontSize = 15.sp,
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(Color(0xFF1677FF))
+                    .background(DemoColors.Primary)
                     .clickable {
                         if (body.isBlank()) {
                             showPlatformToast("请输入内容")
@@ -351,7 +359,7 @@ private fun MediaChip(label: String, selected: Boolean, onClick: () -> Unit) {
             .clip(shape)
             .then(
                 if (selected) {
-                    Modifier.background(Color(0xFF1677FF))
+                    Modifier.background(DemoColors.Accent)
                 } else {
                     Modifier
                         .background(DemoColors.Background)
@@ -374,6 +382,9 @@ private fun MediaChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 private const val ConventionAckKey = "community_convention_ack_date"
+
+/** 社区二级页状态反馈节奏：有限、可中断。 */
+private const val CommunityFeedbackMs = 200
 
 @Composable
 private fun CommunitySearchScreen(onBack: () -> Unit) {
@@ -454,7 +465,7 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
                 .fillMaxWidth()
                 .height(44.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .border(1.5.dp, Color(0xFF1677FF), RoundedCornerShape(10.dp))
+                .border(1.5.dp, DemoColors.Accent, RoundedCornerShape(10.dp))
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -490,14 +501,19 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
                         label,
                         fontSize = 15.sp,
                         fontWeight = if (tab == i) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (tab == i) Color(0xFF1677FF) else DemoColors.TextPrimary,
+                        color = if (tab == i) DemoColors.Accent else DemoColors.TextPrimary,
                     )
                     Spacer(Modifier.height(6.dp))
+                    val indicatorWidth by animateDpAsState(
+                        targetValue = if (tab == i) 20.dp else 0.dp,
+                        animationSpec = tween(durationMillis = CommunityFeedbackMs),
+                        label = "communitySearchTabIndicator",
+                    )
                     Box(
                         Modifier
-                            .width(if (tab == i) 20.dp else 0.dp)
+                            .width(indicatorWidth)
                             .height(2.dp)
-                            .background(Color(0xFF1677FF)),
+                            .background(DemoColors.Accent),
                     )
                 }
             }
@@ -700,29 +716,34 @@ private fun CommunityImagePreviewScreen(
 }
 
 @Composable
-private fun CommunityVideoPlayScreen(coverUrl: String, onBack: () -> Unit) {
+private fun CommunityVideoPlayScreen(
+    videoUrl: String?,
+    videoPlayer: (@Composable (url: String?, isPlaying: Boolean, modifier: Modifier, onPlayingChange: (Boolean) -> Unit) -> Unit)?,
+    onBack: () -> Unit,
+) {
+    var isPlaying by remember(videoUrl) { mutableStateOf(false) }
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color.Black)) {
         MineTopBar(title = "视频", onBack = onBack, containerColor = Color.Black, titleColor = Color.White)
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f),
-            contentAlignment = Alignment.Center,
-        ) {
-            PlatformNetworkImage(
-                url = coverUrl,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                placeholder = Res.drawable.community_post_a,
+        if (videoPlayer != null) {
+            videoPlayer(
+                videoUrl,
+                isPlaying,
+                Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                { isPlaying = it },
             )
-            Text("▶ 播放（mock）", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        } else {
+            Box(
+                Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    if (videoUrl.isNullOrBlank()) "视频地址不可用，当前内容无法播放" else "当前平台未接入视频播放器",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                )
+            }
         }
-        Text(
-            "真播放器随 Video 模块 H.3；此处可点路径验收。",
-            color = Color.White.copy(alpha = 0.7f),
-            modifier = Modifier.padding(16.dp),
-        )
     }
 }
 

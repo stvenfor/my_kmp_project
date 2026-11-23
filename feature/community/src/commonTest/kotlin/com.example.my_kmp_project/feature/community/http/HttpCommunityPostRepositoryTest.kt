@@ -166,6 +166,34 @@ class HttpCommunityPostRepositoryTest {
         assertEquals(mapOf("page" to "1", "size" to "10", "tab" to "latest"), client.last().query)
     }
 
+    /** #59 分页视图：同一 query 契约，并解码服务端 pagination 元数据。 */
+    @Test
+    fun fetch_posts_page_keeps_query_contract_and_decodes_pagination() = runBlocking {
+        val (repository, client) = repo(postsPageBody)
+        val page = repository.fetchPostsPage(page = 1, pageSize = 10, tab = "hot")
+        val call = client.last()
+        assertEquals("GET", call.verb)
+        assertEquals("/api/v1/community/posts", call.path)
+        assertEquals(mapOf("page" to "2", "size" to "10", "tab" to "hot"), call.query)
+        assertEquals(2, page.items.size)
+        assertEquals("1001", page.items[0].id)
+        val pagination = page.pagination!!
+        assertEquals(2, pagination.page)
+        assertEquals(10, pagination.size)
+        assertEquals(35, pagination.total)
+        assertEquals(4, pagination.totalPages)
+        assertTrue(page.hasMore(10))
+    }
+
+    /** 列表兼容视图与分页视图同源：items 一致，不重复发明解码逻辑。 */
+    @Test
+    fun fetch_posts_is_items_view_of_fetch_posts_page() = runBlocking {
+        val (repository, _) = repo(postsPageBody)
+        val paged = repository.fetchPostsPage(page = 0)
+        val listed = repository.fetchPosts(page = 0)
+        assertEquals(paged.items.map { it.id }, listed.map { it.id })
+    }
+
     /** #61 */
     @Test
     fun fetch_comments_is_hardcoded_to_page_one_size_fifty() = runBlocking {

@@ -287,26 +287,33 @@ private fun ServiceGridCell(
                 }
             }
             if (isEditing && (showMinus || showPlus)) {
+                // 16dp 徽标视觉位置不变，外层 44dp 透明命中区补足触控热区。
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .size(16.dp)
-                        .clip(CircleShape)
-                        .background(if (showMinus) DemoColors.OnPrimary else DemoColors.Accent)
-                        .border(
-                            width = 1.dp,
-                            color = if (showMinus) DemoColors.Divider else DemoColors.Accent,
-                            shape = CircleShape,
-                        )
+                        .size(44.dp)
                         .clickable(onClick = onBadgeTap),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.TopEnd,
                 ) {
-                    Text(
-                        text = if (showMinus) "×" else "+",
-                        color = if (showMinus) DemoColors.TextSecondary else DemoColors.OnPrimary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape)
+                            .background(if (showMinus) DemoColors.OnPrimary else DemoColors.Accent)
+                            .border(
+                                width = 1.dp,
+                                color = if (showMinus) DemoColors.Divider else DemoColors.Accent,
+                                shape = CircleShape,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = if (showMinus) "×" else "+",
+                            color = if (showMinus) DemoColors.TextSecondary else DemoColors.OnPrimary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 }
             }
         }

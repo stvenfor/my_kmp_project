@@ -68,8 +68,8 @@ object HomeSectionStyle {
     /** Flutter `HomeDashboardTheme.radiusMd` */
     val RadiusMd: Dp = 8.dp
 
-    /** Flutter `groupedCardDecoration` 用 `Border.all(color)` 默认 1.0 宽 */
-    const val GroupedCardBorder = 1.0f
+    /** 全页统一细描边：与待办卡 / 入口卡 / 联系人 / 资讯卡及 Mine 分组卡同一线宽。 */
+    const val GroupedCardBorder = 0.5f
 
     /** 手写 `Border.all(width: 0.5)` 的卡片（联系人 / 资讯） */
     const val ThinCardBorder = 0.5f
@@ -341,8 +341,10 @@ fun HomeFeatureGrid(
                         Text(
                             text = item.label,
                             color = HomeSectionStyle.LabelPrimary,
-                            fontSize = 11.sp,
-                            lineHeight = 13.2.sp, // height: 1.2
+                            fontSize = 12.sp,
+                            // 主入口标签与「服务推荐」同级，避免一级入口比二级入口字更小。
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 14.4.sp, // height: 1.2
                             textAlign = TextAlign.Center,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

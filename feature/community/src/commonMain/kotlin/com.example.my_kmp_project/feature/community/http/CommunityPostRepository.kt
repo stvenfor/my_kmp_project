@@ -12,8 +12,8 @@ import com.example.my_kmp_project.core.network.ListPage
  * - `searchPosts` / `searchTopicsPage` / `searchUsers` 返回带分页的 [ListPage]
  *   （Dart `PageResult<T>`：`list` + `hasMore` + `pagination`，result_model.dart:139-157；
  *   KMP 用 `core/network/ListPage.kt` 的 `hasMore(pageSize)` 归一，不再造一个 PageResult）。
- * - 其余列表方法只返回列表（Dart `fetchPosts` / `fetchComments` / `fetchTopics` /
- *   `searchTopics` 都是 `List<T>`，忽略 `pagination`）。
+ * - 动态流同时提供分页视图 [fetchPostsPage] 与列表兼容视图 [fetchPosts]；
+ *   其余列表方法仍是 `List<T>`（`fetchComments` / `fetchTopics` / `searchTopics` 忽略 `pagination`）。
  * - 失败一律抛出异常（Dart 的 `_list` / `_data` 抛 `HttpRequestException`，
  *   http_post_repository.dart:184-214）；KMP 用 `core/network` 的 [com.example.my_kmp_project.core.network.NetworkError.Business]。
  *
@@ -25,9 +25,21 @@ import com.example.my_kmp_project.core.network.ListPage
 public interface CommunityPostRepository {
 
     /**
-     * #59 `GET /community/posts`（Dart post_repository.dart:10-14）。
+     * #59 `GET /community/posts` 的**分页视图**（Dart post_repository.dart:10-14）。
      *
      * [tab]：`latest` | `hot` | `following`（社区顶栏三档）。
+     * 返回服务端分页元数据（[ListPage.pagination] / [ListPage.hasMore]），供 UI 消费；
+     * [page] 仍是本地 0-based，由实现内部 +1 变服务端 1-based。
+     */
+    public suspend fun fetchPostsPage(
+        page: Int,
+        pageSize: Int = 10,
+        tab: String = "latest",
+    ): ListPage<PostModel>
+
+    /**
+     * #59 的**列表兼容视图**：只取 [fetchPostsPage] 的 [ListPage.items]，
+     * 供尚未迁移到分页元数据的调用方使用；契约（page/size/tab）与分页视图完全一致。
      */
     public suspend fun fetchPosts(
         page: Int,

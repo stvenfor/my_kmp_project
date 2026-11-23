@@ -1,4 +1,4 @@
-// Deep import: package Index does not re-export this (compose 1.9.2-0.3.0).
+// Deep import: package Index does not re-export this (compose 1.9.2-0.4.0).
 import { registerComposeInteropBuilder } from '@cpf-kmp-cmp/compose/src/main/ets/compose/ArkUIView';
 
 export interface VodVideoArgs {
@@ -23,6 +23,7 @@ struct VodVideoInline {
   private controller: VideoController = new VideoController();
   private lastSeekToken: number = -1;
   private lastPlaying: boolean = false;
+  private isPrepared: boolean = false;
 
   aboutToAppear(): void {
     this.syncPlayback();
@@ -33,13 +34,13 @@ struct VodVideoInline {
   }
 
   private syncPlayback(): void {
-    if (this.compose_args.seekToken > 0 &&
+    if (this.isPrepared && this.compose_args.seekToken > 0 &&
       this.compose_args.seekToken !== this.lastSeekToken &&
       this.compose_args.seekPositionMs >= 0) {
       this.lastSeekToken = this.compose_args.seekToken;
       this.controller.setCurrentTime(this.compose_args.seekPositionMs / 1000);
     }
-    if (this.compose_args.playing !== this.lastPlaying) {
+    if (this.isPrepared && this.compose_args.playing !== this.lastPlaying) {
       this.lastPlaying = this.compose_args.playing;
       if (this.compose_args.playing) {
         this.controller.start();
@@ -60,6 +61,7 @@ struct VodVideoInline {
       .muted(this.compose_args.muted)
       .autoPlay(this.compose_args.autoPlay)
       .onPrepared(() => {
+        this.isPrepared = true;
         this.syncPlayback();
         if (this.compose_args.startPositionMs > 0) {
           this.controller.setCurrentTime(this.compose_args.startPositionMs / 1000);

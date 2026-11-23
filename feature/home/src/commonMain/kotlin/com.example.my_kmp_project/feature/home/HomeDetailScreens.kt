@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -59,9 +61,9 @@ fun AfterSalesServiceDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5)),
+            .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "服务详情", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "服务详情", onBack = onBack, containerColor = DemoColors.Background)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -72,8 +74,8 @@ fun AfterSalesServiceDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
-                    .border(0.5.dp, Color(0xFFE8E8E8), RoundedCornerShape(16.dp))
+                    .background(DemoColors.Background)
+                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(16.dp))
                     .padding(18.dp),
             ) {
                 Box(
@@ -85,7 +87,7 @@ fun AfterSalesServiceDetailScreen(
                     Text(row.kindLabel, color = kindColor, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(Modifier.height(12.dp))
-                Text(row.title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1A1A1A))
+                Text(row.title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = DemoColors.TextPrimary)
             }
             DetailSection(
                 title = "客户车辆",
@@ -109,7 +111,7 @@ fun AfterSalesServiceDetailScreen(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
+                        .background(DemoColors.Background)
                         .padding(16.dp),
                 ) {
                     Text("备注", fontWeight = FontWeight.Bold, fontSize = 15.sp)
@@ -131,9 +133,9 @@ fun AnalyticsDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F6F8)),
+            .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "数据详情", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "数据详情", onBack = onBack, containerColor = DemoColors.Background)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -142,13 +144,13 @@ fun AnalyticsDetailScreen(
         ) {
             if (record.anomaly) {
                 CueBanner(
-                    color = Color(0xFFC62828),
+                    color = DemoColors.Danger,
                     title = "异常记录",
                     subtitle = "该观测被标记为异常，请优先核对流量与转化。",
                 )
             } else if (record.featured) {
                 CueBanner(
-                    color = Color(0xFF1565C0),
+                    color = DemoColors.Primary,
                     title = "精选记录",
                     subtitle = "该观测被标记为精选，适合作为对照样例。",
                 )
@@ -157,7 +159,7 @@ fun AnalyticsDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
+                    .background(DemoColors.Background)
                     .padding(16.dp),
             ) {
                 Text(record.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -177,13 +179,13 @@ fun AnalyticsDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                    .background(DemoColors.Background)
                     .padding(16.dp),
             ) {
                 Text("漏斗占比", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                 Spacer(Modifier.height(12.dp))
                 val max = record.pv.coerceAtLeast(1)
-                MetricBar("PV", record.pv / max.toFloat(), Color(0xFF3B8CFF))
+                MetricBar("PV", record.pv / max.toFloat(), DemoColors.Accent)
                 Spacer(Modifier.height(8.dp))
                 MetricBar("点击", record.clicks / max.toFloat(), Color(0xFF5C6BC0))
                 Spacer(Modifier.height(8.dp))
@@ -211,9 +213,9 @@ fun NewCarFollowArchiveDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F6F8)),
+            .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = "跟进档案详情", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "跟进档案详情", onBack = onBack, containerColor = DemoColors.Background)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -224,7 +226,7 @@ fun NewCarFollowArchiveDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
+                    .background(DemoColors.Background)
                     .padding(16.dp),
             ) {
                 Text(row.customerName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -246,7 +248,7 @@ fun NewCarFollowArchiveDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                    .background(DemoColors.Background)
                     .padding(16.dp),
             ) {
                 Text("调整级别", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -254,23 +256,29 @@ fun NewCarFollowArchiveDetailScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("高", "中", "低").forEach { label ->
                         val selected = level == label
+                        // 真实选中态切换：仅颜色过渡 200ms，不改尺寸/布局。
+                        val chipTextColor by animateColorAsState(
+                            targetValue = if (selected) DemoColors.Accent else DemoColors.TextPrimary,
+                            animationSpec = tween(durationMillis = 200),
+                            label = "followUpLevelChip",
+                        )
                         Text(
                             label,
-                            color = if (selected) Color(0xFF3B8CFF) else Color(0xFF1A1A1A),
+                            color = chipTextColor,
                             fontWeight = FontWeight.Medium,
                             fontSize = 13.sp,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(
-                                    if (selected) Color(0xFF3B8CFF).copy(alpha = 0.15f) else Color.White,
+                                    if (selected) DemoColors.Accent.copy(alpha = 0.15f) else DemoColors.Background,
                                 )
                                 .border(
                                     1.dp,
-                                    if (selected) Color(0xFF3B8CFF) else Color(0xFFE0E0E0),
+                                    if (selected) DemoColors.Accent else DemoColors.Divider,
                                     RoundedCornerShape(16.dp),
                                 )
-                                .clickable { level = label }
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                                .padding(horizontal = 14.dp, vertical = 13.dp)
+                                .clickable { level = label },
                         )
                     }
                 }
@@ -279,7 +287,7 @@ fun NewCarFollowArchiveDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                    .background(DemoColors.Background)
                     .padding(16.dp),
             ) {
                 Text("写一条跟进", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -294,12 +302,12 @@ fun NewCarFollowArchiveDetailScreen(
                 Spacer(Modifier.height(10.dp))
                 Text(
                     "提交跟进",
-                    color = Color.White,
+                    color = DemoColors.OnPrimary,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFF3B8CFF))
+                        .background(DemoColors.Accent)
                         .clickable {
                             if (logBody.isBlank()) {
                                 showPlatformToast("请填写跟进内容")
@@ -316,7 +324,7 @@ fun NewCarFollowArchiveDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                    .background(DemoColors.Background)
                     .padding(16.dp),
             ) {
                 Text("跟进记录", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -336,10 +344,10 @@ private fun DetailSection(title: String, rows: List<Pair<String, String>>) {
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .background(DemoColors.Background)
             .padding(16.dp),
     ) {
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color(0xFF1A1A1A))
+        Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = DemoColors.TextPrimary)
         Spacer(Modifier.height(10.dp))
         rows.forEach { (k, v) ->
             Row(
@@ -349,7 +357,7 @@ private fun DetailSection(title: String, rows: List<Pair<String, String>>) {
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(k, color = DemoColors.TextSecondary, fontSize = 14.sp)
-                Text(v, color = Color(0xFF1A1A1A), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(v, color = DemoColors.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -380,7 +388,7 @@ private fun MetricBar(label: String, fraction: Float, color: Color) {
                 .weight(1f)
                 .height(10.dp)
                 .clip(RoundedCornerShape(5.dp))
-                .background(Color(0xFFEEEEEE)),
+                .background(DemoColors.Divider),
         ) {
             Box(
                 Modifier

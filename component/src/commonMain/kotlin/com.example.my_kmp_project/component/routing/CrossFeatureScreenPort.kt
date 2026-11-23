@@ -29,7 +29,12 @@ public interface CrossFeatureScreenPort {
 
     /** Content feature route-host table (live / friend / music / media / ai / classroom / video). */
     @Composable
-    fun ContentRouteScreen(route: String, onBack: () -> Unit, onNavigate: (String) -> Unit)
+    fun ContentRouteScreen(
+        route: String,
+        onBack: () -> Unit,
+        onNavigate: (String) -> Unit,
+        onOpenVideoComments: ((videoId: String) -> Unit)?,
+    )
 
     /** Mine feature route-host table (mall / wallet / settings / profile + sibling children). */
     @Composable
@@ -83,8 +88,9 @@ public object CrossFeatureScreens {
         route: String,
         onBack: () -> Unit,
         onNavigate: (String) -> Unit = {},
+        onOpenVideoComments: ((videoId: String) -> Unit)? = null,
     ) {
-        require().ContentRouteScreen(route, onBack, onNavigate)
+        require().ContentRouteScreen(route, onBack, onNavigate, onOpenVideoComments)
     }
 
     @Composable

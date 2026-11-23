@@ -15,6 +15,7 @@ kotlin {
             // ↓ 按我的清单增删，不要全量塞
             api(projects.core.router)
             api(projects.core.network)
+            implementation(projects.core.base) // AppUuid：评论 client_msg_id（唯一 UUID 设施）
         }
         getByName("commonTest").dependencies {
             implementation(projects.core.network)

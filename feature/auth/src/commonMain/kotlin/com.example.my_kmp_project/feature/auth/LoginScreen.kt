@@ -92,16 +92,16 @@ public fun LoginScreen(
             Text(
                 text = authGreeting(),
                 color = AuthUiTokens.LabelPrimary,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.SemiBold,
-                lineHeight = 36.sp,
-                letterSpacing = (-1.6).sp,
+                fontSize = AuthUiTokens.TitleSize,
+                fontWeight = AuthUiTokens.TitleWeight,
+                lineHeight = AuthUiTokens.TitleLineHeight,
+                letterSpacing = AuthUiTokens.TitleLetterSpacing,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "登录以继续使用",
                 color = AuthUiTokens.LabelSecondary,
-                fontSize = 14.sp,
+                fontSize = AuthUiTokens.SubtitleSize,
             )
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -246,8 +246,10 @@ public fun LoginScreen(
                 agreed = agreedPrivacy,
                 onToggle = { agreedPrivacy = !agreedPrivacy; error = null },
             )
-            AuthErrorText(error)
-
+            if (!error.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                AuthErrorText(error)
+            }
             Spacer(modifier = Modifier.height(32.dp))
             AuthPrimaryButton(
                 label = "登录",

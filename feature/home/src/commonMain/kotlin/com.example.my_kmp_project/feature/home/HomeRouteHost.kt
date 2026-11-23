@@ -346,7 +346,7 @@ private fun LifeServiceScreen(onBack: () -> Unit) {
         val isMember: Boolean,
     )
     val shortcuts = listOf(
-        LifeShortcut("会员专享", "▶", Color(0xFF0070F3)),
+        LifeShortcut("会员专享", "▶", DemoColors.Accent),
         LifeShortcut("跟读专栏", "▤", Color(0xFFFF9500)),
         LifeShortcut("其他课程", "▣", Color(0xFF5856D6)),
         LifeShortcut("功能教程", "✎", Color(0xFF34C759)),
@@ -1116,7 +1116,7 @@ private fun CheckInMallScreen(onBack: () -> Unit) {
 @Composable
 private fun TransliterFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
     // Flutter TransliterHomePage — header / categories / banner / features / recent / expert + lower sections
-    val tabAccent = Color(0xFF0070F3) // Flutter VercelTokens.link
+    val tabAccent = DemoColors.Accent // Flutter VercelTokens.link
     val adBlue = Color(0xFF3B82F6)
     val svipGold = Color(0xFFE6A23C)
     val searchPillBg = Color(0xFFF2F3F5)
@@ -2015,7 +2015,7 @@ private fun AnalyticsListScreen(
     onItem: (AnalyticsRecordRow) -> Unit,
 ) {
     // Flutter AnalyticsListPage: summary + ring/bars tiles (Canvas ≈ wys_chart; CPF 无 Vico/KoalaPlot).
-    val primary = Color(0xFF0070F3)
+    val primary = DemoColors.Accent
     val ink = Color(0xFF171717)
     val accent = Color(0xFFF5A623)
     val bg = Color(0xFFF5F5F5)
@@ -2191,7 +2191,7 @@ private fun NewCarFollowListScreen(
     ReportMainTabRoot(isRoot = false)
     Box(Modifier.fillMaxSize().background(bg)) {
         Column(Modifier.fillMaxSize()) {
-            MineTopBar(title = "新车跟进", onBack = onBack, containerColor = Color.White)
+            MineTopBar(title = "新车跟进", onBack = onBack, containerColor = DemoColors.Background)
             LazyColumn(contentPadding = PaddingValues(bottom = 88.dp)) {
                 item {
                     Column(
@@ -2372,7 +2372,7 @@ private fun UsedCarCreateScreen(onBack: () -> Unit) {
     var amount by remember { mutableStateOf("") }
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(bg)) {
-        MineTopBar(title = "新建业务单", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "新建业务单", onBack = onBack, containerColor = DemoColors.Background)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -2479,7 +2479,7 @@ private fun UsedCarDetailScreen(order: UsedCarOrderRow, onBack: () -> Unit) {
     val ink = Color(0xFF1C2430)
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(bg)) {
-        MineTopBar(title = "业务单详情", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "业务单详情", onBack = onBack, containerColor = DemoColors.Background)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -2608,7 +2608,7 @@ private fun UsedCarListScreen(
         FlutterFeatureTopBar(
             title = "二手车",
             onBack = onBack,
-            containerColor = Color.White,
+            containerColor = DemoColors.Background,
             actions = {
                 // Flutter Icons.add_circle_outline (ink, not green glyph).
                 Box(
@@ -2667,7 +2667,7 @@ private fun UsedCarListScreen(
             item {
                 // Flutter ChoiceChip/FilterChip = StadiumBorder; ~42.dp tall, row gap ~14.dp.
                 // Flutter M3 ChoiceChip ≈ 8.dp corners; SoT blue h≈126px → 42.dp; selected wider via check+pad.
-                val chipSelected = Color(0xFF0070F3)
+                val chipSelected = DemoColors.Accent
                 val chipShape = RoundedCornerShape(8.dp)
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 7.dp, bottom = 12.dp)) {
                     Row(Modifier.horizontalScroll(rememberScrollState())) {
@@ -2866,7 +2866,7 @@ private fun AfterSalesCreateScreen(onBack: () -> Unit) {
     var date by remember { mutableStateOf("2026-09-25") }
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
-        MineTopBar(title = "创建售后", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "创建售后", onBack = onBack, containerColor = DemoColors.Background)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -2924,7 +2924,7 @@ private fun AfterSalesCreateScreen(onBack: () -> Unit) {
 private fun AfterSalesDetailScreen(row: HomeListRow, onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color(0xFFF3F5F8))) {
-        MineTopBar(title = "售后详情", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "售后详情", onBack = onBack, containerColor = DemoColors.Background)
         Column(Modifier.padding(16.dp)) {
             UsedCarSection(
                 "工单",
@@ -2948,7 +2948,7 @@ private fun NewCarFollowCreateScreen(onBack: () -> Unit) {
     var level by remember { mutableStateOf("高") }
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color(0xFFF5F6F8))) {
-        MineTopBar(title = "新建跟进", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "新建跟进", onBack = onBack, containerColor = DemoColors.Background)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -3012,7 +3012,7 @@ private fun NewCarFollowCreateScreen(onBack: () -> Unit) {
 private fun NewCarFollowDetailScreen(row: NewCarFollowRow, onBack: () -> Unit) {
     ReportMainTabRoot(isRoot = false)
     Column(Modifier.fillMaxSize().background(Color(0xFFF5F6F8))) {
-        MineTopBar(title = "跟进详情", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "跟进详情", onBack = onBack, containerColor = DemoColors.Background)
         Column(Modifier.padding(16.dp)) {
             UsedCarSection(
                 "客户",
@@ -3047,7 +3047,7 @@ private fun AfterSalesListScreen(
         MineTopBar(
             title = "售后专区",
             onBack = onBack,
-            containerColor = Color.White,
+            containerColor = DemoColors.Background,
             actions = {
                 if (canCreate) {
                     TextButton(onClick = onCreate) {

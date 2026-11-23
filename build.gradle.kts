@@ -38,7 +38,7 @@ subprojects {
     if (!libraryModulePaths(this)) return@subprojects
 
     // 库模块的仓库顺序必须显式钉死，两个源各有对方没有的东西：
-    // - OHOS fork 独有坐标（org.jetbrains.androidx.lifecycle:lifecycle-common:2.9.4-0.3.0 这类）
+    // - OHOS fork 独有坐标（org.jetbrains.androidx.lifecycle:lifecycle-common:2.9.4-0.4.0 这类）
     //   只在 eazytec；阿里云对它是 socket/SSL 报错，而 Gradle 把传输错误判成整次解析失败、
     //   不会接着试下一个仓库，所以 eazytec 必须排第一。
     // - eazytec 不代理 AGP 二进制（aapt2 同样报 socket 错），所以把它对

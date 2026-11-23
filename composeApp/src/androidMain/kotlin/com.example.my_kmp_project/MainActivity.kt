@@ -2,6 +2,7 @@ package com.example.my_kmp_project
 
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -23,6 +24,13 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        requestedOrientation = if (
+            resources.configuration.smallestScreenWidthDp >= TABLET_SMALLEST_WIDTH_DP
+        ) {
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
         AndroidAppContext.install(this)
         AndroidActivityContext.install(this)
         platformNetworkBootstrap()
@@ -61,6 +69,8 @@ class MainActivity : ComponentActivity() {
         acceptDeepLink(data.toString())
     }
 }
+
+private const val TABLET_SMALLEST_WIDTH_DP = 600
 
 @Composable
 internal fun AppAndroidPreview() {

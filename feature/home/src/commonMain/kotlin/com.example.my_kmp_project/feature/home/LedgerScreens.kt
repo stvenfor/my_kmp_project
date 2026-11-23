@@ -54,12 +54,12 @@ fun LedgerListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F6F8)),
+            .background(DemoColors.PageBg),
     ) {
         MineTopBar(
             title = "收支",
             onBack = onBack,
-            containerColor = Color.White,
+            containerColor = DemoColors.Background,
         )
         if (items.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -88,12 +88,12 @@ fun LedgerDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F6F8)),
+            .background(DemoColors.PageBg),
     ) {
         MineTopBar(
             title = "收支详情",
             onBack = onBack,
-            containerColor = Color.White,
+            containerColor = DemoColors.Background,
         )
         if (item == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -105,14 +105,14 @@ fun LedgerDetailScreen(
                     text = item.category,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A1A1A),
+                    color = DemoColors.TextPrimary,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = formatLedgerAmount(item.amount),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF1A1A1A),
+                    color = DemoColors.TextPrimary,
                 )
                 Spacer(Modifier.height(16.dp))
                 Text("类型：${item.type}", color = DemoColors.TextPrimary, fontSize = 15.sp)
@@ -138,7 +138,7 @@ private fun TransactionListItem(
             .padding(horizontal = 16.dp, vertical = 0.dp)
             .padding(bottom = 12.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .background(DemoColors.Background)
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.Top,
@@ -153,7 +153,7 @@ private fun TransactionListItem(
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1A1A1A),
+                    color = DemoColors.TextPrimary,
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -161,11 +161,11 @@ private fun TransactionListItem(
                 text = formatLedgerAmount(item.amount),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A1A1A),
+                color = DemoColors.TextPrimary,
             )
             Spacer(Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(item.date, fontSize = 13.sp, color = Color(0xFF757575))
+                Text(item.date, fontSize = 13.sp, color = DemoColors.TextSecondary)
                 if (!item.note.isNullOrBlank()) {
                     Spacer(Modifier.width(12.dp))
                     Text(
@@ -173,14 +173,14 @@ private fun TransactionListItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontSize = 13.sp,
-                        color = Color(0xFF9E9E9E),
+                        color = DemoColors.Muted,
                         modifier = Modifier.weight(1f, fill = false),
                     )
                 }
             }
         }
         Spacer(Modifier.width(8.dp))
-        Text("›", fontSize = 22.sp, color = Color(0xFFBDBDBD))
+        Text("›", fontSize = 22.sp, color = DemoColors.Outline)
     }
 }
 

@@ -24,13 +24,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.core.design.DemoFonts
 import com.example.my_kmp_project.core.design.MineTopBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -77,14 +76,16 @@ public fun LoginOtpScreen(
             Text(
                 text = "输入验证码",
                 color = AuthUiTokens.LabelPrimary,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = AuthUiTokens.TitleSize,
+                fontWeight = AuthUiTokens.TitleWeight,
+                lineHeight = AuthUiTokens.TitleLineHeight,
+                letterSpacing = AuthUiTokens.TitleLetterSpacing,
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "验证码已发送至",
                 color = AuthUiTokens.LabelSecondary,
-                fontSize = 14.sp,
+                fontSize = AuthUiTokens.SubtitleSize,
             )
             Spacer(modifier = Modifier.height(8.dp))
             if (MockAuthConfig.useMockAuth) {
@@ -104,6 +105,7 @@ public fun LoginOtpScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 textStyle = TextStyle(
+                    fontFamily = DemoFonts.Geist,
                     color = AuthUiTokens.LabelPrimary,
                     fontSize = 24.sp,
                     letterSpacing = 8.sp,
@@ -151,8 +153,8 @@ public fun LoginOtpScreen(
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
-            if (error != null) {
-                Text(text = error!!, color = AlertRed, fontSize = 13.sp)
+            if (!error.isNullOrBlank()) {
+                AuthErrorText(error)
                 Spacer(modifier = Modifier.height(12.dp))
             }
             AuthPrimaryButton(
@@ -174,5 +176,3 @@ public fun LoginOtpScreen(
         }
     }
 }
-
-private val AlertRed = Color(0xFFFF3B30)

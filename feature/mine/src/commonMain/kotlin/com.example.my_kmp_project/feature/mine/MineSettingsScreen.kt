@@ -112,6 +112,7 @@ fun MineSettingsScreen(
                 MineNavRow(
                     title = "运行环境",
                     subtitle = "$envLabel · $hostUrl",
+                    expanded = envPickerOpen,
                     onClick = { envPickerOpen = !envPickerOpen },
                 )
                 if (envPickerOpen) {

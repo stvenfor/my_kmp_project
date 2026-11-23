@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -106,6 +108,12 @@ private fun StrategySubTabs(
     ) {
         tabs.forEachIndexed { index, label ->
             val active = index == selectedIndex
+            // 真实 tab 切换：仅文字颜色过渡 200ms，不动画宽度以免影响布局。
+            val tabTextColor by animateColorAsState(
+                targetValue = if (active) DemoColors.TextPrimary else DemoColors.TextSecondary,
+                animationSpec = tween(durationMillis = 200),
+                label = "strategyTabText",
+            )
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 // Flutter: EdgeInsets.only(right: index < last ? 32 : 0)
@@ -115,7 +123,7 @@ private fun StrategySubTabs(
             ) {
                 Text(
                     text = label,
-                    color = if (active) DemoColors.TextPrimary else DemoColors.TextSecondary,
+                    color = tabTextColor,
                     fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
                     fontSize = 16.sp,
                 )
@@ -298,7 +306,7 @@ private fun StrategyPlanCard() {
             ) {
                 Text(
                     text = "订阅",
-                    color = Color.White,
+                    color = DemoColors.OnPrimary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
                 )

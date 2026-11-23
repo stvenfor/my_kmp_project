@@ -17,6 +17,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.ui.PlaybackControls
+import com.example.my_kmp_project.core.ui.PlaybackSnapshot
+import com.example.my_kmp_project.core.ui.PlaybackStatus
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.music_list_body
@@ -38,7 +43,7 @@ private data class MockTrack(
     val artist: String,
 )
 
-/** Flutter audio list SoT titles (module_music). */
+/** Flutter audio list SoT titles (module_music); no backend track API is wired. */
 private val FlutterTracks = listOf(
     MockTrack("t1", "Ya Ali - DJMaza.Com", "DJMaza"),
     MockTrack("t2", "Ek Do Teen - DJMaza.Info", "DJMaza"),
@@ -48,12 +53,22 @@ private val FlutterTracks = listOf(
     MockTrack("t6", "Levitating", "Dua Lipa"),
 )
 
+private fun statusLabel(snapshot: PlaybackSnapshot): String = when (snapshot.status) {
+    PlaybackStatus.Idle -> "未播放"
+    PlaybackStatus.Loading -> "加载中…"
+    PlaybackStatus.Buffering -> "缓冲中…"
+    PlaybackStatus.Playing -> "播放中"
+    PlaybackStatus.Paused -> "已暂停"
+    PlaybackStatus.Ended -> "已播放完毕"
+    PlaybackStatus.Error -> "播放失败"
+    PlaybackStatus.Unsupported -> "当前平台不支持音乐播放"
+}
+
 @Composable
 fun MusicListScreen(
     onBack: () -> Unit,
     onOpenNowPlaying: (() -> Unit)? = null,
 ) {
-    // Flutter audio list full-frame SoT; player gaps stay registry-honest.
     val tracks = remember { FlutterTracks }
     ReportMainTabRoot(isRoot = false)
     Box(
@@ -107,7 +122,9 @@ private fun NowPlayingScreen(
     track: MockTrack,
     onBack: () -> Unit,
 ) {
-    val player = MusicSession.player
+    val snapshot by MusicSession.snapshot.collectAsState()
+    val commands = MusicSession.controls
+    val isPlaying = snapshot.status == PlaybackStatus.Playing
 
     Column(
         modifier = Modifier
@@ -136,33 +153,34 @@ private fun NowPlayingScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = if (player.isPlaying) "播放中（Stub）" else "已暂停",
+                text = statusLabel(snapshot),
                 color = DemoColors.Muted,
                 fontSize = 13.sp,
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = {
-                    if (player.isPlaying) player.pause() else player.play()
-                }) {
-                    Text(
-                        text = if (player.isPlaying) "暂停" else "播放",
-                        color = DemoColors.Primary,
-                    )
-                }
-                TextButton(onClick = {
-                    MusicSession.dismiss()
-                    onBack()
-                }) {
-                    Text(text = "停止", color = DemoColors.TextSecondary)
-                }
-            }
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                "播放器缺口：OHOS/真机解码见 platform-gap-registry",
-                color = DemoColors.Muted,
-                fontSize = 12.sp,
+            PlaybackControls(
+                snapshot = snapshot,
+                isPlaying = isPlaying,
+                onPlayPause = {
+                    if (isPlaying) commands.onPause() else commands.onPlay()
+                },
+                onSeek = commands.onSeek,
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = {
+                commands.onStop()
+                onBack()
+            }) {
+                Text(text = "停止", color = DemoColors.TextSecondary)
+            }
+            if (MusicSession.isSampleSource) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "示例音频 · 后端曲目尚未接入",
+                    color = DemoColors.Muted,
+                    fontSize = 12.sp,
+                )
+            }
         }
     }
 }
@@ -174,7 +192,9 @@ fun MiniPlayerBar(
     onOpenNowPlaying: (() -> Unit)? = null,
 ) {
     val title = MusicSession.trackTitle ?: return
-    val player = MusicSession.player
+    val snapshot by MusicSession.snapshot.collectAsState()
+    val commands = MusicSession.controls
+    val isPlaying = snapshot.status == PlaybackStatus.Playing
 
     Column(
         modifier = modifier
@@ -205,19 +225,24 @@ fun MiniPlayerBar(
                     fontSize = 12.sp,
                     maxLines = 1,
                 )
-            }
-            TextButton(onClick = {
-                if (player.isPlaying) player.pause() else player.play()
-            }) {
                 Text(
-                    text = if (player.isPlaying) "暂停" else "播放",
-                    color = DemoColors.Primary,
-                    fontSize = 13.sp,
+                    text = statusLabel(snapshot),
+                    color = DemoColors.Muted,
+                    fontSize = 11.sp,
+                    maxLines = 1,
                 )
             }
             TextButton(onClick = { MusicSession.dismiss() }) {
                 Text(text = "关闭", color = DemoColors.TextSecondary, fontSize = 13.sp)
             }
         }
+        PlaybackControls(
+            snapshot = snapshot,
+            isPlaying = isPlaying,
+            onPlayPause = {
+                if (isPlaying) commands.onPause() else commands.onPlay()
+            },
+            onSeek = commands.onSeek,
+        )
     }
 }

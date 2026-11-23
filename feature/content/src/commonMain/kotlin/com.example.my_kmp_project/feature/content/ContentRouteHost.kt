@@ -14,6 +14,7 @@ public fun ContentRouteHost(
     route: String,
     onBack: () -> Unit,
     onNavigate: (String) -> Unit = {},
+    onOpenVideoComments: ((videoId: String) -> Unit)? = null,
 ) {
-    CrossFeatureScreens.ContentRouteScreen(route, onBack, onNavigate)
+    CrossFeatureScreens.ContentRouteScreen(route, onBack, onNavigate, onOpenVideoComments)
 }

@@ -22,11 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.core.design.DemoFonts
 import com.example.my_kmp_project.core.design.MineTopBar
 import kotlinx.coroutines.launch
 
@@ -67,8 +67,10 @@ public fun LoginPasswordScreen(
             Text(
                 text = "请输入你的密码",
                 color = AuthUiTokens.LabelPrimary,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
+                fontSize = AuthUiTokens.TitleSize,
+                fontWeight = AuthUiTokens.TitleWeight,
+                lineHeight = AuthUiTokens.TitleLineHeight,
+                letterSpacing = AuthUiTokens.TitleLetterSpacing,
             )
             Spacer(modifier = Modifier.height(40.dp))
             if (AuthPendingCredentials.email.isBlank()) {
@@ -82,6 +84,7 @@ public fun LoginPasswordScreen(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     textStyle = TextStyle(
+                        fontFamily = DemoFonts.Geist,
                         color = AuthUiTokens.LabelPrimary,
                         fontSize = 18.sp,
                     ),
@@ -111,6 +114,7 @@ public fun LoginPasswordScreen(
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 textStyle = TextStyle(
+                    fontFamily = DemoFonts.Geist,
                     color = AuthUiTokens.LabelPrimary,
                     fontSize = 18.sp,
                 ),
@@ -132,8 +136,8 @@ public fun LoginPasswordScreen(
                 },
             )
             Spacer(modifier = Modifier.height(40.dp))
-            if (error != null) {
-                Text(text = error!!, color = DemoAlertRed, fontSize = 13.sp)
+            if (!error.isNullOrBlank()) {
+                AuthErrorText(error)
                 Spacer(modifier = Modifier.height(12.dp))
             }
             AuthPrimaryButton(
@@ -160,5 +164,3 @@ public fun LoginPasswordScreen(
         }
     }
 }
-
-private val DemoAlertRed = androidx.compose.ui.graphics.Color(0xFFFF3B30)

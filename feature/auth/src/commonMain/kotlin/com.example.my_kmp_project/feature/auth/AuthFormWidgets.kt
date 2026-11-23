@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.feature.auth
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,25 +38,38 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoFonts
+import com.example.my_kmp_project.core.design.DesignTokens
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-/** Flutter `AuthTheme` tokens used inside auth feature only. */
+/**
+ * 登录/注册表单的语义别名——颜色与圆角全部委托给共享设计令牌，
+ * 避免 auth 模块自带一套与 SoT 冲突的调色板（原 #007AFF / #F2F2F7 / #000000）。
+ * 属性名保持不变，四个表单页无需改调用点。
+ */
 public object AuthUiTokens {
-    val Accent = Color(0xFF007AFF)
-    val Background = Color(0xFFF2F2F7)
-    val Surface = Color(0xFFFFFFFF)
-    val FillSecondary = Color(0xFFE9E9EB)
-    val LabelPrimary = Color(0xFF000000)
-    val LabelSecondary = Color(0x993C3C43)
-    val LabelTertiary = Color(0x4D3C3C43)
-    val Separator = Color(0xFFC6C6C8)
-    val ButtonDisabled = Color(0xFFC7C7CC)
-    /** Flutter `AuthTheme.radiusMd` / `radiusLg`. */
-    val RadiusMd = 8.dp
-    val RadiusLg = 12.dp
+    val Accent = DemoColors.Accent
+    val Background = DemoColors.PageBg
+    val Surface = DemoColors.Background
+    val FillSecondary = DemoColors.Divider
+    val LabelPrimary = DemoColors.TextPrimary
+    val LabelSecondary = DemoColors.TextSecondary
+    val LabelTertiary = DemoColors.Muted
+    val Separator = DemoColors.Divider
+    /** 无独立 SoT 令牌：Mute 半透明，近似原禁用灰。 */
+    val ButtonDisabled = DemoColors.Muted.copy(alpha = 0.5f)
+    /** Flutter `AuthTheme.radiusMd` / `radiusLg` == DesignTokens.Radius.Sm / Md. */
+    val RadiusMd = DesignTokens.Radius.Sm.dp
+    val RadiusLg = DesignTokens.Radius.Md.dp
     val FieldHeight = 52.dp
     val ButtonHeight = 52.dp
+    /** 四个表单页统一的主标题 / 副标题规格。 */
+    val TitleSize = 32.sp
+    val TitleLineHeight = 36.sp
+    val TitleLetterSpacing = (-1.6).sp
+    val TitleWeight = FontWeight.SemiBold
+    val SubtitleSize = 14.sp
 }
 
 /** Local hour approximated as UTC+8 (product locale). */
@@ -108,11 +124,17 @@ private fun AuthSegmentChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 只改背景色，不改尺寸/位置：切换 tab 不会移动输入框或影响键盘。
+    val chipColor by animateColorAsState(
+        targetValue = if (selected) AuthUiTokens.Surface else Color.Transparent,
+        animationSpec = tween(durationMillis = 180),
+        label = "authSegmentChip",
+    )
     Box(
         modifier = modifier
             .height(40.dp)
             .background(
-                color = if (selected) AuthUiTokens.Surface else Color.Transparent,
+                color = chipColor,
                 shape = RoundedCornerShape(10.dp),
             )
             .clickable(onClick = onClick),
@@ -157,6 +179,7 @@ public fun AuthFilledField(
             modifier = Modifier.weight(1f),
             singleLine = true,
             textStyle = TextStyle(
+                fontFamily = DemoFonts.Geist,
                 fontSize = 16.sp,
                 color = AuthUiTokens.LabelPrimary,
             ),
@@ -172,6 +195,7 @@ public fun AuthFilledField(
                     if (value.isEmpty()) {
                         Text(
                             text = hint,
+                            fontFamily = DemoFonts.Geist,
                             color = AuthUiTokens.LabelTertiary,
                             fontSize = 16.sp,
                         )
@@ -218,6 +242,7 @@ public fun AuthPrimaryButton(
         } else {
             Text(
                 text = label,
+                fontFamily = DemoFonts.Geist,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
             )
@@ -316,11 +341,13 @@ public fun AuthErrorText(
     modifier: Modifier = Modifier,
 ) {
     if (message.isNullOrBlank()) return
+    // 纯文本、无内部间距与动画；间距由调用方在错误显示的条件分支内给出，文案变化只随状态更新。
     Text(
         text = message,
         color = DemoColors.Danger,
         fontSize = 13.sp,
-        modifier = modifier.padding(top = 12.dp),
+        fontFamily = DemoFonts.Geist,
+        modifier = modifier,
     )
 }
 

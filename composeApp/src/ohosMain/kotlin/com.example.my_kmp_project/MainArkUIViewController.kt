@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeArkUIViewController
+import com.example.my_kmp_project.core.design.DemoTheme
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.OhosComposeHostRequest
@@ -41,24 +42,26 @@ fun MainArkUIViewController(env: napi_env): napi_value {
             com.example.my_kmp_project.app.ShellBootstrap.install()
         }
         ComposeArkUIViewController(env) {
-            if (OhosSmokeUiOnly) {
-                OhosSmokeRoot()
-            } else {
-                var closed by remember { mutableStateOf(false) }
-                if (!closed) {
-                    when (OhosComposeHostRequest.mode) {
-                        1 -> SecondaryRouteIsland(
-                            initialRoute = OhosComposeHostRequest.secondaryRoute,
-                            onRequestClose = { closed = true },
-                        )
-                        else -> MineIsland(
-                            initialRoute = OhosComposeHostRequest.mineRoute,
-                            onRequestClose = { closed = true },
-                        )
-                    }
+            DemoTheme {
+                if (OhosSmokeUiOnly) {
+                    OhosSmokeRoot()
                 } else {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("已关闭")
+                    var closed by remember { mutableStateOf(false) }
+                    if (!closed) {
+                        when (OhosComposeHostRequest.mode) {
+                            1 -> SecondaryRouteIsland(
+                                initialRoute = OhosComposeHostRequest.secondaryRoute,
+                                onRequestClose = { closed = true },
+                            )
+                            else -> MineIsland(
+                                initialRoute = OhosComposeHostRequest.mineRoute,
+                                onRequestClose = { closed = true },
+                            )
+                        }
+                    } else {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("已关闭")
+                        }
                     }
                 }
             }

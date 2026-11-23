@@ -1,15 +1,21 @@
 package com.example.my_kmp_project.nativeshell
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -19,6 +25,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,6 +42,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.my_kmp_project.app.AppContainer
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.AdaptiveWindowClass
+import com.example.my_kmp_project.core.design.adaptiveWindowClass
 import com.example.my_kmp_project.core.design.DesignTokens
 import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.TokenExpiredHandler
@@ -59,6 +68,11 @@ import com.example.my_kmp_project.component.chat.chatDetailArgsFromDeepLink
 import com.example.my_kmp_project.feature.commerce.MembershipScreen
 import com.example.my_kmp_project.feature.community.CommunityRouteHost
 import com.example.my_kmp_project.core.router.CommunityRoutes
+import com.example.my_kmp_project.core.router.CommentRoutes
+import com.example.my_kmp_project.feature.community.UnifiedCommentController
+import com.example.my_kmp_project.feature.community.UnifiedCommentSheet
+import com.example.my_kmp_project.feature.community.UnifiedCommentTarget
+import com.example.my_kmp_project.feature.community.http.UnifiedCommentTargetType
 import com.example.my_kmp_project.feature.content.ContentRouteHost
 import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.feature.home.AllServicesScreen
@@ -68,9 +82,14 @@ import com.example.my_kmp_project.feature.home.HomeWebHandlers
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.mine.MineRouteHost
+import com.example.my_kmp_project.feature.media.MiniPlayerBar
+import com.example.my_kmp_project.feature.media.MusicNowPlayingRoute
+import com.example.my_kmp_project.feature.media.MusicSession
+import com.example.my_kmp_project.feature.media.SharedVideoPlayer
 import com.example.my_kmp_project.core.router.MineRoutes
 import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
+import com.example.my_kmp_project.feature.shell.MainNavigationRail
 import com.example.my_kmp_project.feature.shell.SoftAuthPresenter
 import com.example.my_kmp_project.feature.web.InAppWebScreen
 import com.example.my_kmp_project.core.router.AiRoutes
@@ -118,6 +137,10 @@ internal fun NativeAndroidMain() {
     var chatPendingDetail by remember { mutableStateOf<ChatDetailDeepLinkArgs?>(null) }
     var chatMissingDetail by remember { mutableStateOf(false) }
     var pendingRouteAfterLogin by remember { mutableStateOf<String?>(null) }
+    var showNowPlaying by remember { mutableStateOf(false) }
+    var commentTarget by remember { mutableStateOf<UnifiedCommentTarget?>(null) }
+    var commentResume by remember { mutableStateOf<CommentResume?>(null) }
+    var commentReturnOverlay by remember { mutableStateOf<ShellOverlay?>(null) }
     val authState by softAuth.uiState.collectAsState()
 
     /** Flutter MineController / *Navigation.open() soft-auth gates. */
@@ -189,6 +212,11 @@ internal fun NativeAndroidMain() {
         previewIndex: Int = 0,
         videoUrl: String? = null,
     ) {
+        // 评论区是装配层浮层：只覆盖、不替换底层 feed / 播放页与导航、底栏状态。
+        if (CommentRoutes.isCommentRoute(route)) {
+            commentTarget = UnifiedCommentTarget.fromRoute(route)
+            return
+        }
         communityRoute = route
         communityPreviewUrls = previewUrls
         communityPreviewIndex = previewIndex
@@ -311,6 +339,21 @@ internal fun NativeAndroidMain() {
         }
     }
 
+    /**
+     * 评论面板内发起登录：登录界面只在 [ShellOverlay.None] 组合，所以先收起顶层页；
+     * 成功 / 取消后恢复原顶层页与评论目标，草稿与回复上下文由 [CommentResume] 带回。
+     */
+    fun resumeCommentAfterLogin() {
+        val resume = commentResume ?: return
+        val returnOverlay = commentReturnOverlay
+        commentReturnOverlay = null
+        if (returnOverlay != null && returnOverlay != ShellOverlay.None) {
+            overlay = returnOverlay
+            bottomBarVisible = false
+        }
+        commentTarget = resume.target
+    }
+
     fun afterAuthSuccess() {
         val resume = softAuth.onLoginSucceeded()
         tab = resume
@@ -322,6 +365,7 @@ internal fun NativeAndroidMain() {
         if (pending != null) {
             openPendingRoute(pending)
         }
+        resumeCommentAfterLogin()
     }
 
     fun openDeferred(title: String) {
@@ -542,8 +586,11 @@ internal fun NativeAndroidMain() {
             }
     }
 
-    when (overlay) {
-        ShellOverlay.MineIsland -> {
+    // 顶层页入场淡入：key(overlay) 切换即重建动画，任意时刻只组合一个页面，
+    // 不用 Crossfade，避免退出阶段旧页与新页同时存活导致副作用重复触发。
+    ShellEntry(overlay) {
+        when (overlay) {
+            ShellOverlay.MineIsland -> {
             MineIsland(
                 initialRoute = islandRoute,
                 onRequestClose = { closeOverlay() },
@@ -574,6 +621,15 @@ internal fun NativeAndroidMain() {
                 previewUrls = communityPreviewUrls,
                 previewIndex = communityPreviewIndex,
                 videoUrl = communityVideoUrl,
+                videoPlayer = { url, playing, modifier, onPlayingChange ->
+                    SharedVideoPlayer(
+                        url = url,
+                        isPlaying = playing,
+                        onPlayingChange = onPlayingChange,
+                        title = "社区视频",
+                        modifier = modifier,
+                    )
+                },
             )
         }
         ShellOverlay.MineRoute -> {
@@ -596,6 +652,12 @@ internal fun NativeAndroidMain() {
                 route = contentRoute ?: ContentRoutes.MediaEntry,
                 onBack = { popContentRoute() },
                 onNavigate = { navigateSecondary(it) },
+                onOpenVideoComments = { videoId ->
+                    commentTarget = UnifiedCommentTarget.Valid(
+                        UnifiedCommentTargetType.Video,
+                        videoId,
+                    )
+                },
             )
         }
         ShellOverlay.Membership -> {
@@ -647,9 +709,17 @@ internal fun NativeAndroidMain() {
                 onBack = {
                     softAuth.dismissGate()
                     pendingRouteAfterLogin = null
+                    val returnOverlay = commentReturnOverlay
+                    commentReturnOverlay = null
+                    commentResume = null
                     authOverlay = AuthOverlay.None
                     tab = MainTab.Home
-                    bottomBarVisible = true
+                    if (returnOverlay != null && returnOverlay != ShellOverlay.None) {
+                        overlay = returnOverlay
+                        bottomBarVisible = false
+                    } else {
+                        bottomBarVisible = true
+                    }
                 },
             )
             AuthOverlay.LoginPassword -> LoginPasswordScreen(
@@ -666,30 +736,55 @@ internal fun NativeAndroidMain() {
                 onBack = { authOverlay = AuthOverlay.Login },
             )
             AuthOverlay.None -> {
-                Scaffold(
-                    containerColor = Color.Transparent,
-                    contentWindowInsets = WindowInsets(0),
-                    bottomBar = {
-                        if (bottomBarVisible) {
-                            MainBottomBar(selected = tab, onSelect = { selectTab(it) })
-                        }
-                    },
-                ) { padding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding),
-                    ) {
+                BoxWithConstraints(Modifier.fillMaxSize()) {
+                    val windowClass = adaptiveWindowClass(maxWidth.value)
+                    val showNavigationRail = bottomBarVisible && windowClass == AdaptiveWindowClass.Expanded
+                    Scaffold(
+                        containerColor = Color.Transparent,
+                        contentWindowInsets = WindowInsets(0),
+                        bottomBar = {
+                            Column {
+                                // 音乐仅应用内跨 Tab 续播；active 才显示，点击回到 Now Playing。
+                                if (MusicSession.isActive) {
+                                    MiniPlayerBar(onOpenNowPlaying = { showNowPlaying = true })
+                                }
+                                if (bottomBarVisible && !showNavigationRail) {
+                                    MainBottomBar(selected = tab, onSelect = { selectTab(it) })
+                                }
+                            }
+                        },
+                    ) { padding ->
+                        Row(
+                            modifier = Modifier.fillMaxSize().padding(padding),
+                        ) {
+                            if (showNavigationRail) {
+                                MainNavigationRail(selected = tab, onSelect = { selectTab(it) })
+                            }
+                            BoxWithConstraints(
+                                modifier = Modifier.weight(1f).fillMaxSize(),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .widthIn(max = 1200.dp)
+                                        .fillMaxSize()
+                                        .align(Alignment.Center),
+                                ) {
                         // IndexedStack-style keep-alive for visited tabs.
                         MainTab.entries.forEach { t ->
                             if (t in keptTabs) {
                                 val active = t == tab
+                                // keep-alive Tab 只动 alpha：不移除组合，避免 Tab 状态重建与副作用重放。
+                                val tabAlpha by animateFloatAsState(
+                                    targetValue = if (active) 1f else 0f,
+                                    animationSpec = tween(durationMillis = ShellTransitionMs),
+                                    label = "tabAlpha",
+                                )
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .zIndex(if (active) 1f else 0f)
                                         .graphicsLayer {
-                                            alpha = if (active) 1f else 0f
+                                            alpha = tabAlpha
                                         },
                                 ) {
                                     when (t) {
@@ -709,6 +804,12 @@ internal fun NativeAndroidMain() {
                                             },
                                         )
                                         MainTab.Community -> JetpackCommunityRoot(
+                                            onOpenComments = { postId ->
+                                                commentTarget = UnifiedCommentTarget.Valid(
+                                                    UnifiedCommentTargetType.Post,
+                                                    postId,
+                                                )
+                                            },
                                             onOpen = { label -> openDeferred(label) },
                                             onPreviewImages = { urls, index ->
                                                 openCommunityRoute(
@@ -750,12 +851,64 @@ internal fun NativeAndroidMain() {
                                 }
                             }
                         }
+                            }
+                        }
                     }
                 }
             }
         }
     }
+    }
+
+        // 音乐 Now Playing 作为顶层覆盖页，仅应用内可见；不触碰 NAPI / mode / route 生命周期。
+        if (showNowPlaying) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(DemoColors.PageBg)
+                    .zIndex(10f),
+            ) {
+                MusicNowPlayingRoute(onBack = { showNowPlaying = false })
+            }
+        }
+
+        // 统一评论浮层：返回 / 下滑只收起浮层，底层页面与底栏状态原样保留。
+        commentTarget?.let { target ->
+            val resume = commentResume?.takeIf { it.target == target }
+            UnifiedCommentSheet(
+                target = target,
+                onDismiss = {
+                    commentTarget = null
+                    commentResume = null
+                },
+                onSignIn = { draft, reply ->
+                    commentResume = CommentResume(target, draft, reply)
+                    val returnOverlay = overlay
+                    commentReturnOverlay = returnOverlay
+                    commentTarget = null
+                    AuthGate.rememberPending(
+                        if (returnOverlay == ShellOverlay.None) MainTab.Community else tab,
+                    )
+                    overlay = ShellOverlay.None
+                    authOverlay = AuthOverlay.Login
+                    bottomBarVisible = false
+                },
+                initialDraft = resume?.draft.orEmpty(),
+                initialReply = resume?.reply,
+            )
+        }
+    }
 }
+
+/** Android 入口 Shell 转场节奏：与 MainBottomBar 200ms 指示动效一致。 */
+private const val ShellTransitionMs = 200
+
+/** 评论面板登录往返快照：目标 + 草稿 + 回复上下文。 */
+private data class CommentResume(
+    val target: UnifiedCommentTarget,
+    val draft: String,
+    val reply: UnifiedCommentController.ReplyContext?,
+)
 
 private enum class AuthOverlay { None, Login, LoginPassword, LoginOtp, Register }
 private enum class ShellOverlay {
@@ -770,6 +923,28 @@ private enum class ShellOverlay {
     CommunityRoute,
     MineRoute,
     ContentRoute,
+}
+
+/**
+ * 顶层页入场淡入：key 变化即重建动画，任意时刻只组合一个页面；与 Tab alpha 共用
+ * [ShellTransitionMs] 节奏。退出瞬间旧页直接移除，不做退场动画，避免旧/新页并存时
+ * 重复触发 LaunchedEffect / DisposableEffect 等副作用。
+ */
+@Composable
+private fun ShellEntry(overlay: ShellOverlay, content: @Composable () -> Unit) {
+    key(overlay) {
+        val entryAlpha = remember { Animatable(0.9f) }
+        LaunchedEffect(Unit) {
+            entryAlpha.animateTo(1f, animationSpec = tween(durationMillis = ShellTransitionMs))
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { this.alpha = entryAlpha.value },
+        ) {
+            content()
+        }
+    }
 }
 
 @Composable

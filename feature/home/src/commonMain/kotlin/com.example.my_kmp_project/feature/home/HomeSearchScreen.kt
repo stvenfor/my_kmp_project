@@ -1,5 +1,8 @@
 package com.example.my_kmp_project.feature.home
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -40,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
@@ -69,6 +73,9 @@ import org.jetbrains.compose.resources.painterResource
 
 /** Flutter `SearchPageTheme.searchFieldHeight` / AppNav chrome. */
 private val SearchFieldHeight = 44.dp
+
+/** 搜索页状态反馈统一节奏：短促、有限、可中断。 */
+private const val SearchFeedbackMs = 200
 
 private fun searchRankCoverRes(rank: Int): DrawableResource = when (rank) {
     1 -> Res.drawable.home_search_rank_1
@@ -481,20 +488,31 @@ private fun RankTabBar(
     ) {
         tabs.forEachIndexed { index, label ->
             val active = index == selectedIndex
+            val colorProgress by animateFloatAsState(
+                targetValue = if (active) 1f else 0f,
+                animationSpec = tween(durationMillis = SearchFeedbackMs),
+                label = "rankTabColor",
+            )
+            val labelColor = lerp(DemoColors.TextSecondary, DemoColors.Accent, colorProgress)
+            val indicatorWidth by animateDpAsState(
+                targetValue = if (active) 20.dp else 0.dp,
+                animationSpec = tween(durationMillis = SearchFeedbackMs),
+                label = "rankTabIndicator",
+            )
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.clickable { onSelected(index) },
             ) {
                 Text(
                     text = label,
-                    color = if (active) DemoColors.Accent else DemoColors.TextSecondary,
+                    color = labelColor,
                     fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
                     fontSize = 15.sp,
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Box(
                     modifier = Modifier
-                        .width(if (active) 20.dp else 0.dp)
+                        .width(indicatorWidth)
                         .height(2.dp)
                         .background(DemoColors.Accent),
                 )

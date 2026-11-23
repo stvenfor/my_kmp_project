@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +72,8 @@ fun MineNavRow(
     showHelp: Boolean = false,
     onHelp: (() -> Unit)? = null,
     destructive: Boolean = false,
+    /** 非 null 时用于表达展开态：箭头静态旋转 90°，不引入动画。 */
+    expanded: Boolean? = null,
     onClick: (() -> Unit)?,
 ) {
     val titleColor = if (destructive) MineTheme.Danger else MineTheme.LabelPrimary
@@ -129,7 +132,9 @@ fun MineNavRow(
             Image(
                 painter = painterResource(Res.drawable.settings_personalized_settings_chevron_right),
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier
+                    .size(16.dp)
+                    .rotate(if (expanded == true) 90f else 0f),
                 contentScale = ContentScale.Fit,
             )
         }
@@ -148,6 +153,8 @@ fun MineSwitchRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            // 与 MineNavRow 同宽的点击热区；Switch 自身点击由内层消费，不会双触发。
+            .clickable { onCheckedChange(!checked) }
             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

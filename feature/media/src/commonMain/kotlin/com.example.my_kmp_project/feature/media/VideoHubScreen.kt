@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,7 +47,11 @@ private data class MockVideo(
     val id: String,
     val title: String,
     val durationLabel: String,
+    val videoUrl: String = SAMPLE_VIDEO_URL,
 )
+
+private const val SAMPLE_VIDEO_URL =
+    "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
 private enum class MediaEntryRoute {
     Chooser,
@@ -181,7 +186,7 @@ fun VideoHubScreen(onBack: () -> Unit) {
         ) {
             item {
                 Text(
-                    text = "Mock 视频列表（音频轨可用 Android MediaPlayer；画面 Surface 待接）",
+                    text = "示例视频列表",
                     color = DemoColors.TextSecondary,
                     fontSize = 13.sp,
                 )
@@ -241,30 +246,26 @@ private fun VideoPlayScreen(
     video: MockVideo,
     onBack: () -> Unit,
 ) {
-    val player = remember { createMediaPlayer() }
+    var isPlaying by remember(video.id) { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = video.title, onBack = {
-            player.stop()
-            onBack()
-        }, containerColor = DemoColors.PageBg)
+        MineTopBar(title = video.title, onBack = onBack, containerColor = DemoColors.PageBg)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
                 .padding(horizontal = 16.dp)
-                .background(DemoColors.Toolbar, RoundedCornerShape(12.dp)),
+                .background(Color.Black, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = if (player.isPlaying) "播放中…" else "已暂停",
-                color = DemoColors.TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
+            VideoPlaybackSurface(
+                url = video.videoUrl,
+                isPlaying = isPlaying,
+                modifier = Modifier.fillMaxSize(),
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -282,20 +283,14 @@ private fun VideoPlayScreen(
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
             TextButton(onClick = {
-                if (player.isPlaying) {
-                    player.pause()
-                } else {
-                    player.setSource(MusicSession.SAMPLE_AUDIO_URL)
-                    player.play()
-                }
+                isPlaying = !isPlaying
             }) {
                 Text(
-                    text = if (player.isPlaying) "暂停" else "播放",
+                    text = if (isPlaying) "暂停" else "播放",
                     color = DemoColors.Primary,
                 )
             }
             TextButton(onClick = {
-                player.stop()
                 onBack()
             }) {
                 Text(text = "返回", color = DemoColors.TextSecondary)

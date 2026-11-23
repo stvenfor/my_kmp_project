@@ -32,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
@@ -213,8 +212,8 @@ private fun MineTopChrome(
             text = "我的",
             color = MineTheme.LabelPrimary,
             fontSize = MineTheme.LargeTitleSize,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = (-0.5).sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = (-1.6).sp,
             lineHeight = 36.sp,
             modifier = Modifier.weight(1f),
         )
@@ -259,6 +258,7 @@ private fun MineCollapsedNavBar(
                 color = MineTheme.LabelPrimary,
                 fontSize = MineTheme.HeadlineSize,
                 fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-0.54).sp,
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp),
@@ -322,6 +322,7 @@ private fun ProfileCard(
                         color = MineTheme.LabelPrimary,
                         fontSize = MineTheme.HeadlineSize,
                         fontWeight = FontWeight.SemiBold,
+                        letterSpacing = (-0.54).sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false),
@@ -405,8 +406,8 @@ private fun StatsBar(stats: List<MineStat>) {
                         text = stat.value,
                         color = MineTheme.LabelPrimary,
                         fontSize = MineTheme.StatValueSize,
-                        fontWeight = FontWeight.Bold,
-                        lineHeight = 24.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        lineHeight = 28.sp,
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
@@ -433,6 +434,7 @@ private fun QuickServicesSection(onTap: (MineQuickService) -> Unit) {
             color = MineTheme.LabelPrimary,
             fontSize = MineTheme.SectionTitleSize,
             fontWeight = FontWeight.SemiBold,
+            letterSpacing = (-0.54).sp,
         )
         Spacer(modifier = Modifier.height(12.dp))
         MineGroupedCard {
@@ -517,6 +519,7 @@ private fun FunctionSection(
                 color = MineTheme.LabelPrimary,
                 fontSize = MineTheme.SectionTitleSize,
                 fontWeight = FontWeight.SemiBold,
+                letterSpacing = (-0.54).sp,
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
@@ -561,12 +564,6 @@ private fun FunctionCard(
     Column(
         modifier = modifier
             .aspectRatio(0.92f)
-            .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(MineTheme.RadiusMd),
-                ambientColor = MineTheme.Shadow,
-                spotColor = MineTheme.Shadow,
-            )
             .clip(RoundedCornerShape(MineTheme.RadiusMd))
             .background(MineTheme.Surface)
             .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
@@ -593,6 +590,7 @@ private fun FunctionCard(
             color = MineTheme.LabelPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
+            letterSpacing = (-0.54).sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

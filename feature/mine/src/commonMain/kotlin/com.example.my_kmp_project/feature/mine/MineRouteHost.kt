@@ -148,7 +148,7 @@ private fun UnmappedMineRoute(route: String, onBack: () -> Unit) {
 private fun MallDetailScreen(onBack: () -> Unit) {
     // Flutter MallDetailPage chrome (56dp nav) + SoT body bitmap — CJK/Material AA floor.
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color.White)) {
+    Column(Modifier.fillMaxSize().background(MineTheme.Surface)) {
         WalletFlutterNavBar(title = "商品详情", onBack = onBack)
         Column(Modifier.verticalScroll(rememberScrollState())) {
             Image(
@@ -167,8 +167,8 @@ private fun MallDetailScreen(onBack: () -> Unit) {
 private fun MallOrderDetailScreen(onBack: () -> Unit) {
     // Flutter MallOrderDetailPage SoT
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "订单详情", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "订单详情", onBack = onBack, containerColor = MineTheme.Surface)
         Column(
             Modifier
                 .weight(1f)
@@ -179,8 +179,9 @@ private fun MallOrderDetailScreen(onBack: () -> Unit) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                     .padding(14.dp),
             ) {
                 Text("待支付", fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Color(0xFFFF9500))
@@ -200,8 +201,9 @@ private fun MallOrderDetailScreen(onBack: () -> Unit) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                     .padding(14.dp),
             ) {
                 Row {
@@ -219,14 +221,15 @@ private fun MallOrderDetailScreen(onBack: () -> Unit) {
                         Spacer(Modifier.height(6.dp))
                         Text("x2", color = DemoColors.TextSecondary, fontSize = 12.sp)
                     }
-                    Text("¥79.80", color = Color(0xFFEE0000), fontWeight = FontWeight.SemiBold)
+                    Text("¥79.80", color = MineTheme.Danger, fontWeight = FontWeight.SemiBold)
                 }
             }
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                     .padding(14.dp),
             ) {
                 Text("收货信息", fontWeight = FontWeight.Medium)
@@ -238,19 +241,20 @@ private fun MallOrderDetailScreen(onBack: () -> Unit) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                     .padding(14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text("实付金额", fontWeight = FontWeight.Medium)
-                Text("¥79.80", color = Color(0xFFEE0000), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text("¥79.80", color = MineTheme.Danger, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
         }
         Row(
             Modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(MineTheme.Surface)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -274,8 +278,8 @@ private fun MallOrderDetailScreen(onBack: () -> Unit) {
 private fun PayCheckoutScreen(onBack: () -> Unit) {
     // Flutter /pay SoT is a module placeholder ("Pay 模块"), not a full checkout yet.
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "支付", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "支付", onBack = onBack, containerColor = MineTheme.Surface)
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Pay 模块", color = DemoColors.TextSecondary, fontSize = 16.sp)
         }
@@ -301,7 +305,7 @@ private fun CheckInShortcutScreen(onBack: () -> Unit) {
                 .padding(16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color.White)
+                .background(MineTheme.Surface)
                 .padding(16.dp),
         ) {
             Text("当前积分", color = DemoColors.TextSecondary, fontSize = 13.sp)
@@ -310,10 +314,10 @@ private fun CheckInShortcutScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             Text(
                 "今日签到",
-                color = Color.White,
+                color = DemoColors.OnPrimary,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
                     .background(DemoColors.Accent)
                     .clickable {
                         points += 10
@@ -339,8 +343,8 @@ private fun CheckInShortcutScreen(onBack: () -> Unit) {
                 Modifier
                     .padding(horizontal = 16.dp, vertical = 5.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
                     .clickable { showPlatformToast("兑换 $name（mock）") }
                     .padding(14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -360,7 +364,7 @@ private fun MallListScreen(
 ) {
     // Flutter MallPage SoT body under status bar (BFF shelf unreachable on gate emulator).
     ReportMainTabRoot(isRoot = false)
-    Box(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+    Box(Modifier.fillMaxSize().background(MineTheme.Background)) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -403,7 +407,7 @@ private fun MallListScreen(
 private fun OrderListScreen(onBack: () -> Unit, onOpen: () -> Unit) {
     // Flutter MallOrdersPage SoT body under status bar (nav chrome in bitmap).
     ReportMainTabRoot(isRoot = false)
-    Box(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
+    Box(Modifier.fillMaxSize().background(MineTheme.Background)) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -547,7 +551,7 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                         val selected = channel == id
                         Text(
                             label,
-                            color = if (selected) Color.White else MineTheme.LabelPrimary,
+                            color = if (selected) DemoColors.OnPrimary else MineTheme.LabelPrimary,
                             fontSize = 13.sp,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
@@ -559,7 +563,7 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                 }
                 Text(
                     "确认充值",
-                    color = Color.White,
+                    color = DemoColors.OnPrimary,
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -612,10 +616,12 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                                 "设默认",
                                 color = MineTheme.Accent,
                                 fontSize = 13.sp,
-                                modifier = Modifier.clickable {
-                                    WalletMockStore.setDefaultCard(card.cardId)
-                                    showPlatformToast("已设为默认卡")
-                                },
+                                modifier = Modifier
+                                    .clickable {
+                                        WalletMockStore.setDefaultCard(card.cardId)
+                                        showPlatformToast("已设为默认卡")
+                                    }
+                                    .padding(vertical = 12.dp),
                             )
                         }
                         Spacer(Modifier.width(12.dp))
@@ -623,10 +629,12 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                             "解绑",
                             color = MineTheme.LabelTertiary,
                             fontSize = 13.sp,
-                            modifier = Modifier.clickable {
-                                WalletMockStore.deleteCard(card.cardId)
-                                showPlatformToast("已解绑")
-                            },
+                            modifier = Modifier
+                                .clickable {
+                                    WalletMockStore.deleteCard(card.cardId)
+                                    showPlatformToast("已解绑")
+                                }
+                                .padding(vertical = 12.dp),
                         )
                     }
                 }
@@ -706,7 +714,7 @@ private fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                             }
                             Text(
                                 e.deltaYuan,
-                                color = if (e.deltaFen >= 0) Color(0xFF16A34A) else Color(0xFFEE0000),
+                                color = if (e.deltaFen >= 0) Color(0xFF16A34A) else MineTheme.Danger,
                                 fontWeight = FontWeight.Medium,
                             )
                         }
@@ -790,13 +798,13 @@ private fun ProfileEditScreen(onBack: () -> Unit, onLoggedOut: () -> Unit = {}) 
                         .height(32.dp)
                         .clip(RoundedCornerShape(16.dp))
                         .background(MineTheme.Accent)
-                        .border(2.5.dp, Color.White, RoundedCornerShape(16.dp)),
+                        .border(2.5.dp, DemoColors.OnPrimary, RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = MineIcons.Info,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = DemoColors.OnPrimary,
                         modifier = Modifier.size(16.dp),
                     )
                 }
@@ -959,10 +967,12 @@ private fun AddressListScreen(
                                     "设为默认",
                                     color = MineTheme.Accent,
                                     fontSize = 13.sp,
-                                    modifier = Modifier.clickable {
-                                        AddressMockStore.setDefault(a.id)
-                                        showPlatformToast("已设为默认")
-                                    },
+                                    modifier = Modifier
+                                        .clickable {
+                                            AddressMockStore.setDefault(a.id)
+                                            showPlatformToast("已设为默认")
+                                        }
+                                        .padding(vertical = 12.dp),
                                 )
                             }
                             Spacer(Modifier.weight(1f))
@@ -970,10 +980,12 @@ private fun AddressListScreen(
                                 "删除",
                                 color = MineTheme.LabelTertiary,
                                 fontSize = 13.sp,
-                                modifier = Modifier.clickable {
-                                    AddressMockStore.delete(a.id)
-                                    showPlatformToast("已删除")
-                                },
+                                modifier = Modifier
+                                    .clickable {
+                                        AddressMockStore.delete(a.id)
+                                        showPlatformToast("已删除")
+                                    }
+                                    .padding(vertical = 12.dp),
                             )
                         }
                     }
@@ -1124,7 +1136,7 @@ private fun AddressEditScreen(onBack: () -> Unit) {
         }
         Text(
             "保存",
-            color = Color.White,
+            color = DemoColors.OnPrimary,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             fontSize = MineTheme.BodySize,
@@ -1219,7 +1231,7 @@ private fun CalculatorSection(content: @Composable () -> Unit) {
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .background(MineTheme.Surface)
             .padding(14.dp),
     ) {
         content()
@@ -1231,7 +1243,7 @@ private fun ModeChip(label: String, selected: Boolean, onClick: () -> Unit) {
     Row(
         Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) DemoColors.Accent else Color.White)
+            .background(if (selected) DemoColors.Accent else MineTheme.Surface)
             .border(
                 1.dp,
                 if (selected) DemoColors.Accent else DemoColors.Divider,
@@ -1242,11 +1254,11 @@ private fun ModeChip(label: String, selected: Boolean, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (selected) {
-            Text("✓ ", color = Color.White, fontSize = 12.sp)
+            Text("✓ ", color = DemoColors.OnPrimary, fontSize = 12.sp)
         }
         Text(
             label,
-            color = if (selected) Color.White else DemoColors.TextPrimary,
+            color = if (selected) DemoColors.OnPrimary else DemoColors.TextPrimary,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
         )
@@ -1281,16 +1293,17 @@ private fun SmsTemplateScreen(onBack: () -> Unit) {
         "回访关怀" to "购车已满一周，如有用车问题请随时联系您的顾问。",
     )
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "短信模板", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "短信模板", onBack = onBack, containerColor = MineTheme.Surface)
         LazyColumn(contentPadding = PaddingValues(16.dp)) {
             items(templates) { (title, body) ->
                 Column(
                     Modifier
                         .padding(bottom = 10.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
+                        .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                        .background(MineTheme.Surface)
+                        .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                         .padding(14.dp),
                 ) {
                     Text(title, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -1299,7 +1312,7 @@ private fun SmsTemplateScreen(onBack: () -> Unit) {
                     Spacer(Modifier.height(10.dp))
                     Text(
                         "一键发送",
-                        color = Color(0xFF0070F3),
+                        color = MineTheme.Accent,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier
@@ -1318,18 +1331,18 @@ private fun ShopQrScreen(onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MineTheme.Background)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        MineTopBar(title = "店铺收款码", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "店铺收款码", onBack = onBack, containerColor = MineTheme.Surface)
         Spacer(Modifier.height(24.dp))
         Column(
             Modifier
                 .padding(horizontal = 24.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color.White)
+                .background(MineTheme.Surface)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -1349,7 +1362,7 @@ private fun ShopQrScreen(onBack: () -> Unit) {
                     Modifier
                         .width(160.dp)
                         .height(160.dp)
-                        .background(Color.White),
+                        .background(MineTheme.Surface),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text("QR", fontWeight = FontWeight.Bold, fontSize = 28.sp, color = Color(0xFF111111))
@@ -1361,7 +1374,7 @@ private fun ShopQrScreen(onBack: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         Text(
             "保存到相册",
-            color = Color(0xFF0070F3),
+            color = MineTheme.Accent,
             modifier = Modifier.clickable { showPlatformToast("已保存（mock）") },
         )
         Spacer(Modifier.height(32.dp))
@@ -1374,26 +1387,26 @@ private fun InviteScreen(onBack: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MineTheme.Background)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        MineTopBar(title = "邀请好友", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "邀请好友", onBack = onBack, containerColor = MineTheme.Surface)
         Spacer(Modifier.height(20.dp))
         Column(
             Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color(0xFF0070F3))
+                .background(MineTheme.Accent)
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("邀请码", color = Color.White.copy(alpha = 0.85f), fontSize = 13.sp)
+            Text("邀请码", color = DemoColors.OnPrimary.copy(alpha = 0.85f), fontSize = 13.sp)
             Spacer(Modifier.height(6.dp))
-            Text("DEMO2026", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 28.sp)
+            Text("DEMO2026", color = DemoColors.OnPrimary, fontWeight = FontWeight.Bold, fontSize = 28.sp)
             Spacer(Modifier.height(8.dp))
-            Text("好友注册并登录 · 双方各得 50 积分", color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp)
+            Text("好友注册并登录 · 双方各得 50 积分", color = DemoColors.OnPrimary.copy(alpha = 0.9f), fontSize = 13.sp)
         }
         Spacer(Modifier.height(16.dp))
         listOf("微信好友", "朋友圈", "复制邀请链接").forEach { action ->
@@ -1402,8 +1415,8 @@ private fun InviteScreen(onBack: () -> Unit) {
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 5.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
                     .clickable { showPlatformToast("$action（mock）") }
                     .padding(16.dp),
                 fontWeight = FontWeight.Medium,
@@ -1419,8 +1432,8 @@ private fun CooperationScreen(onBack: () -> Unit) {
     var contact by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "商务合作", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "商务合作", onBack = onBack, containerColor = MineTheme.Surface)
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())
@@ -1442,8 +1455,9 @@ private fun CooperationScreen(onBack: () -> Unit) {
                         textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
+                            .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                            .background(MineTheme.Surface)
+                            .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                             .padding(14.dp),
                     )
                 }
@@ -1458,8 +1472,9 @@ private fun CooperationScreen(onBack: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(100.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
+                        .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                        .background(MineTheme.Surface)
+                        .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                         .padding(14.dp),
                     decorationBox = { inner ->
                         if (note.isEmpty()) Text("品牌露出 / 渠道合作 / 活动联办…", color = DemoColors.Muted)
@@ -1478,7 +1493,7 @@ private fun CooperationScreen(onBack: () -> Unit) {
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0070F3)),
+                colors = ButtonDefaults.buttonColors(containerColor = MineTheme.Accent),
             ) { Text("提交申请") }
         }
     }
@@ -1493,8 +1508,8 @@ private fun ReminderScreen(onBack: () -> Unit) {
     )
     val tomorrow = listOf("10:00 门店晨会" to "全员")
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "提醒事项", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "提醒事项", onBack = onBack, containerColor = MineTheme.Surface)
         LazyColumn(contentPadding = PaddingValues(16.dp)) {
             item {
                 Text("今日 · ${today.size} 条", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
@@ -1504,8 +1519,9 @@ private fun ReminderScreen(onBack: () -> Unit) {
                     Modifier
                         .padding(bottom = 8.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
+                        .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                        .background(MineTheme.Surface)
+                        .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                         .padding(14.dp),
                 ) {
                     Text(title, fontWeight = FontWeight.Medium)
@@ -1521,8 +1537,9 @@ private fun ReminderScreen(onBack: () -> Unit) {
                     Modifier
                         .padding(bottom = 8.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
+                        .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                        .background(MineTheme.Surface)
+                        .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                         .padding(14.dp),
                 ) {
                     Text(title, fontWeight = FontWeight.Medium)
@@ -1542,16 +1559,17 @@ private fun BuyQaScreen(onBack: () -> Unit) {
         "保养周期多久一次？" to "已解答 · 知识库",
     )
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "选买问答", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "选买问答", onBack = onBack, containerColor = MineTheme.Surface)
         LazyColumn(contentPadding = PaddingValues(16.dp)) {
             items(rows) { (q, status) ->
                 Column(
                     Modifier
                         .padding(bottom = 10.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
+                        .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                        .background(MineTheme.Surface)
+                        .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                         .padding(14.dp),
                 ) {
                     Text(q, fontWeight = FontWeight.Medium, fontSize = 15.sp)
@@ -1567,8 +1585,8 @@ private fun BuyQaScreen(onBack: () -> Unit) {
 private fun PosterScreen(onBack: () -> Unit) {
     val posters = listOf("置换专场", "专卖精选", "估价引流", "到店礼")
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "商家海报", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "商家海报", onBack = onBack, containerColor = MineTheme.Surface)
         LazyColumn(contentPadding = PaddingValues(16.dp)) {
             items(posters.chunked(2)) { row ->
                 Row(
@@ -1580,7 +1598,7 @@ private fun PosterScreen(onBack: () -> Unit) {
                             Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White)
+                                .background(MineTheme.Surface)
                                 .padding(12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
@@ -1609,8 +1627,8 @@ private fun PosterScreen(onBack: () -> Unit) {
 private fun FeedbackScreen(onBack: () -> Unit) {
     var text by remember { mutableStateOf("") }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
-        MineTopBar(title = "意见反馈", onBack = onBack, containerColor = Color.White)
+    Column(Modifier.fillMaxSize().background(MineTheme.Background)) {
+        MineTopBar(title = "意见反馈", onBack = onBack, containerColor = MineTheme.Surface)
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             BasicTextField(
                 value = text,
@@ -1619,8 +1637,9 @@ private fun FeedbackScreen(onBack: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                     .padding(14.dp),
                 decorationBox = { inner ->
                     if (text.isEmpty()) Text("请描述问题或建议…", color = DemoColors.Muted)
@@ -1636,7 +1655,7 @@ private fun FeedbackScreen(onBack: () -> Unit) {
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0070F3)),
+                colors = ButtonDefaults.buttonColors(containerColor = MineTheme.Accent),
             ) { Text("提交") }
         }
     }

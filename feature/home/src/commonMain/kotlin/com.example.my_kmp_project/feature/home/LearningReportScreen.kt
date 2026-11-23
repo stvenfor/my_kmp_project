@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
@@ -42,7 +43,7 @@ private object ReportColors {
     val HighlightBorder = Color(0xFF2E2E2E)
     val RecordCard = Color(0xFF111111)
     val RecordItem = Color(0xFF1A1A1A)
-    val IconTeal = Color(0xFF0070F3)
+    val IconTeal = DemoColors.Accent
     val IconTealLight = Color(0xFF3291FF)
     val TitleWhite = Color(0xFFEDEDED)
     val SubtitleGrey = Color(0xFFA1A1A1)
@@ -50,10 +51,11 @@ private object ReportColors {
     val Orange = Color(0xFFF5A623)
     val OrangeDeep = Color(0xFFAB570A)
     val DotYellow = Color(0xFFF9CB28)
-    val DotBlue = Color(0xFF0070F3)
+    val DotBlue = DemoColors.Accent
     val Divider = Color(0xFF2E2E2E)
     val BannerStart = Color(0xFF111111)
     val BannerEnd = Color(0xFF0A0A0A)
+    val BannerBorder = Color(0xFF3D2A20)
     val ParentChip = Color(0xCC1A1A1A)
     val PlayBg = Color(0xFF2E3340)
 }
@@ -307,7 +309,8 @@ private fun MembershipBanner(
                     listOf(ReportColors.BannerStart, ReportColors.BannerEnd),
                 ),
             )
-            .border(1.dp, Color(0xFF3D2A20), RoundedCornerShape(16.dp))
+            .border(1.dp, ReportColors.BannerBorder, RoundedCornerShape(16.dp))
+            .clickable(onClick = onOpen)
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -338,7 +341,6 @@ private fun MembershipBanner(
             modifier = Modifier
                 .clip(RoundedCornerShape(20.dp))
                 .background(ReportColors.OrangeDeep)
-                .clickable(onClick = onOpen)
                 .padding(horizontal = 14.dp, vertical = 8.dp),
         )
     }

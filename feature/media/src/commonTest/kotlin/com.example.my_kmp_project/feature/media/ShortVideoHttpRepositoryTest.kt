@@ -418,4 +418,23 @@ class ShortVideoHttpRepositoryTest {
         unlikeRepo.unlike("9")
         assertEquals(Call("DELETE", "/api/v1/short-videos/9/like", emptyMap(), null), unlikeFake.calls.single())
     }
+
+    @Test
+    fun get_binds_play_page_identity_and_server_video_url() = runBlocking {
+        val fixture = """
+            {"id":"33333333-3333-4333-8333-333333333333","title":"口语跟读",
+             "video_url":"https://cdn.example/v.mp4","like_count":7,"view_count":42,"is_liked":true}
+        """.trimIndent()
+        val (repo, _) = repoWith(
+            "GET /api/v1/short-videos/33333333-3333-4333-8333-333333333333" to envelope(fixture),
+        )
+
+        val item = repo.get("33333333-3333-4333-8333-333333333333")
+
+        assertEquals("33333333-3333-4333-8333-333333333333", item.id)
+        assertEquals("https://cdn.example/v.mp4", item.videoUrl)
+        assertEquals("口语跟读", item.title)
+        assertEquals(7, item.likeCount)
+        assertTrue(item.isLiked)
+    }
 }

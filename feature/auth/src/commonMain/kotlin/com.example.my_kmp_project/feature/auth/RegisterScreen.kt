@@ -85,15 +85,16 @@ public fun RegisterScreen(
             Text(
                 text = "创建账号",
                 color = AuthUiTokens.LabelPrimary,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 36.sp,
+                fontSize = AuthUiTokens.TitleSize,
+                fontWeight = AuthUiTokens.TitleWeight,
+                lineHeight = AuthUiTokens.TitleLineHeight,
+                letterSpacing = AuthUiTokens.TitleLetterSpacing,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "选择注册方式并填写信息",
                 color = AuthUiTokens.LabelSecondary,
-                fontSize = 15.sp,
+                fontSize = AuthUiTokens.SubtitleSize,
             )
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -248,8 +249,10 @@ public fun RegisterScreen(
                 agreed = agreedPrivacy,
                 onToggle = { agreedPrivacy = !agreedPrivacy; error = null },
             )
-            AuthErrorText(error)
-
+            if (!error.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                AuthErrorText(error)
+            }
             Spacer(modifier = Modifier.height(32.dp))
             AuthPrimaryButton(
                 label = "注册",

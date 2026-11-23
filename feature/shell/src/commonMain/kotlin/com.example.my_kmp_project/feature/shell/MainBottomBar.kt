@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -107,6 +109,40 @@ fun MainBottomBar(
             color = DemoColors.Divider.copy(alpha = 0.6f),
             modifier = Modifier.align(Alignment.TopStart),
         )
+    }
+}
+
+/** Side navigation for expanded windows; keeps the same destinations and icons as the bottom bar. */
+@Composable
+fun MainNavigationRail(
+    selected: MainTab,
+    onSelect: (MainTab) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NavigationRail(
+        modifier = modifier,
+        containerColor = DemoColors.TabBarBackground,
+    ) {
+        MainTab.entries.forEach { item ->
+            NavigationRailItem(
+                selected = selected == item,
+                onClick = { onSelect(item) },
+                icon = {
+                    Image(
+                        painter = painterResource(
+                            if (selected == item) item.selectedIcon() else item.unselectedIcon(),
+                        ),
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp),
+                        colorFilter = ColorFilter.tint(
+                            if (selected == item) DemoColors.Accent else DemoColors.Muted,
+                        ),
+                    )
+                },
+                label = { Text(item.label) },
+                alwaysShowLabel = true,
+            )
+        }
     }
 }
 

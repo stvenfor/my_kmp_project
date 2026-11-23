@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.app
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,12 +26,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +70,10 @@ import com.example.my_kmp_project.feature.home.AllServicesScreen
 import com.example.my_kmp_project.feature.home.HomeScreen
 import com.example.my_kmp_project.feature.live.LiveScreen
 import com.example.my_kmp_project.feature.media.MediaEntryScreen
+import com.example.my_kmp_project.feature.media.MiniPlayerBar
+import com.example.my_kmp_project.feature.media.MusicNowPlayingRoute
+import com.example.my_kmp_project.feature.media.MusicSession
+import com.example.my_kmp_project.feature.media.SharedVideoPlayer
 import com.example.my_kmp_project.feature.mine.MineScreen
 import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
@@ -227,6 +235,7 @@ private fun MainShell() {
     var tab by remember { mutableStateOf(MainTab.Home) }
     var authOverlay by remember { mutableStateOf(AuthOverlay.None) }
     var shellRoute by remember { mutableStateOf<AppRoute?>(null) }
+    var showNowPlaying by remember { mutableStateOf(false) }
     val tabChrome = remember { MainTabChromeController() }
     var sessionEpoch by remember { mutableStateOf(0) }
     val loggedIn = remember(sessionEpoch) { AccountFacade.current().isLoggedIn }
@@ -350,11 +359,17 @@ private fun MainShell() {
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
-                if (showBottomBar) {
-                    MainBottomBar(
-                        selected = tab,
-                        onSelect = { next -> selectTab(next) },
-                    )
+                Column {
+                    // 音乐仅在应用内跨 Tab 续播；active 才显示，点击回到 Now Playing。
+                    if (MusicSession.isActive) {
+                        MiniPlayerBar(onOpenNowPlaying = { showNowPlaying = true })
+                    }
+                    if (showBottomBar) {
+                        MainBottomBar(
+                            selected = tab,
+                            onSelect = { next -> selectTab(next) },
+                        )
+                    }
                 }
             },
             content = { paddingValues ->
@@ -390,37 +405,58 @@ private fun MainShell() {
                             onRegistered = { afterAuthSuccess() },
                             onBack = { authOverlay = AuthOverlay.Login },
                         )
-                        AuthOverlay.None -> when (tab) {
-                            MainTab.Home -> HomeScreen(
-                                loggedIn = loggedIn,
-                                displayName = AccountFacade.current().displayName,
-                            )
-                            MainTab.Chat -> ChatScreen(
-                                onOpenFriends = {
-                                    shellRoute = AppRoute.Friend
-                                    tabChrome.updateBottomBarVisible(false)
-                                },
-                            )
-                            MainTab.Community -> CommunityScreen()
-                            MainTab.Mine -> MineScreen(
-                                loggedIn = loggedIn,
-                                displayName = AccountFacade.current().displayName,
-                                onLoginClick = {
-                                    AuthGate.rememberPending(MainTab.Mine)
-                                    shellRoute = null
-                                    authOverlay = AuthOverlay.Login
-                                    tabChrome.updateBottomBarVisible(false)
-                                },
-                                onLogoutClick = {
-                                    AuthRepository.logout()
-                                    // 登出清 WS 连接、不清离线队列。
-                                    RealtimeRuntime.onAfterLogout()
-                                    refreshSession()
-                                    shellRoute = null
-                                    tab = MainTab.Home
-                                    tabChrome.updateBottomBarVisible(true)
-                                },
-                            )
+                        AuthOverlay.None -> key(tab) {
+                            // iOS 共享主页面：仅对新 tab 内容做 200ms alpha 淡入。
+                            // key(tab) 让每次切换拿到独立的 0f 起点；旧页随 key 变化立即移除，
+                            // 不同时组合两个屏幕，也不触碰 auth / secondary route 的既有结构。
+                            val fadeIn = remember { Animatable(0f) }
+                            LaunchedEffect(Unit) {
+                                fadeIn.animateTo(1f, animationSpec = tween(durationMillis = 200))
+                            }
+                            Box(modifier = Modifier.fillMaxSize().alpha(fadeIn.value)) {
+                                when (tab) {
+                                    MainTab.Home -> HomeScreen(
+                                        loggedIn = loggedIn,
+                                        displayName = AccountFacade.current().displayName,
+                                    )
+                                    MainTab.Chat -> ChatScreen(
+                                        onOpenFriends = {
+                                            shellRoute = AppRoute.Friend
+                                            tabChrome.updateBottomBarVisible(false)
+                                        },
+                                    )
+                                    MainTab.Community -> CommunityScreen(
+                                        videoPlayer = { url, playing, modifier, onPlayingChange ->
+                                            SharedVideoPlayer(
+                                                url = url,
+                                                isPlaying = playing,
+                                                onPlayingChange = onPlayingChange,
+                                                title = "社区视频",
+                                                modifier = modifier,
+                                            )
+                                        },
+                                    )
+                                    MainTab.Mine -> MineScreen(
+                                        loggedIn = loggedIn,
+                                        displayName = AccountFacade.current().displayName,
+                                        onLoginClick = {
+                                            AuthGate.rememberPending(MainTab.Mine)
+                                            shellRoute = null
+                                            authOverlay = AuthOverlay.Login
+                                            tabChrome.updateBottomBarVisible(false)
+                                        },
+                                        onLogoutClick = {
+                                            AuthRepository.logout()
+                                            // 登出清 WS 连接、不清离线队列。
+                                            RealtimeRuntime.onAfterLogout()
+                                            refreshSession()
+                                            shellRoute = null
+                                            tab = MainTab.Home
+                                            tabChrome.updateBottomBarVisible(true)
+                                        },
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -486,6 +522,16 @@ private fun MainShell() {
                             onBack = { clearShellRoute() },
                         )
                         else -> Unit
+                    }
+
+                    if (showNowPlaying) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(DemoColors.PageBg),
+                        ) {
+                            MusicNowPlayingRoute(onBack = { showNowPlaying = false })
+                        }
                     }
                 }
             },

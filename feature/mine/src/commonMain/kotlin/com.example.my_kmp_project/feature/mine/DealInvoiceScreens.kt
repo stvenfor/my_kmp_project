@@ -97,7 +97,7 @@ fun DealInvoiceUploadScreen(onBack: () -> Unit) {
             .fillMaxSize()
             .background(Color(0xFFF5F6F8)),
     ) {
-        MineTopBar(title = "上传成交发票", onBack = onBack, containerColor = Color.White)
+        MineTopBar(title = "上传成交发票", onBack = onBack, containerColor = MineTheme.Surface)
         Column(Modifier.padding(16.dp)) {
             Text("成交客户手机", fontWeight = FontWeight.Medium, fontSize = 14.sp, color = DemoColors.TextPrimary)
             Spacer(Modifier.height(8.dp))
@@ -105,9 +105,9 @@ fun DealInvoiceUploadScreen(onBack: () -> Unit) {
                 Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                     .clickable {
                         phone = "138****5172"
                         showPlatformToast("已选择示例客户")
@@ -128,9 +128,9 @@ fun DealInvoiceUploadScreen(onBack: () -> Unit) {
                 Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(MineTheme.RadiusMd))
+                    .background(MineTheme.Surface)
+                    .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd))
                     .clickable { showPlatformToast("选图能力：平台相册/相机接入后启用") },
                 contentAlignment = Alignment.Center,
             ) {
@@ -144,7 +144,7 @@ fun DealInvoiceUploadScreen(onBack: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B8CFF)),
+                colors = ButtonDefaults.buttonColors(containerColor = MineTheme.Accent),
             ) {
                 Text("提交审核", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
             }

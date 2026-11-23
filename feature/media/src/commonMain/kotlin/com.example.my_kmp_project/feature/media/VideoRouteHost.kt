@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -34,9 +35,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +57,9 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.ui.PlaybackControls as SharedPlaybackControls
+import com.example.my_kmp_project.core.ui.PlaybackSnapshot
+import com.example.my_kmp_project.core.ui.PlaybackStatus
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.video_transliter_videos_detail_body
@@ -76,6 +82,8 @@ import my_kmp_project.core.design.generated.resources.home_transliter_home_cover
 import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_10
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import com.example.my_kmp_project.core.router.VideoRoutes
 import com.example.my_kmp_project.core.router.AiRoutes
 import com.example.my_kmp_project.core.router.ClassroomRoutes
@@ -122,13 +130,26 @@ private object VideoMock {
     )
 }
 
+/** 去掉 query 后再匹配路由；`/video/short/play?videoId=…` 必须命中播放页而不是回落到 hub。 */
+internal fun videoRoutePath(route: String): String = route.substringBefore('?')
+
+/** 只认 `/video/short/play?videoId=<服务端视频 ID>`；缺失返回 null，不回落演示值。 */
+internal fun shortPlayVideoId(route: String): String? =
+    route.substringAfter('?', missingDelimiterValue = "")
+        .split('&')
+        .firstOrNull { it.substringBefore('=') == "videoId" }
+        ?.substringAfter('=', missingDelimiterValue = "")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
 @Composable
 fun VideoRouteHost(
     route: String,
     onBack: () -> Unit,
     onNavigate: (String) -> Unit = {},
+    onOpenComments: (videoId: String) -> Unit = {},
 ) {
-    when (route) {
+    when (videoRoutePath(route)) {
         VideoRoutes.Hub -> VideoHubLanding(
             onBack = onBack,
             onShort = { onNavigate(VideoRoutes.Short) },
@@ -140,7 +161,11 @@ fun VideoRouteHost(
             onPublish = { onNavigate(VideoRoutes.ShortPublish) },
             onPlay = { onNavigate(VideoRoutes.ShortPlay) },
         )
-        VideoRoutes.ShortPlay -> ShortVideoPlayPage(onBack = onBack)
+        VideoRoutes.ShortPlay -> ShortVideoPlayPage(
+            onBack = onBack,
+            videoId = shortPlayVideoId(route),
+            onOpenComments = onOpenComments,
+        )
         VideoRoutes.ShortPublish -> ShortVideoPublishPage(onBack = onBack) {
             showPlatformToast("已提交（mock）")
             onBack()
@@ -413,62 +438,260 @@ private fun StatCell(label: String, value: String) {
     }
 }
 
+/** 明确的公开示例视频源：演示数据，不伪装成业务后端素材。 */
+private const val DemoVideoUrl =
+    "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+
+/**
+ * 社区视频 / 短视频 / 跟读详情共用的播放 UI：真实 [VideoPlaybackSurface] + 统一状态与控制栏。
+ * 手机优先、平板居中单栏；不接亮度/音量手势。状态与进度来自 core.ui 快照，seek 由 surface 消费。
+ */
 @Composable
-private fun ShortVideoPlayPage(onBack: () -> Unit) {
-    var playing by remember { mutableStateOf(true) }
-    var liked by remember { mutableStateOf(false) }
-    val player = remember { createMediaPlayer() }
+fun SharedVideoPlayer(
+    url: String?,
+    isPlaying: Boolean,
+    onPlayingChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+) {
+    // 快照与 seek 目标由 surface 回传/消费；换源时重置，避免把旧进度带到新视频。
+    var snapshot by remember(url) {
+        mutableStateOf(
+            PlaybackSnapshot(
+                status = if (url.isNullOrBlank()) PlaybackStatus.Idle else PlaybackStatus.Loading,
+            ),
+        )
+    }
+    var seekToMs by remember(url) { mutableStateOf<Long?>(null) }
+    val playable = !url.isNullOrBlank()
+    Box(modifier.fillMaxSize().background(Color.Black)) {
+        if (playable) {
+            VideoPlaybackSurface(
+                url = url!!,
+                isPlaying = isPlaying,
+                modifier = Modifier.fillMaxSize(),
+                onSnapshot = { snapshot = it },
+                seekToMs = seekToMs,
+            )
+            Text(
+                "公开示例视频 · 演示数据，非业务素材",
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 11.sp,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp),
+            )
+        }
+        Column(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .widthIn(max = 720.dp)
+                .fillMaxWidth(),
+        ) {
+            if (title != null) {
+                Text(
+                    title,
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .background(Color.Black.copy(alpha = 0.55f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                )
+            }
+            Text(
+                when (snapshot.status) {
+                    PlaybackStatus.Idle -> "视频地址不可用，无法播放"
+                    PlaybackStatus.Loading -> "正在加载视频…"
+                    PlaybackStatus.Buffering -> "缓冲中…"
+                    PlaybackStatus.Playing -> "播放中"
+                    PlaybackStatus.Paused -> "已暂停"
+                    PlaybackStatus.Ended -> "播放已结束"
+                    PlaybackStatus.Error -> snapshot.errorMessage ?: "播放出错"
+                    PlaybackStatus.Unsupported -> "当前平台不支持进度回传，播放仍可用"
+                },
+                color = Color.White,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            )
+            SharedPlaybackControls(
+                snapshot = snapshot,
+                isPlaying = isPlaying,
+                onPlayPause = { onPlayingChange(!isPlaying) },
+                onSeek = { seekToMs = it },
+                modifier = Modifier.padding(horizontal = 4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShortVideoPlayPage(
+    onBack: () -> Unit,
+    videoId: String?,
+    onOpenComments: (String) -> Unit,
+) {
     ReportMainTabRoot(isRoot = false)
+    val repository = remember { HttpShortVideoRepository() }
+    val scope = rememberCoroutineScope()
+    var reloadToken by remember(videoId) { mutableStateOf(0) }
+    var loading by remember(videoId) { mutableStateOf(!videoId.isNullOrBlank()) }
+    var loadError by remember(videoId) { mutableStateOf<String?>(null) }
+    var item by remember(videoId) { mutableStateOf<ShortVideoItemModel?>(null) }
+    var playing by remember(videoId) { mutableStateOf(true) }
+    var liking by remember(videoId) { mutableStateOf(false) }
+
+    // 播放页只认服务端视频：按 ID 拉详情，URL / 标题 / 计数 / 点赞态全部来自后端；
+    // 缺失 ID 或服务端无此视频时如实展示不可用，绝不回落演示片源。
+    LaunchedEffect(videoId, reloadToken) {
+        if (videoId.isNullOrBlank()) {
+            loading = false
+            loadError = "该短视频缺少服务端视频 ID，暂无法播放"
+            return@LaunchedEffect
+        }
+        loading = true
+        loadError = null
+        val loaded = try {
+            repository.get(videoId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+        if (loaded == null || loaded.id.isNullOrBlank() || loaded.videoUrl.isNullOrBlank()) {
+            item = null
+            loadError = "视频不存在或已下架"
+        } else {
+            item = loaded
+            val views = repository.reportView(videoId)
+            if (views != null) item = item?.withCounts(viewCount = views)
+        }
+        loading = false
+    }
+
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         Column(Modifier.fillMaxSize()) {
             MineTopBar(
                 title = "播放",
-                onBack = {
-                    player.stop()
-                    onBack()
-                },
+                onBack = onBack,
                 containerColor = Color.Transparent,
             )
-            Box(
-                Modifier.weight(1f).fillMaxWidth().clickable {
-                    playing = !playing
-                    if (playing) {
-                        player.setSource(MusicSession.SAMPLE_AUDIO_URL)
-                        player.play()
-                    } else {
-                        player.pause()
+            val current = item
+            when {
+                loading -> Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("加载中…", color = Color.White, fontSize = 14.sp)
+                }
+                current == null -> Column(
+                    modifier = Modifier.weight(1f).fillMaxWidth().padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = loadError ?: "视频不可用",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (!videoId.isNullOrBlank()) {
+                            Button(
+                                onClick = { reloadToken += 1 },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = DemoColors.Accent,
+                                ),
+                            ) {
+                                Text("重试")
+                            }
+                        }
+                        TextButton(onClick = onBack) {
+                            Text("返回", color = Color.White)
+                        }
                     }
-                },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    if (playing) "播放中 · 单击暂停" else "已暂停 · 单击继续",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                )
+                }
+                else -> {
+                    SharedVideoPlayer(
+                        url = current.videoUrl,
+                        isPlaying = playing,
+                        onPlayingChange = { playing = it },
+                        title = current.title?.takeIf { it.isNotBlank() } ?: "短视频",
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    )
+                    Row(
+                        Modifier.fillMaxWidth().padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        val targetId = current.id
+                        TextButton(
+                            enabled = targetId != null && !liking,
+                            onClick = {
+                                if (targetId != null) {
+                                    scope.launch {
+                                        liking = true
+                                        val fragment = try {
+                                            repository.toggleLike(targetId, !current.isLiked)
+                                        } catch (e: CancellationException) {
+                                            throw e
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                        if (fragment != null) {
+                                            item = item?.withCounts(
+                                                likeCount = fragment.likeCount,
+                                                isLiked = fragment.isLiked,
+                                            )
+                                        } else {
+                                            showPlatformToast("操作失败，请稍后重试")
+                                        }
+                                        liking = false
+                                    }
+                                }
+                            },
+                        ) {
+                            Text(likeLabel(current), color = Color.White)
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            current.viewCount?.let {
+                                Text(
+                                    text = "${it} 播放",
+                                    color = Color.White.copy(alpha = 0.8f),
+                                    fontSize = 12.sp,
+                                )
+                            }
+                            TextButton(
+                                enabled = targetId != null,
+                                onClick = { if (targetId != null) onOpenComments(targetId) },
+                            ) {
+                                Text("评论", color = Color.White)
+                            }
+                        }
+                        TextButton(onClick = { showPlatformToast("分享") }) {
+                            Text("分享", color = Color.White)
+                        }
+                    }
+                }
             }
-            Row(
-                Modifier.fillMaxWidth().padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TextButton(onClick = { liked = !liked }) {
-                    Text(if (liked) "已赞" else "赞", color = Color.White)
-                }
-                TextButton(onClick = { showPlatformToast("评论（mock）") }) {
-                    Text("评", color = Color.White)
-                }
-                TextButton(onClick = { showPlatformToast("分享（mock）") }) {
-                    Text("分享", color = Color.White)
-                }
-            }
-            Text(
-                "口语跟读 · 第一课  #口语",
-                modifier = Modifier.padding(16.dp),
-                color = Color.White,
-                fontSize = 14.sp,
-            )
         }
+    }
+}
+
+private fun likeLabel(item: ShortVideoItemModel): String {
+    val count = item.likeCount ?: 0
+    return when {
+        item.isLiked && count > 0 -> "已赞 $count"
+        item.isLiked -> "已赞"
+        count > 0 -> "赞 $count"
+        else -> "赞"
     }
 }
 
@@ -556,13 +779,24 @@ private fun TransliterVideoListPage(
 
 @Composable
 private fun TransliterVideoDetailPage(onBack: () -> Unit, onWorks: () -> Unit) {
+    var playing by remember { mutableStateOf(false) }
     ReportMainTabRoot(isRoot = false)
-    FlutterSoTFullFrame(
-        drawable = Res.drawable.video_transliter_videos_detail_body,
-        contentDescription = "跟读视频详情",
-        onBack = onBack,
-        onTap = onWorks,
-    )
+    Column(Modifier.fillMaxSize().background(Color.Black)) {
+        MineTopBar(
+            title = "跟读视频详情",
+            onBack = onBack,
+            containerColor = Color.Black,
+            titleColor = Color.White,
+            actions = { TextButton(onClick = onWorks) { Text("作品", color = Color.White) } },
+        )
+        SharedVideoPlayer(
+            url = DemoVideoUrl,
+            isPlaying = playing,
+            onPlayingChange = { playing = it },
+            title = "跟读示例 · 经典台词",
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+        )
+    }
 }
 
 @Composable

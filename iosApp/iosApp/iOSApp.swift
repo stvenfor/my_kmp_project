@@ -7,8 +7,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         supportedInterfaceOrientationsFor window: UIWindow?
     ) -> UIInterfaceOrientationMask {
-        // Matches Info.plist iPhone orientations; restore Kotlin bridge if Compose needs dynamic lock.
-        .allButUpsideDown
+        // Phones stay portrait; iPad can follow all system orientations.
+        UIDevice.current.userInterfaceIdiom == .pad ? .all : .portrait
     }
 
     func application(

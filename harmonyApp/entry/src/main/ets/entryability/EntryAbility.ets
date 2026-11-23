@@ -1,6 +1,7 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import { deviceInfo } from '@kit.BasicServicesKit';
 
 const DOMAIN = 0x0000;
 /** Shared with Index: pending myai:// / xiaomao:// URI for secondary Compose island. */
@@ -43,6 +44,17 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
+      if (deviceInfo.deviceType === 'phone') {
+        try {
+          windowStage.getMainWindowSync()
+            .setPreferredOrientation(window.Orientation.PORTRAIT)
+            .catch((error: Error) => {
+              hilog.error(DOMAIN, 'testTag', 'Failed to lock phone orientation: %{public}s', String(error));
+            });
+        } catch (error) {
+          hilog.error(DOMAIN, 'testTag', 'Failed to configure phone orientation: %{public}s', String(error));
+        }
+      }
     });
   }
 

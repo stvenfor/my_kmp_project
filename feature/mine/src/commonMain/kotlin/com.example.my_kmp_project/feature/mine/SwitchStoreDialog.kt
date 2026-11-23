@@ -70,22 +70,22 @@ fun SwitchStoreDialog(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                    .clip(RoundedCornerShape(MineTheme.RadiusLg))
+                    .background(MineTheme.Surface)
                     .padding(start = 20.dp, top = 24.dp, end = 20.dp, bottom = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     "切换店铺",
-                    fontSize = 18.sp,
+                    fontSize = MineTheme.HeadlineSize,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF1A1A1A),
+                    color = MineTheme.LabelPrimary,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     if (stores.isEmpty()) "暂无可切换的店铺" else "可切换多个店铺查看数据",
                     fontSize = 13.sp,
-                    color = Color(0xFF999999),
+                    color = MineTheme.LabelTertiary,
                     textAlign = TextAlign.Center,
                 )
                 if (stores.isNotEmpty()) {
@@ -96,9 +96,12 @@ fun SwitchStoreDialog(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(24.dp))
+                                .background(
+                                    if (selected) MineTheme.Accent.copy(alpha = 0.08f) else MineTheme.Surface,
+                                )
                                 .border(
-                                    width = 1.dp,
-                                    color = if (selected) Color(0xFF1B82D2) else Color(0xFFE5E5E5),
+                                    width = if (selected) 1.dp else MineTheme.Hairline,
+                                    color = if (selected) MineTheme.Accent else MineTheme.Separator,
                                     shape = RoundedCornerShape(24.dp),
                                 )
                                 .clickable {
@@ -115,7 +118,7 @@ fun SwitchStoreDialog(
                                 textAlign = TextAlign.Center,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = if (selected) Color(0xFF1B82D2) else Color(0xFF1A1A1A),
+                                color = if (selected) MineTheme.Accent else MineTheme.LabelPrimary,
                             )
                         }
                         if (index != stores.lastIndex) Spacer(Modifier.height(12.dp))

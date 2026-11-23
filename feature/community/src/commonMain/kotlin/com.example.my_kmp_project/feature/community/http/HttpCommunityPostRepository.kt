@@ -78,17 +78,24 @@ public class HttpCommunityPostRepository(
 
     private val api: ApiClient get() = client ?: NetworkFacade.api()
 
-    /** #59 —— `page = 本地页 + 1`、`size`、`tab`（Dart :21-33）。 */
-    override suspend fun fetchPosts(
+    /** #59 分页视图 —— `page = 本地页 + 1`、`size`、`tab`（Dart :21-33），保留完整 [ListPage]。 */
+    override suspend fun fetchPostsPage(
         page: Int,
         pageSize: Int,
         tab: String,
-    ): List<PostModel> =
+    ): ListPage<PostModel> =
         listPage<PostModel>(
             path = CommunityApiPaths.POSTS,
             query = communityQuery(page + 1, pageSize, "tab" to tab),
             fallback = "加载动态失败",
-        ).items
+        )
+
+    /** #59 列表兼容视图：与分页视图同一请求，只取 items。 */
+    override suspend fun fetchPosts(
+        page: Int,
+        pageSize: Int,
+        tab: String,
+    ): List<PostModel> = fetchPostsPage(page, pageSize, tab).items
 
     /** #61 —— Dart 写死 `page=1&size=50`（:40-42），返回 `.list`。 */
     override suspend fun fetchComments(postId: String): List<CommentModel> =

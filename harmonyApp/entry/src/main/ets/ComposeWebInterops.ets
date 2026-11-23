@@ -1,4 +1,4 @@
-// Deep import: package Index does not re-export this (compose 1.9.2-0.3.0).
+// Deep import: package Index does not re-export this (compose 1.9.2-0.4.0).
 import { registerComposeInteropBuilder } from '@cpf-kmp-cmp/compose/src/main/ets/compose/ArkUIView';
 import { webview } from '@kit.ArkWeb';
 

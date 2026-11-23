@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,11 +19,17 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -32,12 +39,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import com.example.my_kmp_project.core.ui.PlatformNetworkImage
+import com.example.my_kmp_project.core.ui.StateView
+import com.example.my_kmp_project.core.ui.StateViewType
 import com.example.my_kmp_project.core.router.AiRoutes
 import com.example.my_kmp_project.core.router.ClassroomRoutes
 import com.example.my_kmp_project.core.router.CommunityRoutes
@@ -50,7 +62,17 @@ import com.example.my_kmp_project.feature.community.http.CommunityUserHit as Htt
 import com.example.my_kmp_project.feature.community.http.HttpCommunityPostRepository
 import com.example.my_kmp_project.feature.community.http.PostModel
 import com.example.my_kmp_project.feature.community.http.TopicModel
+import my_kmp_project.core.design.generated.resources.Res
+import my_kmp_project.core.design.generated.resources.community_post_a
 import kotlinx.coroutines.launch
+
+private const val FEED_PAGE_SIZE = 10
+
+private fun feedTabKey(index: Int): String = when (index) {
+    1 -> "hot"
+    2 -> "following"
+    else -> "latest"
+}
 
 /**
  * HTTP 契约模型 → UI 行类型适配。社区屏幕仍以 [CommunityFeedItem] 等既有行类型渲染
@@ -101,72 +123,160 @@ internal fun HttpUserHit.toUserHit(): CommunityUserHit = CommunityUserHit(
  * [HttpCommunityPostRepository]（真实 HTTP）。[MockCommunityEngine] 保留给既有单测
  * 与 Android native shell；此处只复用其 companion 的时间格式化纯函数。
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommunityScreen() {
+fun CommunityScreen(
+    videoPlayer: (@Composable (url: String?, isPlaying: Boolean, modifier: Modifier, onPlayingChange: (Boolean) -> Unit) -> Unit)? = null,
+) {
     var destination by remember { mutableStateOf<String?>(null) }
     val repository = remember { HttpCommunityPostRepository() }
     val scope = rememberCoroutineScope()
     var feedTab by remember { mutableIntStateOf(0) }
     var posts by remember { mutableStateOf<List<CommunityFeedItem>>(emptyList()) }
+    var feedPage by remember { mutableIntStateOf(0) }
+    var feedHasMore by remember { mutableStateOf(true) }
+    var isRefreshing by remember { mutableStateOf(true) }
+    var isLoadingMore by remember { mutableStateOf(false) }
+    var feedError by remember { mutableStateOf<String?>(null) }
+    // 分页请求代次：切 tab / 刷新都会自增，旧请求回包据此丢弃，不写回当前 tab。
+    var feedGeneration by remember { mutableIntStateOf(0) }
+    var refreshAfterPublish by remember { mutableStateOf(false) }
+    var selectedVideoUrl by remember { mutableStateOf<String?>(null) }
+    val pullRefreshState = rememberPullToRefreshState()
 
-    // 切入子页时保留当前列表；返回（含发帖成功 onBack）或切 tab 时重新拉取。
-    LaunchedEffect(feedTab, destination) {
-        if (destination != null) return@LaunchedEffect
-        val tabKey = when (feedTab) {
-            1 -> "hot"
-            2 -> "following"
-            else -> "latest"
-        }
-        posts = try {
-            repository.fetchPosts(page = 0, tab = tabKey).map { it.toFeedItem() }
+    suspend fun loadFirstPage(index: Int) {
+        val generation = ++feedGeneration
+        isRefreshing = true
+        // 切 tab / 刷新时隔离旧 loadMore 的加载态与错误态。
+        isLoadingMore = false
+        feedError = null
+        try {
+            val response = repository.fetchPostsPage(
+                page = 0,
+                pageSize = FEED_PAGE_SIZE,
+                tab = feedTabKey(index),
+            )
+            if (generation != feedGeneration || index != feedTab) return
+            posts = response.items.map { it.toFeedItem() }
+            feedPage = 0
+            feedHasMore = response.hasMore(FEED_PAGE_SIZE)
         } catch (e: Exception) {
-            emptyList()
+            if (generation != feedGeneration || index != feedTab) return
+            posts = emptyList()
+            feedPage = 0
+            feedHasMore = false
+            feedError = e.message?.takeIf { it.isNotBlank() } ?: "加载动态失败"
+        } finally {
+            if (generation == feedGeneration && index == feedTab) isRefreshing = false
+        }
+    }
+
+    fun loadMore() {
+        if (isLoadingMore || !feedHasMore || isRefreshing) return
+        // 捕获代次与目标 tab/页，协程内不再读可变的 feedTab / feedPage。
+        val generation = feedGeneration
+        val tabIndex = feedTab
+        val tabKey = feedTabKey(tabIndex)
+        val targetPage = feedPage + 1
+        isLoadingMore = true
+        feedError = null
+        scope.launch {
+            try {
+                val response = repository.fetchPostsPage(
+                    page = targetPage,
+                    pageSize = FEED_PAGE_SIZE,
+                    tab = tabKey,
+                )
+                if (generation != feedGeneration || tabIndex != feedTab) return@launch
+                if (response.items.isNotEmpty()) posts = posts + response.items.map { it.toFeedItem() }
+                feedPage = targetPage
+                feedHasMore = response.hasMore(FEED_PAGE_SIZE)
+            } catch (e: Exception) {
+                if (generation != feedGeneration || tabIndex != feedTab) return@launch
+                feedError = e.message?.takeIf { it.isNotBlank() } ?: "加载更多失败"
+            } finally {
+                if (generation == feedGeneration && tabIndex == feedTab) isLoadingMore = false
+            }
+        }
+    }
+
+    // 切 tab 重置该 tab 分页；子页进出不重拉，保留当前列表。
+    LaunchedEffect(feedTab) {
+        loadFirstPage(feedTab)
+    }
+
+    // 发帖成功返回后刷新第一页。
+    LaunchedEffect(destination, refreshAfterPublish) {
+        if (destination == null && refreshAfterPublish) {
+            refreshAfterPublish = false
+            loadFirstPage(feedTab)
         }
     }
 
     when (val dest = destination) {
         null -> {
             ReportMainTabRoot(isRoot = true)
-            CommunityFeedContent(
-                posts = posts,
-                feedTab = feedTab,
-                onFeedTab = { feedTab = it },
-                onPublish = { destination = CommunityRoutes.Publish },
-                onSearch = { destination = CommunityRoutes.Search },
-                onToggleLike = { post ->
-                    scope.launch {
-                        val fragment = try {
-                            repository.toggleLike(post.id, liked = !post.isLiked)
-                        } catch (e: Exception) {
-                            null
-                        }
-                        if (fragment != null) {
-                            posts = posts.map { item ->
-                                if (item.id == post.id) {
-                                    item.copy(
-                                        isLiked = fragment.isLiked,
-                                        likeCount = fragment.likeCount,
-                                    )
-                                } else item
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { scope.launch { loadFirstPage(feedTab) } },
+                state = pullRefreshState,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                CommunityFeedContent(
+                    posts = posts,
+                    feedTab = feedTab,
+                    isRefreshing = isRefreshing,
+                    isLoadingMore = isLoadingMore,
+                    feedHasMore = feedHasMore,
+                    feedError = feedError,
+                    onFeedTab = { feedTab = it },
+                    onRefresh = { scope.launch { loadFirstPage(feedTab) } },
+                    onLoadMore = ::loadMore,
+                    onPublish = {
+                        refreshAfterPublish = true
+                        destination = CommunityRoutes.Publish
+                    },
+                    onSearch = { destination = CommunityRoutes.Search },
+                    onToggleLike = { post ->
+                        scope.launch {
+                            val fragment = try {
+                                repository.toggleLike(post.id, liked = !post.isLiked)
+                            } catch (e: Exception) {
+                                null
+                            }
+                            if (fragment != null) {
+                                posts = posts.map { item ->
+                                    if (item.id == post.id) {
+                                        item.copy(
+                                            isLiked = fragment.isLiked,
+                                            likeCount = fragment.likeCount,
+                                        )
+                                    } else item
+                                }
                             }
                         }
-                    }
-                },
-                onOpenComment = { post ->
-                    destination = "${CommunityRoutes.Comment}?postId=${post.id}"
-                },
-                metaLabel = { post ->
-                    "${MockCommunityEngine.formatPublishTime(post.publishAtMs)} · ${post.source}"
-                },
-            )
+                    },
+                    onOpenComment = { post ->
+                        destination = "${CommunityRoutes.Comment}?postId=${post.id}"
+                    },
+                    onPlayVideo = { post ->
+                        selectedVideoUrl = post.videoUrl
+                        destination = CommunityRoutes.VideoPlay
+                    },
+                    metaLabel = { post ->
+                        "${MockCommunityEngine.formatPublishTime(post.publishAtMs)} · ${post.source}"
+                    },
+                )
+            }
         }
         else -> {
             CommunityRouteHost(
                 route = dest,
+                videoUrl = selectedVideoUrl,
+                videoPlayer = videoPlayer,
                 onBack = {
                     destination = when {
                         dest == CommunityRoutes.TopicSelect -> CommunityRoutes.Publish
-                        dest.startsWith(CommunityRoutes.Comment) -> null
                         else -> null
                     }
                 },
@@ -180,14 +290,34 @@ fun CommunityScreen() {
 private fun CommunityFeedContent(
     posts: List<CommunityFeedItem>,
     feedTab: Int,
+    isRefreshing: Boolean,
+    isLoadingMore: Boolean,
+    feedHasMore: Boolean,
+    feedError: String?,
     onFeedTab: (Int) -> Unit,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
     onPublish: () -> Unit,
     onSearch: () -> Unit,
     onToggleLike: (CommunityFeedItem) -> Unit,
     onOpenComment: (CommunityFeedItem) -> Unit,
+    onPlayVideo: (CommunityFeedItem) -> Unit,
     metaLabel: (CommunityFeedItem) -> String,
 ) {
     val feedTabs = listOf("最新", "热门", "关注")
+    val listState = rememberLazyListState()
+    val nearEnd by remember {
+        derivedStateOf {
+            val lastIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            lastIndex >= posts.size - 2
+        }
+    }
+    LaunchedEffect(nearEnd, posts.size, feedHasMore, isLoadingMore) {
+        if (nearEnd && feedHasMore && !isLoadingMore && feedError == null && posts.isNotEmpty()) {
+            onLoadMore()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -256,27 +386,62 @@ private fun CommunityFeedContent(
                 )
             }
         }
-        if (posts.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = if (feedTab == 2) "还没有关注的人，去搜索关注吧" else "暂无动态",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 15.sp,
+        when {
+            posts.isEmpty() && isRefreshing -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("加载中…", color = DemoColors.TextSecondary, fontSize = 15.sp)
+                }
+            }
+            posts.isEmpty() && feedError != null -> {
+                StateView(
+                    type = StateViewType.Error,
+                    title = "加载失败",
+                    description = "网络似乎出了点问题，请稍后重试",
+                    actionLabel = "重试",
+                    onAction = onRefresh,
                 )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(posts, key = { it.id }) { post ->
-                    EnginePostCard(
-                        post = post,
-                        meta = metaLabel(post),
-                        onLike = { onToggleLike(post) },
-                        onComment = { onOpenComment(post) },
+            posts.isEmpty() -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = if (feedTab == 2) "还没有关注的人，去搜索关注吧" else "暂无动态",
+                        color = DemoColors.TextSecondary,
+                        fontSize = 15.sp,
                     )
+                }
+            }
+            else -> {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(posts, key = { it.id }) { post ->
+                        EnginePostCard(
+                            post = post,
+                            meta = metaLabel(post),
+                            onLike = { onToggleLike(post) },
+                            onComment = { onOpenComment(post) },
+                            onPlayVideo = { onPlayVideo(post) },
+                        )
+                    }
+                    item {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            when {
+                                isLoadingMore -> Text("加载中…", color = DemoColors.Muted, fontSize = 13.sp)
+                                feedError != null -> TextButton(onClick = onLoadMore) {
+                                    Text("加载失败，点击重试", color = DemoColors.Primary, fontSize = 13.sp)
+                                }
+                                !feedHasMore -> Text("没有更多了", color = DemoColors.Muted, fontSize = 13.sp)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -289,6 +454,7 @@ private fun EnginePostCard(
     meta: String,
     onLike: () -> Unit,
     onComment: () -> Unit,
+    onPlayVideo: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -332,6 +498,25 @@ private fun EnginePostCard(
             maxLines = 6,
             overflow = TextOverflow.Ellipsis,
         )
+        if (post.videoCoverUrl != null) {
+            Spacer(Modifier.height(10.dp))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(onClick = onPlayVideo),
+                contentAlignment = Alignment.Center,
+            ) {
+                PlatformNetworkImage(
+                    url = post.videoCoverUrl,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    placeholder = Res.drawable.community_post_a,
+                )
+                Text("▶", color = Color.White, fontSize = 24.sp)
+            }
+        }
         if (post.images.isNotEmpty() || post.videoCoverUrl != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(

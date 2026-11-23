@@ -91,6 +91,7 @@ fun MinePersonalizedSettingsScreen(
                     trailingText = eyeProtection,
                     showHelp = true,
                     onHelp = { help("护眼模式") },
+                    expanded = eyePickerOpen,
                     onClick = { eyePickerOpen = !eyePickerOpen },
                 )
                 if (eyePickerOpen) {

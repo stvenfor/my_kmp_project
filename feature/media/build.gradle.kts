@@ -17,6 +17,12 @@ kotlin {
             api(projects.core.router)
             api(projects.core.network)
         }
+        getByName("androidMain").dependencies {
+            implementation(libs.composemediaplayer.video)
+        }
+        getByName("iosMain").dependencies {
+            implementation(libs.composemediaplayer.video)
+        }
         getByName("commonTest").dependencies {
             implementation(projects.core.network)
         }

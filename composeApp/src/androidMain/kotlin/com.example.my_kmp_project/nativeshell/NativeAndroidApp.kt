@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.app.AppContainer
 import com.example.my_kmp_project.core.account.createPrivacyConsentStore
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoTheme
 import com.example.my_kmp_project.core.design.DesignTokens
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -55,21 +56,23 @@ fun NativeAndroidApp() {
     var privacyAccepted by remember { mutableStateOf(privacyStore.isAccepted()) }
     val scope = rememberCoroutineScope()
 
-    when (phase) {
-        NativePhase.Splash -> NativeSplash {
-            phase = if (privacyAccepted) NativePhase.Main else NativePhase.Privacy
+    DemoTheme {
+        when (phase) {
+            NativePhase.Splash -> NativeSplash {
+                phase = if (privacyAccepted) NativePhase.Main else NativePhase.Privacy
+            }
+            NativePhase.Privacy -> NativePrivacy(
+                onAccept = {
+                    privacyStore.setAccepted(true)
+                    privacyAccepted = true
+                    scope.launch {
+                        runCatching { AppContainer.get().bridges.push.registerForPush() }
+                    }
+                    phase = NativePhase.Main
+                },
+            )
+            NativePhase.Main -> NativeAndroidMain()
         }
-        NativePhase.Privacy -> NativePrivacy(
-            onAccept = {
-                privacyStore.setAccepted(true)
-                privacyAccepted = true
-                scope.launch {
-                    runCatching { AppContainer.get().bridges.push.registerForPush() }
-                }
-                phase = NativePhase.Main
-            },
-        )
-        NativePhase.Main -> NativeAndroidMain()
     }
 }
 

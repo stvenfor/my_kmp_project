@@ -55,6 +55,7 @@ internal object AppCrossFeatureScreens : CrossFeatureScreenPort {
         route: String,
         onBack: () -> Unit,
         onNavigate: (String) -> Unit,
+        onOpenVideoComments: ((videoId: String) -> Unit)?,
     ) {
         when {
             route == ContentRoutes.Live || route == ContentRoutes.LiveRoom ->
@@ -70,7 +71,12 @@ internal object AppCrossFeatureScreens : CrossFeatureScreenPort {
             route == ContentRoutes.MediaEntry -> MediaEntryScreen(onBack = onBack)
             route == AiRoutes.Stream -> AiStreamScreen(onBack = onBack)
             route.startsWith("/classroom") -> ClassroomRouteHost(route, onBack, onNavigate)
-            route.startsWith("/video") -> VideoRouteHost(route, onBack, onNavigate)
+            route.startsWith("/video") -> VideoRouteHost(
+                route,
+                onBack,
+                onNavigate,
+                onOpenComments = onOpenVideoComments ?: {},
+            )
             else -> MediaEntryScreen(onBack = onBack)
         }
     }

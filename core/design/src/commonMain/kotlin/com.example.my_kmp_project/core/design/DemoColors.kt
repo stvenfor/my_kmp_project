@@ -35,4 +35,10 @@ object DemoColors {
     val Violet = argb(DesignTokens.Color.Violet)
     val Cyan = argb(DesignTokens.Color.Cyan)
     val HighlightPink = argb(DesignTokens.Color.HighlightPink)
+
+    // —— 语义色：Material3 ColorScheme 的容器 / 反相角色（由 token 派生，勿在别处写死）——
+    val ErrorSoft = argb(DesignTokens.Color.ErrorSoft)
+    val ErrorDeep = argb(DesignTokens.Color.ErrorDeep)
+    val SelectionBg = argb(DesignTokens.Color.SelectionBg)
+    val SelectionFg = argb(DesignTokens.Color.SelectionFg)
 }
