@@ -17,6 +17,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
+  # 签名材料来自本机私有 signing.local.json；先生成 build-profile.json5（无私有文件时生成未签名配置）。
+  "$ROOT/scripts/harmony-signing.sh"
   exec "$ROOT/runscript/runOhosApp-Mac.sh" "$@"
 fi
 

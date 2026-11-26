@@ -19,6 +19,12 @@ kotlin {
             }
         }
         getByName("androidMain").dependsOn(chartsVicoMain)
+        getByName("androidMain").dependencies {
+            // 数据分析 gRPC：okhttp 传输 + stub unary 调用 + javalite 手写编解码（无 protoc）
+            implementation(libs.grpc.okhttp)
+            implementation(libs.grpc.stub)
+            implementation(libs.protobuf.javalite)
+        }
         // iosMain 由根工程共享接线创建，这里只挂中间 source set（androidOnly 时它不存在）。
         matching { it.name == "iosMain" }.all { dependsOn(chartsVicoMain) }
 

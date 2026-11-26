@@ -92,18 +92,4 @@ class DemoRequestHeadersTest {
         assertNull(headers["X-Session-ID"])
         assertNull(headers["X-Device-ID"])
     }
-
-    @Test
-    fun mock_session_token_is_never_sent_to_backend() {
-        // debug 本地 Mock 会话凭证不是 BFF 可校验的 JWT；发出去只会换 401。
-        NetworkConfig.accessToken = "mock_phone_token_42_123456"
-        NetworkConfig.sessionId = "session-xyz"
-        NetworkConfig.deviceId = "device-123"
-
-        val headers = DemoRequestHeaders.forUrl(apiUrl)
-
-        assertNull(headers["Authorization"])
-        assertNull(headers["X-Session-ID"])
-        assertNull(headers["X-Device-ID"])
-    }
 }

@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.core.database
 
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -9,6 +10,12 @@ import kotlinx.coroutines.runBlocking
 
 /** 内存 driver 契约验证：CRUD + 响应式快照 + 条件查询。 */
 class InMemoryDatabaseTest {
+
+    /** 默认工厂已切到落盘 driver（需要平台 KV），单测里显式换回内存实现。 */
+    @BeforeTest
+    fun useInMemoryDriver() {
+        DatabaseProvider.setFactory { name -> InMemoryDatabase(name) }
+    }
 
     private data class Note(override val id: String, val text: String) : Entity
 

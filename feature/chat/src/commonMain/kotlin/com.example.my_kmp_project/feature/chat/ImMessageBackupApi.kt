@@ -94,7 +94,7 @@ public enum class ImBackupDirection(public val wireValue: String) {
  * // 撤回时 `backupRecall`（:300-306）；SDK 监听挂载点是
  * // `components/rongcloud_im/lib/engine/rong_engine_holder.dart:92 attachMessageListener`
  * // （底层 `RCIMIWEngine`，插件 `rongcloud_im_wrapper_plugin: ^5.44.0`）。
- * // 本工程无该产物，收发仍由 `component/chat/ImEngine.kt` 的 mock 引擎承担；
+ * // 本工程无该产物，收发尚未接入（无本地 mock 引擎）；
  * // 本 lane 只提供「拿到事件之后」的入队 + HTTP 上报，不得伪称 SDK ready。
  */
 public interface ImBackupService {

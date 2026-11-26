@@ -120,8 +120,7 @@ internal fun HttpUserHit.toUserHit(): CommunityUserHit = CommunityUserHit(
 
 /**
  * Community tab — feed / like / publish / search / comment 入口统一走
- * [HttpCommunityPostRepository]（真实 HTTP）。[MockCommunityEngine] 保留给既有单测
- * 与 Android native shell；此处只复用其 companion 的时间格式化纯函数。
+ * [HttpCommunityPostRepository]（真实 HTTP）；时间文案复用同包 [formatPublishTime]。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -264,7 +263,7 @@ fun CommunityScreen(
                         destination = CommunityRoutes.VideoPlay
                     },
                     metaLabel = { post ->
-                        "${MockCommunityEngine.formatPublishTime(post.publishAtMs)} · ${post.source}"
+                        "${formatPublishTime(post.publishAtMs)} · ${post.source}"
                     },
                 )
             }

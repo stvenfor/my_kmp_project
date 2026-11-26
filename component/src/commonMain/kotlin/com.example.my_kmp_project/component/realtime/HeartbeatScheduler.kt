@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.component.realtime
 
+import com.example.my_kmp_project.core.log.AppLog
 import com.example.my_kmp_project.core.network.realtime.RealtimeConfig
 
 /**
@@ -71,13 +72,13 @@ public class HeartbeatScheduler(
         val pingId = "ping_${clock.nowMs()}"
         pendingPingId = pingId
         runCatching { onSendPing(pingId) }
-            .onFailure { println("[Realtime] heartbeat send failed: ${it.message}") }
+            .onFailure { AppLog.w("Realtime", "heartbeat send failed: ${it.message}") }
 
         timeoutTask?.cancel()
         timeoutTask = ticker.after(timeoutMs) {
             timeoutTask = null
             missCount++
-            println("[Realtime] heartbeat timeout miss=$missCount pingId=$pingId")
+            AppLog.w("Realtime", "heartbeat timeout miss=$missCount pingId=$pingId")
             if (missCount >= maxMiss) {
                 onTimeout()
                 return@after

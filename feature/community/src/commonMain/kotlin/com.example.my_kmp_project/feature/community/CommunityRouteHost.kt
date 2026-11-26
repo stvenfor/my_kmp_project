@@ -137,9 +137,7 @@ fun CommunityRouteHost(
             },
         )
         CommunityRoutes.ImagePreview -> CommunityImagePreviewScreen(
-            urls = previewUrls.ifEmpty {
-                listOf("https://picsum.photos/seed/preview/800/800")
-            },
+            urls = previewUrls,
             initialIndex = previewIndex,
             onBack = onBack,
         )
@@ -637,23 +635,55 @@ private fun CommunityConventionScreen(onBack: () -> Unit) {
     }
 }
 
+/** 话题列表来自 GET /community/topics（#66）；失败只提示，不再展示本地硬编码话题。 */
 @Composable
 private fun CommunityTopicSelectScreen(onBack: () -> Unit, onPick: (String) -> Unit) {
-    val topics = listOf("Flutter开发", "户外", "生活", "汽车", "跟读")
     ReportMainTabRoot(isRoot = false)
+    val repository = remember { HttpCommunityPostRepository() }
+    var topics by remember { mutableStateOf<List<String>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var revision by remember { mutableIntStateOf(0) }
+    LaunchedEffect(revision) {
+        loading = true
+        error = null
+        topics = try {
+            repository.fetchTopics(page = 0, pageSize = 50).map { it.name }.filter { it.isNotBlank() }
+        } catch (e: Exception) {
+            error = e.message?.takeIf { it.isNotBlank() } ?: "加载话题失败"
+            emptyList()
+        }
+        loading = false
+    }
     Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
         MineTopBar(title = "选择话题", onBack = onBack)
-        LazyColumn {
-            items(topics) { t ->
-                Text(
-                    "#$t",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onPick(t) }
-                        .padding(16.dp),
-                    color = DemoColors.Accent,
-                )
-                HorizontalDivider(color = DemoColors.Divider)
+        when {
+            loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("加载中…", color = DemoColors.TextSecondary, fontSize = 14.sp)
+            }
+            error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(error ?: "加载失败", color = DemoColors.TextSecondary, fontSize = 14.sp)
+                    TextButton(onClick = { revision += 1 }) {
+                        Text("重试", color = DemoColors.Accent)
+                    }
+                }
+            }
+            topics.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("暂无话题", color = DemoColors.TextSecondary, fontSize = 14.sp)
+            }
+            else -> LazyColumn {
+                items(topics) { t ->
+                    Text(
+                        "#$t",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onPick(t) }
+                            .padding(16.dp),
+                        color = DemoColors.Accent,
+                    )
+                    HorizontalDivider(color = DemoColors.Divider)
+                }
             }
         }
     }
@@ -665,8 +695,17 @@ private fun CommunityImagePreviewScreen(
     initialIndex: Int,
     onBack: () -> Unit,
 ) {
-    var index by remember { mutableStateOf(initialIndex.coerceIn(0, urls.lastIndex.coerceAtLeast(0))) }
     ReportMainTabRoot(isRoot = false)
+    if (urls.isEmpty()) {
+        Box(
+            Modifier.fillMaxSize().background(Color.Black),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("暂无可预览图片", color = Color.White, fontSize = 15.sp)
+        }
+        return
+    }
+    var index by remember { mutableStateOf(initialIndex.coerceIn(0, urls.lastIndex)) }
     Box(
         Modifier
             .fillMaxSize()

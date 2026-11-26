@@ -106,7 +106,7 @@ public data class ImFriendRespondRequest(
  * 同意/拒绝申请 #106、单聊准入 #108。
  *
  * 本 lane 全部为 BFF 侧 HTTP 契约；好友关系变化后的会话打开、消息收发属于融云 SDK，
- * 仍由 `component/chat/ImEngine.kt` 的 mock 引擎承担（见下方 GAP(R5)）。
+ * 当前未接入（无本地 mock 引擎，见下方 GAP(R5)）。
  *
  * // GAP(R5): Dart 在成为好友后才通过 SDK 建会话/发消息
  * // （`features/chat/lib/chat/repository/im_chat_repository.dart:103-130` 的 sendText/sendImage

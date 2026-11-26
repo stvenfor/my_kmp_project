@@ -1,8 +1,8 @@
 package com.example.my_kmp_project.core.network
 
 /**
- * Ktor Logging 日志脱敏：[HttpClientDefaults] 在 println 前调用，防止会话凭证随 INFO 日志
- * 落到 stdout / logcat。
+ * Ktor Logging 日志脱敏：[HttpClientDefaults] 在写日志（core:log AppLog）前调用，
+ * 防止会话凭证随 INFO 日志落到 logcat / stdout。
  *
  * 移除范围：
  * - `Authorization` / [DemoRequestHeaders.HEADER_SESSION_ID] / [HEADER_DEVICE_ID] 三个头的值；

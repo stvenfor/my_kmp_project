@@ -42,6 +42,7 @@ kotlin {
     sourceSets {
         val commonMain = getByName("commonMain")
         commonMain.dependencies {
+            implementation(projects.core.base)
             implementation(libs.kotlinx.serialization.json)
         }
 

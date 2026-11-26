@@ -1,4 +1,4 @@
-// feature:community —— 社区信息流 / 发帖 / 搜索（mock 引擎 + http 仓储两套实现）。
+// feature:community —— 社区信息流 / 发帖 / 搜索（统一 HTTP 仓储，已无进程内 mock）。
 // 目标集、android 基础配置、coroutines / atomicfu / serialization / kotlin-test 由根
 // build.gradle.kts 的 :feature:* 共享接线提供，本文件只声明模块特有的依赖边。
 plugins {

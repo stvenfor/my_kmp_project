@@ -134,8 +134,8 @@ public fun createPersistentImMockUserIdRegistry(
  * // `_engine!.connect(session.token, RongImConfig.connectTimeoutSeconds)`
  * // （components/rongcloud_im/lib/engine/rong_engine_holder.dart:42-86，connect 调用在 :58；
  * // mock 侧对应 `connectMock` :34-40）。融云 IMLib（`rongcloud_im_wrapper_plugin: ^5.44.0`）
- * // 在本工程 Android/iOS/OHOS 均无产物，故本 lane 只移植 BFF 侧；连接与收发仍由
- * // `component/chat/ImEngine.kt` 的 mock 引擎承担，禁止伪装 SDK ready。
+ * // 在本工程 Android/iOS/OHOS 均无产物，故本 lane 只移植 BFF 侧；连接与收发尚未接入，
+ * // 禁止伪装 SDK ready。
  */
 public class ImSessionApi(
     private val client: ApiClient = NetworkFacade.api(),

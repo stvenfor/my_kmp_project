@@ -17,10 +17,8 @@ import com.example.my_kmp_project.core.network.ListPage
  * - 失败一律抛出异常（Dart 的 `_list` / `_data` 抛 `HttpRequestException`，
  *   http_post_repository.dart:184-214）；KMP 用 `core/network` 的 [com.example.my_kmp_project.core.network.NetworkError.Business]。
  *
- * 本仓库现有的 `MockCommunityEngine`（`feature/community/MockCommunityEngine.kt`）**不实现本接口**：
- * 它是同步方法 + mock 私有行类型（`CommunityFeedItem` / `CommunityFeedComment`），
- * 且没有 `deletePost` / `fetchTopics` / 分页搜索三兄弟。保持原样未改动，
- * 后续 UI 收口时再决定是「适配 mock 到本端口」还是「直接切 HTTP 实现」。
+ * 生产 UI（`CommunityScreen` / `CommunityRouteHost` / Android native 社区 tab）已全部走
+ * [HttpCommunityPostRepository]；进程内 mock 引擎已移除，不再有第二份实现。
  */
 public interface CommunityPostRepository {
 

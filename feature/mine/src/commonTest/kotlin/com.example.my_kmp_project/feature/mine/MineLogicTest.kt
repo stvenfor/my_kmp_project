@@ -4,7 +4,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -27,8 +26,9 @@ class AddressMockStoreTest {
         AddressMockStore.resetForTests()
     }
 
+    /** 数据已改为远端接口，测试只覆盖不依赖网络的表单校验。 */
     @Test
-    fun validateAndCrud() {
+    fun validateRules() {
         assertEquals(
             "请填写收货人",
             AddressMockStore.validate("", "13800115172", "省", "市", "区", "详"),
@@ -37,27 +37,18 @@ class AddressMockStoreTest {
             "请输入以 1 开头的 11 位手机号",
             AddressMockStore.validate("甲", "123", "省", "市", "区", "详"),
         )
+        assertEquals(
+            "请填写详细地址",
+            AddressMockStore.validate("甲", "13800115172", "省", "市", "区", ""),
+        )
+        assertEquals(
+            "请选择省市区",
+            AddressMockStore.validate("甲", "13800115172", "", "市", "区", "详"),
+        )
         assertNull(
             AddressMockStore.validate("甲", "13800115172", "省", "市", "区", "详"),
         )
-        val before = AddressMockStore.addresses().size
-        val created = AddressMockStore.save(
-            id = null,
-            name = "新客",
-            phone = "13912345678",
-            province = "广东省",
-            city = "深圳市",
-            district = "南山区",
-            detail = "科技园",
-            label = "公司",
-            isDefault = true,
-        )
-        assertEquals(before + 1, AddressMockStore.addresses().size)
-        assertTrue(created.isDefault)
-        assertEquals(1, AddressMockStore.addresses().count { it.isDefault })
-        assertTrue(AddressMockStore.setDefault("addr-1"))
-        assertTrue(AddressMockStore.addresses().first { it.id == "addr-1" }.isDefault)
-        assertTrue(AddressMockStore.delete(created.id))
+        assertTrue(AddressMockStore.addresses().isEmpty())
     }
 }
 
@@ -67,19 +58,16 @@ class WalletMockStoreTest {
         WalletMockStore.resetForTests()
     }
 
+    /** 数据已改为远端接口，测试只覆盖不依赖网络的表单校验。 */
     @Test
-    fun rechargeAndBind() {
+    fun validateRules() {
         assertEquals("请输入金额", WalletMockStore.validateRecharge(""))
+        assertEquals("请输入有效金额", WalletMockStore.validateRecharge("abc"))
         assertNull(WalletMockStore.validateRecharge("10.5"))
-        val before = WalletMockStore.balanceFen()
-        val entry = WalletMockStore.recharge("10", channel = 1, cardId = null)
-        assertNotNull(entry)
-        assertEquals(before + 1000, WalletMockStore.balanceFen())
         assertEquals("请填写银行名与卡号后四位", WalletMockStore.validateBindCard("", "12"))
-        val card = WalletMockStore.bindCard("招商银行", "1234")
-        assertNotNull(card)
-        assertTrue(WalletMockStore.setDefaultCard(card.cardId))
-        assertTrue(WalletMockStore.deleteCard(card.cardId))
+        assertEquals("卡号后四位须为数字", WalletMockStore.validateBindCard("招商银行", "12a4"))
+        assertNull(WalletMockStore.validateBindCard("招商银行", "1234"))
+        assertTrue(WalletMockStore.cards().isEmpty())
     }
 }
 

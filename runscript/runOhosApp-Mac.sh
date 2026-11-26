@@ -24,7 +24,7 @@ START_TIME=$(date +%s)
 # ====================== [1. Default Configuration and Parameter Parsing] ======================
 DEFAULT_PLATFORM="ohosArm64"
 DEFAULT_TARGET_ID="127.0.0.1:5555"
-DEFAULT_BUNDLE_NAME="com.example.harmonyapp"
+DEFAULT_BUNDLE_NAME="com.example.my_kmp_project"
 DEFAULT_ABILITY_NAME="EntryAbility"
 LOCAL_OHOS_PATH=""
 

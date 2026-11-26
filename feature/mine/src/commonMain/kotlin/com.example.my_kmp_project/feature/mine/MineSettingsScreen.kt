@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,10 +43,59 @@ fun MineSettingsScreen(
     val localeZh = MinePrefsStore.localeZh
     var envPickerOpen by remember { mutableStateOf(false) }
     var langPickerOpen by remember { mutableStateOf(false) }
+    var customDialogOpen by remember { mutableStateOf(false) }
+    var customUrlInput by remember { mutableStateOf("") }
     var envLabel by remember {
         mutableStateOf(DemoApiHosts.labelForBaseUrl(NetworkConfig.effectiveBaseUrl()))
     }
     var hostUrl by remember { mutableStateOf(NetworkConfig.effectiveBaseUrl()) }
+
+    if (customDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { customDialogOpen = false },
+            title = { Text("后端地址") },
+            text = {
+                Column {
+                    Text(
+                        text = "真机联调填本机局域网地址，如 192.168.2.175 或 http://192.168.2.175:8080",
+                        color = MineTheme.LabelSecondary,
+                        fontSize = 13.sp,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = customUrlInput,
+                        onValueChange = { customUrlInput = it },
+                        singleLine = true,
+                        placeholder = { Text("http://192.168.2.175:8080") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val url = normalizeBackendUrl(customUrlInput)
+                        if (url != null) {
+                            NetworkConfig.switchDebugHost("CUSTOM", url)
+                            envLabel = DemoApiHosts.labelForBaseUrl(NetworkConfig.effectiveBaseUrl())
+                            hostUrl = NetworkConfig.effectiveBaseUrl()
+                            showPlatformToast("已切换到 $hostUrl")
+                        } else {
+                            showPlatformToast("请输入有效地址")
+                        }
+                        customDialogOpen = false
+                    },
+                ) {
+                    Text("保存")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { customDialogOpen = false }) {
+                    Text("取消")
+                }
+            },
+        )
+    }
 
     if (langPickerOpen) {
         AlertDialog(
@@ -134,6 +184,16 @@ fun MineSettingsScreen(
                         MineInsetDivider()
                     }
                     MineNavRow(
+                        title = "自定义地址…",
+                        subtitle = "真机局域网 IP / 自建后端",
+                        showChevron = false,
+                        onClick = {
+                            customUrlInput = hostUrl
+                            customDialogOpen = true
+                        },
+                    )
+                    MineInsetDivider()
+                    MineNavRow(
                         title = "恢复默认 (TEST)",
                         showChevron = false,
                         onClick = {
@@ -215,4 +275,20 @@ fun MineAboutScreen(onBack: () -> Unit) {
             }
         }
     }
+}
+
+/**
+ * 归一化后端地址输入：补 `http://` 与默认端口 8080，拒绝带路径的非法输入。
+ * 例：`192.168.2.175` → `http://192.168.2.175:8080`。
+ */
+private fun normalizeBackendUrl(raw: String): String? {
+    val trimmed = raw.trim().trimEnd('/')
+    if (trimmed.isEmpty()) return null
+    val withScheme = when {
+        trimmed.startsWith("http://") || trimmed.startsWith("https://") -> trimmed
+        else -> "http://$trimmed"
+    }
+    val hostPort = withScheme.substringAfter("://")
+    if (hostPort.isEmpty() || hostPort.contains('/')) return null
+    return if (hostPort.contains(':')) withScheme else "$withScheme:8080"
 }

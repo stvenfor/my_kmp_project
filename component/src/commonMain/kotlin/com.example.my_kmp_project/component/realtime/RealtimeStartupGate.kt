@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.component.realtime
 
+import com.example.my_kmp_project.core.log.AppLog
 import com.example.my_kmp_project.core.network.realtime.RealtimeConfig
 import com.example.my_kmp_project.core.network.realtime.RealtimeTopics
 import kotlinx.coroutines.CompletableDeferred
@@ -39,7 +40,7 @@ public class RealtimeStartupGate(
     private val defaultTopics: List<String> = listOf(RealtimeTopics.SYS_NOTIFY, RealtimeTopics.PRESENCE_BULK),
     private val connectTimeoutMs: Long = CONNECT_TIMEOUT_MS,
     private val connectedWaitMs: Long = CONNECTED_WAIT_MS,
-    private val log: (String) -> Unit = { println(it) },
+    private val log: (String) -> Unit = { AppLog.d("RealtimeStartupGate", it) },
 ) {
     private var clientImpl: AppRealtimeClientImpl? = null
 

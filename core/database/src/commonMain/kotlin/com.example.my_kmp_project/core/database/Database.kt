@@ -2,20 +2,26 @@ package com.example.my_kmp_project.core.database
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.KSerializer
 
 /**
  * 结构化持久化契约（core:database）。
  *
  * 与 [com.example.my_kmp_project.core.storage.KeyValueStore]（KV）互补：这里面向
- * 「带主键、可查询、可响应式观察」的实体表。默认 driver 为内存实现
- * （[InMemoryDatabase]）；平台 SQL driver 就位后经 [DatabaseProvider] 注入，接口不变。
+ * 「带主键、可查询、可响应式观察」的实体表。默认 driver 为落盘实现
+ * （[PersistentDatabase]）；纯内存 driver（[InMemoryDatabase]）用于测试 / 临时表。
  */
 interface Database {
     /** 逻辑库名（诊断 / 多库隔离用）。 */
     val name: String
 
-    /** 取（或懒建）一张实体表；同一 [id] 返回同一实例。 */
-    fun <T : Entity> table(id: String): Table<T>
+    /**
+     * 取（或懒建）一张实体表；同一 [id] 返回同一实例（首次取表时决定是否落盘）。
+     *
+     * [serializer] 为实体行的编解码器：落盘 driver 靠它把行写成 JSON，
+     * 缺省时退化为内存表（[InMemoryTable]，进程结束即丢）；[InMemoryDatabase] 始终忽略它。
+     */
+    fun <T : Entity> table(id: String, serializer: KSerializer<T>? = null): Table<T>
 
     /** 清空所有表（测试 / 登出重置用）。 */
     fun clear()

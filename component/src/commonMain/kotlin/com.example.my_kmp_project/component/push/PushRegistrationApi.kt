@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.component.push
 
+import com.example.my_kmp_project.core.log.AppLog
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
@@ -29,7 +30,7 @@ import kotlinx.serialization.json.put
 public class PushRegistrationApi(
     private val client: ApiClient = NetworkFacade.api(),
     private val analytics: PushRegistrationAnalytics = NoopPushRegistrationAnalytics,
-    private val log: (String) -> Unit = { println(it) },
+    private val log: (String) -> Unit = { AppLog.d("PushRegistration", it) },
 ) {
     /**
      * Dart `report({required registrationId, alias, deviceId, platform, mock})`（:17-52）。

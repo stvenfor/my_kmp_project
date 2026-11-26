@@ -75,23 +75,15 @@ class HomeTodoStoreTest {
         HomeTodoStore.resetForTests()
     }
 
+    /** 无 seed：reset 后内存为空，数据一律等远端 refresh。 */
     @Test
-    fun approveAndRejectReducePending() {
-        assertEquals(3, HomeTodoStore.pendingApplications().size)
-        assertTrue(HomeTodoStore.approveJoin(1001))
-        assertEquals(2, HomeTodoStore.pendingApplications().size)
-        assertTrue(HomeTodoStore.rejectJoin(1002))
-        assertEquals(1, HomeTodoStore.pendingApplications().size)
-        assertFalse(HomeTodoStore.approveJoin(1001)) // already approved
-    }
-
-    @Test
-    fun partnerCardCountTracksPending() {
-        val before = HomeTodoStore.todoCards().first { it.type == "partner_pending" }.count
-        assertEquals(3, before)
-        HomeTodoStore.approveJoin(1001)
-        val after = HomeTodoStore.todoCards().first { it.type == "partner_pending" }.count
-        assertEquals(2, after)
+    fun emptyUntilRemoteRefresh() {
+        assertTrue(HomeTodoStore.todoCards().isEmpty())
+        assertTrue(HomeTodoStore.pendingApplications().isEmpty())
+        assertTrue(HomeTodoStore.followUpCustomers().isEmpty())
+        assertTrue(HomeTodoStore.afterSalesAppointments().isEmpty())
+        assertTrue(HomeTodoStore.reviewOrders().isEmpty())
+        assertNull(HomeTodoStore.errorMessage)
     }
 }
 
@@ -163,8 +155,13 @@ class HomePointsStoreTest {
 }
 
 class HomeSecondaryStoreTest {
+    @BeforeTest
+    fun reset() {
+        HomeSecondaryStore.resetForTests()
+    }
+
     @Test
-    fun usedCarValidateAndCreate() {
+    fun usedCarValidate() {
         assertEquals(
             "请选择客户",
             HomeSecondaryStore.validateUsedCarCreate("", "车", "牌", "VIN", 1, 2020, 100),
@@ -176,48 +173,41 @@ class HomeSecondaryStoreTest {
         assertNull(
             HomeSecondaryStore.validateUsedCarCreate("张三", "帝豪", "京A1", "VIN12345678901234", 1000, 2021, 80000),
         )
-        val before = HomeSecondaryStore.usedCarOrders().size
-        val row = HomeSecondaryStore.createUsedCar(
-            kindLabel = "置换",
-            customerName = "张三 138",
-            vehicleModel = "帝豪",
-            plateNo = "京A1",
-            vin = "VIN12345678901234",
-            mileageKm = 1000,
-            modelYear = 2021,
-            amount = 80000,
-        )
-        assertEquals(before + 1, HomeSecondaryStore.usedCarOrders().size)
-        assertEquals(row.id, HomeSecondaryStore.selectedUsedCarId)
-        assertEquals(row, HomeSecondaryStore.findUsedCar(row.id))
     }
 
     @Test
-    fun afterSalesAndNewCarCreate() {
+    fun afterSalesAndNewCarValidate() {
         assertEquals(
             "请填写客户姓名和手机号",
             HomeSecondaryStore.validateAfterSalesCreate("", "1", "t", "p", "c"),
         )
-        val asBefore = HomeSecondaryStore.afterSalesDetails().size
-        val asRow = HomeSecondaryStore.createAfterSales(
-            name = "陈",
-            phone = "139",
-            title = "工单新",
-            plate = "京A",
-            mileageKm = 100,
-            date = "2026-09-29",
-            content = "保养",
-        )
-        assertEquals(asBefore + 1, HomeSecondaryStore.afterSalesDetails().size)
-        assertEquals(asRow.id, HomeSecondaryStore.selectedAfterSalesId)
-
         assertEquals(
             "请填写客户姓名和手机号",
             HomeSecondaryStore.validateNewCarFollowCreate("", "1"),
         )
-        val ncBefore = HomeSecondaryStore.newCarFollows().size
-        val nc = HomeSecondaryStore.createNewCarFollow("李", "138", "银河", "高")
-        assertEquals(ncBefore + 1, HomeSecondaryStore.newCarFollows().size)
-        assertEquals(nc.id, HomeSecondaryStore.selectedNewCarFollowId)
+        assertNull(HomeSecondaryStore.validateNewCarFollowCreate("李", "138"))
+    }
+
+    /** 空态：内存缓存不预置任何假数据。 */
+    @Test
+    fun emptyUntilRemoteRefresh() {
+        assertTrue(HomeSecondaryStore.usedCarOrders().isEmpty())
+        assertTrue(HomeSecondaryStore.afterSalesDetails().isEmpty())
+        assertTrue(HomeSecondaryStore.newCarFollows().isEmpty())
+        assertNull(HomeSecondaryStore.findUsedCar(null))
+    }
+
+    @Test
+    fun newCarPureMappings() {
+        assertEquals("A", newCarFollowLevel("高"))
+        assertEquals("B", newCarFollowLevel("中"))
+        assertEquals("E", newCarFollowLevel("低"))
+        assertEquals("H", newCarFollowLevel("H"))
+        assertEquals("试驾", newCarStageLabel("test_drive"))
+        assertEquals("战败", newCarStageLabel("lost"))
+        assertTrue(newCarFollowOverdue("2026-09-01T09:00:00Z", "following", "2026-09-29"))
+        assertFalse(newCarFollowOverdue("2026-09-01T09:00:00Z", "won", "2026-09-29"))
+        assertFalse(newCarFollowOverdue(null, "following", "2026-09-29"))
+        assertEquals("置换", usedCarKindLabel("trade_in"))
     }
 }

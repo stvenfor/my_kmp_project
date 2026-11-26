@@ -88,13 +88,6 @@ public fun LoginOtpScreen(
                 fontSize = AuthUiTokens.SubtitleSize,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            if (MockAuthConfig.useMockAuth) {
-                Text(
-                    text = "本地 Mock 模式 · 测试号 ${MockAuthConfig.mockTestPhone}，验证码 ${MockAuthConfig.mockOtpCode}",
-                    color = AuthUiTokens.Accent,
-                    fontSize = 13.sp,
-                )
-            }
             Spacer(modifier = Modifier.height(40.dp))
             BasicTextField(
                 value = otp,

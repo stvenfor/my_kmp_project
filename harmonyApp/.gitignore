@@ -15,3 +15,8 @@
 /entry/libs/
 /entry/src/main/cpp/include/
 /entry/src/main/resources/rawfile/composeResources/
+
+# Machine-private signing material + the profile generated from it.
+# Regenerate with ./scripts/harmony-signing.sh (see signing.local.example.json).
+/signing.local.json
+/build-profile.json5

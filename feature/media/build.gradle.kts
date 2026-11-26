@@ -20,8 +20,9 @@ kotlin {
         getByName("androidMain").dependencies {
             implementation(libs.composemediaplayer.video)
         }
-        getByName("iosMain").dependencies {
-            implementation(libs.composemediaplayer.video)
+        // iosMain 由根工程共享接线创建；-PandroidOnly=true（CI）时它不存在，用 matching 兼容两者。
+        matching { it.name == "iosMain" }.all {
+            dependencies { implementation(libs.composemediaplayer.video) }
         }
         getByName("commonTest").dependencies {
             implementation(projects.core.network)

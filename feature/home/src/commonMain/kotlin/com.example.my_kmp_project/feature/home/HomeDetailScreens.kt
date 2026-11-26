@@ -18,9 +18,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +38,7 @@ import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import kotlin.coroutines.cancellation.CancellationException
 
 data class AfterSalesDetailRow(
     val id: String,
@@ -126,9 +129,38 @@ fun AfterSalesServiceDetailScreen(
 /** Flutter `AnalyticsDetailPage` simplified (hero + metric rows, no chart lib). */
 @Composable
 fun AnalyticsDetailScreen(
-    record: AnalyticsRecordRow,
+    recordId: Long?,
     onBack: () -> Unit,
 ) {
+    var loading by remember(recordId) { mutableStateOf(true) }
+    var error by remember(recordId) { mutableStateOf<String?>(null) }
+    var record by remember(recordId) { mutableStateOf<AnalyticsRecordRow?>(null) }
+
+    LaunchedEffect(recordId) {
+        val id = recordId
+        if (id == null || id <= 0L) {
+            loading = false
+            error = "缺少记录 id"
+            return@LaunchedEffect
+        }
+        loading = true
+        error = null
+        try {
+            // Android 走 gRPC GetAnalyticsRecord；iOS / OHOS 抛「仅 Android 已接入」。
+            val loaded = AnalyticsGrpcClient().getRecord(id)
+            record = loaded
+            if (loaded == null) error = "记录不存在"
+        } catch (t: Throwable) {
+            if (t is CancellationException) throw t
+            error = t.message ?: "加载数据详情失败"
+        } finally {
+            loading = false
+        }
+    }
+
+    val current = record
+    val errorText = error
+
     ReportMainTabRoot(isRoot = false)
     Column(
         modifier = Modifier
@@ -136,60 +168,77 @@ fun AnalyticsDetailScreen(
             .background(DemoColors.PageBg),
     ) {
         MineTopBar(title = "数据详情", onBack = onBack, containerColor = DemoColors.Background)
-        Column(
-            Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (record.anomaly) {
-                CueBanner(
-                    color = DemoColors.Danger,
-                    title = "异常记录",
-                    subtitle = "该观测被标记为异常，请优先核对流量与转化。",
-                )
-            } else if (record.featured) {
-                CueBanner(
-                    color = DemoColors.Primary,
-                    title = "精选记录",
-                    subtitle = "该观测被标记为精选，适合作为对照样例。",
-                )
+        when {
+            loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = DemoColors.Primary)
             }
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(DemoColors.Background)
-                    .padding(16.dp),
+
+            errorText != null -> Box(
+                Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Text(record.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(6.dp))
-                Text(record.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                Text(errorText, color = DemoColors.TextSecondary, fontSize = 13.sp)
             }
-            DetailSection(
-                title = "流量漏斗",
-                rows = listOf(
-                    "PV" to "${record.pv}",
-                    "点击" to "${record.clicks}",
-                    "转化" to "${record.converts}",
-                ),
-            )
-            // Simple bar visualization
-            Column(
+
+            current == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("记录不存在", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            }
+
+            else -> Column(
                 Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Background)
-                    .padding(16.dp),
+                    .verticalScroll(rememberScrollState())
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("漏斗占比", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-                Spacer(Modifier.height(12.dp))
-                val max = record.pv.coerceAtLeast(1)
-                MetricBar("PV", record.pv / max.toFloat(), DemoColors.Accent)
-                Spacer(Modifier.height(8.dp))
-                MetricBar("点击", record.clicks / max.toFloat(), Color(0xFF5C6BC0))
-                Spacer(Modifier.height(8.dp))
-                MetricBar("转化", record.converts / max.toFloat(), Color(0xFF26A69A))
+                if (current.anomaly) {
+                    CueBanner(
+                        color = DemoColors.Danger,
+                        title = "异常记录",
+                        subtitle = "该观测被标记为异常，请优先核对流量与转化。",
+                    )
+                } else if (current.featured) {
+                    CueBanner(
+                        color = DemoColors.Primary,
+                        title = "精选记录",
+                        subtitle = "该观测被标记为精选，适合作为对照样例。",
+                    )
+                }
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(DemoColors.Background)
+                        .padding(16.dp),
+                ) {
+                    Text(current.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(6.dp))
+                    Text(current.subtitle, color = DemoColors.TextSecondary, fontSize = 13.sp)
+                }
+                DetailSection(
+                    title = "流量漏斗",
+                    rows = listOf(
+                        "PV" to "${current.pv}",
+                        "点击" to "${current.clicks}",
+                        "转化" to "${current.converts}",
+                    ),
+                )
+                // Simple bar visualization
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DemoColors.Background)
+                        .padding(16.dp),
+                ) {
+                    Text("漏斗占比", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                    Spacer(Modifier.height(12.dp))
+                    val max = current.pv.coerceAtLeast(1)
+                    MetricBar("PV", current.pv / max.toFloat(), DemoColors.Accent)
+                    Spacer(Modifier.height(8.dp))
+                    MetricBar("点击", current.clicks / max.toFloat(), Color(0xFF5C6BC0))
+                    Spacer(Modifier.height(8.dp))
+                    MetricBar("转化", current.converts / max.toFloat(), Color(0xFF26A69A))
+                }
             }
         }
     }

@@ -2,113 +2,37 @@ package com.example.my_kmp_project.feature.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.my_kmp_project.component.chat.ImConversation
-import com.example.my_kmp_project.component.chat.ImEngine
-import com.example.my_kmp_project.component.chat.ImEngineStore
-import com.example.my_kmp_project.component.chat.ImMessage
-import com.example.my_kmp_project.component.chat.ImMessageType
 import com.example.my_kmp_project.core.design.DemoColors
-import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 /**
- * Authenticated Chat tab — Flutter `ChatPage` / `ChatDetailPage` SoT via [MockImEngine].
+ * 消息 Tab：IM 依赖融云 SDK，尚未接入。
+ * 不保留任何 mock 会话/消息/发送逻辑；接入真实 IM SDK 后再开放。
+ *
+ * @param onOpenFriends Flutter square_pencil → 通讯录 `/friend`（入口保留）。
  */
 @Composable
 fun ChatScreen(
-    engine: ImEngine = remember { ImEngineStore.engine },
-    /** Flutter square_pencil → [RoutePath.friend] / 通讯录. */
     onOpenFriends: () -> Unit = {},
 ) {
-    var selectedConversationId by remember { mutableStateOf<String?>(null) }
-    var revision by remember { mutableStateOf(0) }
-    var searchOpen by remember { mutableStateOf(false) }
-    var query by remember { mutableStateOf("") }
-
-    DisposableEffect(engine) {
-        val unsub = engine.observe { revision += 1 }
-        onDispose { unsub() }
-    }
-
-    val selected = selectedConversationId?.let { id ->
-        engine.conversations().firstOrNull { it.id == id }
-    }
-
-    if (selected != null) {
-        ReportMainTabRoot(isRoot = false)
-        LaunchedEffect(selected.id) { engine.markConversationRead(selected.id) }
-        ChatDetailScreen(
-            conversation = selected,
-            messages = remember(selected.id, revision) { engine.messages(selected.id) },
-            onBack = { selectedConversationId = null },
-            onSend = { text -> engine.sendText(selected.id, text) },
-            onRecall = { msgId -> engine.recallMessage(selected.id, msgId) },
-        )
-    } else {
-        ReportMainTabRoot(isRoot = true)
-        ChatListContent(
-            conversations = remember(revision, query) { engine.filterConversations(query) },
-            searchOpen = searchOpen,
-            query = query,
-            onQueryChange = { query = it },
-            onToggleSearch = {
-                searchOpen = !searchOpen
-                if (!searchOpen) query = ""
-            },
-            onOpen = { selectedConversationId = it },
-            onOpenFriends = onOpenFriends,
-        )
-    }
-}
-
-@Composable
-private fun ChatListContent(
-    conversations: List<ImConversation>,
-    searchOpen: Boolean,
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onToggleSearch: () -> Unit,
-    onOpen: (String) -> Unit,
-    onOpenFriends: () -> Unit,
-) {
+    ReportMainTabRoot(isRoot = true)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -130,14 +54,6 @@ private fun ChatListContent(
                 modifier = Modifier.weight(1f),
             )
             Text(
-                text = if (searchOpen) "✕" else "⌕",
-                color = DemoColors.Accent,
-                fontSize = 22.sp,
-                modifier = Modifier
-                    .clickable(onClick = onToggleSearch)
-                    .padding(horizontal = 8.dp),
-            )
-            Text(
                 text = "✎",
                 color = DemoColors.Accent,
                 fontSize = 22.sp,
@@ -146,324 +62,28 @@ private fun ChatListContent(
                     .padding(end = 8.dp),
             )
         }
-        if (searchOpen) {
-            BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                textStyle = TextStyle(fontSize = 14.sp, color = DemoColors.TextPrimary),
-                singleLine = true,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(DemoColors.Background)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                decorationBox = { inner ->
-                    if (query.isEmpty()) {
-                        Text("搜索会话名称或消息", color = DemoColors.Muted, fontSize = 14.sp)
-                    }
-                    inner()
-                },
-            )
-        }
-        if (conversations.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = if (query.isNotBlank()) "没有匹配的会话" else "还没有消息",
-                        color = DemoColors.TextPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.sp,
-                    )
-                    if (query.isBlank()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "加个好友，发一条问候吧",
-                            color = DemoColors.TextSecondary,
-                            fontSize = 15.sp,
-                        )
-                        Spacer(Modifier.height(28.dp))
-                        Text(
-                            text = "去通讯录",
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(DemoColors.Accent)
-                                .clickable(onClick = onOpenFriends)
-                                .padding(horizontal = 48.dp, vertical = 12.dp),
-                        )
-                    }
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(DemoColors.Background),
-            ) {
-                items(conversations, key = { it.id }) { row ->
-                    ConversationRow(conversation = row, onClick = { onOpen(row.id) })
-                    HorizontalDivider(
-                        color = DemoColors.Divider,
-                        thickness = 0.5.dp,
-                        modifier = Modifier.padding(start = 72.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ConversationRow(
-    conversation: ImConversation,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box {
-            Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(CircleShape)
-                    .background(DemoColors.Accent.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center,
-            ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = conversation.title.take(1),
-                    color = DemoColors.Accent,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                )
-            }
-            if (conversation.isOnline) {
-                Box(
-                    Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(1.dp)
-                        .size(12.dp)
-                        .clip(CircleShape)
-                        .background(DemoColors.Accent),
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = conversation.title,
+                    text = "IM 消息未接入（需融云 SDK）",
                     color = DemoColors.TextPrimary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 17.sp,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
                 )
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = conversation.updatedAtLabel,
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = conversation.lastMessage,
+                    text = "接入融云 IM SDK 后才能收发会话与消息",
                     color = DemoColors.TextSecondary,
                     fontSize = 15.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                if (conversation.unreadCount > 0) {
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .clip(CircleShape)
-                            .background(DemoColors.Danger)
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = if (conversation.unreadCount > 99) "99+" else conversation.unreadCount.toString(),
-                            color = DemoColors.OnPrimary,
-                            fontSize = 11.sp,
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ChatDetailScreen(
-    conversation: ImConversation,
-    messages: List<ImMessage>,
-    onBack: () -> Unit,
-    onSend: (String) -> Unit = {},
-    onRecall: (String) -> Boolean = { false },
-) {
-    var draft by remember { mutableStateOf("") }
-    var recallTarget by remember { mutableStateOf<ImMessage?>(null) }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DemoColors.PageBg),
-    ) {
-        MineTopBar(
-            title = conversation.title,
-            onBack = onBack,
-            containerColor = DemoColors.Background,
-        )
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            reverseLayout = true,
-            contentPadding = PaddingValues(bottom = 8.dp),
-        ) {
-            items(messages, key = { it.id }) { msg ->
-                when (msg.type) {
-                    ImMessageType.Time, ImMessageType.System -> {
-                        Text(
-                            msg.body,
-                            fontSize = 12.sp,
-                            color = DemoColors.Muted,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                    else -> {
-                        MessageBubble(
-                            message = msg,
-                            onLongPress = {
-                                if (msg.canRecall) recallTarget = msg
-                            },
-                        )
-                    }
-                }
-            }
-        }
-        if (recallTarget != null) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .background(DemoColors.Background)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("撤回这条消息？", fontSize = 13.sp, color = DemoColors.TextSecondary, modifier = Modifier.weight(1f))
-                Text(
-                    "取消",
-                    color = DemoColors.Muted,
-                    modifier = Modifier.clickable { recallTarget = null }.padding(8.dp),
-                )
-                Text(
-                    "撤回",
-                    color = DemoColors.Accent,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .clickable {
-                            val id = recallTarget?.id
-                            if (id != null) onRecall(id)
-                            recallTarget = null
-                        }
-                        .padding(8.dp),
+                    textAlign = TextAlign.Center,
                 )
             }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(DemoColors.Background)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            BasicTextField(
-                value = draft,
-                onValueChange = { draft = it },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.PageBg)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                textStyle = TextStyle(fontSize = 15.sp, color = DemoColors.TextPrimary),
-                decorationBox = { inner ->
-                    if (draft.isEmpty()) {
-                        Text("发消息…", color = DemoColors.Muted, fontSize = 14.sp)
-                    }
-                    inner()
-                },
-            )
-            Text(
-                "发送",
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(if (draft.isNotBlank()) DemoColors.Accent else DemoColors.Muted)
-                    .clickable(enabled = draft.isNotBlank()) {
-                        val text = draft
-                        if (text.isNotBlank()) {
-                            onSend(text)
-                            draft = ""
-                        }
-                    }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun MessageBubble(message: ImMessage, onLongPress: () -> Unit = {}) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (message.isSelf) Arrangement.End else Arrangement.Start,
-    ) {
-        Column(horizontalAlignment = if (message.isSelf) Alignment.End else Alignment.Start) {
-            Text(
-                text = message.body,
-                color = if (message.isSelf) Color.White else DemoColors.TextPrimary,
-                fontSize = 15.sp,
-                modifier = Modifier
-                    .widthIn(max = 280.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (message.isSelf) DemoColors.Accent else DemoColors.Background)
-                    .clickable(onClick = onLongPress)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-            )
-            val status = message.statusLabel()
-            Text(
-                text = if (status.isNotEmpty()) status else message.timeLabel,
-                color = DemoColors.Muted,
-                fontSize = 11.sp,
-                modifier = Modifier.padding(top = 2.dp),
-            )
         }
     }
 }

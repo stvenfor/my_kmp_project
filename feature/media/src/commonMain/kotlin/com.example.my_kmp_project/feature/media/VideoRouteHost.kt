@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,18 +18,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -36,7 +41,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -57,29 +65,18 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.PlaybackControls as SharedPlaybackControls
 import com.example.my_kmp_project.core.ui.PlaybackSnapshot
 import com.example.my_kmp_project.core.ui.PlaybackStatus
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
-import my_kmp_project.core.design.generated.resources.video_transliter_videos_detail_body
 import my_kmp_project.core.design.generated.resources.video_transliter_works_body
 import my_kmp_project.core.design.generated.resources.video_transliter_works_detail_body
-import my_kmp_project.core.design.generated.resources.video_short_body
 import my_kmp_project.core.design.generated.resources.video_short_publish_body
 import my_kmp_project.core.design.generated.resources.community_avatar
 import my_kmp_project.core.design.generated.resources.home_all_services_transliter_home
 import my_kmp_project.core.design.generated.resources.home_all_services_small_video
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_01
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_02
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_03
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_04
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_05
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_06
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_07
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_08
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_09
-import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_10
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import kotlinx.coroutines.CancellationException
@@ -92,43 +89,6 @@ import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.core.router.HomeRoutes
 import com.example.my_kmp_project.core.router.MineRoutes
 
-
-private data class ShortItem(
-    val id: String,
-    val title: String,
-    val duration: String,
-    val status: String,
-    val likes: Int,
-    val cover: DrawableResource,
-    val aspectRatio: Float = 1.35f,
-)
-
-private data class TransliterItem(
-    val id: String,
-    val title: String,
-    val tags: String,
-    val desc: String,
-    val cover: DrawableResource = Res.drawable.home_transliter_home_cover_05,
-)
-
-private object VideoMock {
-    val shorts = listOf(
-        ShortItem("s1", "口语跟读 · 第一课", "02:15", "已发布", 128, Res.drawable.home_transliter_home_cover_01, 1.45f),
-        ShortItem("s2", "周末活动花絮", "00:48", "已发布", 56, Res.drawable.home_transliter_home_cover_02, 1.2f),
-        ShortItem("s3", "学习打卡", "01:32", "上传中", 0, Res.drawable.home_transliter_home_cover_03, 1.5f),
-        ShortItem("s4", "校园开放日", "03:05", "已发布", 210, Res.drawable.home_transliter_home_cover_04, 1.3f),
-        ShortItem("s5", "社团晚会精选", "01:08", "审核中", 42, Res.drawable.home_transliter_home_cover_06, 1.4f),
-    )
-    val transliter = listOf(
-        TransliterItem("d1", "经典台词 · 致橡树", "朗读 · 情感", "适合跟读练习", Res.drawable.home_transliter_home_cover_05),
-        TransliterItem("d2", "日常口语 · 点餐", "口语 · 场景", "场景对话跟读", Res.drawable.home_transliter_home_cover_07),
-        TransliterItem("d3", "新闻播报片段", "播音 · 正式", "语速与停顿训练", Res.drawable.home_transliter_home_cover_08),
-    )
-    val works = listOf(
-        TransliterItem("w1", "我的作品 · 致橡树", "已完成", "时长 01:20", Res.drawable.home_transliter_home_cover_09),
-        TransliterItem("w2", "点餐练习 v2", "待审核", "时长 00:45", Res.drawable.home_transliter_home_cover_10),
-    )
-}
 
 /** 去掉 query 后再匹配路由；`/video/short/play?videoId=…` 必须命中播放页而不是回落到 hub。 */
 internal fun videoRoutePath(route: String): String = route.substringBefore('?')
@@ -159,21 +119,20 @@ fun VideoRouteHost(
             onBack = onBack,
             onHelp = { onNavigate(VideoRoutes.ShortHelp) },
             onPublish = { onNavigate(VideoRoutes.ShortPublish) },
-            onPlay = { onNavigate(VideoRoutes.ShortPlay) },
+            onPlay = { videoId -> onNavigate("${VideoRoutes.ShortPlay}?videoId=$videoId") },
         )
         VideoRoutes.ShortPlay -> ShortVideoPlayPage(
             onBack = onBack,
             videoId = shortPlayVideoId(route),
             onOpenComments = onOpenComments,
         )
+        // 上传链路尚未接入（无选片/上传能力），如实提示而不是伪造提交成功。
         VideoRoutes.ShortPublish -> ShortVideoPublishPage(onBack = onBack) {
-            showPlatformToast("已提交（mock）")
-            onBack()
+            showPlatformToast("短视频上传暂未开放")
         }
         VideoRoutes.ShortHelp -> ShortVideoHelpPage(onBack = onBack)
         VideoRoutes.TransliterVideos -> TransliterVideoListPage(
             onBack = onBack,
-            onOpen = { onNavigate(VideoRoutes.TransliterVideoDetail) },
             onWorks = { onNavigate(VideoRoutes.TransliterWorks) },
         )
         VideoRoutes.TransliterVideoDetail -> TransliterVideoDetailPage(
@@ -282,29 +241,256 @@ private fun FlutterSoTFullFrame(
     }
 }
 
+/** 小视频每页条数，与 Dart `ShortVideoController.pageSize` 一致。 */
+private const val ShortVideoPageSize = 5
+
+/**
+ * 小视频主页：资料卡 + 作品网格。
+ * 资料（昵称/职务/门店/统计）与列表（标题/封面/时长/状态/计数）全部来自
+ * [HttpShortVideoRepository] 的真实 HTTP 接口；失败只提示，不回落任何本地假数据。
+ */
 @Composable
 private fun ShortVideoPage(
     onBack: () -> Unit,
     onHelp: () -> Unit,
     onPublish: () -> Unit,
-    onPlay: () -> Unit,
+    onPlay: (videoId: String) -> Unit,
 ) {
-    // Flutter ShortVideoPage full-frame SoT for Screenshot Diff Gate.
     ReportMainTabRoot(isRoot = false)
-    FlutterSoTFullFrame(
-        drawable = Res.drawable.video_short_body,
-        contentDescription = "小视频：主页与作品网格",
-        onBack = onBack,
-        onTap = onPlay,
-    )
+    val repository = remember { HttpShortVideoRepository() }
+    val scope = rememberCoroutineScope()
+    val gridState = rememberLazyGridState()
+    var profile by remember { mutableStateOf<ShortVideoProfileModel?>(null) }
+    var items by remember { mutableStateOf<List<ShortVideoItemModel>>(emptyList()) }
+    var page by remember { mutableIntStateOf(0) }
+    var hasMore by remember { mutableStateOf(true) }
+    var loading by remember { mutableStateOf(true) }
+    var loadingMore by remember { mutableStateOf(false) }
+    var loadMoreError by remember { mutableStateOf(false) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    var reloadToken by remember { mutableIntStateOf(0) }
+    var pendingDelete by remember { mutableStateOf<ShortVideoItemModel?>(null) }
+
+    suspend fun loadFirstPage() {
+        loading = true
+        loadError = null
+        loadMoreError = false
+        val fetchedProfile = try {
+            repository.fetchProfile()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+        if (fetchedProfile == null) showPlatformToast("加载资料失败") else profile = fetchedProfile
+        val fetchedPage = try {
+            repository.fetchList(scope = "user", page = 0, pageSize = ShortVideoPageSize)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
+        if (fetchedPage == null) {
+            items = emptyList()
+            page = 0
+            hasMore = false
+            loadError = "加载小视频失败"
+        } else {
+            items = fetchedPage.list
+            page = 0
+            hasMore = fetchedPage.hasMore
+        }
+        loading = false
+    }
+
+    fun loadMore() {
+        if (loading || loadingMore || !hasMore) return
+        val targetPage = page + 1
+        loadingMore = true
+        loadMoreError = false
+        scope.launch {
+            val result = try {
+                repository.fetchList(scope = "user", page = targetPage, pageSize = ShortVideoPageSize)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                null
+            }
+            if (result == null) {
+                loadMoreError = true
+            } else {
+                items = items + result.list
+                page = targetPage
+                hasMore = result.hasMore
+            }
+            loadingMore = false
+        }
+    }
+
+    LaunchedEffect(reloadToken) {
+        loadFirstPage()
+    }
+
+    // 滚动到接近末尾时自动翻页（沿用社区信息流的分页手感）。
+    val nearEnd by remember {
+        derivedStateOf {
+            val visibleLast = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val headerCount = if (profile != null) 3 else 2
+            items.isNotEmpty() && visibleLast >= headerCount + items.size - 2
+        }
+    }
+    LaunchedEffect(nearEnd, loading, loadingMore, hasMore, loadMoreError) {
+        if (nearEnd && hasMore && !loading && !loadingMore && !loadMoreError) loadMore()
+    }
+
+    pendingDelete?.let { target ->
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text("删除小视频") },
+            text = { Text("确定删除「${target.title.orEmpty()}」？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingDelete = null
+                        val id = target.id
+                        if (id.isNullOrBlank()) {
+                            showPlatformToast("缺少服务端视频 ID")
+                        } else {
+                            scope.launch {
+                                val ok = try {
+                                    repository.delete(id)
+                                    true
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    false
+                                }
+                                if (ok) {
+                                    items = items.filterNot { it.id == id }
+                                    profile = try {
+                                        repository.fetchProfile()
+                                    } catch (e: CancellationException) {
+                                        throw e
+                                    } catch (e: Exception) {
+                                        profile
+                                    }
+                                    showPlatformToast("已删除")
+                                } else {
+                                    showPlatformToast("删除失败，请稍后重试")
+                                }
+                            }
+                        }
+                    },
+                ) { Text("删除") }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) { Text("取消") }
+            },
+        )
+    }
+
+    Column(Modifier.fillMaxSize().background(DemoColors.PageBg)) {
+        MineTopBar(title = "小视频", onBack = onBack, containerColor = Color.White)
+        LazyVerticalGrid(
+            state = gridState,
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            profile?.let { loaded ->
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    ShortVideoProfileCard(profile = loaded)
+                }
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "我发布的小视频",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DemoColors.TextPrimary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = onHelp) {
+                        Text("如何拍摄小视频", color = DemoColors.Primary, fontSize = 13.sp)
+                    }
+                }
+            }
+            item { ShortVideoPublishTile(onClick = onPublish) }
+            when {
+                loading && items.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
+                        Text("加载中…", color = DemoColors.Muted, fontSize = 13.sp)
+                    }
+                }
+                loadError != null && items.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column(
+                        Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(loadError ?: "加载失败", color = DemoColors.Muted, fontSize = 13.sp)
+                        Spacer(Modifier.height(8.dp))
+                        TextButton(onClick = { reloadToken += 1 }) {
+                            Text("重试", color = DemoColors.Primary, fontSize = 13.sp)
+                        }
+                    }
+                }
+                items.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
+                        Text("还没有发布小视频", color = DemoColors.Muted, fontSize = 13.sp)
+                    }
+                }
+            }
+            itemsIndexed(items, key = { index, item -> item.id ?: "short_$index" }) { _, item ->
+                ShortVideoCoverTile(
+                    item = item,
+                    onPlay = {
+                        when {
+                            item.status == ShortVideoStatus.Uploading ->
+                                showPlatformToast("视频上传中，请稍后再试")
+                            item.videoUrl.isNullOrBlank() ->
+                                showPlatformToast("暂无可播放地址")
+                            else -> {
+                                val id = item.id
+                                if (id.isNullOrBlank()) {
+                                    showPlatformToast("缺少服务端视频 ID")
+                                } else {
+                                    onPlay(id)
+                                }
+                            }
+                        }
+                    },
+                    onLongPress = {
+                        if (item.isMine) pendingDelete = item else showPlatformToast("只能删除自己的作品")
+                    },
+                )
+            }
+            if (items.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(Modifier.fillMaxWidth().padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
+                        when {
+                            loadingMore -> Text("加载中…", color = DemoColors.Muted, fontSize = 13.sp)
+                            loadMoreError -> TextButton(onClick = { loadMore() }) {
+                                Text("加载失败，点击重试", color = DemoColors.Primary, fontSize = 13.sp)
+                            }
+                            !hasMore -> Text("没有更多了", color = DemoColors.Muted, fontSize = 13.sp)
+                            else -> Text("上拉加载更多", color = DemoColors.Muted, fontSize = 13.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
-private fun ShortVideoProfileCard() {
+private fun ShortVideoProfileCard(profile: ShortVideoProfileModel) {
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 0.dp, vertical = 12.dp)
+            .padding(vertical = 12.dp)
             .shadow(8.dp, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
@@ -312,23 +498,53 @@ private fun ShortVideoProfileCard() {
     ) {
         Row(verticalAlignment = Alignment.Top) {
             Column(Modifier.weight(1f)) {
-                // Flutter displayProfile defaults / live SoT
-                Text("qa_user", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = DemoColors.TextPrimary)
-                Spacer(Modifier.height(4.dp))
-                Text("销售顾问 · [4S]北京沃德龙鼎吉利", fontSize = 13.sp, color = DemoColors.Muted)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        profile.displayName.ifBlank { "我" },
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                        color = DemoColors.TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (profile.roleBadge.isNotBlank()) {
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            profile.roleBadge,
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(DemoColors.Primary)
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                        )
+                    }
+                }
+                if (profile.storeName.isNotBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        profile.storeName,
+                        fontSize = 13.sp,
+                        color = DemoColors.Muted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
-            Image(
-                painter = painterResource(Res.drawable.community_avatar),
+            PlatformNetworkImage(
+                url = profile.avatarUrl?.takeIf { it.isNotBlank() },
                 contentDescription = "头像",
                 modifier = Modifier.size(48.dp).clip(CircleShape),
                 contentScale = ContentScale.Crop,
+                placeholder = Res.drawable.community_avatar,
             )
         }
         Spacer(Modifier.height(16.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            StatCell("作品", "${VideoMock.shorts.size}")
-            StatCell("获赞", "394")
-            StatCell("粉丝", "128")
+            StatCell("视频数", profile.stats.videoCount)
+            StatCell("浏览量", profile.stats.viewCount)
+            StatCell("点赞数", profile.stats.likeCount)
         }
     }
 }
@@ -366,30 +582,37 @@ private fun ShortVideoPublishTile(onClick: () -> Unit) {
     }
 }
 
+/** 作品格：封面/标题/播放量/时长全部取自服务端条目；长按删除自己的作品。 */
 @Composable
-private fun ShortVideoCoverTile(item: ShortItem, onPlay: () -> Unit) {
+private fun ShortVideoCoverTile(
+    item: ShortVideoItemModel,
+    onPlay: () -> Unit,
+    onLongPress: () -> Unit,
+) {
+    val ratio = item.aspectRatio.coerceIn(0.75, 2.0).toFloat()
     Box(
         Modifier
             .fillMaxWidth()
-            .aspectRatio(1f / item.aspectRatio)
+            .aspectRatio(1f / ratio)
             .clip(RoundedCornerShape(8.dp))
-            .clickable {
-                when (item.status) {
-                    "上传中" -> showPlatformToast("视频上传中，请稍后再试")
-                    else -> onPlay()
-                }
+            .pointerInput(item.id, item.coverUrl, item.status) {
+                detectTapGestures(
+                    onTap = { onPlay() },
+                    onLongPress = { onLongPress() },
+                )
             },
     ) {
-        Image(
-            painter = painterResource(item.cover),
+        PlatformNetworkImage(
+            url = item.coverUrl,
             contentDescription = item.title,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
+            placeholder = Res.drawable.home_all_services_small_video,
         )
-        if (item.status == "上传中") {
+        if (item.status == ShortVideoStatus.Uploading) {
             Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.55f)))
         }
-        if (item.status == "审核中") {
+        if (item.status == ShortVideoStatus.Reviewing) {
             Text(
                 "审核中",
                 modifier = Modifier
@@ -415,7 +638,7 @@ private fun ShortVideoCoverTile(item: ShortItem, onPlay: () -> Unit) {
         ) {
             Column {
                 Text(
-                    item.title,
+                    item.title.orEmpty(),
                     color = Color.White,
                     fontSize = 12.sp,
                     maxLines = 2,
@@ -423,7 +646,11 @@ private fun ShortVideoCoverTile(item: ShortItem, onPlay: () -> Unit) {
                     fontWeight = FontWeight.Medium,
                 )
                 Spacer(Modifier.height(2.dp))
-                Text("▶ ${item.likes} · ${item.duration}", color = Color.White.copy(0.85f), fontSize = 11.sp)
+                Text(
+                    "▶ ${item.viewCount ?: 0} · ${item.duration.orEmpty()}",
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 11.sp,
+                )
             }
         }
     }
@@ -675,7 +902,7 @@ private fun ShortVideoPlayPage(
                                 Text("评论", color = Color.White)
                             }
                         }
-                        TextButton(onClick = { showPlatformToast("分享") }) {
+                        TextButton(onClick = { showPlatformToast("分享暂未开放") }) {
                             Text("分享", color = Color.White)
                         }
                     }
@@ -730,10 +957,10 @@ private fun ShortVideoHelpPage(onBack: () -> Unit) {
     }
 }
 
+/** 跟读素材库后端尚未提供接口，如实提示，不展示任何本地假列表。 */
 @Composable
 private fun TransliterVideoListPage(
     onBack: () -> Unit,
-    onOpen: () -> Unit,
     onWorks: () -> Unit,
 ) {
     ReportMainTabRoot(isRoot = false)
@@ -745,34 +972,8 @@ private fun TransliterVideoListPage(
                 TextButton(onClick = onWorks) { Text("作品", color = DemoColors.Accent) }
             },
         )
-        LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(VideoMock.transliter, key = { it.id }) { item ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White)
-                        .clickable(onClick = onOpen)
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Image(
-                        painter = painterResource(item.cover),
-                        contentDescription = item.title,
-                        modifier = Modifier.size(72.dp).clip(RoundedCornerShape(10.dp)),
-                        contentScale = ContentScale.Crop,
-                    )
-                    Spacer(Modifier.size(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(item.title, fontWeight = FontWeight.SemiBold, color = DemoColors.TextPrimary, fontSize = 15.sp)
-                        Spacer(Modifier.height(4.dp))
-                        Text(item.tags, fontSize = 12.sp, color = DemoColors.Primary)
-                        Spacer(Modifier.height(4.dp))
-                        Text(item.desc, fontSize = 12.sp, color = DemoColors.Muted)
-                    }
-                }
-            }
+        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Text("跟读视频暂未开放", color = DemoColors.Muted, fontSize = 15.sp)
         }
     }
 }

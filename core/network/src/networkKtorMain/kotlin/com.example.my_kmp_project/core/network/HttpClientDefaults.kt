@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.core.network
 
+import com.example.my_kmp_project.core.log.AppLog
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.HttpTimeout
@@ -37,7 +38,7 @@ public fun HttpClientConfig<*>.installDemoDefaults() {
         logger = object : Logger {
             override fun log(message: String) {
                 // 脱敏后再落盘：移除三个会话头与 token/session/device 字面值。
-                println("[Ktor] ${redact(message)}")
+                AppLog.d("Ktor", redact(message))
             }
         }
     }

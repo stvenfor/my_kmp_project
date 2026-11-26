@@ -5,19 +5,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.KSerializer
 
 /**
- * 默认内存 driver：全 target 可编译（android / ios / ohosArm64 / ohosX64）。
+ * 纯内存 driver：全 target 可编译（android / ios / ohosArm64 / ohosX64），进程结束即丢。
  *
- * 说明：为避免在 OHOS fork 上引 SQL 依赖，这里先用内存表作默认实现。并发安全留待接入
- * 平台 driver 时统一处理（当前为 demo 占位，写路径非线程安全）。
+ * 默认落盘实现见 [PersistentDatabase]；这里保留给单元测试与「不该落盘」的临时表。
+ * 并发安全留待接入平台 driver 时统一处理（当前为 demo 占位，写路径非线程安全）。
  */
 class InMemoryDatabase(override val name: String) : Database {
 
     private val tables = mutableMapOf<String, InMemoryTable<*>>()
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Entity> table(id: String): Table<T> =
+    override fun <T : Entity> table(id: String, serializer: KSerializer<T>?): Table<T> =
         tables.getOrPut(id) { InMemoryTable<T>(id) } as Table<T>
 
     override fun clear() {

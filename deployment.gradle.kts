@@ -7,9 +7,9 @@
 //   与示例的差异（已适配）：
 //   1. 包名/Ability/iOS Bundle 取自本工程：
 //        - Android applicationId = com.example.my_kmp_project（composeApp/build.gradle.kts）
-//        - Harmony bundleName   = com.example.harmonyapp（harmonyApp/AppScope/app.json5）
+//        - Harmony bundleName   = com.example.my_kmp_project（harmonyApp/AppScope/app.json5）
 //        - Harmony ability      = EntryAbility（entry/src/main/module.json5 → mainElement）
-//        - iOS bundle id        = com.example.my_kmp_project.my_kmp_project（iosApp/Configuration/Config.xcconfig，TEAM_ID 为空）
+//        - iOS bundle id        = com.example.my_kmp_project（iosApp/Configuration/Config.xcconfig，TEAM_ID 为空）
 //   2. 目录名大小写：本工程鸿蒙壳层目录为 harmonyApp（大写 A），示例为 harmonyapp。
 //   3. 鸿蒙 HAP 构建使用 DevEco 自带的 hvigorw.js（harmonyApp 内无 hvigorw 脚本），命令参数对齐
 //      scripts/run-harmony.sh 与 runscript/runOhosApp-Mac.sh；安装走 `hdc shell bm install -p`，
@@ -47,11 +47,11 @@ val execOperations: ExecOperations = objects.newInstance(ExecOperationsHolder::c
 // ----- 工程配置（取自本工程的真实值） -----
 val androidPackage = "com.example.my_kmp_project"                 // composeApp applicationId
 val androidLaunchActivity = "$androidPackage.MainActivity"         // 由 AndroidManifest 推断
-val harmonyPackage = "com.example.harmonyapp"                     // AppScope/app.json5 bundleName
+val harmonyPackage = "com.example.my_kmp_project"                 // AppScope/app.json5 bundleName
 val harmonyAbility = "EntryAbility"                               // entry module mainElement
 val harmonyAppDirName = "harmonyApp"                              // 注意大小写
 val harmonyEntryModule = "entry"
-val iosBundleId = "com.example.my_kmp_project.my_kmp_project"     // Config.xcconfig（TEAM_ID 为空）
+val iosBundleId = "com.example.my_kmp_project"     // Config.xcconfig（TEAM_ID 为空）
 val iosScheme = "iosApp"
 
 // ----- 模式开关 -----
@@ -581,6 +581,13 @@ if (!androidOnly) {
             println("Using HDC: $hdc")
             println("Using Hvigorw: $hvigorw")
             println("DEVECO_SDK_HOME: $devecoSdkHome")
+
+            // Step 0: 签名材料不落在仓库里 —— 从本机私有 signing.local.json 生成 build-profile.json5
+            // （没有该文件时生成未签名配置，hvigor 会跳过签名而不是失败）。
+            execOperations.exec {
+                workingDir = projectDir
+                commandLine("bash", File(projectDir, "scripts/harmony-signing.sh").absolutePath)
+            }
 
             // 预停止应用
             execOperations.exec { commandLine(hdc, "shell", "aa", "force-stop", harmonyPackage); isIgnoreExitValue = true }

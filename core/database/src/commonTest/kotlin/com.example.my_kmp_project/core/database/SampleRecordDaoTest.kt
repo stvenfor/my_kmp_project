@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.core.database
 
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -8,6 +9,11 @@ import kotlinx.coroutines.runBlocking
 
 /** [SampleRecordDao] 门面：upsert / byId / search 冒烟。 */
 class SampleRecordDaoTest {
+
+    @BeforeTest
+    fun useInMemoryDriver() {
+        DatabaseProvider.setFactory { name -> InMemoryDatabase(name) }
+    }
 
     @Test
     fun dao_upsert_byId_search() = runBlocking {

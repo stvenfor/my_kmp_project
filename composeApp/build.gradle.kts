@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import android.databinding.tool.ext.capitalizeUS
 import java.io.File
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -15,6 +16,37 @@ plugins {
 
 // GitHub Actions Android CI: ./gradlew ... -PandroidOnly=true (skip iOS/OHOS targets)
 val androidOnly = rootProject.findProperty("androidOnly")?.toString()?.toBoolean() == true
+
+// ---------------------------------------------------------------------------
+// Release 签名 / 版本号：本机私有配置，不写进仓库。
+//
+// 读取优先级：-P<key>=... > local.properties > 环境变量。
+// local.properties 已被 .gitignore 排除，是推荐的落盘位置；CI 用环境变量注入。
+// 四项签名参数齐全才创建 release signingConfig，缺任何一项时 release 仍可
+// assemble（产出未签名包，与改动前行为一致），不会让本机构建直接失败。
+//
+// 键名：release.storeFile / release.storePassword / release.keyAlias / release.keyPassword
+// 版本：app.versionCode / app.versionName
+// ---------------------------------------------------------------------------
+val privateProperties: Properties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
+}
+
+fun privateValue(key: String, env: String): String? =
+    (rootProject.findProperty(key) as String?)?.takeIf { it.isNotBlank() }
+        ?: privateProperties.getProperty(key)?.takeIf { it.isNotBlank() }
+        ?: System.getenv(env)?.takeIf { it.isNotBlank() }
+
+val releaseStoreFilePath = privateValue("release.storeFile", "ANDROID_RELEASE_STORE_FILE")
+val releaseStorePasswordValue = privateValue("release.storePassword", "ANDROID_RELEASE_STORE_PASSWORD")
+val releaseKeyAliasValue = privateValue("release.keyAlias", "ANDROID_RELEASE_KEY_ALIAS")
+val releaseKeyPasswordValue = privateValue("release.keyPassword", "ANDROID_RELEASE_KEY_PASSWORD")
+val releaseKeystoreConfigured = listOf(
+    releaseStoreFilePath, releaseStorePasswordValue, releaseKeyAliasValue, releaseKeyPasswordValue,
+).all { it != null }
+
+val appVersionCode: Int = privateValue("app.versionCode", "APP_VERSION_CODE")?.toIntOrNull() ?: 1
+val appVersionName: String = privateValue("app.versionName", "APP_VERSION_NAME") ?: "1.0"
 
 val ohosNativeSysroot: File? = run {
     val localLines = rootProject.file("local.properties").takeIf { it.exists() }?.readLines().orEmpty()
@@ -197,8 +229,9 @@ android {
         applicationId = "com.example.my_kmp_project"                  
         minSdk = libs.versions.android.minSdk.get().toInt()     
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1                                       
-        versionName = "1.0"
+        // 版本号来自本机私有配置（见文件顶部），默认 1 / "1.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
     }
     buildFeatures {
         buildConfig = false
@@ -208,9 +241,27 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        if (releaseKeystoreConfigured) {
+            create("release") {
+                storeFile = rootProject.file(releaseStoreFilePath!!)
+                storePassword = releaseStorePasswordValue
+                keyAlias = releaseKeyAliasValue
+                keyPassword = releaseKeyPasswordValue
+            }
+        }
+    }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false     
+            // 未配置 keystore 时为 null → 产出未签名包（与改动前一致），不阻断构建
+            signingConfig = signingConfigs.findByName("release")
+            isMinifyEnabled = true
+            // 不开启 shrinkResources：Compose Multiplatform 资源在 assets 里
+            // 运行时按名字读取，资源收缩可能误删。
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
     compileOptions {

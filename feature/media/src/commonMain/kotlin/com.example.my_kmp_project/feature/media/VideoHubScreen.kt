@@ -22,7 +22,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,22 +38,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_01
 import my_kmp_project.core.design.generated.resources.music_defaults_music_record
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
-
-private data class MockVideo(
-    val id: String,
-    val title: String,
-    val durationLabel: String,
-    val videoUrl: String = SAMPLE_VIDEO_URL,
-)
-
-private const val SAMPLE_VIDEO_URL =
-    "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+import kotlinx.coroutines.CancellationException
 
 private enum class MediaEntryRoute {
     Chooser,
@@ -149,25 +143,34 @@ private fun MediaChooserCard(
     }
 }
 
+/** 视频中心：推荐小视频列表，元数据全部来自 GET /short-videos（#73）。 */
 @Composable
 fun VideoHubScreen(onBack: () -> Unit) {
-    var playing by remember { mutableStateOf<MockVideo?>(null) }
-    val videos = remember {
-        listOf(
-            MockVideo("v1", "口语跟读 · 第一课", "02:15"),
-            MockVideo("v2", "周末活动花絮", "00:48"),
-            MockVideo("v3", "学习打卡短视频", "01:32"),
-            MockVideo("v4", "校园开放日回顾", "03:05"),
-        )
+    val repository = remember { HttpShortVideoRepository() }
+    var videos by remember { mutableStateOf<List<ShortVideoItemModel>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    var reloadToken by remember { mutableIntStateOf(0) }
+    var playing by remember { mutableStateOf<ShortVideoItemModel?>(null) }
+
+    LaunchedEffect(reloadToken) {
+        loading = true
+        loadError = null
+        videos = try {
+            repository.fetchList(scope = "recommend", page = 0, pageSize = 20).list
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            loadError = e.message?.takeIf { it.isNotBlank() } ?: "加载视频失败"
+            emptyList()
+        }
+        loading = false
     }
 
     val current = playing
     if (current != null) {
         ReportMainTabRoot(isRoot = false)
-        VideoPlayScreen(
-            video = current,
-            onBack = { playing = null },
-        )
+        VideoPlayScreen(video = current, onBack = { playing = null })
         return
     }
 
@@ -178,61 +181,94 @@ fun VideoHubScreen(onBack: () -> Unit) {
             .background(DemoColors.PageBg),
     ) {
         MineTopBar(title = "视频中心", onBack = onBack, containerColor = DemoColors.PageBg)
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            item {
-                Text(
-                    text = "示例视频列表",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+        when {
+            loading -> Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("加载中…", color = DemoColors.TextSecondary, fontSize = 13.sp)
             }
-            items(videos, key = { it.id }) { video ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { playing = video },
-                    colors = CardDefaults.cardColors(containerColor = DemoColors.Background),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                ) {
-                    Row(
+            loadError != null -> Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(loadError ?: "加载失败", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                    TextButton(onClick = { reloadToken += 1 }) {
+                        Text("重试", color = DemoColors.Primary)
+                    }
+                }
+            }
+            videos.isEmpty() -> Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("暂无视频", color = DemoColors.TextSecondary, fontSize = 13.sp)
+            }
+            else -> LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                item {
+                    Text(
+                        text = "推荐小视频",
+                        color = DemoColors.TextSecondary,
+                        fontSize = 13.sp,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                items(videos) { video ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                            .clickable {
+                                when {
+                                    video.status == ShortVideoStatus.Uploading ->
+                                        showPlatformToast("视频上传中，请稍后再试")
+                                    video.videoUrl.isNullOrBlank() ->
+                                        showPlatformToast("暂无可播放地址")
+                                    else -> playing = video
+                                }
+                            },
+                        colors = CardDefaults.cardColors(containerColor = DemoColors.Background),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     ) {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .height(56.dp)
-                                .fillMaxWidth(0.28f)
-                                .background(DemoColors.Toolbar, RoundedCornerShape(8.dp)),
-                            contentAlignment = Alignment.Center,
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(
-                                text = "视频",
-                                color = DemoColors.TextSecondary,
-                                fontSize = 12.sp,
-                            )
-                        }
-                        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = video.title,
-                                color = DemoColors.TextPrimary,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 15.sp,
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = video.durationLabel,
-                                color = DemoColors.Muted,
-                                fontSize = 12.sp,
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .fillMaxWidth(0.28f)
+                                    .background(DemoColors.Toolbar, RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = "视频",
+                                    color = DemoColors.TextSecondary,
+                                    fontSize = 12.sp,
+                                )
+                            }
+                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = video.title.orEmpty(),
+                                    color = DemoColors.TextPrimary,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 15.sp,
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = video.duration.orEmpty(),
+                                    color = DemoColors.Muted,
+                                    fontSize = 12.sp,
+                                )
+                            }
                         }
                     }
                 }
@@ -243,9 +279,10 @@ fun VideoHubScreen(onBack: () -> Unit) {
 
 @Composable
 private fun VideoPlayScreen(
-    video: MockVideo,
+    video: ShortVideoItemModel,
     onBack: () -> Unit,
 ) {
+    val url = video.videoUrl
     var isPlaying by remember(video.id) { mutableStateOf(true) }
 
     Column(
@@ -253,7 +290,11 @@ private fun VideoPlayScreen(
             .fillMaxSize()
             .background(DemoColors.PageBg),
     ) {
-        MineTopBar(title = video.title, onBack = onBack, containerColor = DemoColors.PageBg)
+        MineTopBar(
+            title = video.title?.takeIf { it.isNotBlank() } ?: "视频",
+            onBack = onBack,
+            containerColor = DemoColors.PageBg,
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -262,19 +303,25 @@ private fun VideoPlayScreen(
                 .background(Color.Black, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            VideoPlaybackSurface(
-                url = video.videoUrl,
-                isPlaying = isPlaying,
-                modifier = Modifier.fillMaxSize(),
-            )
+            if (url.isNullOrBlank()) {
+                Text("暂无可播放地址", color = Color.White, fontSize = 14.sp)
+            } else {
+                VideoPlaybackSurface(
+                    url = url,
+                    isPlaying = isPlaying,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = video.durationLabel,
-            modifier = Modifier.padding(horizontal = 16.dp),
-            color = DemoColors.TextSecondary,
-            fontSize = 13.sp,
-        )
+        if (!video.duration.isNullOrBlank()) {
+            Text(
+                text = video.duration.orEmpty(),
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = DemoColors.TextSecondary,
+                fontSize = 13.sp,
+            )
+        }
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             modifier = Modifier

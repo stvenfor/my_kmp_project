@@ -1,5 +1,5 @@
 // feature:chat —— IM 会话 / 群组 / 资料 / 消息备份 API + 聊天页。
-// 引擎抽象（ImEngine / MockImEngine / ImEngineStore）在 :component，本模块只做 API 与 UI。
+// 引擎抽象（ImEngine 契约）在 :component；融云 SDK 未接入，聊天 UI 显示「未接入」占位。
 // 目标集、android 基础配置、coroutines / atomicfu / serialization / kotlin-test 由根
 // build.gradle.kts 的 :feature:* 共享接线提供，本文件只声明模块特有的依赖边。
 plugins {

@@ -1,5 +1,5 @@
-// feature:friend —— 好友通讯录（ImFriendApi + FriendDirectory 本地聚合 + 好友页）。
-// 引擎抽象（ImEngine / ImEngineStore）在 :component，本模块只做 API 与 UI。
+// feature:friend —— 好友通讯录（ImFriendApi HTTP 契约 + 「好友/IM 未接入」占位页）。
+// 好友关系后端与融云 SDK 均未接入，不保留本地 mock 好友目录。
 // 目标集、android 基础配置、coroutines / atomicfu / serialization / kotlin-test 由根
 // build.gradle.kts 的 :feature:* 共享接线提供，本文件只声明模块特有的依赖边。
 plugins {

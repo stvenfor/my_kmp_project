@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.component.realtime
 
+import com.example.my_kmp_project.core.log.AppLog
+
 import com.example.my_kmp_project.core.network.realtime.RealtimeConfig
 import com.example.my_kmp_project.core.network.realtime.RealtimeEnvelope
 import com.example.my_kmp_project.core.network.realtime.RealtimeTopics
@@ -72,7 +74,7 @@ public class MockRealtimeWsTransport(
         resetState()
         connected = true
         authed = false
-        println("[MockWsTransport] connected url=$url")
+        AppLog.d("MockWsTransport", "connected url=$url")
         if (connectDelayMs > 0L) delay(connectDelayMs)
     }
 
@@ -120,7 +122,7 @@ public class MockRealtimeWsTransport(
 
             TYPE_EVENT -> emitAck(envelope.id, buildJsonObject { put("accepted", true) })
 
-            else -> println("[MockWsTransport] ignore outbound type=${envelope.type}")
+            else -> AppLog.d("MockWsTransport", "ignore outbound type=${envelope.type}")
         }
     }
 
@@ -130,7 +132,7 @@ public class MockRealtimeWsTransport(
      */
     override suspend fun close(code: Int?, reason: String?) {
         if (code != null || reason != null) {
-            println("[MockWsTransport] closed code=$code reason=$reason")
+            AppLog.d("MockWsTransport", "closed code=$code reason=$reason")
         }
         resetState()
     }

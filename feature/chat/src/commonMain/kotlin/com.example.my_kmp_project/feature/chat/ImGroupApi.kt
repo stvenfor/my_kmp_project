@@ -78,8 +78,8 @@ public data class ImStoreGroupSyncRequest(
  *
  * // GAP(R5): 建群成功后 Dart 还要 `RongEngineHolder.joinGroup/dismissGroup` 等 SDK 侧动作
  * // （融云超级群/聊天室不在范围，见 tasks-ultra-fine-v2 M11 + ADR-0012；
- * // 引擎连接与群会话消息仍由 `component/chat/ImEngine.kt` 的 mock 引擎承担，
- * // `MockImEngine.ensureConversation` 生成 `group_<peers>` 会话），本 lane 只移植 HTTP 契约。
+ * // 引擎连接与群会话消息仍依赖融云 IM（未接入，无本地 mock 引擎），
+ * // 本 lane 只移植 HTTP 契约。
  */
 public class ImGroupApi(
     private val client: ApiClient = NetworkFacade.api(),

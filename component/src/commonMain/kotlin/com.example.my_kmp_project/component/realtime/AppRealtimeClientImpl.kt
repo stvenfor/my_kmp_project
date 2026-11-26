@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.component.realtime
 
+import com.example.my_kmp_project.core.log.AppLog
 import com.example.my_kmp_project.core.network.NetworkJson
 import com.example.my_kmp_project.core.network.realtime.RealtimeConfig
 import com.example.my_kmp_project.core.network.realtime.RealtimeEnvelope
@@ -116,14 +117,14 @@ public class AppRealtimeClientImpl(
      */
     override suspend fun connect() {
         if (!session.isLoggedIn()) {
-            println("[Realtime] skip connect: not logged in")
+            AppLog.d("Realtime", "skip connect: not logged in")
             return
         }
         if (_state == RealtimeConnectionState.Connected ||
             _state == RealtimeConnectionState.Connecting ||
             _state == RealtimeConnectionState.Authenticating
         ) {
-            println("[Realtime] skip connect: already ${_state.label}")
+            AppLog.d("Realtime", "skip connect: already ${_state.label}")
             return
         }
         _manualDisconnect = false
@@ -139,8 +140,9 @@ public class AppRealtimeClientImpl(
         // 退出登录后禁止继续换票/重连（避免 401 token 无效刷屏）。
         if (_manualDisconnect || !session.isLoggedIn()) {
             setState(RealtimeConnectionState.Disconnected)
-            println(
-                "[Realtime] skip connectInternal: manual=$_manualDisconnect " +
+            AppLog.d(
+                "Realtime",
+                "skip connectInternal: manual=$_manualDisconnect " +
                     "loggedIn=${session.isLoggedIn()}",
             )
             return
@@ -185,13 +187,13 @@ public class AppRealtimeClientImpl(
             if (_manualDisconnect || !session.isLoggedIn()) {
                 reconnectTask?.cancel()
                 setState(RealtimeConnectionState.Disconnected)
-                println("[Realtime] abort reconnect: logged out during connect")
+                AppLog.d("Realtime", "abort reconnect: logged out during connect")
                 return
             }
             val guard = sessionGuard
             if (guard != null && guard.isForceLogoutError(t)) {
                 if (guard.tryRecover()) {
-                    println("[Realtime] session recovered on same device, retry connect")
+                    AppLog.d("Realtime", "session recovered on same device, retry connect")
                     connectInternal(isReconnect)
                     return
                 }
@@ -208,7 +210,7 @@ public class AppRealtimeClientImpl(
             if (authFailurePolicy.isHardFailure(t)) {
                 if (guard != null) {
                     if (guard.tryRecover() && session.isLoggedIn()) {
-                        println("[Realtime] token recovered, retry connect")
+                        AppLog.d("Realtime", "token recovered, retry connect")
                         connectInternal(isReconnect)
                         return
                     }
@@ -216,7 +218,7 @@ public class AppRealtimeClientImpl(
                 stopReconnectPermanently(t.toString())
                 return
             }
-            println("[Realtime] connect failed: $t")
+            AppLog.w("Realtime", "connect failed: $t")
             scheduleReconnect(reason = t.toString())
         }
     }
@@ -227,7 +229,7 @@ public class AppRealtimeClientImpl(
         reconnectTask?.cancel()
         reconnectTask = null
         setState(RealtimeConnectionState.Disconnected)
-        println("[Realtime] stop reconnect: $reason")
+        AppLog.w("Realtime", "stop reconnect: $reason")
     }
 
     /**
@@ -246,7 +248,7 @@ public class AppRealtimeClientImpl(
             } catch (ce: CancellationException) {
                 throw ce
             } catch (t: Throwable) {
-                println("[Realtime] inbound error: $t")
+                AppLog.w("Realtime", "inbound error: $t")
                 handleTransportLost(reason = t.toString())
             }
         }
@@ -274,8 +276,9 @@ public class AppRealtimeClientImpl(
                 reconnectPolicy.reset()
                 _reconnectCount = 0
                 setState(RealtimeConnectionState.Connected)
-                println(
-                    "[Realtime] auth_ok topics=${subscribedTopics.joinToString(",")} " +
+                AppLog.d(
+                    "Realtime",
+                    "auth_ok topics=${subscribedTopics.joinToString(",")} " +
                         "lastSeq=${seqStore.lastSeq}",
                 )
                 startHeartbeat()
@@ -292,7 +295,7 @@ public class AppRealtimeClientImpl(
 
             TYPE_ERROR -> {
                 val code = realtimeStringOf(envelope.payload[KEY_ERROR_CODE]) ?: "null"
-                println("[Realtime] server error $code ${envelope.payload}")
+                AppLog.w("Realtime", "server error $code ${envelope.payload}")
                 telemetry.error("ws_server_error", IllegalStateException(code))
             }
 
@@ -327,7 +330,7 @@ public class AppRealtimeClientImpl(
             telemetry.trace("ws_sync", clock.nowMs() - syncStartedAt)
         } catch (t: Throwable) {
             telemetry.error("ws_sync_fail", t)
-            println("[Realtime] sync failed: $t")
+            AppLog.w("Realtime", "sync failed: $t")
         }
 
         replayOutboundQueue()
@@ -446,7 +449,7 @@ public class AppRealtimeClientImpl(
         transport?.close(code = RealtimeConfig.WS_CLOSE_NORMAL, reason = reason)
         if (clearQueue) outboundQueue.clear()
         setState(RealtimeConnectionState.Disconnected)
-        println("[Realtime] disconnected reason=$reason")
+        AppLog.d("Realtime", "disconnected reason=$reason")
     }
 
     /** Dart `subscribeTopics`（:378-384）：先记集合，活跃时才发 `sub` 帧。 */
@@ -569,7 +572,7 @@ public class AppRealtimeClientImpl(
     /** Dart `setKeepAliveInBackground`（:491-495）。 */
     override fun setKeepAliveInBackground(enabled: Boolean) {
         _keepAliveInBackground = enabled
-        println("[Realtime] keepAliveInBackground=$enabled")
+        AppLog.d("Realtime", "keepAliveInBackground=$enabled")
     }
 
     /**
@@ -596,7 +599,7 @@ public class AppRealtimeClientImpl(
         val previous = _state
         _state = state
         _stateFlow.tryEmit(state)
-        println("[Realtime] state ${previous.name} -> ${state.name} (${state.label})")
+        AppLog.d("Realtime", "state ${previous.name} -> ${state.name} (${state.label})")
         telemetry.metric("ws_state", mapOf("state" to state.name))
     }
 

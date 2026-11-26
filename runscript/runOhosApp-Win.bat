@@ -22,7 +22,7 @@ REM   Example: runOhosApp-Win.bat ohosArm64 127.0.0.1:5555
 
 set DEFAULT_PLATFORM=ohosArm64
 set DEFAULT_TARGET_ID=127.0.0.1:5555
-set DEFAULT_BUNDLE_NAME=com.example.harmonyapp
+set DEFAULT_BUNDLE_NAME=com.example.my_kmp_project
 set DEFAULT_ABILITY_NAME=EntryAbility
 set BUNDLE_NAME=%DEFAULT_BUNDLE_NAME%
 set ABILITY_NAME=%DEFAULT_ABILITY_NAME%

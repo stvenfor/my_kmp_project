@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.core.platform
 
+import com.example.my_kmp_project.core.log.AppLog
 import platform.Foundation.NSURL
 import platform.UIKit.UIAlertController
 import platform.UIKit.UIAlertControllerStyleAlert
@@ -25,7 +26,7 @@ actual fun copyToClipboard(text: String) {
 actual fun showPlatformToast(message: String) {
     val text = message.trim()
     if (text.isEmpty()) return
-    println("[iOS toast] $text")
+    AppLog.i("PlatformOpen", "[iOS toast] $text")
     dispatch_async(dispatch_get_main_queue()) {
         val presenter = topViewController() ?: return@dispatch_async
         val alert = UIAlertController.alertControllerWithTitle(

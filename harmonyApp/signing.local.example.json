@@ -1,0 +1,19 @@
+{
+  "//": "复制为 harmonyApp/signing.local.json 后填入本机签名材料。该文件已被 gitignore，绝不提交。",
+  "//paths": "路径支持绝对路径、~ 和 ${HOME}；密码可以直接写 DevEco 生成的那串密文，也可以是明文。",
+  "signingConfigs": [
+    {
+      "name": "default",
+      "type": "HarmonyOS",
+      "material": {
+        "certpath": "${HOME}/.ohos/config/your_app.cer",
+        "keyAlias": "debugKey",
+        "keyPassword": "<key password>",
+        "profile": "${HOME}/.ohos/config/your_app.p7b",
+        "signAlg": "SHA256withECDSA",
+        "storeFile": "${HOME}/.ohos/config/your_app.p12",
+        "storePassword": "<store password>"
+      }
+    }
+  ]
+}

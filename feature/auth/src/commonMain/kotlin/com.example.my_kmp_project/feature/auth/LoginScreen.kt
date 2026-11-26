@@ -210,11 +210,7 @@ public fun LoginScreen(
                                     AuthRepository.sendPhoneOtp(phone).fold(
                                         onSuccess = {
                                             otpCooldown = 60
-                                            otpHint = if (MockAuthConfig.useMockAuth) {
-                                                "本地 Mock：验证码固定 ${MockAuthConfig.mockOtpCode}"
-                                            } else {
-                                                "验证码已发送"
-                                            }
+                                            otpHint = "验证码已发送"
                                         },
                                         onFailure = { error = it.message ?: "发送失败" },
                                     )

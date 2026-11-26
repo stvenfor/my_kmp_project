@@ -60,8 +60,7 @@ public object CommunityApiPaths {
  * Flutter `HttpPostRepository`（`features/community/lib/community/repository/http_post_repository.dart`，
  * d7876a1）的 KMP 对等实现，覆盖契约表 #59–#71。
  *
- * 端口见 [CommunityPostRepository]（= Dart `PostRepository`）。
- * 现有 `MockCommunityEngine` 未被改动，也不实现本端口（详见接口 KDoc）。
+ * 端口见 [CommunityPostRepository]（= Dart `PostRepository`）；生产 UI 唯一数据源。
  *
  * 失败语义与 Dart 一致：`code != 0` **或** `data` 缺失都抛 [NetworkError.Business]
  * （Dart `_list` / `_data` / `_listData` 抛 `HttpRequestException`，:184-214、:343-354），

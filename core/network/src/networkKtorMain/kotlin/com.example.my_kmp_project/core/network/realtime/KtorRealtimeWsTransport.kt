@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.core.network.realtime
 
+import com.example.my_kmp_project.core.log.AppLog
 import com.example.my_kmp_project.core.network.NetworkError
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -115,7 +116,7 @@ public class KtorRealtimeWsTransport(
                         if (envelope != null) {
                             _inbound.emit(envelope)
                         } else {
-                            println("[KtorRealtimeWsTransport] parse error (frame dropped)")
+                            AppLog.w("KtorRealtimeWsTransport", "parse error (frame dropped)")
                         }
                     }
                     is Frame.Close -> {
@@ -130,7 +131,7 @@ public class KtorRealtimeWsTransport(
             throw cancellation
         } catch (t: Throwable) {
             // Dart：onError → addError；这里统一归成一次关闭事件交给状态机重连。
-            println("[KtorRealtimeWsTransport] stream error: ${t.message}")
+            AppLog.w("KtorRealtimeWsTransport", "stream error: ${t.message}")
         } finally {
             if (session === current) session = null
             if (!reported) {

@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,7 @@ import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Shared home tab root (AppShell / iOS / OHOS). Layout + biz aligned to Flutter
@@ -120,6 +122,14 @@ private fun HomeRootContent(
     val greeting = remember(displayName) { flutterStyleGreeting(displayName) }
     // Read for recomposition when points / dialog ack change.
     HomePointsStore.version
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(loggedIn) {
+        if (loggedIn) {
+            HomePointsStore.refresh()
+            HomeTodoStore.refresh()
+        }
+    }
 
     LaunchedEffect(Unit) {
         delay(50)
@@ -162,12 +172,16 @@ private fun HomeRootContent(
             todayReward = HomePointsStore.todayReward,
             streak = HomePointsStore.streak,
             onCheckIn = {
-                val res = HomePointsStore.checkIn()
-                HomePointsStore.markDialogAcked(today)
-                if (res != null) {
-                    showPlatformToast("签到成功，+${res.points}积分")
+                scope.launch {
+                    val res = HomePointsStore.checkIn()
+                    HomePointsStore.markDialogAcked(today)
+                    if (res != null) {
+                        showPlatformToast("签到成功，+${res.points}积分")
+                    } else {
+                        showPlatformToast(HomePointsStore.errorMessage ?: "签到失败")
+                    }
+                    showCheckIn = false
                 }
-                showCheckIn = false
             },
             onDismiss = {
                 HomePointsStore.markDialogAcked(today)

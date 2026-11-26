@@ -4,6 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.my_kmp_project.feature.mine.address.AddressApi
+import com.example.my_kmp_project.feature.mine.address.AddressBridgeRequest
+import com.example.my_kmp_project.feature.mine.address.AddressModel
 
 data class MineAddress(
     val id: String,
@@ -25,7 +28,11 @@ data class MineAddress(
 }
 
 /**
- * Flutter AddressList/Edit controllers + AddressApi mock.
+ * 收货地址页数据源 —— 远端 `/api/v1/user/addresses` 的内存缓存（原 `AddressMockStore`）。
+ *
+ * 契约复用本模块 [AddressApi]（契约表 #79-#83，Dart `AddressApi`）：
+ * 列表 `data.items[]`、新增 POST、更新 PATCH、设默认动作式 POST、删除 DELETE。
+ * 无任何假地址种子：网络失败只写 [errorMessage]，列表保留上一次成功拉到的值。
  */
 object AddressMockStore {
     var version by mutableIntStateOf(0)
@@ -35,32 +42,15 @@ object AddressMockStore {
         version++
     }
 
+    var loading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
     var selectedAddressId by mutableStateOf<String?>(null)
 
-    private var seq = 2
-    private val items = mutableListOf(
-        MineAddress(
-            id = "addr-1",
-            receiverName = "qa_user",
-            receiverPhone = "13800115172",
-            province = "北京市",
-            city = "北京市",
-            district = "朝阳区",
-            detailAddress = "演示路 1 号",
-            label = "家",
-            isDefault = true,
-        ),
-        MineAddress(
-            id = "addr-2",
-            receiverName = "测试乙",
-            receiverPhone = "13900000000",
-            province = "上海市",
-            city = "上海市",
-            district = "浦东新区",
-            detailAddress = "世纪大道 100 号",
-            isDefault = false,
-        ),
-    )
+    private var items by mutableStateOf<List<MineAddress>>(emptyList())
 
     fun addresses(): List<MineAddress> =
         items.sortedByDescending { it.isDefault }
@@ -95,7 +85,25 @@ object AddressMockStore {
         return null
     }
 
-    fun save(
+    /** 拉取地址列表；失败只写 [errorMessage]，不清空旧缓存。 */
+    suspend fun refresh(): Result<Unit> {
+        loading = true
+        return try {
+            items = AddressApi().list().map { it.toMineAddress() }
+            errorMessage = null
+            Result.success(Unit)
+        } catch (e: Exception) {
+            val message = e.message ?: "加载地址失败"
+            errorMessage = message
+            Result.failure(IllegalStateException(message))
+        } finally {
+            loading = false
+            bump()
+        }
+    }
+
+    /** 新增（[id] 为 null）或更新；成功后按服务端返回体刷新列表，失败返回 null。 */
+    suspend fun save(
         id: String?,
         name: String,
         phone: String,
@@ -105,94 +113,99 @@ object AddressMockStore {
         detail: String,
         label: String,
         isDefault: Boolean,
-    ): MineAddress {
-        val phoneDigits = MineContactValidators.digitsOnly(phone)
-        if (id != null) {
-            val idx = items.indexOfFirst { it.id == id }
-            if (idx >= 0) {
-                val updated = items[idx].copy(
-                    receiverName = name.trim(),
-                    receiverPhone = phoneDigits,
-                    province = province.trim(),
-                    city = city.trim(),
-                    district = district.trim(),
-                    detailAddress = detail.trim(),
-                    label = label.trim(),
-                    isDefault = isDefault,
-                )
-                items[idx] = updated
-                if (isDefault) clearDefaultExcept(updated.id)
-                bump()
-                return updated
-            }
+    ): MineAddress? {
+        val invalid = validate(name, phone, province, city, district, detail)
+        if (invalid != null) {
+            errorMessage = invalid
+            bump()
+            return null
         }
-        seq += 1
-        val created = MineAddress(
-            id = "addr-$seq",
+        val addressId = id?.toIntOrNull()
+        val body = AddressBridgeRequest(
+            addressId = addressId ?: 0,
             receiverName = name.trim(),
-            receiverPhone = phoneDigits,
+            receiverPhone = MineContactValidators.digitsOnly(phone),
             province = province.trim(),
             city = city.trim(),
             district = district.trim(),
             detailAddress = detail.trim(),
+            fullAddress = listOf(province, city, district, detail)
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+                .joinToString(" "),
+            isDefault = isDefault,
             label = label.trim(),
-            isDefault = isDefault || items.isEmpty(),
         )
-        items.add(0, created)
-        if (created.isDefault) clearDefaultExcept(created.id)
-        bump()
-        return created
-    }
-
-    fun setDefault(id: String): Boolean {
-        if (items.none { it.id == id }) return false
-        clearDefaultExcept(id)
-        bump()
-        return true
-    }
-
-    fun delete(id: String): Boolean {
-        val removed = items.removeAll { it.id == id }
-        if (removed && items.isNotEmpty() && items.none { it.isDefault }) {
-            items[0] = items[0].copy(isDefault = true)
-        }
-        if (removed) bump()
-        return removed
-    }
-
-    private fun clearDefaultExcept(id: String) {
-        for (i in items.indices) {
-            val a = items[i]
-            items[i] = a.copy(isDefault = a.id == id)
+        return try {
+            val api = AddressApi()
+            val saved = if (addressId != null) api.update(addressId, body) else api.create(body)
+            val ui = saved.toMineAddress()
+            items = if (addressId != null) {
+                items.map { if (it.id == id) ui else it }
+            } else {
+                items + ui
+            }
+            if (ui.isDefault) {
+                items = items.map { if (it.id == ui.id) it else it.copy(isDefault = false) }
+            }
+            errorMessage = null
+            bump()
+            ui
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "保存失败"
+            bump()
+            null
         }
     }
 
+    /** 设为默认；成功后重新拉取（服务端会清掉其它卡的默认位），失败返回 false。 */
+    suspend fun setDefault(id: String): Boolean {
+        val addressId = id.toIntOrNull() ?: return false
+        return try {
+            AddressApi().setDefault(addressId)
+            errorMessage = null
+            refresh()
+            true
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "设置默认失败"
+            bump()
+            false
+        }
+    }
+
+    /** 删除；成功后重新拉取（服务端可能自动提升新的默认地址），失败返回 false。 */
+    suspend fun delete(id: String): Boolean {
+        val addressId = id.toIntOrNull() ?: return false
+        return try {
+            AddressApi().delete(addressId)
+            errorMessage = null
+            refresh()
+            true
+        } catch (e: Exception) {
+            errorMessage = e.message ?: "删除失败"
+            bump()
+            false
+        }
+    }
+
+    /** Test helper — 只清空内存缓存。 */
     fun resetForTests() {
         selectedAddressId = null
-        seq = 2
-        items.clear()
-        items += listOf(
-            MineAddress(
-                id = "addr-1",
-                receiverName = "qa_user",
-                receiverPhone = "13800115172",
-                province = "北京市",
-                city = "北京市",
-                district = "朝阳区",
-                detailAddress = "演示路 1 号",
-                label = "家",
-                isDefault = true,
-            ),
-            MineAddress(
-                id = "addr-2",
-                receiverName = "测试乙",
-                receiverPhone = "13900000000",
-                province = "上海市",
-                city = "上海市",
-                district = "浦东新区",
-                detailAddress = "世纪大道 100 号",
-            ),
-        )
+        items = emptyList()
+        loading = false
+        errorMessage = null
         bump()
     }
 }
+
+private fun AddressModel.toMineAddress(): MineAddress = MineAddress(
+    id = resolvedAddressId.toString(),
+    receiverName = resolvedReceiverName,
+    receiverPhone = resolvedReceiverPhone,
+    province = resolvedProvince,
+    city = resolvedCity,
+    district = resolvedDistrict,
+    detailAddress = resolvedDetailAddress,
+    label = resolvedLabel,
+    isDefault = resolvedIsDefault,
+)

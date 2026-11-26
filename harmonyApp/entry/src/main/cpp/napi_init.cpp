@@ -45,11 +45,8 @@ extern "C" void KnSetOhosHost(int kind, int routeCode);
 extern "C" void KnSetOhosSecondaryRoute(void* routePtr);
 extern "C" void KnApplyAuthSession(void* tokenPtr, void* userIdPtr, void* displayNamePtr, void* phonePtr);
 
-extern "C" int KnAuthLoginWithPasswordBlocking(void* account, void* password, void* errBuf, int errCap);
-extern "C" int KnAuthLoginWithOtpBlocking(void* phone, void* code, void* errBuf, int errCap);
-extern "C" int KnAuthSendPhoneOtpBlocking(void* phone, void* errBuf, int errCap);
-extern "C" int KnAuthRegisterBlocking(void* email, void* password, void* displayName, void* errBuf, int errCap);
-extern "C" int KnAuthLoginWithHuaweiBlocking(void* code, void* deviceId, void* errBuf, int errCap);
+typedef void (*KnAuthCallback)(void* userData, int code, char* message);
+extern "C" void KnAuthRunAsync(int op, void* a, void* b, void* c, KnAuthCallback cb, void* userData);
 extern "C" int KnAuthCopyToken(void* buf, int cap);
 extern "C" int KnAuthCopyDisplayName(void* buf, int cap);
 extern "C" int KnAuthCopyUserId(void* buf, int cap);
@@ -121,53 +118,33 @@ static napi_value NapiApplyAuthSession(napi_env env, napi_callback_info info) {
 }
 
 enum class AuthOp {
-    LoginPassword,
-    LoginOtp,
-    SendOtp,
-    Register,
-    Huawei,
+    LoginPassword = 0,
+    LoginOtp = 1,
+    SendOtp = 2,
+    Register = 3,
+    Huawei = 4,
 };
 
-struct AuthAsyncCtx {
-    AuthOp op = AuthOp::LoginPassword;
-    char* a = nullptr;
-    char* b = nullptr;
-    char* c = nullptr;
-    char err[512]{};
-    int failed = 0;
+struct AuthResult {
+    int code = 0;
+    char message[512]{};
+};
+
+struct AuthCtx {
     napi_deferred deferred = nullptr;
-    napi_async_work work = nullptr;
+    napi_threadsafe_function tsfn = nullptr;
 };
 
-static void AuthExecute(napi_env env, void* data) {
-    (void)env;
-    auto* ctx = static_cast<AuthAsyncCtx*>(data);
-    switch (ctx->op) {
-        case AuthOp::LoginPassword:
-            ctx->failed = KnAuthLoginWithPasswordBlocking(ctx->a, ctx->b, ctx->err, (int)sizeof(ctx->err));
-            break;
-        case AuthOp::LoginOtp:
-            ctx->failed = KnAuthLoginWithOtpBlocking(ctx->a, ctx->b, ctx->err, (int)sizeof(ctx->err));
-            break;
-        case AuthOp::SendOtp:
-            ctx->failed = KnAuthSendPhoneOtpBlocking(ctx->a, ctx->err, (int)sizeof(ctx->err));
-            break;
-        case AuthOp::Register:
-            ctx->failed = KnAuthRegisterBlocking(ctx->a, ctx->b, ctx->c, ctx->err, (int)sizeof(ctx->err));
-            break;
-        case AuthOp::Huawei:
-            ctx->failed = KnAuthLoginWithHuaweiBlocking(ctx->a, ctx->b, ctx->err, (int)sizeof(ctx->err));
-            break;
-    }
-}
-
-static void AuthComplete(napi_env env, napi_status status, void* data) {
-    auto* ctx = static_cast<AuthAsyncCtx*>(data);
+// Runs on the JS thread: settles the promise and releases the thread-safe function.
+static void AuthCallJs(napi_env env, napi_value js_cb, void* context, void* data) {
+    (void)js_cb;
+    auto* ctx = static_cast<AuthCtx*>(context);
+    auto* res = static_cast<AuthResult*>(data);
     napi_value undefined = nullptr;
     napi_get_undefined(env, &undefined);
-    if (status != napi_ok || ctx->failed != 0) {
+    if (res != nullptr && res->code != 0) {
+        const char* text = res->message[0] != '\0' ? res->message : "登录失败，请稍后重试";
         napi_value msg = nullptr;
-        const char* text = ctx->err[0] != '\0' ? ctx->err : "登录失败，请稍后重试";
         napi_create_string_utf8(env, text, NAPI_AUTO_LENGTH, &msg);
         napi_value err = nullptr;
         napi_create_error(env, nullptr, msg, &err);
@@ -175,11 +152,23 @@ static void AuthComplete(napi_env env, napi_status status, void* data) {
     } else {
         napi_resolve_deferred(env, ctx->deferred, undefined);
     }
-    delete[] ctx->a;
-    delete[] ctx->b;
-    delete[] ctx->c;
-    napi_delete_async_work(env, ctx->work);
+    delete res;
+    napi_release_threadsafe_function(ctx->tsfn, napi_tsfn_release);
     delete ctx;
+}
+
+// Kotlin completion callback — may arrive on the ArkUI main thread or a worker thread.
+static void AuthReport(void* userData, int code, char* message) {
+    auto* ctx = static_cast<AuthCtx*>(userData);
+    auto* res = new AuthResult();
+    res->code = code;
+    if (message != nullptr) {
+        strncpy(res->message, message, sizeof(res->message) - 1);
+    }
+    if (napi_call_threadsafe_function(ctx->tsfn, res, napi_tsfn_nonblocking) != napi_ok) {
+        OH_LOG_ERROR(LOG_APP, "AuthReport: napi_call_threadsafe_function failed");
+        delete res;
+    }
 }
 
 static napi_value StartAuthPromise(napi_env env, AuthOp op, char* a, char* b, char* c) {
@@ -187,17 +176,31 @@ static napi_value StartAuthPromise(napi_env env, AuthOp op, char* a, char* b, ch
     napi_deferred deferred = nullptr;
     napi_create_promise(env, &deferred, &promise);
 
-    auto* ctx = new AuthAsyncCtx();
-    ctx->op = op;
-    ctx->a = a;
-    ctx->b = b;
-    ctx->c = c;
+    auto* ctx = new AuthCtx();
     ctx->deferred = deferred;
 
-    napi_value resource = nullptr;
-    napi_create_string_utf8(env, "AuthBridge", NAPI_AUTO_LENGTH, &resource);
-    napi_create_async_work(env, nullptr, resource, AuthExecute, AuthComplete, ctx, &ctx->work);
-    napi_queue_async_work(env, ctx->work);
+    napi_value resourceName = nullptr;
+    napi_create_string_utf8(env, "AuthBridge", NAPI_AUTO_LENGTH, &resourceName);
+    napi_create_threadsafe_function(
+        env,
+        nullptr,
+        nullptr,
+        resourceName,
+        0,
+        1,
+        nullptr,
+        nullptr,
+        ctx,
+        AuthCallJs,
+        &ctx->tsfn);
+
+    // Kotlin copies the args synchronously and returns without blocking; the result
+    // arrives later through AuthReport -> AuthCallJs on the JS thread.
+    KnAuthRunAsync(static_cast<int>(op), a, b, c, AuthReport, ctx);
+
+    delete[] a;
+    delete[] b;
+    delete[] c;
     return promise;
 }
 

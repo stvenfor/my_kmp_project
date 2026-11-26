@@ -325,9 +325,8 @@ public fun postModelFromLikeFragment(data: JsonElement?): PostModel? =
 /**
  * Dart `CommunityUserHit`（community_search_models.dart:5-35）。
  *
- * 注意：`feature/community/MockCommunityEngine.kt` 里另有一个同名的 mock 行类型
- * （`feature.community` 包），本类在 `feature.community.http` 包，二者不冲突；
- * mock 那份不参与序列化，HTTP 契约一律用本类。
+ * 本类在 `feature.community.http` 包，与同包 UI 行类型 `feature.community.CommunityUserHit`
+ * 同名但职责不同：本类只负责 wire 解码，UI 行类型由 `toUserHit()` 适配。
  */
 @Serializable
 public data class CommunityUserHit(

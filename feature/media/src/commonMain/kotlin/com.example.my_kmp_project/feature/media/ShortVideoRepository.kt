@@ -17,8 +17,7 @@ import kotlinx.serialization.json.JsonObject
  * 短视频数据源端口 —— Dart `features/video/lib/short_video/repository/short_video_repository.dart:13-34`
  * （abstract class `ShortVideoRepository`）的 KMP 对等。
  *
- * 本包此前只有 UI 私有的 `VideoMock`（VideoRouteHost.kt），没有端口；
- * 本文件即契约层落点，HTTP 实现见 [HttpShortVideoRepository]（#72–#78）。
+ * 本包此前缺少数据源端口；本文件即契约层落点，HTTP 实现见 [HttpShortVideoRepository]（#72–#78）。
  */
 public interface ShortVideoRepository {
 

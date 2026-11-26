@@ -6,8 +6,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.arkui.TouchableArkUIView
+import androidx.compose.ui.interop.TouchableArkUIView
 import androidx.compose.ui.napi.JsEnv
+import androidx.compose.ui.napi.JsObject
 import com.example.my_kmp_project.core.ui.PlaybackSnapshot
 import com.example.my_kmp_project.core.ui.PlaybackStatus
 
@@ -17,6 +18,7 @@ import com.example.my_kmp_project.core.ui.PlaybackStatus
  * 限制：当前 ArkUI 桥接没有播放状态/进度回传通道，故不读取真实状态、不接 seekToMs；
  * 快照只回报 Idle/Unsupported，不伪造状态或时间数据。
  */
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 @Composable
 actual fun VideoPlaybackSurface(
     url: String,
@@ -50,7 +52,7 @@ actual fun VideoPlaybackSurface(
     TouchableArkUIView(
         name = "vodVideoInline",
         modifier = modifier,
-        parameter = parameters,
+        parameter = JsObject(parameters),
         background = Color.Black,
     )
 }

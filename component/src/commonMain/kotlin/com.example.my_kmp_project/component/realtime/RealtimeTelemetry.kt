@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.component.realtime
 
+import com.example.my_kmp_project.core.log.AppLog
+
 /**
  * 指标 / 异常 / 耗时上报 —— 逐行对齐 Dart
  * `components/realtime/lib/telemetry/realtime_telemetry.dart:4-49`（d7876a1）。
@@ -32,7 +34,7 @@ public fun interface RealtimeTelemetrySink {
 /** 默认出口：与 Dart 一样只落日志，不外发。 */
 public object LoggingRealtimeTelemetrySink : RealtimeTelemetrySink {
     override fun report(eventType: String, payload: Map<String, Any?>) {
-        println("[RealtimeTelemetry] $eventType $payload")
+        AppLog.d("RealtimeTelemetry", "$eventType $payload")
     }
 }
 

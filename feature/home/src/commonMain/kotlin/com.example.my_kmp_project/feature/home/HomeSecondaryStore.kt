@@ -4,10 +4,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.my_kmp_project.feature.home.aftersales.AfterSalesApi
+import com.example.my_kmp_project.feature.home.aftersales.AfterSalesRecord
+import com.example.my_kmp_project.feature.home.newcar.NewCarFollowApi
+import com.example.my_kmp_project.feature.home.newcar.NewCarFollowFile
+import com.example.my_kmp_project.feature.home.newcar.NewCarFollowTab
+import com.example.my_kmp_project.feature.home.usedcar.HomeUsedCarApi
+import com.example.my_kmp_project.feature.home.usedcar.HomeUsedCarCustomer
+import com.example.my_kmp_project.feature.home.usedcar.HomeUsedCarOrderCreateRequest
+import com.example.my_kmp_project.feature.home.usedcar.HomeUsedCarOrderItem
+import com.example.my_kmp_project.feature.home.usedcar.HomeUsedCarStats
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
- * Mutable home secondary pipelines (used-car / after-sales / new-car follow).
- * Selection ids drive detail screens (Flutter route arg / controller selection).
+ * 首页二级流水线（二手车 / 售后 / 新车跟进）：远端 API 缓存 + 选择态。
+ *
+ * - 二手车：`HomeUsedCarApi`（`/api/v1/used-car-orders`，摘要 / 列表 / 客户 / 建单）
+ * - 售后：`AfterSalesApi`（`/api/v1/after-sales`，列表 / 建单，`can_create` 决定新建入口）
+ * - 新车跟进：`NewCarFollowApi`（`/api/v1/new-car-follow-files`，列表 / 建档）
+ *
+ * 网络失败只写 [errorMessage]，绝不本地伪造插入；选中 id 仅驱动详情页。
  */
 object HomeSecondaryStore {
     var version by mutableIntStateOf(0)
@@ -17,131 +34,229 @@ object HomeSecondaryStore {
         version++
     }
 
+    var loading by mutableStateOf(false)
+        private set
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
     var selectedUsedCarId by mutableStateOf<String?>(null)
     var selectedAfterSalesId by mutableStateOf<String?>(null)
     var selectedNewCarFollowId by mutableStateOf<String?>(null)
 
-    /** Advisor demo: Flutter `can_create` true for store staff. */
-    var afterSalesCanCreate by mutableStateOf(true)
+    /** 数据分析选中记录 id（0 = 未选择），驱动详情页 `GetAnalyticsRecord`。 */
+    var selectedAnalyticsId by mutableStateOf(0L)
+        private set
 
-    private var usedCarSeq = 3
-    private var afterSalesSeq = 441
-    private var newCarSeq = 3
+    /** `GET /after-sales/records` 的 `can_create`（服务端 gate「新建工单」入口）。 */
+    var afterSalesCanCreate by mutableStateOf(false)
+        private set
 
-    private val usedCars = mutableListOf(
-        UsedCarOrderRow(
-            id = "uc-1",
-            kindLabel = "置换",
-            statusLabel = "待审核",
-            submittedDate = "2026-09-22",
-            vehicleModel = "2021 帝豪",
-            plateNo = "京A·88X21",
-            modelYear = 2021,
-            mileageKm = 32000,
-            amountLabel = "评估价",
-            amount = 86000,
-            customerName = "张先生",
-            vin = "LGXC14DF5M0123456",
-        ),
-        UsedCarOrderRow(
-            id = "uc-2",
-            kindLabel = "专卖",
-            statusLabel = "已通过",
-            submittedDate = "2026-09-18",
-            vehicleModel = "2020 星越L",
-            plateNo = "沪B·6K902",
-            modelYear = 2020,
-            mileageKm = 41000,
-            amountLabel = "成交价",
-            amount = 152000,
-            customerName = "李女士",
-            vin = "LGXC16DF8L0654321",
-        ),
-        UsedCarOrderRow(
-            id = "uc-3",
-            kindLabel = "收车",
-            statusLabel = "已提交",
-            submittedDate = "2026-09-15",
-            vehicleModel = "2019 博越",
-            plateNo = "粤C·19H33",
-            modelYear = 2019,
-            mileageKm = 55000,
-            amountLabel = "收车价",
-            amount = 79000,
-            customerName = "王先生",
-            vin = "LGXC14CF3K0987654",
-        ),
-    )
+    /** 二手车建单可选的客户（`GET /used-car-orders/customers`）。 */
+    var usedCarCustomers by mutableStateOf<List<HomeUsedCarCustomer>>(emptyList())
+        private set
 
-    private val afterSales = mutableListOf(
-        AfterSalesDetailRow(
-            id = "as-441",
-            title = "工单 AS-441",
-            kindLabel = "保养",
-            customerName = "陈先生",
-            customerPhone = "139****2201",
-            plateNo = "京A·88K21",
-            mileageKm = 28600,
-            serviceDate = "2026-09-25",
-            content = "更换机油机滤，检查刹车片；客户要求加急。",
-            appointmentId = 8821,
-        ),
-        AfterSalesDetailRow(
-            id = "as-438",
-            title = "工单 AS-438",
-            kindLabel = "维修",
-            customerName = "周女士",
-            customerPhone = "137****6610",
-            plateNo = "京N·5U902",
-            mileageKm = 42100,
-            serviceDate = "2026-09-24",
-            content = "前杠钣喷索赔，待配件到店。",
-            appointmentId = null,
-        ),
-    )
+    /** 二手车摘要统计（`GET /used-car-orders/summary`）。 */
+    var usedCarStats by mutableStateOf(HomeUsedCarStats())
+        private set
 
-    private val _newCarFollows = mutableListOf(
-        NewCarFollowRow(
-            id = "nc-1",
-            customerName = "孙某",
-            phone = "138****2101",
-            vehicle = "银河 L7",
-            stage = "跟进中",
-            intentBand = "高",
-            nextFollow = "今日 15:00",
-            owner = "销售顾问",
-        ),
-        NewCarFollowRow(
-            id = "nc-2",
-            customerName = "吴某",
-            phone = "139****8820",
-            vehicle = "星愿",
-            stage = "报价",
-            intentBand = "中",
-            nextFollow = "明日 10:30",
-            owner = "销售顾问",
-        ),
-        NewCarFollowRow(
-            id = "nc-3",
-            customerName = "赵某",
-            phone = "186****4412",
-            vehicle = "星越 L",
-            stage = "试驾",
-            intentBand = "低",
-            nextFollow = "09-20 已逾期",
-            owner = "网销",
-            overdue = true,
-        ),
-    )
+    private var usedCars by mutableStateOf<List<UsedCarOrderRow>>(emptyList())
+    private var afterSales by mutableStateOf<List<AfterSalesDetailRow>>(emptyList())
+    private var newCarRows by mutableStateOf<List<NewCarFollowRow>>(emptyList())
 
-    fun usedCarOrders(): List<UsedCarOrderRow> = usedCars.toList()
+    fun usedCarOrders(): List<UsedCarOrderRow> = usedCars
 
     fun findUsedCar(id: String?): UsedCarOrderRow? =
         id?.let { wanted -> usedCars.firstOrNull { it.id == wanted } }
-            ?: usedCars.firstOrNull()
 
     fun selectUsedCar(id: String) {
         selectedUsedCarId = id
+    }
+
+    fun afterSalesDetails(): List<AfterSalesDetailRow> = afterSales
+
+    fun findAfterSales(id: String?): AfterSalesDetailRow? =
+        id?.let { wanted -> afterSales.firstOrNull { it.id == wanted } }
+
+    fun selectAfterSales(id: String) {
+        selectedAfterSalesId = id
+    }
+
+    fun newCarFollows(): List<NewCarFollowRow> = newCarRows
+
+    fun findNewCarFollow(id: String?): NewCarFollowRow? =
+        id?.let { wanted -> newCarRows.firstOrNull { it.id == wanted } }
+
+    fun selectNewCarFollow(id: String) {
+        selectedNewCarFollowId = id
+    }
+
+    fun selectAnalytics(id: Long) {
+        selectedAnalyticsId = id
+    }
+
+    /** 拉取二手车业务单（列表为核心）；摘要失败只影响统计栏，不阻塞列表。 */
+    suspend fun refreshUsedCars(api: HomeUsedCarApi = HomeUsedCarApi()): Result<Unit> = runCatching {
+        loading = true
+        usedCars = api.fetchList().map { it.toRow() }
+        usedCarStats = runCatching { api.fetchSummary().resolvedStats }.getOrDefault(usedCarStats)
+        errorMessage = null
+    }.onFailure {
+        errorMessage = it.message ?: "加载二手车业务单失败"
+    }.also {
+        loading = false
+        bump()
+    }
+
+    /** 拉取建单可选客户；失败只记录 [errorMessage]。 */
+    suspend fun refreshUsedCarCustomers(api: HomeUsedCarApi = HomeUsedCarApi()): Result<Unit> =
+        runCatching {
+            usedCarCustomers = api.fetchCustomers()
+            errorMessage = null
+        }.onFailure {
+            errorMessage = it.message ?: "加载客户失败"
+        }
+
+    /**
+     * 二手车建单（`POST /used-car-orders`）；成功后重新拉列表并选中新单。
+     * 失败返回 false 并记录 [errorMessage]。
+     */
+    suspend fun createUsedCar(
+        kind: String,
+        customerId: Int,
+        vehicleModel: String,
+        plateNo: String,
+        vin: String,
+        mileageKm: Int,
+        modelYear: Int,
+        amount: Int,
+        api: HomeUsedCarApi = HomeUsedCarApi(),
+    ): Boolean = runCatching {
+        val created = api.create(
+            HomeUsedCarOrderCreateRequest(
+                kind = kind,
+                customerId = customerId,
+                vehicleModel = vehicleModel,
+                plateNo = plateNo,
+                vin = vin,
+                mileageKm = mileageKm,
+                modelYear = modelYear,
+                amount = amount.toDouble(),
+            ),
+        )
+        selectedUsedCarId = created.resolvedOrderId
+        refreshUsedCars(api)
+        true
+    }.getOrElse {
+        errorMessage = it.message ?: "提交失败"
+        bump()
+        false
+    }
+
+    /** 拉取售后工单列表（`can_create` 同步服务端 gate）。 */
+    suspend fun refreshAfterSales(api: AfterSalesApi = AfterSalesApi()): Result<Unit> = runCatching {
+        loading = true
+        val result = api.fetchRecords(page = 1, size = 50)
+        afterSalesCanCreate = result.canCreate
+        afterSales = result.list.map { it.toRow() }
+        errorMessage = null
+    }.onFailure {
+        errorMessage = it.message ?: "加载售后工单失败"
+    }.also {
+        loading = false
+        bump()
+    }
+
+    /**
+     * 售后建单（`POST /after-sales/records`，`service_kind` 写字符串 `"1"` = 保养）；
+     * 成功后重新拉列表并选中新单。
+     */
+    suspend fun createAfterSales(
+        name: String,
+        phone: String,
+        title: String,
+        plate: String,
+        mileageKm: Int?,
+        date: String,
+        content: String,
+        serviceKind: String = "1",
+        api: AfterSalesApi = AfterSalesApi(),
+    ): Boolean = runCatching {
+        val created = api.create(
+            serviceKind = serviceKind,
+            title = title,
+            serviceDate = date,
+            customerName = name,
+            customerPhone = phone,
+            plateNo = plate,
+            mileage = mileageKm,
+            content = content,
+        )
+        selectedAfterSalesId = created.recordId.toString()
+        refreshAfterSales(api)
+        true
+    }.getOrElse {
+        errorMessage = it.message ?: "创建售后工单失败"
+        bump()
+        false
+    }
+
+    /** 拉取新车跟进档案（全部 tab，逾期由客户端按 `next_follow_up_at` 推导）。 */
+    @OptIn(ExperimentalTime::class)
+    suspend fun refreshNewCarFollows(api: NewCarFollowApi = NewCarFollowApi()): Result<Unit> =
+        runCatching {
+            loading = true
+            val today = Clock.System.now().toString().take(10)
+            newCarRows = api.fetchList(NewCarFollowTab.All, page = 1, size = 50).list
+                .map { it.toRow(today) }
+            errorMessage = null
+        }.onFailure {
+            errorMessage = it.message ?: "加载新车跟进失败"
+        }.also {
+            loading = false
+            bump()
+        }
+
+    /**
+     * 新建跟进档案（`POST /new-car-follow-files`）；成功后重新拉列表并选中新档。
+     * [intentBand] 接受 UI 的中文意向（高/中/低）或原始 `H/A/B/E`。
+     */
+    suspend fun createNewCarFollow(
+        name: String,
+        phone: String,
+        vehicle: String,
+        intentBand: String,
+        api: NewCarFollowApi = NewCarFollowApi(),
+    ): Boolean = runCatching {
+        val created = api.create(
+            followLevel = newCarFollowLevel(intentBand),
+            displayName = name,
+            phone = phone,
+            vehicleInterest = vehicle,
+        )
+        selectedNewCarFollowId = created.fileId
+        refreshNewCarFollows(api)
+        true
+    }.getOrElse {
+        errorMessage = it.message ?: "建档失败"
+        bump()
+        false
+    }
+
+    /** Test helper — 只清空内存缓存与选择态。 */
+    fun resetForTests() {
+        usedCars = emptyList()
+        afterSales = emptyList()
+        newCarRows = emptyList()
+        usedCarCustomers = emptyList()
+        usedCarStats = HomeUsedCarStats()
+        afterSalesCanCreate = false
+        selectedUsedCarId = null
+        selectedAfterSalesId = null
+        selectedNewCarFollowId = null
+        selectedAnalyticsId = 0L
+        loading = false
+        errorMessage = null
+        bump()
     }
 
     /**
@@ -166,51 +281,6 @@ object HomeSecondaryStore {
         return null
     }
 
-    fun createUsedCar(
-        kindLabel: String,
-        customerName: String,
-        vehicleModel: String,
-        plateNo: String,
-        vin: String,
-        mileageKm: Int,
-        modelYear: Int,
-        amount: Int,
-    ): UsedCarOrderRow {
-        usedCarSeq += 1
-        val row = UsedCarOrderRow(
-            id = "uc-$usedCarSeq",
-            kindLabel = kindLabel,
-            statusLabel = "已提交",
-            submittedDate = "2026-09-29",
-            vehicleModel = vehicleModel,
-            plateNo = plateNo,
-            modelYear = modelYear,
-            mileageKm = mileageKm,
-            amountLabel = when (kindLabel) {
-                "置换" -> "评估价"
-                "专卖" -> "成交价"
-                else -> "收车价"
-            },
-            amount = amount,
-            customerName = customerName.substringBefore(' ').ifBlank { customerName },
-            vin = vin,
-        )
-        usedCars.add(0, row)
-        selectedUsedCarId = row.id
-        bump()
-        return row
-    }
-
-    fun afterSalesDetails(): List<AfterSalesDetailRow> = afterSales.toList()
-
-    fun findAfterSales(id: String?): AfterSalesDetailRow? =
-        id?.let { wanted -> afterSales.firstOrNull { it.id == wanted } }
-            ?: afterSales.firstOrNull()
-
-    fun selectAfterSales(id: String) {
-        selectedAfterSalesId = id
-    }
-
     fun validateAfterSalesCreate(
         name: String,
         phone: String,
@@ -223,70 +293,84 @@ object HomeSecondaryStore {
         return null
     }
 
-    fun createAfterSales(
-        name: String,
-        phone: String,
-        title: String,
-        plate: String,
-        mileageKm: Int?,
-        date: String,
-        content: String,
-        kindLabel: String = "保养",
-    ): AfterSalesDetailRow {
-        afterSalesSeq += 1
-        val row = AfterSalesDetailRow(
-            id = "as-$afterSalesSeq",
-            title = title.ifBlank { "工单 AS-$afterSalesSeq" },
-            kindLabel = kindLabel,
-            customerName = name,
-            customerPhone = phone,
-            plateNo = plate,
-            mileageKm = mileageKm,
-            serviceDate = date,
-            content = content,
-            appointmentId = null,
-        )
-        afterSales.add(0, row)
-        selectedAfterSalesId = row.id
-        bump()
-        return row
-    }
-
-    fun newCarFollows(): List<NewCarFollowRow> = _newCarFollows.toList()
-
-    fun findNewCarFollow(id: String?): NewCarFollowRow? =
-        id?.let { wanted -> _newCarFollows.firstOrNull { it.id == wanted } }
-            ?: _newCarFollows.firstOrNull()
-
-    fun selectNewCarFollow(id: String) {
-        selectedNewCarFollowId = id
-    }
-
     fun validateNewCarFollowCreate(name: String, phone: String): String? {
         if (name.isBlank() || phone.isBlank()) return "请填写客户姓名和手机号"
         return null
     }
+}
 
-    fun createNewCarFollow(
-        name: String,
-        phone: String,
-        vehicle: String,
-        intentBand: String,
-    ): NewCarFollowRow {
-        newCarSeq += 1
-        val row = NewCarFollowRow(
-            id = "nc-$newCarSeq",
-            customerName = name,
-            phone = phone,
-            vehicle = vehicle.ifBlank { "意向车型待定" },
-            stage = "跟进中",
-            intentBand = intentBand,
-            nextFollow = "今日待排",
-            owner = "销售顾问",
-        )
-        _newCarFollows.add(0, row)
-        selectedNewCarFollowId = row.id
-        bump()
-        return row
-    }
+private fun HomeUsedCarOrderItem.toRow(): UsedCarOrderRow = UsedCarOrderRow(
+    id = resolvedOrderId,
+    kindLabel = resolvedKindLabel.ifEmpty { usedCarKindLabel(resolvedKind) },
+    statusLabel = statusLabel.ifEmpty { "—" },
+    submittedDate = resolvedSubmittedAt.take(10).ifEmpty { "—" },
+    vehicleModel = resolvedVehicleModel,
+    plateNo = resolvedPlateNo,
+    modelYear = resolvedModelYear,
+    mileageKm = resolvedMileageKm,
+    amountLabel = resolvedAmountLabel,
+    amount = resolvedAmount.toInt(),
+    customerName = resolvedCustomerName,
+    vin = resolvedVin,
+    phone = resolvedPhone,
+)
+
+private fun AfterSalesRecord.toRow(): AfterSalesDetailRow = AfterSalesDetailRow(
+    id = recordId.toString(),
+    title = title.ifEmpty { "工单 AS-$recordId" },
+    kindLabel = serviceKindLabel.ifEmpty { if (serviceKind == 1) "保养" else "维修" },
+    customerName = customerName,
+    customerPhone = customerPhone,
+    plateNo = plateNo,
+    mileageKm = mileage,
+    serviceDate = serviceDate.take(10).ifEmpty { "—" },
+    content = content,
+    appointmentId = appointmentId,
+)
+
+private fun NewCarFollowFile.toRow(todayIso: String): NewCarFollowRow = NewCarFollowRow(
+    id = fileId,
+    customerName = customerName.ifEmpty { "客户" },
+    phone = customerPhone,
+    vehicle = vehicleInterest.ifEmpty { "意向车型待定" },
+    stage = newCarStageLabel(stage),
+    intentBand = intentBand,
+    nextFollow = nextFollowUpAt?.take(16)?.replace('T', ' ') ?: "待安排",
+    owner = ownerDisplayName.ifEmpty { "销售顾问" },
+    overdue = newCarFollowOverdue(nextFollowUpAt, stage, todayIso),
+)
+
+/** 车种 API 值 → 中文字面量（服务端缺 `kind_label` 时的兜底）。 */
+internal fun usedCarKindLabel(kind: String): String = when (kind) {
+    "trade_in" -> "置换"
+    "consign" -> "专卖"
+    "purchase" -> "收车"
+    else -> "二手车"
+}
+
+/** 跟进级别：UI 中文意向（高/中/低）→ 服务端 `H/A/B/E`。 */
+internal fun newCarFollowLevel(intentBand: String): String = when (intentBand) {
+    "H", "A", "B", "E" -> intentBand
+    "高" -> "A"
+    "中" -> "B"
+    "低" -> "E"
+    else -> "B"
+}
+
+/** 阶段英文值 → 中文文案（对齐 Flutter `NewCarFollowLabels.stage`）。 */
+internal fun newCarStageLabel(raw: String): String = when (raw) {
+    "new" -> "新建"
+    "following" -> "跟进中"
+    "test_drive" -> "试驾"
+    "quoted" -> "已报价"
+    "won" -> "成交"
+    "lost" -> "战败"
+    else -> raw.ifEmpty { "—" }
+}
+
+/** 逾期判定：未成交/未战败且 `next_follow_up_at` 早于今天（纯逻辑，可测）。 */
+internal fun newCarFollowOverdue(nextFollowUpAt: String?, stage: String, todayIso: String): Boolean {
+    if (stage == "won" || stage == "lost") return false
+    val due = nextFollowUpAt?.take(10) ?: return false
+    return due < todayIso
 }

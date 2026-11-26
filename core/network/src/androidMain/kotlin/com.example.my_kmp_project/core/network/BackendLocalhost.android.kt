@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.core.network
 
+import com.example.my_kmp_project.core.log.AppLog
+
 public actual fun remapBackendLocalhost(baseUrl: String): String {
     val emulator = runCatching { isEmulator() }.getOrDefault(false)
     val mapped = resolveLoopbackHostMapping(NetworkConfig.effectiveBackendHost, emulator)
@@ -24,8 +26,9 @@ private fun warnRealDeviceWithoutOverride(baseUrl: String) {
     if (warnedRealDevice) return
     if (!isLoopbackUrl(baseUrl)) return
     warnedRealDevice = true
-    println(
-        "[BackendHttpConfig] 真机上未注入后端 host：127.0.0.1 指向设备自身，连不上本机后端。" +
+    AppLog.w(
+        "BackendHttpConfig",
+        "真机上未注入后端 host：127.0.0.1 指向设备自身，连不上本机后端。" +
             "请在 设置 → 运行环境 自定义地址注入，或用局域网后端地址。",
     )
 }
