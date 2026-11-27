@@ -18,7 +18,7 @@ compose = "1.9.4"
 composeMultiplatform = "1.9.2-0.4.0"
 
 # Kotlin & testing
-kotlin = "2.2.21-0.4.0"
+kotlin = "2.4.21"
 kotlinx-coroutines = "1.10.2-0.4.0"
 atomicFu = "0.31.0-0.4.0"
 # OHOS fork (must include ohos_arm64; stock 1.8.x does not)
