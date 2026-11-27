@@ -9,7 +9,7 @@ android-targetSdk = "36"
 androidx-activity = "1.9.2"
 androidx-core = "1.15.0"
 androidx-lifecycle = "2.9.6"
-androidx-splashscreen = "1.0.1"
+androidx-splashscreen = "1.2.0"
 # Media3: ExoPlayer 音频 + MediaSessionService（后台/锁屏播放）
 media3 = "1.5.1"
 
@@ -44,7 +44,7 @@ uuid = "0.8.4-1.0.0"
 composemediaplayer = "0.8.3"
 
 # Android camera scan (WebView uses framework WebView — no extra dep)
-camerax = "1.4.2"
+camerax = "1.7.0"
 mlkit-barcode = "17.3.0"
 
 # 数据分析 gRPC（仅 androidMain；不依赖 protoc 代码生成）
