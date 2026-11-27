@@ -19,12 +19,12 @@ composeMultiplatform = "1.9.2-0.4.0"
 
 # Kotlin & testing
 kotlin = "2.2.21-0.4.0"
-kotlinx-coroutines = "1.10.2-0.4.0"
-atomicFu = "0.31.0-0.4.0"
+kotlinx-coroutines = "1.11.0"
+atomicFu = "0.33.0"
 # OHOS fork (must include ohos_arm64; stock 1.8.x does not)
-kotlinx-serialization = "1.9.1-0.3.0"
+kotlinx-serialization = "1.13.0"
 # CPF OH line (ohosArm64). Plain 3.3.x has no ohos variant — see adopt-cpf-ktor-ohos.
-ktor = "3.3.3-0.3.0"
+ktor = "3.6.1"
 
 # Key-value KV (Android/iOS only). Stock has no ohos klib; the CPF -0.3.0 line has no
 # android AAR (404) -- no line covers both, so OHOS implements KeyValueStore over the
