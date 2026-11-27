@@ -53,6 +53,9 @@ import com.example.my_kmp_project.core.router.MainTab
 import com.example.my_kmp_project.core.ui.LocalMainTabChrome
 import com.example.my_kmp_project.core.ui.MainTabChromeController
 import com.example.my_kmp_project.component.auth.AuthGate
+import com.example.my_kmp_project.app.di.AppBootstrap
+import com.example.my_kmp_project.app.di.AuthModule
+import com.example.my_kmp_project.app.di.LegacyGraph
 import com.example.my_kmp_project.feature.auth.AuthRepository
 import com.example.my_kmp_project.component.auth.AuthSessionState
 import com.example.my_kmp_project.feature.auth.LoginOtpScreen
@@ -72,8 +75,7 @@ import com.example.my_kmp_project.feature.live.LiveScreen
 import com.example.my_kmp_project.feature.media.MediaEntryScreen
 import com.example.my_kmp_project.feature.media.MiniPlayerBar
 import com.example.my_kmp_project.feature.media.MusicNowPlayingRoute
-import com.example.my_kmp_project.feature.media.MusicSession
-import com.example.my_kmp_project.feature.media.SharedVideoPlayer
+import com.example.my_kmp_project.feature.media.VideoPlayerHost
 import com.example.my_kmp_project.feature.mine.MineScreen
 import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
@@ -334,6 +336,8 @@ private fun MainShell() {
 
     fun afterAuthSuccess() {
         refreshSession()
+        // DI：登录 / 恢复成功 → 建立会话作用域（幂等，同一登录期复用）。
+        AppBootstrap.sessionReady()
         // 登录后补连 realtime（闸门检查隐私 + 登录态 + 是否活跃）。
         RealtimeRuntime.onAfterLogin()
         val resume = AuthGate.consumePending() ?: MainTab.Home
@@ -361,8 +365,11 @@ private fun MainShell() {
             bottomBar = {
                 Column {
                     // 音乐仅在应用内跨 Tab 续播；active 才显示，点击回到 Now Playing。
-                    if (MusicSession.isActive) {
-                        MiniPlayerBar(onOpenNowPlaying = { showNowPlaying = true })
+                    if (LegacyGraph.require().musicSession.isActive) {
+                        MiniPlayerBar(
+                            music = LegacyGraph.require().musicSession,
+                            onOpenNowPlaying = { showNowPlaying = true },
+                        )
                     }
                     if (showBottomBar) {
                         MainBottomBar(
@@ -391,6 +398,7 @@ private fun MainShell() {
                                 AuthGate.clearPending()
                                 tabChrome.updateBottomBarVisible(true)
                             },
+                            controller = AuthModule.loginController(),
                         )
                         AuthOverlay.LoginPassword -> LoginPasswordScreen(
                             onLoginSuccess = { afterAuthSuccess() },
@@ -416,6 +424,8 @@ private fun MainShell() {
                             Box(modifier = Modifier.fillMaxSize().alpha(fadeIn.value)) {
                                 when (tab) {
                                     MainTab.Home -> HomeScreen(
+                                        dashboard = AppContainer.get().home.dashboard,
+                                        content = AppContainer.get().home.content,
                                         loggedIn = loggedIn,
                                         displayName = AccountFacade.current().displayName,
                                     )
@@ -427,7 +437,7 @@ private fun MainShell() {
                                     )
                                     MainTab.Community -> CommunityScreen(
                                         videoPlayer = { url, playing, modifier, onPlayingChange ->
-                                            SharedVideoPlayer(
+                                            VideoPlayerHost(
                                                 url = url,
                                                 isPlaying = playing,
                                                 onPlayingChange = onPlayingChange,
@@ -447,6 +457,8 @@ private fun MainShell() {
                                         },
                                         onLogoutClick = {
                                             AuthRepository.logout()
+                                            // DI：摘除会话作用域（幂等），再清实时连接。
+                                            AppBootstrap.logout()
                                             // 登出清 WS 连接、不清离线队列。
                                             RealtimeRuntime.onAfterLogout()
                                             refreshSession()
@@ -454,6 +466,7 @@ private fun MainShell() {
                                             tab = MainTab.Home
                                             tabChrome.updateBottomBarVisible(true)
                                         },
+                                        api = AppContainer.get().network.api(),
                                     )
                                 }
                             }
@@ -467,9 +480,12 @@ private fun MainShell() {
                         )
                         AppRoute.AllServices -> AllServicesScreen(
                             onBack = { clearShellRoute() },
+                            content = AppContainer.get().home.content,
                         )
                         AppRoute.Membership -> MembershipScreen(
                             onBack = { clearShellRoute() },
+                            gateway = LegacyGraph.require().pay,
+                            api = AppContainer.get().network.api(),
                         )
                         AppRoute.Scan -> ScanScreen(
                             onBack = { clearShellRoute() },
@@ -511,6 +527,8 @@ private fun MainShell() {
                         )
                         AppRoute.Media -> MediaEntryScreen(
                             onBack = { clearShellRoute() },
+                            api = LegacyGraph.require().network.api(),
+                            music = LegacyGraph.require().musicSession,
                         )
                         AppRoute.Live -> LiveScreen(
                             onBack = { clearShellRoute() },
@@ -530,7 +548,10 @@ private fun MainShell() {
                                 .fillMaxSize()
                                 .background(DemoColors.PageBg),
                         ) {
-                            MusicNowPlayingRoute(onBack = { showNowPlaying = false })
+                            MusicNowPlayingRoute(
+                                onBack = { showNowPlaying = false },
+                                music = LegacyGraph.require().musicSession,
+                            )
                         }
                     }
                 }

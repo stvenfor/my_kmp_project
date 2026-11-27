@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.io.File
 
 // core:network —— HTTP / SSE / realtime 传输层（唯一持有 Ktor 的模块）。
@@ -94,4 +95,22 @@ kotlin {
 
 android {
     namespace = "com.example.my_kmp_project.core.network"
+    buildFeatures {
+        // platformIsReleaseBuild() 需要按 Android variant 读取 BuildConfig.DEBUG。
+        buildConfig = true
+    }
+}
+
+// 构建期环境 / 版本 → commonMain 生成 BuildEnvironment.kt（三端共用）。
+apply(from = rootProject.file("gradle/build-environment.gradle.kts"))
+
+val buildEnvironmentTask = extra["buildEnvironmentTask"] as TaskProvider<Task>
+val buildEnvironmentDir = extra["buildEnvironmentDir"] as Provider<Directory>
+
+kotlin {
+    sourceSets.getByName("commonMain").kotlin.srcDir(buildEnvironmentDir)
+}
+
+tasks.withType<KotlinCompilationTask<*>>().configureEach {
+    dependsOn(buildEnvironmentTask)
 }

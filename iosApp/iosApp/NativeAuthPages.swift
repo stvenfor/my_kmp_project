@@ -91,9 +91,6 @@ struct NativeLoginView: View {
                     primaryButton
                         .padding(.top, 32)
 
-                    wechatButton
-                        .padding(.top, 16)
-
                     footerLinks
                         .padding(.top, 24)
                         .frame(maxWidth: .infinity)
@@ -238,26 +235,6 @@ struct NativeLoginView: View {
         .disabled(!canSubmit)
     }
 
-    private var wechatButton: some View {
-        Button {
-            error = "微信登录需接入微信 SDK（见 platform-gap-registry）"
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "message")
-                Text("微信登录")
-                    .font(.system(size: 17, weight: .semibold))
-            }
-            .foregroundStyle(AuthTokens.accent)
-            .frame(maxWidth: .infinity)
-            .frame(height: AuthTokens.buttonHeight)
-            .overlay(
-                RoundedRectangle(cornerRadius: AuthTokens.radiusLg)
-                    .stroke(AuthTokens.separator, lineWidth: 1)
-            )
-        }
-        .disabled(loading)
-    }
-
     private var footerLinks: some View {
         HStack(spacing: 16) {
             Button("我要注册") { showRegister = true }
@@ -265,7 +242,7 @@ struct NativeLoginView: View {
             Rectangle()
                 .fill(AuthTokens.separator)
                 .frame(width: 1, height: 12)
-            Button("忘记密码") { error = "忘记密码功能暂未开放" }
+            Button("忘记密码") { error = "请联系管理员重置密码" }
                 .foregroundStyle(AuthTokens.accent)
         }
         .font(.system(size: 13, weight: .medium))

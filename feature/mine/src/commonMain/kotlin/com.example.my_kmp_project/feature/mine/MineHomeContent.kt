@@ -24,9 +24,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.offset
+import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.router.AiRoutes
 import com.example.my_kmp_project.core.router.ClassroomRoutes
@@ -48,6 +51,8 @@ import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.core.router.HomeRoutes
 import com.example.my_kmp_project.core.router.MineRoutes
 import com.example.my_kmp_project.core.router.VideoRoutes
+import com.example.my_kmp_project.feature.mine.profile.MineAccountController
+import kotlinx.coroutines.launch
 
 /** Flutter `MinePage._navFadeExtent` — scroll distance to full collapsed-nav opacity. */
 private val MineNavFadeExtent = 72.dp
@@ -65,14 +70,62 @@ fun MineHomeContent(
     /** Soft-auth: open login then resume [redirect] (Flutter AuthNavigation.openLogin). */
     onRequireLogin: (redirect: String) -> Unit = { _ -> onLoginClick() },
     snackbar: (String) -> Unit,
+    api: ApiClient,
 ) {
     MinePrefsStore.version
+    val scope = rememberCoroutineScope()
+    val account = remember(api) { MineAccountController(api) }
+    LaunchedEffect(loggedIn) {
+        if (loggedIn) account.loadAll()
+    }
     val base = MineCatalog.profile(loggedIn, displayName)
     val selectedStoreId = MinePrefsStore.selectedStoreId
     var showSwitchStore by remember { mutableStateOf(false) }
-    val storeName = if (loggedIn) MinePrefsStore.storeName() else base.storeName
-    val stats = if (loggedIn) MinePrefsStore.statsForStore(selectedStoreId) else MineCatalog.guestStats
-    val profile = base.copy(storeName = storeName, stats = stats)
+    val serverProfile = account.profile
+    val serverStats = serverProfile?.stats
+    val stats = if (!loggedIn) {
+        base.stats
+    } else {
+        serverStats?.let {
+            listOf(
+                MineStat(it.daysJoined.toString(), "加入天数"),
+                MineStat(it.employeeCount.toString(), "员工数"),
+                MineStat(it.storeDays.toString(), "店铺天数"),
+                MineStat(it.totalCustomers.toString(), "累计客户"),
+            )
+        } ?: MineCatalog.guestStats
+    }
+    val loadedStoreName = serverStats?.storeName.orEmpty()
+    val storeName = when {
+        !loggedIn -> base.storeName
+        loadedStoreName.isNotBlank() -> loadedStoreName
+        account.loading -> "加载中…"
+        else -> "—"
+    }
+    val roleBadge = if (!loggedIn) {
+        base.roleBadge
+    } else {
+        serverStats?.resolvedRoleLabel?.takeIf { it.isNotBlank() } ?: "—"
+    }
+    val maskedPhone = if (!loggedIn) {
+        base.maskedPhone
+    } else {
+        serverProfile?.resolvedPhone?.takeIf { it.isNotBlank() }
+            ?.let { MineContactValidators.maskPhone(it) }
+            ?.takeIf { it != "—" }
+            ?: "—"
+    }
+    val profile = base.copy(
+        displayName = if (loggedIn) {
+            serverProfile?.resolvedDisplayName?.takeIf { it.isNotBlank() } ?: base.displayName
+        } else {
+            base.displayName
+        },
+        roleBadge = roleBadge,
+        storeName = storeName,
+        maskedPhone = maskedPhone,
+        stats = stats,
+    )
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
     val navOpacity = with(density) {
@@ -103,11 +156,25 @@ fun MineHomeContent(
     if (showSwitchStore && loggedIn) {
         SwitchStoreDialog(
             selectedId = selectedStoreId,
+            stores = account.stores.map { MineStoreOption(it.storeId.toString(), it.storeName) },
+            loading = account.storesLoading,
             onDismiss = { showSwitchStore = false },
             onPicked = { store ->
-                MinePrefsStore.switchStore(store.id)
-                showSwitchStore = false
-                showPlatformToast("已切换到 ${store.name}")
+                val id = store.id.toIntOrNull()
+                if (id == null) {
+                    showPlatformToast("门店编号无效")
+                } else {
+                    scope.launch {
+                        account.switchStore(id).fold(
+                            onSuccess = {
+                                MinePrefsStore.selectStore(store.id)
+                                showSwitchStore = false
+                                showPlatformToast("已切换到 ${store.name}")
+                            },
+                            onFailure = { showPlatformToast(it.message ?: "切换门店失败") },
+                        )
+                    }
+                }
             },
         )
     }
@@ -140,10 +207,13 @@ fun MineHomeContent(
                 onLoginClick = onLoginClick,
                 onSwitchStore = {
                     if (loggedIn) {
-                        if (MineStoreCatalog.stores.isEmpty()) {
-                            showPlatformToast("暂无可切换店铺")
-                        } else {
-                            showSwitchStore = true
+                        when {
+                            account.stores.isNotEmpty() -> showSwitchStore = true
+                            account.storesLoading -> showPlatformToast("正在加载门店…")
+                            else -> {
+                                scope.launch { account.loadStores() }
+                                showPlatformToast("正在加载门店…")
+                            }
                         }
                     } else {
                         showPlatformToast("请先登录")
@@ -213,8 +283,8 @@ private fun MineTopChrome(
             color = MineTheme.LabelPrimary,
             fontSize = MineTheme.LargeTitleSize,
             fontWeight = FontWeight.SemiBold,
-            letterSpacing = (-1.6).sp,
-            lineHeight = 36.sp,
+            letterSpacing = (-1.2).sp,
+            lineHeight = 34.sp,
             modifier = Modifier.weight(1f),
         )
         TopIconButton(icon = MineIcons.Info, onClick = onOpenPersonalized)
@@ -358,7 +428,7 @@ private fun ProfileCard(
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(MineTheme.Accent.copy(alpha = 0.08f))
+                            .background(MineTheme.LinkBgSoft)
                             .clickable { snackbar("电子名片") }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,

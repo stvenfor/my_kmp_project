@@ -28,7 +28,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.launch
@@ -71,8 +73,7 @@ internal fun PartnerPendingScreen(onBack: () -> Unit) {
                     Modifier
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White)
+                        .demoCard()
                         .padding(14.dp),
                 ) {
                     Text(
@@ -94,8 +95,8 @@ internal fun PartnerPendingScreen(onBack: () -> Unit) {
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                                .clip(DemoRadius.Pill)
+                                .border(0.5.dp, DemoColors.Divider, DemoRadius.Pill)
                                 .clickable {
                                     scope.launch {
                                         if (HomeTodoStore.rejectJoin(app.applicationId)) {
@@ -114,7 +115,7 @@ internal fun PartnerPendingScreen(onBack: () -> Unit) {
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(DemoRadius.Pill)
                                 .background(DemoColors.Accent)
                                 .clickable {
                                     scope.launch {
@@ -224,8 +225,7 @@ private fun TodoListScreen(
                 Modifier
                     .padding(horizontal = 16.dp, vertical = 6.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color.White)
+                    .demoCard()
                     .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -260,8 +260,7 @@ private fun TodoForbiddenScreen(title: String, onBack: () -> Unit) {
                 Modifier
                     .padding(horizontal = 28.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
+                    .demoCard()
                     .padding(horizontal = 22.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -298,7 +297,7 @@ private fun TodoForbiddenScreen(title: String, onBack: () -> Unit) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(DemoRadius.Pill)
                         .background(DemoColors.Accent)
                         .clickable(onClick = onBack)
                         .padding(vertical = 12.dp),
@@ -333,9 +332,7 @@ private fun TodoCard(
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+            .demoCard()
             .padding(14.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

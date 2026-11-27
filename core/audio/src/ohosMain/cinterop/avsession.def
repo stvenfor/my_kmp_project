@@ -1,0 +1,2 @@
+package = platform.avsession
+headers = multimedia/av_session/native_avsession.h multimedia/av_session/native_avmetadata.h multimedia/av_session/native_avplaybackstate.h

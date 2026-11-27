@@ -3,7 +3,6 @@ package com.example.my_kmp_project.feature.media
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJsonExplicitNulls
 import com.example.my_kmp_project.core.network.queryOf
 import com.example.my_kmp_project.core.network.getListPage
@@ -144,7 +143,7 @@ data class ShortVideoCreateRequest(
  * 测试可注入 fake [ApiClient]。
  */
 public class HttpShortVideoRepository(
-    private val api: ApiClient = NetworkFacade.api(),
+    private val api: ApiClient,
 ) : ShortVideoRepository {
 
     /** #72 —— Dart :11-25。 */

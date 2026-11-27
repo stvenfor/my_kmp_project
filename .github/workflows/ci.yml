@@ -33,6 +33,20 @@ on:
       - "gradlew.bat"
       - ".github/workflows/ci.yml"
   workflow_dispatch:
+    inputs:
+      env:
+        description: "Build environment"
+        type: choice
+        options: [dev, test, staging, prod]
+        default: prod
+      release:
+        description: "Build signed release artifacts"
+        type: boolean
+        default: false
+      version_name:
+        description: "Version name override (empty = gradle/app.env.properties)"
+        type: string
+        required: false
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -41,9 +55,45 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # 所有 Gradle 调用统一使用 build 环境的默认值；单条命令可按需覆盖。
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
+
 jobs:
+  # 轻量静态门禁：Kotlin 词法扫描 + 分层依赖 + 鸿蒙/iOS 路由分发守卫 + 依赖治理。
+  # 纯 bash/python，不用 JDK / Gradle / Android SDK，几十秒即可跑完；后面三个编译 job 都依赖它。
+  static:
+    name: Static gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # scripts/verify-parity.sh --static-only =
+      # Kotlin 词法扫描（注释/字符串/括号闭合）+ check-layer-deps.sh（feature→feature、
+      # 下层反向 import、feature 模块互相依赖）+ 鸿蒙 pane 分发 / iOS page 分发守卫。
+      - name: Static gates (kotlin lexer + layer deps + route dispatch)
+        run: bash scripts/verify-parity.sh --static-only
+
+      # DI 方向门禁：feature 不得新增全局 object *Store、不得直连 NetworkFacade.api() /
+      # AccountFacade.current()、不得默认构造 XxxGateway()。
+      # 存量白名单 scripts/layer-deps-baseline.txt 只减不增（新增即失败）。
+      - name: DI direction gate (feature state / facades / gateways)
+        run: bash scripts/check-layer-deps.sh
+
+      # 依赖治理：仓库只在 settings 声明、模块禁止硬编码坐标、版本目录无未引用别名。
+      - name: Dependency governance gate
+        run: bash scripts/check-dependencies.sh
+
+      # 供应链：私钥 / keystore / 常见密钥模式扫描（只扫版本库内文件）。
+      - name: Secrets scan
+        run: bash scripts/check-secrets.sh
+
   android:
     name: Android build & test
+    needs: static
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -69,16 +119,11 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # 本地同一份脚本：Kotlin 词法扫描 + 分层门禁（feature→feature、下层反向 import、
-      # component 里出现 projects.feature.*）。拆模块后漏一条就是整片红。
-      - name: Static gates (kotlin lexer + layer deps)
-        run: bash scripts/verify-parity.sh --static-only
-
       - name: Assemble debug & unit tests
         run: |
           set -o pipefail
           ./gradlew testDebugUnitTest :composeApp:assembleDebug \
-            -PandroidOnly=true --no-daemon --stacktrace 2>&1 | tee gradle-ci.log
+            -PandroidOnly=true -Papp.env=dev --no-daemon --stacktrace 2>&1 | tee gradle-ci.log
 
       - name: Summarize Gradle failure
         if: failure()
@@ -114,24 +159,323 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # Android release：tag 或手动 release=true 时产出 signed APK/AAB + SHA256SUMS。
+  # 签名材料只从 Secrets 读取；未配置时构建 unsigned 包并在日志里明确标注。
+  android-release:
+    name: Android release (signed / unsigned)
+    needs: static
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager --install "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Write local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Check signing secrets
+        id: signing
+        run: |
+          if [[ -n "$ANDROID_KEYSTORE_BASE64" && -n "$ANDROID_KEYSTORE_PASSWORD" \
+                && -n "$ANDROID_KEY_ALIAS" && -n "$ANDROID_KEY_PASSWORD" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Android release signing secrets are not configured; building an UNSIGNED release bundle."
+          fi
+
+      - name: Package signed release
+        if: steps.signing.outputs.enabled == 'true'
+        run: |
+          set -euo pipefail
+          ENV_NAME="${{ inputs.env || 'prod' }}"
+          ARGS=(--env "$ENV_NAME" --version-code "${{ github.run_number }}")
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then ARGS+=(--version-name "${GITHUB_REF_NAME#v}"); fi
+          if [[ -n "${{ inputs.version_name }}" ]]; then ARGS+=(--version-name "${{ inputs.version_name }}"); fi
+          bash scripts/package-android.sh "${ARGS[@]}"
+
+      - name: Package unsigned release
+        if: steps.signing.outputs.enabled != 'true'
+        run: |
+          set -euo pipefail
+          ENV_NAME="${{ inputs.env || 'prod' }}"
+          VERSION_ARGS=("-Papp.versionCode=${{ github.run_number }}")
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then VERSION_ARGS+=("-Papp.versionName=${GITHUB_REF_NAME#v}"); fi
+          if [[ -n "${{ inputs.version_name }}" ]]; then VERSION_ARGS+=("-Papp.versionName=${{ inputs.version_name }}"); fi
+          ./gradlew :composeApp:assembleRelease :composeApp:bundleRelease \
+            -PandroidOnly=true -Papp.release=true "-Papp.env=$ENV_NAME" "${VERSION_ARGS[@]}"
+          mkdir -p dist
+          cp composeApp/build/outputs/apk/release/*.apk dist/ || true
+          cp composeApp/build/outputs/bundle/release/*.aab dist/ || true
+          (cd dist && sha256sum ./*.apk ./*.aab > SHA256SUMS)
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+  # iOS 编译检查：必须 macOS runner（Kotlin/Native + Xcode 工具链）。
+  # 只编译 klib（不 link framework），足够暴露 commonMain / iosMain 的编译错误，也避开签名。
+  ios:
+    name: iOS compile (Kotlin/Native)
+    needs: static
+    runs-on: macos-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # :composeApp 应用了 AGP，Gradle 配置阶段就要求 SDK 位置，即便本次只编 iOS。
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager --install "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Write local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile iOS targets (arm64 device + simulator)
+        run: |
+          set -o pipefail
+          ./gradlew :composeApp:compileKotlinIosArm64 :composeApp:compileKotlinIosSimulatorArm64 \
+            --no-daemon --stacktrace 2>&1 | tee gradle-ios.log
+
+      - name: Summarize Gradle failure
+        if: failure()
+        run: |
+          {
+            echo "## iOS compile failure (last 200 lines)"
+            echo '```'
+            tail -n 200 gradle-ios.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          grep -E 'FAILURE:|What went wrong|Execution failed|BUILD FAILED|> Task :.* FAILED|^e: |Caused by:' gradle-ios.log \
+            | tail -n 40 \
+            | while IFS= read -r line; do echo "::error::$line"; done || true
+
+      - name: Upload Gradle log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-ios-log
+          path: gradle-ios.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # 鸿蒙（OHOS）编译检查：编译所有模块的 ohosArm64 klib。
+  # 排除 :composeApp:compileKotlinOhosArm64 —— 它的 avplayer cinterop 需要 DevEco 自带
+  # OHOS native sysroot（托管 runner 没有），而鸿蒙侧绝大多数代码在 core/component/feature。
+  # ohosX64 需要 net_http cinterop（同样依赖 sysroot），这里也不跑。
+  harmony:
+    name: Harmony (OHOS) compile
+    needs: static
+    runs-on: macos-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager --install "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Write local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile OHOS arm64 (all shared modules)
+        run: |
+          set -o pipefail
+          ./gradlew compileKotlinOhosArm64 -x :composeApp:compileKotlinOhosArm64 \
+            --no-daemon --stacktrace 2>&1 | tee gradle-harmony.log
+
+      - name: Summarize Gradle failure
+        if: failure()
+        run: |
+          {
+            echo "## Harmony compile failure (last 200 lines)"
+            echo '```'
+            tail -n 200 gradle-harmony.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          grep -E 'FAILURE:|What went wrong|Execution failed|BUILD FAILED|> Task :.* FAILED|^e: |Caused by:' gradle-harmony.log \
+            | tail -n 40 \
+            | while IFS= read -r line; do echo "::error::$line"; done || true
+
+      - name: Upload Gradle log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-harmony-log
+          path: gradle-harmony.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # iOS 打包：需要 macOS + Apple 证书/Profile；仓库变量 ENABLE_IOS_PACKAGING=true 才注册。
+  ios-package:
+    name: iOS archive & IPA
+    needs: static
+    if: startsWith(github.ref, 'refs/tags/v') && vars.ENABLE_IOS_PACKAGING == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    env:
+      INPUT_ENV: ${{ inputs.env || 'prod' }}
+      IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+      IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+      IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+      IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+      IOS_PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.IOS_PROVISIONING_PROFILE_SPECIFIER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager --install "platforms;android-36" "build-tools;35.0.0"
+
+      - name: Write local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Archive & export IPA
+        run: |
+          set -euo pipefail
+          ARGS=(--env "${INPUT_ENV:-prod}" --version-code "${{ github.run_number }}" --version-name "${GITHUB_REF_NAME#v}")
+          bash scripts/package-ios.sh "${ARGS[@]}"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+  # Harmony 打包：需要自带 DevEco 的 self-hosted runner；仓库变量 ENABLE_HARMONY_PACKAGING=true 才注册。
+  harmony-package:
+    name: Harmony HAP (self-hosted)
+    needs: static
+    if: startsWith(github.ref, 'refs/tags/v') && vars.ENABLE_HARMONY_PACKAGING == 'true'
+    runs-on: [self-hosted, macOS, harmony]
+    timeout-minutes: 120
+
+    env:
+      INPUT_ENV: ${{ inputs.env || 'prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Package signed HAP
+        run: |
+          set -euo pipefail
+          bash scripts/package-harmony.sh \
+            --env "${INPUT_ENV:-prod}" \
+            --version-code "${{ github.run_number }}" \
+            --version-name "${GITHUB_REF_NAME#v}"
+
+      - name: Upload HAP
+        uses: actions/upload-artifact@v4
+        with:
+          name: harmony-hap
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
   release:
     name: GitHub Release
-    needs: android
-    if: success() && startsWith(github.ref, 'refs/tags/v')
+    needs: android-release
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download debug APK
+      - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
-          name: composeApp-debug-apk
-          path: apk
+          name: android-release
+          path: dist
+
+      - name: Download IPA (optional)
+        if: vars.ENABLE_IOS_PACKAGING == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-ipa
+          path: dist
+
+      - name: Download HAP (optional)
+        if: vars.ENABLE_HARMONY_PACKAGING == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: harmony-hap
+          path: dist
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: apk/*.apk
+          files: dist/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

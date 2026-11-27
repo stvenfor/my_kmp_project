@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 
 /**
  * Flutter `HomeTodoCardStrip` — size-aware Large / Medium / Small cards + pager.
@@ -46,7 +47,7 @@ fun HomeTodoCardStrip(onOpen: (HomeTodoCard) -> Unit) {
     if (HomeTodoPacker.shouldWrapOnly(cards)) {
         Row(
             modifier = Modifier
-                .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -66,14 +67,14 @@ fun HomeTodoCardStrip(onOpen: (HomeTodoCard) -> Unit) {
     val pagerState = rememberPagerState(pageCount = { pages.size })
     Column(
         modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .fillMaxWidth(),
     ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp),
+                .height(176.dp),
             pageSpacing = 0.dp,
         ) { index ->
             TodoPageGrid(page = pages[index], onOpen = onOpen)
@@ -190,9 +191,7 @@ private fun TodoCardShell(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(HomeSectionStyle.RadiusMd))
+            .homeCard()
             .clickable(onClick = onTap)
             .padding(14.dp),
         content = content,
@@ -204,8 +203,8 @@ private fun TodoThumb(size: Dp, label: String) {
     Box(
         modifier = Modifier
             .size(size)
-            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-            .background(DemoColors.PageBg),
+            .clip(RoundedCornerShape(DemoRadius.Md))
+            .background(DemoColors.PrimarySoft),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -225,8 +224,8 @@ private fun TodoActionChip(label: String, large: Boolean = false) {
         fontWeight = FontWeight.Medium,
         color = DemoColors.Accent,
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Accent.copy(alpha = 0.1f))
+            .clip(DemoRadius.Pill)
+            .background(DemoColors.PrimarySoft)
             .padding(horizontal = if (large) 12.dp else 10.dp, vertical = if (large) 6.dp else 4.dp),
     )
 }
@@ -277,9 +276,7 @@ private fun MediumTodoCard(card: HomeTodoCard, onTap: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(HomeSectionStyle.RadiusMd))
+            .homeCard()
             .clickable(onClick = onTap)
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -314,9 +311,7 @@ private fun LargeTodoCard(card: HomeTodoCard, onTap: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(HomeSectionStyle.RadiusMd))
+            .homeCard()
             .clickable(onClick = onTap)
             .padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 16.dp),
     ) {

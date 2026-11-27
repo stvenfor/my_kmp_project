@@ -40,7 +40,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.core.design.MineIcons
@@ -196,8 +198,7 @@ internal fun AfterSalesListScreen(
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White)
+                            .demoCard()
                             .clickable { onItem(row) }
                             .padding(14.dp),
                     ) {
@@ -250,7 +251,7 @@ internal fun AfterSalesCreateScreen(onBack: () -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(DemoRadius.Pill)
                     .background(DemoColors.Accent)
                     .clickable {
                         val err = HomeSecondaryStore.validateAfterSalesCreate(

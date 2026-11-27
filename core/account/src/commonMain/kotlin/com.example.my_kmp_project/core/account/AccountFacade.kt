@@ -32,21 +32,75 @@ public interface AccountSession {
     val orgId: Long?
 }
 
-public object AccountFacade {
+/**
+ * DI 过渡（第二批）：真实状态与持久化在 [DefaultSessionRepository]，
+ * 本对象只做逐方法转发，并实现 [SessionRepository]。
+ * `repository()` 返回同一个仓库实例，供 `AppGraph` 注入。
+ */
+public object AccountFacade : SessionRepository by repository {
+
+    override fun current(): AccountSession = repository.current()
+
+    override fun setSession(value: AccountSession) {
+        repository.setSession(value)
+    }
+
+    override fun logout() {
+        repository.logout()
+    }
+
+    /**
+     * Flutter `UserService.updateAuthTokens`：refresh 成功后原子替换三件套。
+     * 不触碰资料字段；token 变更会重新绑定网络层。
+     */
+    override fun updateAuthTokens(token: String, refreshToken: String, sessionId: String) {
+        repository.updateAuthTokens(token, refreshToken, sessionId)
+    }
+
+    /** Patch profile fields on the current logged-in session (nick / avatar). */
+    override fun updateProfile(displayName: String?, avatarUrl: String?) {
+        repository.updateProfile(displayName, avatarUrl)
+    }
+
+    override fun updateProfilePhone(phone: String) {
+        repository.updateProfilePhone(phone)
+    }
+
+    override fun updateProfileEmail(email: String) {
+        repository.updateProfileEmail(email)
+    }
+
+    override fun updateCompanyOrg(companyId: Long?, orgId: Long?) {
+        repository.updateCompanyOrg(companyId, orgId)
+    }
+
+    /** DI：注入用的接口视图，与单例共享同一仓库。 */
+    fun repository(): SessionRepository = repository
+}
+
+/**
+ * 单例背后的真实实现：会话内存态 + 本地持久化 + 网络层 token 绑定。
+ *
+ * [store] 可注入（测试用内存实现）；缺省仍走 `createAccountSessionStore()`，
+ * 且保持惰性创建，行为与拆分前一致。
+ */
+internal class DefaultSessionRepository(
+    private val store: AccountSessionStore? = null,
+) : SessionRepository {
     @Volatile
     private var session: AccountSession = LoggedOut
 
     @Volatile
     private var hydrated: Boolean = false
 
-    private val store: AccountSessionStore by lazy { createAccountSessionStore() }
+    private val resolvedStore: AccountSessionStore by lazy { store ?: createAccountSessionStore() }
 
-    fun current(): AccountSession {
+    override fun current(): AccountSession {
         ensureHydrated()
         return session
     }
 
-    fun setSession(value: AccountSession) {
+    override fun setSession(value: AccountSession) {
         ensureHydrated()
         session = value
         persist(value)
@@ -57,18 +111,14 @@ public object AccountFacade {
         }
     }
 
-    fun logout() {
+    override fun logout() {
         ensureHydrated()
         session = LoggedOut
-        store.clear()
+        resolvedStore.clear()
         NetworkFacade.clearAccessToken()
     }
 
-    /**
-     * Flutter `UserService.updateAuthTokens`：refresh 成功后原子替换三件套。
-     * 不触碰资料字段；token 变更会重新绑定网络层。
-     */
-    fun updateAuthTokens(token: String, refreshToken: String, sessionId: String) {
+    override fun updateAuthTokens(token: String, refreshToken: String, sessionId: String) {
         ensureHydrated()
         val cur = session
         if (!cur.isLoggedIn) return
@@ -89,8 +139,7 @@ public object AccountFacade {
         )
     }
 
-    /** Patch profile fields on the current logged-in session (nick / avatar). */
-    fun updateProfile(displayName: String? = null, avatarUrl: String? = null) {
+    override fun updateProfile(displayName: String?, avatarUrl: String?) {
         ensureHydrated()
         val cur = session
         if (!cur.isLoggedIn) return
@@ -111,7 +160,7 @@ public object AccountFacade {
         )
     }
 
-    fun updateProfilePhone(phone: String) {
+    override fun updateProfilePhone(phone: String) {
         ensureHydrated()
         val cur = session
         if (!cur.isLoggedIn) return
@@ -132,7 +181,7 @@ public object AccountFacade {
         )
     }
 
-    fun updateProfileEmail(email: String) {
+    override fun updateProfileEmail(email: String) {
         ensureHydrated()
         val cur = session
         if (!cur.isLoggedIn) return
@@ -153,7 +202,7 @@ public object AccountFacade {
         )
     }
 
-    fun updateCompanyOrg(companyId: Long?, orgId: Long?) {
+    override fun updateCompanyOrg(companyId: Long?, orgId: Long?) {
         ensureHydrated()
         val cur = session
         if (!cur.isLoggedIn) return
@@ -177,7 +226,7 @@ public object AccountFacade {
 
     private fun ensureHydrated() {
         if (hydrated) return
-        val raw = store.readUserJson()
+        val raw = resolvedStore.readUserJson()
         val snapshot = raw?.let { AccountUserSnapshot.decode(it) }
         val restored = snapshot?.toSession() ?: LoggedOut
         session = restored
@@ -190,12 +239,14 @@ public object AccountFacade {
     private fun persist(value: AccountSession) {
         val snapshot = AccountUserSnapshot.fromSession(value)
         if (snapshot == null || !snapshot.hasValidToken) {
-            store.clear()
+            resolvedStore.clear()
         } else {
-            store.writeUserJson(AccountUserSnapshot.encode(snapshot))
+            resolvedStore.writeUserJson(AccountUserSnapshot.encode(snapshot))
         }
     }
 }
+
+private val repository: DefaultSessionRepository = DefaultSessionRepository()
 
 public data object LoggedOut : AccountSession {
     override val isLoggedIn: Boolean = false

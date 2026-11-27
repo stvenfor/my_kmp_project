@@ -29,7 +29,13 @@ val androidOnly = rootProject.findProperty("androidOnly")?.toString()?.toBoolean
 // 版本：app.versionCode / app.versionName
 // ---------------------------------------------------------------------------
 val privateProperties: Properties = Properties().apply {
-    rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
+    // 用 providers 读取，配置缓存才会在 local.properties 变化时失效；
+    // 文件不存在（CI）时保持空属性。
+    val localPropertiesFile = rootProject.layout.projectDirectory.file("local.properties")
+    if (localPropertiesFile.asFile.isFile) {
+        val text = providers.fileContents(localPropertiesFile).asText.get()
+        text.reader().use { load(it) }
+    }
 }
 
 fun privateValue(key: String, env: String): String? =
@@ -45,18 +51,20 @@ val releaseKeystoreConfigured = listOf(
     releaseStoreFilePath, releaseStorePasswordValue, releaseKeyAliasValue, releaseKeyPasswordValue,
 ).all { it != null }
 
-val appVersionCode: Int = privateValue("app.versionCode", "APP_VERSION_CODE")?.toIntOrNull() ?: 1
-val appVersionName: String = privateValue("app.versionName", "APP_VERSION_NAME") ?: "1.0"
-
-val ohosNativeSysroot: File? = run {
-    val localLines = rootProject.file("local.properties").takeIf { it.exists() }?.readLines().orEmpty()
-    val fromLocal = localLines.firstOrNull { it.startsWith("local.ohos.native=") }
-        ?.substringAfter("=")?.trim()?.let { File(it) }
-    fromLocal
-        ?: System.getenv("OHOS_NATIVE_SYSROOT")?.let { File(it) }
-        ?: File("/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/native/sysroot")
-            .takeIf { it.exists() }
+// 版本默认值统一来自 gradle/app.env.properties（与 :core:network 的 BuildEnvironment 同源）。
+val appEnvProperties: Properties = Properties().apply {
+    val text = providers.fileContents(
+        rootProject.layout.projectDirectory.file("gradle/app.env.properties"),
+    ).asText.get()
+    text.reader().use { load(it) }
 }
+
+val appVersionCode: Int = privateValue("app.versionCode", "APP_VERSION_CODE")?.toIntOrNull()
+    ?: appEnvProperties.getProperty("version.code")?.toIntOrNull()
+    ?: 1
+val appVersionName: String = privateValue("app.versionName", "APP_VERSION_NAME")
+    ?: appEnvProperties.getProperty("version.name")?.takeIf { it.isNotBlank() }
+    ?: "1.0"
 
 kotlin {
     androidTarget {
@@ -95,7 +103,7 @@ kotlin {
                 // libruntime.so + libstd.so without shipping those SOs, so HAP dlopen fails.
                 // (emitRuntime/emitStdlib also dropped @CName / CAdapter exports in 2.2.21-0.3.0.)
                 // Prefer one self-contained libkn.so with KN runtime linked in.
-                linkerOpts("-lz", "-lavplayer")
+                linkerOpts("-lz", "-lavplayer", "-lohavsession")
                 // net_http only needed when :core:network still uses cinterop (ohosX64 emulator).
                 // ohosArm64 uses CPF Ktor CIO — no -lnet_http.
                 if (ohosTarget.name == "ohosX64") {
@@ -127,15 +135,7 @@ kotlin {
                     defFile(file("src/ohosMain/cinterop/resource.def"))
                     includeDirs(file("src/ohosMain/cinterop/include"))
                 }
-                val avplayer by cinterops.creating {
-                    defFile(file("src/ohosMain/cinterop/avplayer.def"))
-                    ohosNativeSysroot?.let { sysroot ->
-                        includeDirs(
-                            sysroot.resolve("usr/include"),
-                            sysroot.resolve("usr/include/multimedia/player_framework"),
-                        )
-                    }
-                }
+                // AVPlayer / AVSession cinterop 已下沉到 :core:platform（feature:media 消费其 Kotlin 桥）。
                 // netHttp cinterop moved to :core:network
             }
         }

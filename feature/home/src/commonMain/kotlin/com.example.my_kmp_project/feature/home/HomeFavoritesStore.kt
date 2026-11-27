@@ -1,72 +1,38 @@
 package com.example.my_kmp_project.feature.home
 
-import com.example.my_kmp_project.core.platform.loadStringList
-import com.example.my_kmp_project.core.platform.saveStringList
-
 /**
- * Favorite services for AllServices — Flutter `AllServicesRepository`
- * key `home_favorite_service_ids_v2` (min 3 / max 8).
+ * 常用服务收藏（全部服务页顶部）。
+ *
+ * 数据源改为服务端：`GET /api/v1/home/catalog` 的 favorite_ids 为准，
+ * 点按增删走 `POST/DELETE /api/v1/home/favorites`；本地只保留 3~8 的交互上下限。
  */
-object HomeFavoritesStore {
-    const val MinFavorites = 3
-    const val MaxFavorites = 8
-    private const val PrefKey = "home_favorite_service_ids_v2"
-
-    private val defaultIds: List<String> =
-        HomeMockData.favoriteServices.map { it.id }
-
-    private var ids: LinkedHashSet<String> = LinkedHashSet(loadOrDefault())
-
-    private fun loadOrDefault(): List<String> {
-        val stored = loadStringList(PrefKey) ?: return defaultIds
-        return normalize(stored)
+class HomeFavoritesStore(
+    private val content: HomeContentStore,
+) {
+    companion object {
+        const val MinFavorites = 3
+        const val MaxFavorites = 8
     }
 
-    private fun normalize(raw: List<String>): List<String> {
-        val all = (HomeMockData.favoriteServices + HomeMockData.catalogSections.flatMap { it.items })
-            .associateBy { it.id }
-        var next = raw.filter { it in all }.distinct()
-        if (next.size > MaxFavorites) next = next.take(MaxFavorites)
-        if (next.size < MinFavorites) {
-            for (candidate in defaultIds) {
-                if (next.size >= MinFavorites) break
-                if (candidate !in next) next = next + candidate
-            }
-        }
-        if (next.size < MinFavorites) next = defaultIds.take(MinFavorites)
-        return next
+    /** 当前收藏 service_id 快照。 */
+    fun snapshot(): Set<String> = content.favoriteIds()
+
+    fun canRemove(): Boolean = content.canRemoveFavorite()
+
+    fun canAdd(): Boolean = content.canAddFavorite()
+
+    /** 取消收藏；以服务端返回结果为准。 */
+    suspend fun remove(id: String): Boolean {
+        if (!canRemove() || id !in content.favoriteIds()) return false
+        return content.setFavorite(id, add = false)
     }
 
-    private fun persist() {
-        saveStringList(PrefKey, ids.toList())
+    /** 新增收藏；以服务端返回结果为准。 */
+    suspend fun add(id: String): Boolean {
+        if (!canAdd() || id in content.favoriteIds()) return false
+        return content.setFavorite(id, add = true)
     }
 
-    fun snapshot(): Set<String> = ids.toSet()
-
-    fun canRemove(): Boolean = ids.size > MinFavorites
-
-    fun canAdd(): Boolean = ids.size < MaxFavorites
-
-    fun remove(id: String): Boolean {
-        if (!canRemove() || id !in ids) return false
-        ids.remove(id)
-        persist()
-        return true
-    }
-
-    fun add(id: String): Boolean {
-        if (!canAdd() || id in ids) return false
-        ids.add(id)
-        persist()
-        return true
-    }
-
-    fun favoriteItems(): List<AllServiceItem> {
-        val all = HomeMockData.favoriteServices +
-            HomeMockData.catalogSections.flatMap { it.items }
-        val byId = all.associateBy { it.id }
-        return ids.mapNotNull { byId[it] }.ifEmpty {
-            HomeMockData.favoriteServices.take(MinFavorites)
-        }
-    }
+    /** 常用服务展示项（按收藏顺序，取不到资源时由 UI 兜底首字）。 */
+    fun favoriteItems(): List<AllServiceItem> = content.favoriteItems()
 }

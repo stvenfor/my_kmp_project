@@ -12,9 +12,18 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    // 仓库只允许在 settings 这一处声明；模块内再写 repositories {} 直接失败。
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    // 顺序必须钉死：
+    // - eazytec 独有 OHOS fork 坐标（org.jetbrains.androidx.*:*-0.4.0 等），必须排第一；
+    //   但 eazytec 不代理 AGP 二进制（aapt2 会 socket 报错），所以排除 com.android.tools.build。
+    // - 阿里云镜像作为通用回退；google() / mavenCentral() 兜底。
     repositories {
-        // mavenLocal()
-        maven("https://maven.eazytec-cloud.com/nexus/repository/maven-public/")
+        maven("https://maven.eazytec-cloud.com/nexus/repository/maven-public/") {
+            mavenContent { excludeGroup("com.android.tools.build") }
+        }
+        maven("https://maven.aliyun.com/repository/google")
+        maven("https://maven.aliyun.com/repository/public")
         google()
         mavenCentral()
     }
@@ -30,6 +39,7 @@ include(":core:analytics")
 include(":core:storage")
 include(":core:platform")
 include(":core:ui")
+include(":core:audio")
 include(":core:database")
 include(":component")
 

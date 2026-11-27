@@ -36,6 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.feature.home.api.TaskProgress
@@ -164,8 +166,7 @@ internal fun CheckInMallScreen(onBack: () -> Unit) {
                 Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                    .demoCard()
                     .padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -193,7 +194,7 @@ internal fun CheckInMallScreen(onBack: () -> Unit) {
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(DemoRadius.Pill)
                             .background(if (checkedToday) Color(0xFFF5F6F8) else headerBlue)
                             .clickable(enabled = !checkedToday && !checkingIn) {
                                 scope.launch {
@@ -293,8 +294,7 @@ internal fun CheckInMallScreen(onBack: () -> Unit) {
                 Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White),
+                    .demoCard(),
             ) {
                 tasks.forEachIndexed { idx, task ->
                     if (idx > 0) {

@@ -46,19 +46,42 @@ import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineIcons
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import com.example.my_kmp_project.feature.mine.profile.MineAccountController
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun ProfileEditScreen(onBack: () -> Unit, onLoggedOut: () -> Unit = {}) {
-    val saved = remember { MineProfileLogic.sessionNickname() }
-    var name by remember { mutableStateOf(saved) }
-    var savedNick by remember { mutableStateOf(saved) }
-    var pendingAvatar by remember { mutableStateOf(false) }
-    val dirty = MineProfileLogic.isDirty(name, savedNick, pendingAvatar)
-    val phone = MineProfileLogic.sessionPhoneMasked()
+internal fun ProfileEditScreen(
+    onBack: () -> Unit,
+    onLoggedOut: () -> Unit = {},
+    api: ApiClient,
+) {
+    val scope = rememberCoroutineScope()
+    val account = remember(api) { MineAccountController(api) }
+    val profile = account.profile
+    var name by remember { mutableStateOf("") }
+    var savedNick by remember { mutableStateOf("") }
+    var initialized by remember { mutableStateOf(false) }
+    val dirty = initialized && name.trim() != savedNick.trim()
+    val phone = profile?.resolvedPhone
+        ?.takeIf { it.isNotBlank() }
+        ?.let { MineContactValidators.maskPhone(it) }
+        ?.takeIf { it != "—" }
+        ?: "—"
     val cardShape = RoundedCornerShape(MineTheme.RadiusMd)
+
+    LaunchedEffect(Unit) {
+        account.loadProfile()
+        val loaded = account.profile
+        if (loaded != null) {
+            name = loaded.resolvedDisplayName
+            savedNick = name
+        }
+        initialized = true
+    }
+
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
@@ -78,23 +101,54 @@ internal fun ProfileEditScreen(onBack: () -> Unit, onLoggedOut: () -> Unit = {})
                             showPlatformToast(err)
                             return@TextButton
                         }
-                        MineProfileLogic.saveNickname(name)
-                        savedNick = name.trim()
-                        pendingAvatar = false
-                        showPlatformToast("资料已保存")
-                        onBack()
+                        scope.launch {
+                            account.saveDisplayName(name).fold(
+                                onSuccess = {
+                                    val savedName = name.trim()
+                                    MineProfileLogic.saveNickname(savedName)
+                                    savedNick = savedName
+                                    showPlatformToast("资料已保存")
+                                    onBack()
+                                },
+                                onFailure = { showPlatformToast(it.message ?: "保存失败") },
+                            )
+                        }
                     },
-                    enabled = dirty,
+                    enabled = dirty && !account.saving,
                 ) {
                     Text(
                         "保存",
-                        color = if (dirty) MineTheme.Accent else MineTheme.LabelTertiary,
+                        color = if (dirty && !account.saving) MineTheme.Accent else MineTheme.LabelTertiary,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
                     )
                 }
             },
         )
+        when {
+            account.loading && profile == null -> Text(
+                "加载资料中…",
+                color = MineTheme.LabelTertiary,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            )
+            profile == null -> Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    account.errorMessage ?: "资料加载失败",
+                    color = MineTheme.Danger,
+                    fontSize = 13.sp,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { scope.launch { account.loadProfile() } }) {
+                    Text("重试", color = MineTheme.Accent)
+                }
+            }
+        }
         Spacer(Modifier.height(24.dp))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(contentAlignment = Alignment.BottomEnd) {
@@ -105,8 +159,7 @@ internal fun ProfileEditScreen(onBack: () -> Unit, onLoggedOut: () -> Unit = {})
                         .clip(RoundedCornerShape(52.dp))
                         .background(MineTheme.FillSecondary)
                         .clickable {
-                            pendingAvatar = true
-                            showPlatformToast("头像已选择（待上传，平台 gap）")
+                            showPlatformToast("头像上传：平台相册/对象存储接入后启用")
                         },
                     contentAlignment = Alignment.Center,
                 ) {

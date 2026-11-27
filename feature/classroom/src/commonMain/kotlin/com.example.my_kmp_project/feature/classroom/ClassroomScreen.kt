@@ -3,19 +3,15 @@ package com.example.my_kmp_project.feature.classroom
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoEmptyState
+import com.example.my_kmp_project.core.design.MineIcons
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
@@ -37,27 +33,15 @@ public fun ClassroomScreen(onBack: () -> Unit) {
             containerColor = DemoColors.PageBg,
         )
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "课堂能力未接入",
-                    color = DemoColors.TextPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "班级、作业统计、礼品卡等能力需后端与课堂 SDK 接入后开放",
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                    textAlign = TextAlign.Center,
-                )
-            }
+            DemoEmptyState(
+                title = "课堂能力未接入",
+                message = "班级、作业统计、礼品卡等能力需后端与课堂 SDK 接入后开放",
+                icon = MineIcons.DocText,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
         }
     }
 }

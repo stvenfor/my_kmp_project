@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeArkUIViewController
 import com.example.my_kmp_project.core.design.DemoTheme
+import com.example.my_kmp_project.core.ui.LocalVideoPositionMemory
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.OhosComposeHostRequest
@@ -58,24 +60,29 @@ fun MainArkUIViewController(env: napi_env): napi_value {
         }
         ComposeArkUIViewController(env) {
             DemoTheme {
-                if (OhosSmokeUiOnly) {
-                    OhosSmokeRoot()
-                } else {
-                    var closed by remember { mutableStateOf(false) }
-                    if (!closed) {
-                        when (OhosComposeHostRequest.mode) {
-                            1 -> SecondaryRouteIsland(
-                                initialRoute = OhosComposeHostRequest.secondaryRoute,
-                                onRequestClose = { closed = true },
-                            )
-                            else -> MineIsland(
-                                initialRoute = OhosComposeHostRequest.mineRoute,
-                                onRequestClose = { closed = true },
-                            )
-                        }
+                CompositionLocalProvider(
+                    LocalVideoPositionMemory provides com.example.my_kmp_project.app.AppContainer.get().videoPositions,
+                ) {
+                    if (OhosSmokeUiOnly) {
+                        OhosSmokeRoot()
                     } else {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("已关闭")
+                        var closed by remember { mutableStateOf(false) }
+                        if (!closed) {
+                            when (OhosComposeHostRequest.mode) {
+                                1 -> SecondaryRouteIsland(
+                                    initialRoute = OhosComposeHostRequest.secondaryRoute,
+                                    onRequestClose = { closed = true },
+                                )
+                                else -> MineIsland(
+                                    initialRoute = OhosComposeHostRequest.mineRoute,
+                                    onRequestClose = { closed = true },
+                                    api = com.example.my_kmp_project.app.AppContainer.get().network.api(),
+                                )
+                            }
+                        } else {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("已关闭")
+                            }
                         }
                     }
                 }
@@ -177,6 +184,7 @@ private const val AUTH_OP_OTP = 1
 private const val AUTH_OP_SEND_OTP = 2
 private const val AUTH_OP_REGISTER = 3
 private const val AUTH_OP_HUAWEI = 4
+private const val AUTH_OP_LOGIN_WITH_METHOD = 5
 
 /**
  * Non-blocking auth entry for the OHOS N-API layer.
@@ -231,6 +239,9 @@ fun KnAuthRunAsync(
                 AUTH_OP_HUAWEI ->
                     com.example.my_kmp_project.feature.auth.AuthBridge
                         .loginWithHuaweiCode(arg0, arg1, ::reportSuccess, ::reportFailure)
+                AUTH_OP_LOGIN_WITH_METHOD ->
+                    com.example.my_kmp_project.feature.auth.AuthBridge
+                        .loginWithMethod(arg0, arg1, arg2, ::reportSuccess, ::reportFailure)
                 else -> reportFailure("未知登录方式")
             }
         } catch (t: Throwable) {
@@ -266,6 +277,21 @@ fun KnAuthCopyPhone(
     buf: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?,
     cap: Int,
 ): Int = copyUtf8(com.example.my_kmp_project.feature.auth.AuthBridge.phone(), buf, cap)
+
+@OptIn(ExperimentalNativeApi::class, ExperimentalForeignApi::class)
+@CName("KnAuthCopyAvailableLoginMethods")
+fun KnAuthCopyAvailableLoginMethods(
+    buf: kotlinx.cinterop.CPointer<kotlinx.cinterop.ByteVar>?,
+    cap: Int,
+): Int {
+    // 该 getter 可能在 Kotlin shell 首帧前被 ArkTS 调用；先幂等安装依赖再读注册表。
+    ensureOhosAuthReady()
+    return copyUtf8(
+        com.example.my_kmp_project.feature.auth.AuthBridge.availableLoginMethodsJson(),
+        buf,
+        cap,
+    )
+}
 
 @OptIn(ExperimentalNativeApi::class)
 @CName("KnAuthIsLoggedIn")

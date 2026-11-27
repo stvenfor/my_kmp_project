@@ -19,7 +19,7 @@ class AuthDeactivateContractTest {
     @Test
     fun deactivate_uses_post_with_empty_body_and_unified_client() = runBlocking {
         val fake = FakeAuthApiClient { _, _, _, _ -> """{"code":0,"message":"success","data":{"ok":true}}""" }
-        val result = UserAuthHttpApi.deactivate(fake)
+        val result = UserAuthHttpApi(fake).deactivate()
         assertTrue(result.isSuccess)
         val call = fake.calls.single()
         assertEquals("POST", call.verb)
@@ -30,7 +30,7 @@ class AuthDeactivateContractTest {
     @Test
     fun deactivate_business_failure_maps_to_auth_http_failure() = runBlocking {
         val fake = FakeAuthApiClient { _, _, _, _ -> """{"code":50000,"message":"服务端异常","data":null}""" }
-        val error = UserAuthHttpApi.deactivate(fake).exceptionOrNull()
+        val error = UserAuthHttpApi(fake).deactivate().exceptionOrNull()
         assertTrue(error is AuthHttpFailure)
         assertEquals(50000, error.code)
         assertEquals("服务端异常", error.message)
@@ -81,7 +81,7 @@ class AuthDeactivateContractTest {
     fun deactivate_body_is_never_a_json_object() = runBlocking {
         // 无 body 端点：fake 收到的 body 必须为空串，不能是 "{}" 或带字段。
         val fake = FakeAuthApiClient { _, _, _, _ -> """{"code":0,"data":null}""" }
-        UserAuthHttpApi.deactivate(fake)
+        UserAuthHttpApi(fake).deactivate()
         assertTrue(fake.calls.single().body.isEmpty())
     }
 }

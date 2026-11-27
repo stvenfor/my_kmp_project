@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,14 +29,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoElevation
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
+import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.platform.showPlatformToast
+import com.example.my_kmp_project.core.ui.MusicSessionPort
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.home_transliter_home_cover_01
@@ -55,7 +59,11 @@ private enum class MediaEntryRoute {
 
 /** Home「音视频」入口：视频中心 / 音乐 选择。 */
 @Composable
-fun MediaEntryScreen(onBack: () -> Unit) {
+fun MediaEntryScreen(
+    onBack: () -> Unit,
+    api: ApiClient,
+    music: MusicSessionPort,
+) {
     var route by remember { mutableStateOf(MediaEntryRoute.Chooser) }
 
     when (route) {
@@ -88,11 +96,11 @@ fun MediaEntryScreen(onBack: () -> Unit) {
         }
         MediaEntryRoute.VideoHub -> {
             ReportMainTabRoot(isRoot = false)
-            VideoHubScreen(onBack = { route = MediaEntryRoute.Chooser })
+            VideoHubScreen(onBack = { route = MediaEntryRoute.Chooser }, api = api)
         }
         MediaEntryRoute.Music -> {
             ReportMainTabRoot(isRoot = false)
-            MusicListScreen(onBack = { route = MediaEntryRoute.Chooser })
+            MusicListScreen(onBack = { route = MediaEntryRoute.Chooser }, music = music, api = api)
         }
     }
 }
@@ -104,49 +112,48 @@ private fun MediaChooserCard(
     cover: DrawableResource,
     onClick: () -> Unit,
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = DemoColors.Background),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = RoundedCornerShape(12.dp),
+            .demoCard(shape = RoundedCornerShape(DemoRadius.Xl))
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painter = painterResource(cover),
-                contentDescription = title,
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(10.dp)),
-                contentScale = ContentScale.Crop,
+        Image(
+            painter = painterResource(cover),
+            contentDescription = title,
+            modifier = Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(DemoRadius.Md)),
+            contentScale = ContentScale.Crop,
+        )
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                color = DemoColors.TextPrimary,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 17.sp,
             )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    color = DemoColors.TextPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = subtitle,
-                    color = DemoColors.TextSecondary,
-                    fontSize = 13.sp,
-                )
-            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                color = DemoColors.TextSecondary,
+                fontSize = 13.sp,
+            )
         }
+        Text(text = "›", color = DemoColors.Muted, fontSize = 20.sp)
     }
 }
 
 /** 视频中心：推荐小视频列表，元数据全部来自 GET /short-videos（#73）。 */
 @Composable
-fun VideoHubScreen(onBack: () -> Unit) {
-    val repository = remember { HttpShortVideoRepository() }
+fun VideoHubScreen(
+    onBack: () -> Unit,
+    api: ApiClient,
+) {
+    val repository = remember(api) { HttpShortVideoRepository(api) }
     var videos by remember { mutableStateOf<List<ShortVideoItemModel>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
@@ -220,9 +227,10 @@ fun VideoHubScreen(onBack: () -> Unit) {
                     Spacer(modifier = Modifier.height(4.dp))
                 }
                 items(videos) { video ->
-                    Card(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .demoCard()
                             .clickable {
                                 when {
                                     video.status == ShortVideoStatus.Uploading ->
@@ -231,44 +239,38 @@ fun VideoHubScreen(onBack: () -> Unit) {
                                         showPlatformToast("暂无可播放地址")
                                     else -> playing = video
                                 }
-                            },
-                        colors = CardDefaults.cardColors(containerColor = DemoColors.Background),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                                .height(60.dp)
+                                .fillMaxWidth(0.3f)
+                                .clip(RoundedCornerShape(DemoRadius.Md))
+                                .background(DemoColors.SurfaceSunken),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .height(56.dp)
-                                    .fillMaxWidth(0.28f)
-                                    .background(DemoColors.Toolbar, RoundedCornerShape(8.dp)),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    text = "视频",
-                                    color = DemoColors.TextSecondary,
-                                    fontSize = 12.sp,
-                                )
-                            }
-                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = video.title.orEmpty(),
-                                    color = DemoColors.TextPrimary,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 15.sp,
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = video.duration.orEmpty(),
-                                    color = DemoColors.Muted,
-                                    fontSize = 12.sp,
-                                )
-                            }
+                            Text(
+                                text = "▶",
+                                color = DemoColors.Accent,
+                                fontSize = 16.sp,
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = video.title.orEmpty(),
+                                color = DemoColors.TextPrimary,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = video.duration.orEmpty(),
+                                color = DemoColors.Muted,
+                                fontSize = 12.sp,
+                            )
                         }
                     }
                 }
@@ -300,7 +302,14 @@ private fun VideoPlayScreen(
                 .fillMaxWidth()
                 .height(220.dp)
                 .padding(horizontal = 16.dp)
-                .background(Color.Black, RoundedCornerShape(12.dp)),
+                .shadow(
+                    elevation = DemoElevation.Floating,
+                    shape = RoundedCornerShape(DemoRadius.Lg),
+                    ambientColor = DemoElevation.CardShadow,
+                    spotColor = DemoElevation.CardShadow,
+                )
+                .clip(RoundedCornerShape(DemoRadius.Lg))
+                .background(Color.Black),
             contentAlignment = Alignment.Center,
         ) {
             if (url.isNullOrBlank()) {

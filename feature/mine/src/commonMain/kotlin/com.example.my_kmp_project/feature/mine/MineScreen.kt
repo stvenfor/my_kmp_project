@@ -27,6 +27,7 @@ fun MineScreen(
     displayName: String?,
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
+    api: com.example.my_kmp_project.core.network.ApiClient,
 ) {
     var destination by remember { mutableStateOf<String?>(null) }
     var pendingAfterLogin by remember { mutableStateOf<String?>(null) }
@@ -70,6 +71,7 @@ fun MineScreen(
                         onLoginClick()
                     },
                     snackbar = showSnack,
+                    api = api,
                 )
             }
             else -> {
@@ -107,6 +109,7 @@ fun MineScreen(
                                     else -> go(next)
                                 }
                             },
+                            api = api,
                         )
                     }
                 }

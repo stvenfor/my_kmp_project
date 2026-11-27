@@ -1,7 +1,6 @@
 package com.example.my_kmp_project.feature.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -102,9 +102,7 @@ internal fun AnalyticsListScreen(
             Modifier
                 .padding(start = 12.dp, end = 12.dp, top = 12.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White)
-                .border(1.dp, border, RoundedCornerShape(12.dp))
+                .demoCard()
                 .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -177,9 +175,7 @@ internal fun AnalyticsListScreen(
                             .padding(bottom = 8.dp)
                             .fillMaxWidth()
                             .height(IntrinsicSize.Min)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White)
-                            .border(1.dp, border, RoundedCornerShape(12.dp))
+                            .demoCard()
                             .clickable { onItem(row) },
                     ) {
                         Box(Modifier.width(4.dp).fillMaxHeight().background(cue))

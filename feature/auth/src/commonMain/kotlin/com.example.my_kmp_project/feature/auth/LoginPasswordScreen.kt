@@ -38,14 +38,15 @@ public fun LoginPasswordScreen(
     onLoginSuccess: () -> Unit,
     onOpenRegister: () -> Unit,
     onBack: () -> Unit,
+    initialAccount: String = "",
     modifier: Modifier = Modifier,
 ) {
     var password by remember { mutableStateOf("") }
-    var account by remember { mutableStateOf(AuthPendingCredentials.email) }
+    var account by remember(initialAccount) { mutableStateOf(initialAccount) }
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val resolvedAccount = account.trim().ifBlank { AuthPendingCredentials.email.trim() }
+    val resolvedAccount = account.trim()
     val canSubmit = password.length >= 6 && resolvedAccount.isNotBlank() && !loading
 
     Column(
@@ -73,12 +74,11 @@ public fun LoginPasswordScreen(
                 letterSpacing = AuthUiTokens.TitleLetterSpacing,
             )
             Spacer(modifier = Modifier.height(40.dp))
-            if (AuthPendingCredentials.email.isBlank()) {
+            if (initialAccount.isBlank()) {
                 BasicTextField(
                     value = account,
                     onValueChange = {
                         account = it
-                        AuthPendingCredentials.email = it
                         error = null
                     },
                     singleLine = true,

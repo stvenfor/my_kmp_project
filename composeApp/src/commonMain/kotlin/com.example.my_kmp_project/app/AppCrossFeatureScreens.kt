@@ -1,7 +1,12 @@
 package com.example.my_kmp_project.app
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.my_kmp_project.app.di.LegacyGraph
 import com.example.my_kmp_project.component.routing.CrossFeatureScreenPort
+import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.router.AiRoutes
 import com.example.my_kmp_project.core.router.ContentRoutes
 import com.example.my_kmp_project.core.router.MineRoutes
@@ -16,7 +21,10 @@ import com.example.my_kmp_project.feature.media.MusicListScreen
 import com.example.my_kmp_project.feature.media.MusicNowPlayingRoute
 import com.example.my_kmp_project.feature.media.VideoRouteHost
 import com.example.my_kmp_project.feature.mine.MineRouteHost
+import com.example.my_kmp_project.feature.mine.MineStoreOption
 import com.example.my_kmp_project.feature.mine.SwitchStoreDialog as MineSwitchStoreDialog
+import com.example.my_kmp_project.feature.mine.profile.MineAccountController
+import kotlinx.coroutines.launch
 
 /**
  * Assembly-layer implementation of [CrossFeatureScreenPort] (app → feature is allowed;
@@ -41,8 +49,17 @@ internal object AppCrossFeatureScreens : CrossFeatureScreenPort {
     ) {
         when {
             route.startsWith("/classroom") -> ClassroomRouteHost(route, onBack, onNavigate)
-            route.startsWith("/video") -> VideoRouteHost(route, onBack, onNavigate)
-            else -> MembershipScreen(onBack = onBack)
+            route.startsWith("/video") -> VideoRouteHost(
+                route,
+                onBack,
+                api = LegacyGraph.require().network.api(),
+                onNavigate = onNavigate,
+            )
+            else -> MembershipScreen(
+                onBack = onBack,
+                gateway = LegacyGraph.require().pay,
+                api = LegacyGraph.require().network.api(),
+            )
         }
     }
 
@@ -64,20 +81,34 @@ internal object AppCrossFeatureScreens : CrossFeatureScreenPort {
             route == ContentRoutes.Music ->
                 MusicListScreen(
                     onBack = onBack,
+                    music = LegacyGraph.require().musicSession,
+                    api = LegacyGraph.require().network.api(),
                     onOpenNowPlaying = { onNavigate(ContentRoutes.MusicNowPlaying) },
                 )
             route == ContentRoutes.MusicNowPlaying ->
-                MusicNowPlayingRoute(onBack = onBack)
-            route == ContentRoutes.MediaEntry -> MediaEntryScreen(onBack = onBack)
-            route == AiRoutes.Stream -> AiStreamScreen(onBack = onBack)
+                MusicNowPlayingRoute(onBack = onBack, music = LegacyGraph.require().musicSession)
+            route == ContentRoutes.MediaEntry -> MediaEntryScreen(
+                onBack = onBack,
+                api = LegacyGraph.require().network.api(),
+                music = LegacyGraph.require().musicSession,
+            )
+            route == AiRoutes.Stream -> AiStreamScreen(
+                onBack = onBack,
+                transport = LegacyGraph.require().network.api(),
+            )
             route.startsWith("/classroom") -> ClassroomRouteHost(route, onBack, onNavigate)
             route.startsWith("/video") -> VideoRouteHost(
                 route,
                 onBack,
-                onNavigate,
+                api = LegacyGraph.require().network.api(),
+                onNavigate = onNavigate,
                 onOpenComments = onOpenVideoComments ?: {},
             )
-            else -> MediaEntryScreen(onBack = onBack)
+            else -> MediaEntryScreen(
+                onBack = onBack,
+                api = LegacyGraph.require().network.api(),
+                music = LegacyGraph.require().musicSession,
+            )
         }
     }
 
@@ -87,7 +118,7 @@ internal object AppCrossFeatureScreens : CrossFeatureScreenPort {
         onBack: () -> Unit,
         onNavigate: (String) -> Unit,
     ) {
-        MineRouteHost(route, onBack, onNavigate)
+        MineRouteHost(route, onBack, onNavigate, api = LegacyGraph.require().network.api())
     }
 
     @Composable
@@ -96,7 +127,12 @@ internal object AppCrossFeatureScreens : CrossFeatureScreenPort {
         onBack: () -> Unit,
         onNavigate: (String) -> Unit,
     ) {
-        HomeRouteHost(route, onBack, onNavigate)
+        HomeRouteHost(
+            route = route,
+            onBack = onBack,
+            content = AppContainer.get().home.content,
+            onNavigate = onNavigate,
+        )
     }
 
     @Composable
@@ -105,10 +141,27 @@ internal object AppCrossFeatureScreens : CrossFeatureScreenPort {
         onDismiss: () -> Unit,
         onPicked: (storeId: String, storeName: String) -> Unit,
     ) {
+        val account = remember { MineAccountController(LegacyGraph.require().network.api()) }
+        val scope = rememberCoroutineScope()
+        LaunchedEffect(Unit) { account.loadStores() }
         MineSwitchStoreDialog(
             selectedId = selectedId,
+            stores = account.stores.map { MineStoreOption(it.storeId.toString(), it.storeName) },
+            loading = account.storesLoading,
             onDismiss = onDismiss,
-            onPicked = { store -> onPicked(store.id, store.name) },
+            onPicked = { store ->
+                val id = store.id.toIntOrNull()
+                if (id == null) {
+                    onDismiss()
+                } else {
+                    scope.launch {
+                        account.switchStore(id).fold(
+                            onSuccess = { onPicked(store.id, store.name) },
+                            onFailure = { showPlatformToast(it.message ?: "切换门店失败") },
+                        )
+                    }
+                }
+            },
         )
     }
 }

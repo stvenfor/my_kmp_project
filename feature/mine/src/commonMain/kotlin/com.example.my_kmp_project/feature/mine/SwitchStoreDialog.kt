@@ -33,29 +33,18 @@ data class MineStoreOption(
     val name: String,
 )
 
-/** Flutter `MineStoreData` — default id `1` + two demo 4S stores. */
-object MineStoreCatalog {
-    const val defaultStoreId = "1"
-
-    val stores: List<MineStoreOption> = listOf(
-        MineStoreOption("1", "[4S]北京沃德龙鼎吉利"),
-        MineStoreOption("2", "[4S]北京腾远吉利"),
-    )
-
-    fun resolveName(id: String): String =
-        stores.firstOrNull { it.id == id }?.name ?: stores.first().name
-}
-
 /**
  * Flutter `SwitchStoreDialog` — pick a store; cancel dismisses with null.
+ * 门店列表由调用方从 `GET /api/v1/me/stores` 拉取后传入，不再内置样例门店。
  * Does **not** navigate to `/friend` or invite.
  */
 @Composable
 fun SwitchStoreDialog(
     selectedId: String,
-    stores: List<MineStoreOption> = MineStoreCatalog.stores,
+    stores: List<MineStoreOption>,
     onDismiss: () -> Unit,
     onPicked: (MineStoreOption) -> Unit,
+    loading: Boolean = false,
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -83,7 +72,11 @@ fun SwitchStoreDialog(
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    if (stores.isEmpty()) "暂无可切换的店铺" else "可切换多个店铺查看数据",
+                    when {
+                        loading && stores.isEmpty() -> "正在加载门店…"
+                        stores.isEmpty() -> "暂无可切换的店铺"
+                        else -> "可切换多个店铺查看数据"
+                    },
                     fontSize = 13.sp,
                     color = MineTheme.LabelTertiary,
                     textAlign = TextAlign.Center,

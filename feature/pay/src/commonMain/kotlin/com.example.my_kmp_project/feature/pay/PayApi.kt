@@ -3,7 +3,6 @@ package com.example.my_kmp_project.feature.pay
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import com.example.my_kmp_project.core.network.decodeEnvelopeData
 import kotlinx.serialization.encodeToString
@@ -39,7 +38,7 @@ import kotlinx.serialization.json.JsonObject
  * `notes/backend-contract-matrix.md`；本类仍不接线、不自造调用点。
  */
 public class PayApi(
-    public val client: ApiClient = NetworkFacade.api(),
+    public val client: ApiClient,
 ) {
     /** #90 `GET /api/v1/membership/me`（目录 + 权益；畸形 `data` ⇒ 空目录而非失败）。 */
     public suspend fun fetchMe(): MembershipMeResponse =

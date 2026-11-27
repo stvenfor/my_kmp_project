@@ -31,6 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +55,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.home_search_icon_clear_history
@@ -88,17 +91,28 @@ private fun searchRankCoverRes(rank: Int): DrawableResource = when (rank) {
     else -> Res.drawable.home_search_rank_8
 }
 
+/** 搜索框无历史时的占位文案（纯 UI 文案）。 */
+private const val SearchPlaceholder = "搜索客户、订单、课程、视频"
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun HomeSearchScreen(onBack: () -> Unit) {
+fun HomeSearchScreen(onBack: () -> Unit, content: HomeContentStore) {
     ReportMainTabRoot(isRoot = false)
+    val version = content.version
     var query by remember { mutableStateOf("") }
-    // Match Flutter SoT rotating keyword (history[3] = 龙猫 + mic).
-    val rotatingHint = HomeMockData.searchHistory.getOrElse(2) { HomeMockData.searchPagePlaceholder }
-    var history by remember { mutableStateOf(HomeMockData.searchHistory) }
-    var discovery by remember { mutableStateOf(HomeMockData.searchDiscovery) }
+    // 搜索页文案全部来自服务端 meta；本地仅保留「本次输入后」的临时列表。
+    val serverHistory = remember(version) { content.searchHistory() }
+    var history by remember(version) { mutableStateOf(serverHistory) }
+    var discovery by remember(version) { mutableStateOf(content.searchDiscovery()) }
+    val filterTags = remember(version) { content.searchFilterTags() }
+    val rankTabs = remember(version) { content.rankTabs() }
+    val rotatingHint = serverHistory.getOrElse(2) { SearchPlaceholder }
     var selectedRankTab by remember { mutableStateOf(0) }
-    val rankItems = remember(selectedRankTab) { HomeMockData.rankItemsForTab(selectedRankTab) }
+    val rankItems = remember(selectedRankTab, version) {
+        content.rankItemsForTabIndex(selectedRankTab.coerceIn(0, (rankTabs.size - 1).coerceAtLeast(0)))
+    }
+
+    LaunchedEffect(Unit) { content.refreshSearchMeta() }
 
     Column(
         modifier = Modifier
@@ -132,38 +146,44 @@ fun HomeSearchScreen(onBack: () -> Unit) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            SearchDiscoverySection(
-                discovery = discovery,
-                onRefresh = { discovery = discovery.reversed() },
-                onTagTap = { query = it },
-            )
+            if (discovery.isNotEmpty()) {
+                SearchDiscoverySection(
+                    discovery = discovery,
+                    onRefresh = { discovery = discovery.reversed() },
+                    onTagTap = { query = it },
+                )
+            }
 
-            SearchFilterSection(
-                tags = HomeMockData.filterTags,
-                onTagTap = { query = it },
-            )
+            if (filterTags.isNotEmpty()) {
+                SearchFilterSection(
+                    tags = filterTags,
+                    onTagTap = { query = it },
+                )
+            }
 
-            RankTabBar(
-                tabs = HomeMockData.rankTabs,
-                selectedIndex = selectedRankTab,
-                onSelected = { selectedRankTab = it },
-            )
-            Column(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(DemoColors.Background)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp)),
-            ) {
-                rankItems.forEachIndexed { index, item ->
-                    RankListRow(item = item)
-                    if (index < rankItems.lastIndex) {
-                        // Flutter Divider indent 52 / endIndent 16
-                        HorizontalDivider(
-                            thickness = 0.5.dp,
-                            color = DemoColors.Divider,
-                            modifier = Modifier.padding(start = 52.dp, end = 16.dp),
-                        )
+            if (rankTabs.isNotEmpty()) {
+                RankTabBar(
+                    tabs = rankTabs,
+                    selectedIndex = selectedRankTab.coerceIn(0, rankTabs.lastIndex),
+                    onSelected = { selectedRankTab = it },
+                )
+            }
+            if (rankItems.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+                        .demoCard(),
+                ) {
+                    rankItems.forEachIndexed { index, item ->
+                        RankListRow(item = item)
+                        if (index < rankItems.lastIndex) {
+                            // Flutter Divider indent 52 / endIndent 16
+                            HorizontalDivider(
+                                thickness = 0.5.dp,
+                                color = DemoColors.Divider,
+                                modifier = Modifier.padding(start = 52.dp, end = 16.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -210,9 +230,9 @@ private fun SearchHeaderBar(
             modifier = Modifier
                 .weight(1f)
                 .height(SearchFieldHeight)
-                .clip(RoundedCornerShape(8.dp))
-                .background(DemoColors.Background)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(DemoRadius.Card))
+                .background(DemoColors.SurfaceRaised)
+                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(DemoRadius.Card))
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -340,10 +360,7 @@ private fun SearchDiscoverySection(
     Column(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-            .clip(RoundedCornerShape(8.dp))
-            // Flutter discovery card: white surface; chips use soft page fill.
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+            .demoCard()
             .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         // Flutter CupertinoButton (refresh) minSize 44 → header row height.
@@ -451,11 +468,11 @@ private fun SearchTagChip(
     softFill: Boolean = false,
 ) {
     // Flutter SearchTagChip: padding H14/V8, fontSize 14, highlight alpha 0.1
-    val shape = RoundedCornerShape(20.dp)
+    val shape = DemoRadius.Pill
     val bg = when {
         highlight -> DemoColors.Accent.copy(alpha = 0.1f)
-        softFill -> DemoColors.Background
-        else -> DemoColors.PageBg
+        softFill -> DemoColors.SurfaceRaised
+        else -> DemoColors.SurfaceSunken
     }
     Text(
         text = label,
@@ -547,8 +564,8 @@ private fun RankListRow(item: SearchRankItem) {
         Box(
             modifier = Modifier
                 .size(72.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(DemoColors.PageBg),
+                .clip(RoundedCornerShape(DemoRadius.Md))
+                .background(DemoColors.SurfaceSunken),
             contentAlignment = Alignment.Center,
         ) {
             // Flutter SoT on emulator: picsum fails → fillSecondary + Icons.play_circle_outline.

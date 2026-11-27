@@ -47,6 +47,15 @@ object HomeSecondaryStore {
     var selectedAnalyticsId by mutableStateOf(0L)
         private set
 
+    /** 数据台账选中行 id（`LedgerDetailScreen` 用）。 */
+    var selectedLedgerId by mutableStateOf<Int?>(null)
+        private set
+
+    /** 选中台账行。 */
+    fun selectLedger(id: Int) {
+        selectedLedgerId = id
+    }
+
     /** `GET /after-sales/records` 的 `can_create`（服务端 gate「新建工单」入口）。 */
     var afterSalesCanCreate by mutableStateOf(false)
         private set
@@ -254,6 +263,7 @@ object HomeSecondaryStore {
         selectedAfterSalesId = null
         selectedNewCarFollowId = null
         selectedAnalyticsId = 0L
+        selectedLedgerId = null
         loading = false
         errorMessage = null
         bump()

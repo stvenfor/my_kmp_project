@@ -66,9 +66,10 @@ fun FlutterFeatureTopBar(
             }
             Text(
                 text = title,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = titleColor,
                 fontSize = 18.sp,
+                letterSpacing = (-0.3).sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f),
             )

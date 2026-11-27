@@ -32,6 +32,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
@@ -66,7 +68,7 @@ internal fun LifeServiceScreen(onBack: () -> Unit) {
         LifeCourse("【配置】当星舰撞上算力", "尤国梁", "https://picsum.photos/seed/c1/400/240", true, true),
         LifeCourse("黄金恐贪定投实战", "策略组", "https://picsum.photos/seed/c2/400/240", false, false),
     )
-    val cardRadius = 8.dp
+    val cardRadius = DemoRadius.Card
     ReportMainTabRoot(isRoot = false)
     Column(
         Modifier
@@ -110,9 +112,7 @@ internal fun LifeServiceScreen(onBack: () -> Unit) {
                     Modifier
                         .fillMaxWidth()
                         .padding(bottom = 10.dp)
-                        .clip(RoundedCornerShape(cardRadius))
-                        .background(Color.White)
-                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(cardRadius))
+                        .demoCard()
                         .clickable { showPlatformToast(item.title) }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -162,9 +162,7 @@ internal fun LifeServiceScreen(onBack: () -> Unit) {
                 Column(
                     Modifier
                         .width(168.dp)
-                        .clip(RoundedCornerShape(cardRadius))
-                        .background(Color.White)
-                        .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(cardRadius))
+                        .demoCard()
                         .clickable { showPlatformToast(course.title) },
                 ) {
                     Box {

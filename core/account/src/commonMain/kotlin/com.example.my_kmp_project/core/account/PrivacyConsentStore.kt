@@ -19,6 +19,10 @@ public const val PRIVACY_ACCEPTED_KEY: String = "demo_privacy_accepted"
 public fun createPrivacyConsentStore(): PrivacyConsentStore =
     KeyValuePrivacyConsentStore(createKeyValueStore(ACCOUNT_STORE_NAME))
 
+/** 由装配层注入的 KV 视图创建（DI：同一份存储绑定，不额外开持久化通道）。 */
+public fun createPrivacyConsentStore(store: KeyValueStore): PrivacyConsentStore =
+    KeyValuePrivacyConsentStore(store)
+
 internal class KeyValuePrivacyConsentStore(
     private val store: KeyValueStore,
 ) : PrivacyConsentStore {

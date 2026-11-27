@@ -1,6 +1,7 @@
 package com.example.my_kmp_project.feature.home
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import com.example.my_kmp_project.core.router.AppRoutePath
 import com.example.my_kmp_project.core.router.HomeRoutes
 
@@ -8,21 +9,24 @@ import com.example.my_kmp_project.core.router.HomeRoutes
 fun HomeRouteHost(
     route: String,
     onBack: () -> Unit,
+    content: HomeContentStore,
     onNavigate: (String) -> Unit = {},
 ) {
     when (route) {
-        HomeRoutes.Search -> HomeSearchScreen(onBack = onBack)
-        HomeRoutes.Strategy -> StrategyScreen(onBack = onBack)
+        HomeRoutes.Search -> HomeSearchScreen(onBack = onBack, content = content)
+        HomeRoutes.Strategy -> StrategyScreen(onBack = onBack, content = content)
         HomeRoutes.LearningReport -> LearningReportScreen(
             onBack = onBack,
+            content = content,
             onOpenMembership = { onNavigate("/pay/membership") },
         )
         HomeRoutes.CheckInMall -> CheckInMallScreen(onBack = onBack)
         HomeRoutes.TransliterFeed -> TransliterFeedScreen(
             onBack = onBack,
+            content = content,
             onOpenHotRank = { onNavigate(HomeRoutes.HotRankDetail) },
         )
-        HomeRoutes.HotRankDetail -> HotRankDetailScreen(onBack = onBack)
+        HomeRoutes.HotRankDetail -> HotRankDetailScreen(onBack = onBack, content = content)
         HomeRoutes.LifeService -> LifeServiceScreen(onBack = onBack)
         HomeRoutes.LiveCommerce -> LiveCommerceScreen(
             onBack = onBack,
@@ -45,15 +49,26 @@ fun HomeRouteHost(
             ?.let { UsedCarDetailScreen(order = it, onBack = onBack) }
             ?: CrudDetailScreen("业务单不存在", "请返回列表刷新后重试", onBack)
         HomeRoutes.UsedCarCreate -> UsedCarCreateScreen(onBack = onBack)
-        HomeRoutes.Ledger -> LedgerListScreen(
-            items = HomeSecondaryMock.ledger,
-            onBack = onBack,
-            onItem = { onNavigate(HomeRoutes.LedgerDetail) },
-        )
-        HomeRoutes.LedgerDetail -> LedgerDetailScreen(
-            item = HomeSecondaryMock.ledger.firstOrNull(),
-            onBack = onBack,
-        )
+        HomeRoutes.Ledger -> {
+            LaunchedEffect(Unit) { content.refreshLedger() }
+            LedgerListScreen(
+                items = content.ledgerEntries(),
+                onBack = onBack,
+                onItem = { item ->
+                    HomeSecondaryStore.selectLedger(item.id)
+                    onNavigate(HomeRoutes.LedgerDetail)
+                },
+            )
+        }
+        HomeRoutes.LedgerDetail -> {
+            LaunchedEffect(Unit) { content.refreshLedger() }
+            val entries = content.ledgerEntries()
+            LedgerDetailScreen(
+                item = entries.firstOrNull { it.id == HomeSecondaryStore.selectedLedgerId }
+                    ?: entries.firstOrNull(),
+                onBack = onBack,
+            )
+        }
         HomeRoutes.DataAnalytics -> AnalyticsListScreen(
             onBack = onBack,
             onItem = { row ->

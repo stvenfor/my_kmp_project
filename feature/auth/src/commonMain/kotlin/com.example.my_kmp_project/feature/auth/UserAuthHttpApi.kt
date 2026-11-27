@@ -3,7 +3,6 @@ package com.example.my_kmp_project.feature.auth
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.postApi
 import com.example.my_kmp_project.core.network.postApiOk
 import kotlinx.coroutines.CancellationException
@@ -34,7 +33,9 @@ public class AuthHttpFailure(
  * （登录态 + 非免鉴权 host 时齐备），`ApiClient` 无需额外头出口；会话三件套由
  * `NetworkFacade.bindAccessToken` 在会话变更（登录 / refresh / 冷启动恢复）时绑定。
  */
-public object UserAuthHttpApi {
+public class UserAuthHttpApi(
+    private val client: ApiClient,
+) {
 
     /** 契约表 #1 `POST /user/login`（`user_auth_api.dart:15-34`）；`data` = [AuthLoginData]。 */
     suspend fun login(
@@ -63,7 +64,7 @@ public object UserAuthHttpApi {
         deviceId: String,
         platform: String,
     ): Result<AuthRegisterData> = guard {
-        val response = NetworkFacade.api()
+        val response = client
             .postApi<AuthRegisterRequest, AuthRegisterData>(
                 path = AuthApiPaths.REGISTER,
                 body = AuthRegisterRequest(
@@ -84,7 +85,7 @@ public object UserAuthHttpApi {
 
     /** 契约表 #5 `POST /user/phone/otp/send`（:36-45）；只看 `code`，`data` 恒为 null。 */
     suspend fun sendPhoneOtp(phone: String): Result<Unit> = guard {
-        val response = NetworkFacade.api().postApiOk(
+        val response = client.postApiOk(
             path = AuthApiPaths.SEND_PHONE_OTP,
             body = AuthPhoneOtpSendRequest(phone = phone),
         )
@@ -114,9 +115,8 @@ public object UserAuthHttpApi {
     /**
      * 契约表 #7 `POST /user/wechat/login`（:68-85）；`data` = `LoginResult`。
      *
-     * `// GAP(R5)`: 微信授权码要原生 SDK 才有（iOS `WXApi.sendReq` / Android
-     * `wechat-sdk-android` / OHOS 无对应 Kit）；本对象只完成 **HTTP 契约**，
-     * 取码桥尚未接入，调用方必须自行拿到 `code`（勿据此判定微信登录已可用）。
+     * 取码由策略层 `WechatLoginStrategy` / `AuthorizationCodeProvider` 负责；
+     * 本方法只完成 **HTTP 契约**，不判定该登录方式是否可用。
      */
     suspend fun loginWithWechat(
         code: String,
@@ -129,6 +129,18 @@ public object UserAuthHttpApi {
             deviceId = deviceId,
             platform = platform,
         ),
+    )
+
+    /**
+     * 契约表扩展 `POST /user/huawei/login`（本仓既有端，非 Flutter d7876a1 调用点）；
+     * `data` = [AuthLoginData]。
+     */
+    suspend fun loginWithHuawei(
+        code: String,
+        deviceId: String,
+    ): Result<AuthLoginData> = postLogin(
+        path = AuthApiPaths.HUAWEI_LOGIN,
+        body = AuthHuaweiLoginRequest(code = code, deviceId = deviceId),
     )
 
     /**
@@ -172,7 +184,7 @@ public object UserAuthHttpApi {
      * （否则三头都空了）。
      */
     suspend fun logout(): Result<Unit> = guard {
-        val response = NetworkFacade.api().postApi<Unit>(
+        val response = client.postApi<Unit>(
             path = AuthApiPaths.LOGOUT,
             body = "",
             parseData = { },
@@ -193,7 +205,7 @@ public object UserAuthHttpApi {
      * 会话三头（Authorization / X-Session-ID / X-Device-ID）由默认 client 逐请求注入
      * （core/network 的 DemoRequestHeaders）；[client] 仅作为测试注入口，生产调用方勿传。
      */
-    suspend fun deactivate(client: ApiClient = NetworkFacade.api()): Result<Unit> = guard {
+    suspend fun deactivate(): Result<Unit> = guard {
         val response = client.postApi<Unit>(
             path = AuthApiPaths.DEACTIVATE,
             body = "",
@@ -214,7 +226,7 @@ public object UserAuthHttpApi {
         path: String,
         body: Req,
     ): Result<AuthLoginData> = guard {
-        val response = NetworkFacade.api().postApi<Req, AuthLoginData>(path, body)
+        val response = client.postApi<Req, AuthLoginData>(path, body)
         val data = response.data
         if (isAuthBusinessSuccess(response.code) && data != null && data.token.isNotBlank()) {
             Result.success(data)

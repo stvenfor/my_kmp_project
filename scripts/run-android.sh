@@ -127,6 +127,14 @@ boot_emulator_if_needed() {
 
 boot_emulator_if_needed
 
+# 真机/模拟器的 debug 默认后端是 http://127.0.0.1:8080；真机上 127.0.0.1 指向设备自身，
+# 不建 reverse 时社区/首页等所有接口都会 ConnectException（表现为「加载失败」）。
+echo "==> adb reverse tcp:8080/tcp:9090 (device loopback -> host BFF)"
+"${ADB[@]}" reverse tcp:8080 tcp:8080 || \
+  echo "warn: adb reverse 8080 失败；真机请改用局域网后端地址（设置 → 运行环境）" >&2
+"${ADB[@]}" reverse tcp:9090 tcp:9090 || \
+  echo "warn: adb reverse 9090 失败；gRPC 数据分析可能不可用" >&2
+
 echo "==> ./gradlew :composeApp:installDebug -PandroidOnly=true"
 ./gradlew :composeApp:installDebug -PandroidOnly=true
 

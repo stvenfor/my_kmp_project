@@ -41,14 +41,17 @@ import kotlinx.coroutines.launch
 public fun LoginOtpScreen(
     onLoginSuccess: () -> Unit,
     onBack: () -> Unit,
+    initialPhone: String = "",
     modifier: Modifier = Modifier,
 ) {
     var otp by remember { mutableStateOf("") }
+    var phone by remember(initialPhone) {
+        mutableStateOf(initialPhone.filter { it.isDigit() }.take(11))
+    }
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     var otpCooldown by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
-    val phone = AuthPendingCredentials.phone.filter { it.isDigit() }.take(11)
     val canSubmit = otp.length == 6 && AuthPhoneUtils.isValidChinaMobile(phone) && !loading
 
     LaunchedEffect(otpCooldown) {
@@ -88,6 +91,44 @@ public fun LoginOtpScreen(
                 fontSize = AuthUiTokens.SubtitleSize,
             )
             Spacer(modifier = Modifier.height(8.dp))
+            if (initialPhone.isBlank()) {
+                BasicTextField(
+                    value = phone,
+                    onValueChange = {
+                        phone = it.filter { char -> char.isDigit() }.take(11)
+                        error = null
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    textStyle = TextStyle(
+                        fontFamily = DemoFonts.Geist,
+                        color = AuthUiTokens.LabelPrimary,
+                        fontSize = 18.sp,
+                    ),
+                    cursorBrush = SolidColor(AuthUiTokens.Accent),
+                    modifier = Modifier.fillMaxWidth(),
+                    decorationBox = { inner ->
+                        Column {
+                            if (phone.isEmpty()) {
+                                Text(
+                                    text = "手机号",
+                                    color = AuthUiTokens.LabelTertiary,
+                                    fontSize = 18.sp,
+                                )
+                            }
+                            inner()
+                            Spacer(modifier = Modifier.height(8.dp))
+                            HorizontalDivider(color = AuthUiTokens.Separator)
+                        }
+                    },
+                )
+            } else {
+                Text(
+                    text = phone,
+                    color = AuthUiTokens.LabelPrimary,
+                    fontSize = 18.sp,
+                )
+            }
             Spacer(modifier = Modifier.height(40.dp))
             BasicTextField(
                 value = otp,

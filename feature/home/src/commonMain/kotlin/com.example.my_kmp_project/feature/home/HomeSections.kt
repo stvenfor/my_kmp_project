@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,7 +40,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoElevation
 import com.example.my_kmp_project.core.design.DemoFonts
+import com.example.my_kmp_project.core.design.DemoGradients
+import com.example.my_kmp_project.core.design.DemoRadius
+import com.example.my_kmp_project.core.design.demoCard
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.home_banner_bg
 import org.jetbrains.compose.resources.painterResource
@@ -56,17 +61,23 @@ import org.jetbrains.compose.resources.painterResource
  * 对外边距严格照抄 Flutter 每个 section 自己的 `EdgeInsets`，**首块之前的 16
  * 由宿主提供**（Flutter `ListView(padding: top = safeTop + 16)`）。
  */
+/** 首页搜索框文案（服务端不再下发，纯 UI 常量，非 mock 数据）。 */
+const val HomeSearchPlaceholder = "搜索客户、订单、资讯"
+
 object HomeSectionStyle {
     val Accent = DemoColors.Accent
-    val Surface = DemoColors.Background
-    val FillSecondary = DemoColors.PageBg
+    val Surface = DemoColors.SurfaceRaised
+    val FillSecondary = DemoColors.SurfaceSunken
     val LabelPrimary = DemoColors.TextPrimary
     val LabelSecondary = DemoColors.TextSecondary
     val LabelTertiary = DemoColors.Muted
     val Separator = DemoColors.Divider
 
-    /** Flutter `HomeDashboardTheme.radiusMd` */
-    val RadiusMd: Dp = 8.dp
+    /** 卡片统一圆角：随设计基线走 core:design 的 16dp。 */
+    val RadiusMd: Dp = DemoRadius.Card
+
+    /** 卡片统一柔和阴影。 */
+    val CardElevation: Dp = DemoElevation.Card
 
     /** 全页统一细描边：与待办卡 / 入口卡 / 联系人 / 资讯卡及 Mine 分组卡同一线宽。 */
     const val GroupedCardBorder = 0.5f
@@ -77,11 +88,11 @@ object HomeSectionStyle {
     val LargeTitle28: TextStyle
         @Composable get() = TextStyle(
             fontFamily = DemoFonts.Geist,
-            fontSize = 28.sp,
+            fontSize = 30.sp,
             fontWeight = FontWeight.SemiBold,
             color = LabelPrimary,
-            lineHeight = 31.5.sp, // largeTitle height 36/32 × 28
-            letterSpacing = (-1.6).sp,
+            lineHeight = 34.sp,
+            letterSpacing = (-1.2).sp,
         )
 
     val SectionTitle18: TextStyle
@@ -105,6 +116,13 @@ object HomeSectionStyle {
         )
 }
 
+/** 首页卡片统一表面：阴影 + 圆角 + 表面色 + 低对比描边。 */
+fun Modifier.homeCard(radius: Dp = HomeSectionStyle.RadiusMd): Modifier = demoCard(
+    shape = RoundedCornerShape(radius),
+    color = HomeSectionStyle.Surface,
+    elevation = HomeSectionStyle.CardElevation,
+)
+
 // ── 1. 问候 + 消息胶囊 ────────────────────────────────────────────────────────
 
 @Composable
@@ -112,7 +130,7 @@ fun HomeGreetingSection(greeting: String, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 24.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 20.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Text(
@@ -123,8 +141,8 @@ fun HomeGreetingSection(greeting: String, modifier: Modifier = Modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clip(RoundedCornerShape(20.dp))
-                .background(HomeSectionStyle.Accent.copy(alpha = 0.1f))
+                .clip(DemoRadius.Pill)
+                .background(DemoColors.PrimarySoft)
                 .padding(horizontal = 12.dp, vertical = 6.dp),
         ) {
             Icon(
@@ -162,14 +180,8 @@ fun HomeSearchBar(
         Row(
             modifier = Modifier
                 .weight(1f)
-                .height(44.dp)
-                .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-                .background(HomeSectionStyle.Surface)
-                .border(
-                    0.5.dp,
-                    HomeSectionStyle.Separator,
-                    RoundedCornerShape(HomeSectionStyle.RadiusMd),
-                )
+                .height(46.dp)
+                .homeCard(radius = DemoRadius.Card)
                 .clickable(onClick = onSearch)
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -192,21 +204,16 @@ fun HomeSearchBar(
         Spacer(Modifier.width(12.dp))
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-                .background(HomeSectionStyle.Surface)
-                .border(
-                    0.5.dp,
-                    HomeSectionStyle.Separator,
-                    RoundedCornerShape(HomeSectionStyle.RadiusMd),
-                )
+                .size(46.dp)
+                .clip(RoundedCornerShape(DemoRadius.Card))
+                .background(DemoGradients.brandHorizontal())
                 .clickable(onClick = onScan),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = HomeIcons.QrScan,
                 contentDescription = "扫一扫",
-                tint = HomeSectionStyle.Accent,
+                tint = Color.White,
                 modifier = Modifier.size(22.dp),
             )
         }
@@ -220,9 +227,15 @@ fun HomeBannerSection(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            .height(132.dp)
-            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd)),
+            .padding(start = 16.dp, end = 16.dp, top = 18.dp)
+            .height(152.dp)
+            .shadow(
+                elevation = DemoElevation.Card,
+                shape = RoundedCornerShape(DemoRadius.Hero),
+                ambientColor = DemoElevation.CardShadow,
+                spotColor = DemoElevation.CardShadow,
+            )
+            .clip(RoundedCornerShape(DemoRadius.Hero)),
     ) {
         // Flutter: CacheImageUtils.network('…/seed/banner/800/400', cover) —— 本地同图。
         Image(
@@ -235,15 +248,19 @@ fun HomeBannerSection(modifier: Modifier = Modifier) {
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.25f)),
+                .background(Color.Black.copy(alpha = 0.22f)),
         )
-        // Flutter: accent@55% → transparent，left → right
+        // 品牌渐变：link → violet，从左侧压暗到透明，提升文字可读性并强化品牌感。
         Box(
             Modifier
                 .fillMaxSize()
                 .background(
                     Brush.horizontalGradient(
-                        listOf(HomeSectionStyle.Accent.copy(alpha = 0.55f), Color.Transparent),
+                        listOf(
+                            DemoColors.GradientStart.copy(alpha = 0.78f),
+                            DemoColors.GradientEnd.copy(alpha = 0.28f),
+                            Color.Transparent,
+                        ),
                     ),
                 ),
         )
@@ -255,26 +272,26 @@ fun HomeBannerSection(modifier: Modifier = Modifier) {
             Text(
                 text = "朋友圈营销",
                 color = Color.White,
-                fontSize = 22.sp,
+                fontSize = 23.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.3).sp,
+                letterSpacing = (-0.4).sp,
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 text = "一键分享，高效触达客户",
-                color = Color.White.copy(alpha = 0.85f),
+                color = Color.White.copy(alpha = 0.88f),
                 fontSize = 14.sp,
             )
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(14.dp))
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(DemoRadius.Pill)
                     .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 18.dp, vertical = 9.dp),
             ) {
                 Text(
                     text = "立即体验",
-                    color = HomeSectionStyle.Accent,
+                    color = DemoColors.GradientStart,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -304,47 +321,44 @@ fun HomeFeatureGrid(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-            .background(HomeSectionStyle.Surface)
-            .border(
-                HomeSectionStyle.GroupedCardBorder.dp,
-                HomeSectionStyle.Separator,
-                RoundedCornerShape(HomeSectionStyle.RadiusMd),
-            )
-            .padding(start = 4.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+            .homeCard()
+            .padding(start = 8.dp, end = 8.dp, top = 14.dp, bottom = 14.dp),
     ) {
         visible.chunked(5).forEachIndexed { rowIndex, row ->
-            if (rowIndex > 0) Spacer(Modifier.height(8.dp))
+            if (rowIndex > 0) Spacer(Modifier.height(14.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-                row.forEach { item ->
+                row.forEachIndexed { colIndex, item ->
+                    val accent = serviceAccent(rowIndex * 5 + colIndex)
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { onFeature(item.label) },
+                            .clickable { onFeature(item.label) }
+                            .padding(vertical = 4.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(HomeSectionStyle.FillSecondary),
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(accent.copy(alpha = 0.10f)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            HomeAssetIcon(
-                                resource = HomeServiceAssets.featureForLabel(item.label),
-                                size = 44.dp,
+                            Icon(
+                                imageVector = HomeStrokeIcons.forFeatureIcon(item.icon, item.label),
                                 contentDescription = item.label,
+                                tint = accent,
+                                modifier = Modifier.size(24.dp),
                             )
                         }
-                        Spacer(Modifier.height(4.dp))
+                        Spacer(Modifier.height(6.dp))
                         Text(
                             text = item.label,
                             color = HomeSectionStyle.LabelPrimary,
                             fontSize = 12.sp,
                             // 主入口标签与「服务推荐」同级，避免一级入口比二级入口字更小。
                             fontWeight = FontWeight.Medium,
-                            lineHeight = 14.4.sp, // height: 1.2
+                            lineHeight = 15.sp,
                             textAlign = TextAlign.Center,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -375,7 +389,7 @@ fun HomeStoreMetricsCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 24.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("公司数据", style = HomeSectionStyle.SectionTitle18)
@@ -402,24 +416,18 @@ fun HomeStoreMetricsCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-                .background(HomeSectionStyle.Surface)
-                .border(
-                    HomeSectionStyle.GroupedCardBorder.dp,
-                    HomeSectionStyle.Separator,
-                    RoundedCornerShape(HomeSectionStyle.RadiusMd),
-                )
-                .padding(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 16.dp),
+                .homeCard()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 18.dp),
         ) {
             StorePickerRow(storeName = storeName, onTap = onStoreTap)
             Spacer(Modifier.height(14.dp))
             MetricTabBar(tabs = tabs, selectedTab = selectedTab, onTabSelected = onTabSelected)
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             metrics.chunked(2).forEachIndexed { rowIndex, row ->
-                if (rowIndex > 0) Spacer(Modifier.height(10.dp))
+                if (rowIndex > 0) Spacer(Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     row.forEach { m ->
                         MetricTile(metric = m, modifier = Modifier.weight(1f))
@@ -514,19 +522,20 @@ private fun MetricTabBar(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (active) HomeSectionStyle.Surface else Color.Transparent)
                     .then(
                         if (active) {
-                            Modifier.border(
-                                0.5.dp,
-                                HomeSectionStyle.Separator,
-                                RoundedCornerShape(8.dp),
+                            Modifier.shadow(
+                                elevation = 2.dp,
+                                shape = RoundedCornerShape(DemoRadius.Sm),
+                                ambientColor = DemoElevation.CardShadow,
+                                spotColor = DemoElevation.CardShadow,
                             )
                         } else {
                             Modifier
                         },
                     )
+                    .clip(RoundedCornerShape(DemoRadius.Sm))
+                    .background(if (active) HomeSectionStyle.Surface else Color.Transparent)
                     .clickable { onTabSelected(index) }
                     .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center,
@@ -550,20 +559,19 @@ private fun MetricTabBar(
 private fun MetricTile(metric: HomeMetric, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.CanvasSoft)
-            .border(0.5.dp, HomeSectionStyle.Separator, RoundedCornerShape(12.dp))
-            .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 10.dp),
+            .clip(RoundedCornerShape(DemoRadius.Md))
+            .background(HomeSectionStyle.FillSecondary)
+            .padding(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 12.dp),
     ) {
         Text(
             text = metric.value,
             color = HomeSectionStyle.LabelPrimary,
-            fontSize = 22.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            lineHeight = 24.2.sp, // height: 1.1
-            letterSpacing = (-0.6).sp,
+            lineHeight = 26.sp,
+            letterSpacing = (-0.7).sp,
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(5.dp))
         Text(
             text = metric.label,
             color = HomeSectionStyle.LabelSecondary,
@@ -579,8 +587,8 @@ private fun MetricTile(metric: HomeMetric, modifier: Modifier = Modifier) {
 private fun DetailActionTile(detail: HomeMetricDetail, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(DemoColors.LinkBgSoft.copy(alpha = 0.35f))
+            .clip(RoundedCornerShape(DemoRadius.Md))
+            .background(DemoColors.PrimarySoft)
             .padding(horizontal = 8.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -623,23 +631,17 @@ fun HomeHubEntryCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
-            .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-            .background(HomeSectionStyle.Surface)
-            .border(
-                0.5.dp,
-                HomeSectionStyle.Separator,
-                RoundedCornerShape(HomeSectionStyle.RadiusMd),
-            )
+            .padding(start = 16.dp, end = 16.dp, top = 20.dp)
+            .homeCard()
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
-                .size(44.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(HomeSectionStyle.Accent.copy(alpha = 0.1f)),
+                .size(46.dp)
+                .clip(RoundedCornerShape(DemoRadius.Md))
+                .background(DemoGradients.brandSoftHorizontal()),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -649,7 +651,7 @@ fun HomeHubEntryCard(
                 modifier = Modifier.size(24.dp),
             )
         }
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -657,13 +659,14 @@ fun HomeHubEntryCard(
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
             )
+            Spacer(Modifier.height(2.dp))
             Text(text = subtitle, color = HomeSectionStyle.LabelSecondary, fontSize = 13.sp)
         }
         Icon(
             imageVector = HomeIcons.ChevronRight,
             contentDescription = null,
             tint = HomeSectionStyle.LabelTertiary,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(22.dp),
         )
     }
 }
@@ -680,12 +683,12 @@ fun HomeServiceGrid(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 24.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(bottom = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -714,17 +717,11 @@ fun HomeServiceGrid(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-                .background(HomeSectionStyle.Surface)
-                .border(
-                    HomeSectionStyle.GroupedCardBorder.dp,
-                    HomeSectionStyle.Separator,
-                    RoundedCornerShape(HomeSectionStyle.RadiusMd),
-                )
-                .padding(start = 4.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+                .homeCard()
+                .padding(start = 6.dp, end = 6.dp, top = 14.dp, bottom = 14.dp),
         ) {
             items.chunked(4).forEachIndexed { rowIndex, row ->
-                if (rowIndex > 0) Spacer(Modifier.height(10.dp))
+                if (rowIndex > 0) Spacer(Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth()) {
                     row.forEachIndexed { colIndex, item ->
                         val index = rowIndex * 4 + colIndex
@@ -768,16 +765,16 @@ private fun ServiceGridItem(
         Box {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(accent.copy(alpha = 0.12f)),
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(accent.copy(alpha = 0.10f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = HomeStrokeIcons.forServiceLabel(item.label),
+                    imageVector = HomeStrokeIcons.forServiceIcon(item.icon, item.label),
                     contentDescription = item.label,
                     tint = accent,
-                    modifier = Modifier.size(22.dp),
+                    modifier = Modifier.size(24.dp),
                 )
             }
             item.badge?.let { badge ->
@@ -799,13 +796,13 @@ private fun ServiceGridItem(
                 )
             }
         }
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
             text = item.label,
             color = HomeSectionStyle.LabelPrimary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
-            lineHeight = 13.2.sp, // height: 1.1
+            lineHeight = 14.sp,
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -824,20 +821,14 @@ fun HomeContactList(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 24.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 28.dp),
     ) {
         Text("联系汽车之家", style = HomeSectionStyle.SectionTitle18)
         Spacer(Modifier.height(12.dp))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-                .background(HomeSectionStyle.Surface)
-                .border(
-                    HomeSectionStyle.ThinCardBorder.dp,
-                    HomeSectionStyle.Separator,
-                    RoundedCornerShape(HomeSectionStyle.RadiusMd),
-                ),
+                .homeCard(),
         ) {
             items.forEachIndexed { index, item ->
                 Row(
@@ -851,9 +842,9 @@ fun HomeContactList(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
-                            .background(HomeSectionStyle.FillSecondary),
+                            .background(DemoColors.PrimarySoft),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -911,7 +902,7 @@ fun HomeNewsList(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 24.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 28.dp, bottom = 28.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -942,15 +933,9 @@ fun HomeNewsList(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-                    .clip(RoundedCornerShape(HomeSectionStyle.RadiusMd))
-                    .background(HomeSectionStyle.Surface)
-                    .border(
-                        HomeSectionStyle.ThinCardBorder.dp,
-                        HomeSectionStyle.Separator,
-                        RoundedCornerShape(HomeSectionStyle.RadiusMd),
-                    )
-                    .padding(12.dp),
+                    .padding(bottom = 14.dp)
+                    .homeCard()
+                    .padding(14.dp),
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                     Column(modifier = Modifier.weight(1f)) {
@@ -965,7 +950,10 @@ fun HomeNewsList(
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "${news.source}  ${news.date}",
+                            text = listOfNotNull(
+                                news.source.takeIf { it.isNotBlank() },
+                                news.date.takeIf { it.isNotBlank() },
+                            ).joinToString("  "),
                             style = HomeSectionStyle.SectionLabel14,
                         )
                     }
@@ -973,7 +961,7 @@ fun HomeNewsList(
                     Box(
                         modifier = Modifier
                             .size(width = 96.dp, height = 72.dp)
-                            .clip(RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .background(HomeSectionStyle.FillSecondary),
                         contentAlignment = Alignment.Center,
                     ) {

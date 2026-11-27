@@ -25,10 +25,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,19 +42,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import kotlinx.coroutines.launch
 
 @Composable
-internal fun HotRankDetailScreen(onBack: () -> Unit) {
+internal fun HotRankDetailScreen(onBack: () -> Unit, content: HomeContentStore) {
     // Flutter HotRankDetailPage: pink header + sidebar categories + age filter + ranked list
-    val categories = HomeMockData.hotRankCategories
-    val ageFilters = HomeMockData.hotRankAgeFilters
+    val version = content.version
+    val categories = remember(version) { content.hotRankCategories() }
+    val ageFilters = remember(version) { content.hotRankAgeFilters() }
     // Flutter default: HotRankCategory.hotSearch
-    var categoryIndex by remember { mutableIntStateOf(categories.indexOf("热搜榜").coerceAtLeast(0)) }
-    var ageIndex by remember { mutableIntStateOf(ageFilters.indexOf("1-3年级").coerceAtLeast(0)) }
+    var selectedCategory by remember { mutableStateOf("热搜榜") }
+    var selectedAge by remember { mutableStateOf("1-3年级") }
     var showAgeMenu by remember { mutableStateOf(false) }
-    val items = remember(categoryIndex) { HomeMockData.hotRankDetailItems(categoryIndex) }
+    val categoryIndex = categories.indexOf(selectedCategory).coerceAtLeast(0)
+    val ageIndex = ageFilters.indexOf(selectedAge).coerceAtLeast(0)
+    val items = remember(version) { content.hotRankItems() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) { content.refreshHotRank(category = selectedCategory) }
+
     val headerPink = Color(0xFFF5F5F7)
     val sidebarBg = Color(0xFFF0F0F2)
     val ink = Color(0xFF1A1A1A)
@@ -111,7 +121,7 @@ internal fun HotRankDetailScreen(onBack: () -> Unit) {
                 Text("🌾", fontSize = 22.sp)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    categories[categoryIndex],
+                    categories.getOrElse(categoryIndex) { selectedCategory },
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = ink,
@@ -142,7 +152,7 @@ internal fun HotRankDetailScreen(onBack: () -> Unit) {
                     .padding(top = 8.dp, bottom = 24.dp),
             ) {
                 categories.forEachIndexed { i, label ->
-                    val selected = i == categoryIndex
+                    val selected = label == selectedCategory
                     Box(
                         Modifier
                             .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -155,7 +165,10 @@ internal fun HotRankDetailScreen(onBack: () -> Unit) {
                                 },
                             )
                             .background(if (selected) Color.White else Color.Transparent)
-                            .clickable { categoryIndex = i }
+                            .clickable {
+                                selectedCategory = label
+                                scope.launch { content.refreshHotRank(category = label) }
+                            }
                             .padding(vertical = 14.dp, horizontal = 4.dp),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -198,23 +211,23 @@ internal fun HotRankDetailScreen(onBack: () -> Unit) {
                 ) {
                     Column(Modifier.align(Alignment.CenterEnd)) {
                         Text(
-                            ageFilters[ageIndex] + " ▾",
+                            (ageFilters.getOrNull(ageIndex) ?: selectedAge) + " ▾",
                             fontSize = 13.sp,
                             color = ink,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(Color.White.copy(alpha = 0.9f))
-                                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(14.dp))
+                                .clip(DemoRadius.Pill)
+                                .background(DemoColors.SurfaceRaised)
+                                .border(0.5.dp, DemoColors.Divider, DemoRadius.Pill)
                                 .clickable { showAgeMenu = !showAgeMenu }
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
                         )
                         if (showAgeMenu) {
                             Column(
                                 Modifier
                                     .padding(top = 4.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color.White)
-                                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(10.dp)),
+                                    .clip(RoundedCornerShape(DemoRadius.Md))
+                                    .background(DemoColors.SurfaceFloating)
+                                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(DemoRadius.Md)),
                             ) {
                                 ageFilters.forEachIndexed { i, label ->
                                     Text(
@@ -224,7 +237,7 @@ internal fun HotRankDetailScreen(onBack: () -> Unit) {
                                         fontWeight = if (i == ageIndex) FontWeight.SemiBold else FontWeight.Normal,
                                         modifier = Modifier
                                             .clickable {
-                                                ageIndex = i
+                                                selectedAge = label
                                                 showAgeMenu = false
                                             }
                                             .padding(horizontal = 14.dp, vertical = 10.dp),

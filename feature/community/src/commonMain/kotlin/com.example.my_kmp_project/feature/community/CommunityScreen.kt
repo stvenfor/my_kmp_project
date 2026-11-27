@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +47,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoElevation
+import com.example.my_kmp_project.core.design.DemoGradients
+import com.example.my_kmp_project.core.design.DemoRadius
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.StateView
@@ -141,6 +146,8 @@ fun CommunityScreen(
     var feedGeneration by remember { mutableIntStateOf(0) }
     var refreshAfterPublish by remember { mutableStateOf(false) }
     var selectedVideoUrl by remember { mutableStateOf<String?>(null) }
+    // 分享面板目标：非空时弹出社区分享面板（只做 UI，不调用分享 SDK）。
+    var sharePostId by remember { mutableStateOf<String?>(null) }
     val pullRefreshState = rememberPullToRefreshState()
 
     suspend fun loadFirstPage(index: Int) {
@@ -258,6 +265,7 @@ fun CommunityScreen(
                     onOpenComment = { post ->
                         destination = "${CommunityRoutes.Comment}?postId=${post.id}"
                     },
+                    onShare = { post -> sharePostId = post.id },
                     onPlayVideo = { post ->
                         selectedVideoUrl = post.videoUrl
                         destination = CommunityRoutes.VideoPlay
@@ -283,6 +291,9 @@ fun CommunityScreen(
             )
         }
     }
+    sharePostId?.let { id ->
+        CommunityShareSheet(postId = id, onDismiss = { sharePostId = null })
+    }
 }
 
 @Composable
@@ -300,6 +311,7 @@ private fun CommunityFeedContent(
     onSearch: () -> Unit,
     onToggleLike: (CommunityFeedItem) -> Unit,
     onOpenComment: (CommunityFeedItem) -> Unit,
+    onShare: (CommunityFeedItem) -> Unit,
     onPlayVideo: (CommunityFeedItem) -> Unit,
     metaLabel: (CommunityFeedItem) -> String,
 ) {
@@ -332,16 +344,22 @@ private fun CommunityFeedContent(
             Text(
                 text = "社区",
                 color = DemoColors.TextPrimary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                letterSpacing = (-0.5).sp,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 30.sp,
+                letterSpacing = (-1.2).sp,
                 modifier = Modifier.weight(1f),
             )
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(40.dp)
+                    .shadow(
+                        elevation = DemoElevation.Card,
+                        shape = CircleShape,
+                        ambientColor = DemoElevation.CardShadow,
+                        spotColor = DemoElevation.CardShadow,
+                    )
                     .clip(CircleShape)
-                    .background(DemoColors.Accent)
+                    .background(DemoGradients.brandHorizontal())
                     .clickable(onClick = onPublish),
                 contentAlignment = Alignment.Center,
             ) {
@@ -352,11 +370,9 @@ private fun CommunityFeedContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 8.dp)
-                .height(44.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(DemoColors.Background)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+                .padding(bottom = 10.dp)
+                .height(46.dp)
+                .demoCard(shape = RoundedCornerShape(DemoRadius.Card))
                 .clickable(onClick = onSearch)
                 .padding(horizontal = 14.dp),
             contentAlignment = Alignment.CenterStart,
@@ -364,7 +380,7 @@ private fun CommunityFeedContent(
             Text(
                 text = "搜索动态、话题、用户",
                 color = DemoColors.TextSecondary.copy(alpha = 0.7f),
-                fontSize = 13.sp,
+                fontSize = 14.sp,
             )
         }
         Row(
@@ -422,6 +438,7 @@ private fun CommunityFeedContent(
                             meta = metaLabel(post),
                             onLike = { onToggleLike(post) },
                             onComment = { onOpenComment(post) },
+                            onShare = { onShare(post) },
                             onPlayVideo = { onPlayVideo(post) },
                         )
                     }
@@ -453,14 +470,13 @@ private fun EnginePostCard(
     meta: String,
     onLike: () -> Unit,
     onComment: () -> Unit,
+    onShare: () -> Unit,
     onPlayVideo: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+            .demoCard()
             .padding(start = 16.dp, top = 14.dp, end = 12.dp, bottom = 14.dp),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
@@ -468,7 +484,7 @@ private fun EnginePostCard(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(DemoColors.Accent.copy(alpha = 0.15f)),
+                    .background(DemoColors.PrimarySoft),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -549,6 +565,12 @@ private fun EnginePostCard(
                 color = DemoColors.TextSecondary,
                 fontSize = 13.sp,
                 modifier = Modifier.clickable(onClick = onComment),
+            )
+            Text(
+                text = "分享",
+                color = DemoColors.TextSecondary,
+                fontSize = 13.sp,
+                modifier = Modifier.clickable(onClick = onShare),
             )
         }
     }

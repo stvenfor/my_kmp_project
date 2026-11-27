@@ -3,7 +3,6 @@ package com.example.my_kmp_project.feature.pay
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import com.example.my_kmp_project.core.network.decodeEnvelopeData
 import kotlinx.serialization.SerialName
@@ -29,7 +28,7 @@ import kotlinx.serialization.json.JsonObject
  * 逐条对照见 `notes/backend-contract-matrix.md`。
  */
 public class PaymentPrepayApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
 ) {
     /** `POST /api/v1/payments/prepay`，返回渠道 SDK 唤起参数。 */
     public suspend fun prepay(request: PrepayRequest): PrepayResponse {

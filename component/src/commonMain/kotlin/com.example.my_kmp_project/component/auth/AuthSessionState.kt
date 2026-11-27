@@ -4,25 +4,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.my_kmp_project.core.account.AccountFacade
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.my_kmp_project.core.account.DefaultSessionState
+import com.example.my_kmp_project.core.account.SessionState
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Sole reactive session source of truth for UI soft-gates (ADR 0001).
  *
- * [snapshot] / Compose fields are updated together from [sync] and auth writes.
- * Prefer collecting [snapshot] in new code; legacy `isLoggedIn`/`displayName`
- * remain for existing callers during Spike I migration.
+ * DI 过渡（第二批）：[snapshot] / [sync] / [clearLocal] 委托给
+ * [DefaultSessionState]（core 层纯 StateFlow 实现）；Compose 镜像字段
+ * [isLoggedIn] / [displayName] 在每次写入后同步，旧调用方行为不变。
+ *
+ * 新代码请注入 `SessionGraph.state` 或收集 [snapshot]；
+ * Compose 字段仅为 Spike I 期间的存量调用保留。
  */
 public object AuthSessionState {
-    data class Snapshot(
-        val isLoggedIn: Boolean = false,
-        val displayName: String? = null,
-    )
+    private val delegate: SessionState = DefaultSessionState(AccountFacade)
 
-    private val _snapshot = MutableStateFlow(Snapshot())
-    val snapshot: StateFlow<Snapshot> = _snapshot.asStateFlow()
+    val snapshot: StateFlow<SessionState.Snapshot> get() = delegate.snapshot
 
     var isLoggedIn by mutableStateOf(false)
         private set
@@ -32,17 +31,20 @@ public object AuthSessionState {
 
     /** Pull latest values from [AccountFacade] (hydrates store on first access). */
     fun sync() {
-        val session = AccountFacade.current()
-        publish(session.isLoggedIn, session.displayName)
+        delegate.sync()
+        mirror(delegate.snapshot.value)
     }
 
     fun clearLocal() {
-        publish(false, null)
+        delegate.clearLocal()
+        mirror(delegate.snapshot.value)
     }
 
-    private fun publish(loggedIn: Boolean, name: String?) {
-        isLoggedIn = loggedIn
-        displayName = name
-        _snapshot.value = Snapshot(isLoggedIn = loggedIn, displayName = name)
+    /** DI：注入用的会话状态视图，与单例共享同一份 StateFlow。 */
+    fun state(): SessionState = delegate
+
+    private fun mirror(value: SessionState.Snapshot) {
+        isLoggedIn = value.isLoggedIn
+        displayName = value.displayName
     }
 }

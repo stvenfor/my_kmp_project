@@ -2,7 +2,6 @@ package com.example.my_kmp_project.feature.commerce
 
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.postApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -23,7 +22,7 @@ import kotlinx.serialization.json.JsonObject
  * 逐条对照 `notes/backend-contract-matrix.md` B 区 #2/#3/#4。
  */
 public class MallAdminApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
 ) {
     /** `POST /api/v1/mall/products`（`mall/router.go:42` / `mall/handler.go:34`）。 */
     public suspend fun createProduct(request: MallCreateProductRequest): ApiResponse<MallProductCreatedResponse> =

@@ -57,6 +57,7 @@ import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.StateView
 import com.example.my_kmp_project.core.ui.StateViewType
 import com.example.my_kmp_project.feature.community.CommunityPublishBus
+import com.example.my_kmp_project.feature.community.CommunityShareSheet
 import com.example.my_kmp_project.feature.community.formatPublishTime
 import com.example.my_kmp_project.feature.community.http.HttpCommunityPostRepository
 import com.example.my_kmp_project.feature.community.http.PostModel
@@ -88,6 +89,8 @@ internal fun JetpackCommunityRoot(
     var feedGeneration by remember { mutableIntStateOf(0) }
     // 已组合时以发布版本号触发刷新；首屏由 LaunchedEffect(filter) 负责，跳过进入时的初值。
     var lastSeenPublishRevision by remember { mutableIntStateOf(CommunityPublishBus.publishRevision) }
+    // 分享面板目标：非空时弹出社区分享面板（只做 UI，不调用分享 SDK）。
+    var sharePostId by remember { mutableStateOf<String?>(null) }
     val pullRefreshState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
 
@@ -328,6 +331,7 @@ internal fun JetpackCommunityRoot(
                             meta = "${formatPublishTime(post.publishTimeMs())} · ${post.source}",
                             body = post.content,
                             videoCoverUrl = post.videoCoverUrl,
+                            videoUrl = post.videoUrl,
                             imageUrls = post.images,
                             postId = post.id,
                             likes = post.likeCount.toString(),
@@ -338,7 +342,18 @@ internal fun JetpackCommunityRoot(
                                 scope.launch {
                                     try {
                                         val fragment = repository.toggleLike(post.id, liked = !post.isLiked)
-                                        posts = posts.map { if (it.id == post.id) fragment else it }
+                                        // 点赞响应只是 {id, like_count, is_liked} 片段，必须合并进原条目；
+                                        // 直接替换会把昵称/正文/来源等字段清空。
+                                        posts = posts.map {
+                                            if (it.id == post.id) {
+                                                it.copy(
+                                                    likeCountRaw = fragment.likeCountRaw,
+                                                    isLikedRaw = fragment.isLikedRaw,
+                                                )
+                                            } else {
+                                                it
+                                            }
+                                        }
                                     } catch (_: Exception) {
                                         showPlatformToast("点赞失败，请稍后重试")
                                     }
@@ -349,6 +364,7 @@ internal fun JetpackCommunityRoot(
                             onPlayVideo = { onPlayVideo(post.videoUrl.orEmpty()) },
                             onOpenConvention = { onOpen("社区公约") },
                             onOpenComment = { onOpenComments(post.id) },
+                            onOpenShare = { sharePostId = post.id },
                         )
                     }
                     item {
@@ -370,6 +386,9 @@ internal fun JetpackCommunityRoot(
         }
     }
     }
+    sharePostId?.let { id ->
+        CommunityShareSheet(postId = id, onDismiss = { sharePostId = null })
+    }
 }
 
 private sealed class CommunityThreadLine {
@@ -383,6 +402,7 @@ private fun CommunityPostCard(
     meta: String,
     body: String,
     videoCoverUrl: String?,
+    videoUrl: String?,
     imageUrls: List<String>,
     postId: String,
     likes: String,
@@ -394,6 +414,7 @@ private fun CommunityPostCard(
     onPlayVideo: (String) -> Unit = {},
     onOpenConvention: () -> Unit = {},
     onOpenComment: () -> Unit = {},
+    onOpenShare: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     // 只展示服务端返回的图片，不再用占位图补满九宫格。
@@ -441,7 +462,7 @@ private fun CommunityPostCard(
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f)
                     .clip(RoundedCornerShape(6.dp))
-                    .clickable { onPlayVideo(videoCoverUrl) },
+                    .clickable { videoUrl?.let { onPlayVideo(it) } },
                 contentAlignment = Alignment.Center,
             ) {
                 PlatformNetworkImage(
@@ -479,7 +500,7 @@ private fun CommunityPostCard(
                 onClick = onToggleLike,
             )
             CommunityAction(label = commentLabel, tint = DemoColors.TextSecondary, icon = "💬", onClick = onOpenComment)
-            CommunityAction(label = "分享", tint = DemoColors.TextSecondary, icon = "↗")
+            CommunityAction(label = "分享", tint = DemoColors.TextSecondary, icon = "↗", onClick = onOpenShare)
         }
         if (thread.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))

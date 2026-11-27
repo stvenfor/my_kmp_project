@@ -2,7 +2,6 @@ package com.example.my_kmp_project.feature.media
 
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -22,7 +21,7 @@ import kotlinx.serialization.json.JsonObject
  * `missing(待接线)`（契约表 B 区 #14），不塞进既有仓库方法。
  */
 public class ShortVideoReviewApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
 ) {
     /** `POST /api/v1/short-videos/:id/review`，`data` 原样透传（与 `MallApi.requireRawMapPost` 同款）。 */
     public suspend fun review(id: String, request: ShortVideoReviewRequest): ApiResponse<JsonObject> =

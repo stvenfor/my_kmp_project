@@ -39,7 +39,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.launch
@@ -86,8 +88,7 @@ internal fun NewCarFollowListScreen(
                         Modifier
                             .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp)
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.White)
+                            .demoCard()
                             .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 20.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -194,8 +195,7 @@ internal fun NewCarFollowListScreen(
                             Modifier
                                 .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color.White)
+                                .demoCard()
                                 .clickable { onItem(row) }
                                 .padding(14.dp),
                         ) {
@@ -246,7 +246,7 @@ internal fun NewCarFollowListScreen(
                 .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
                 .fillMaxWidth()
                 .height(48.dp),
-            shape = RoundedCornerShape(24.dp),
+            shape = DemoRadius.Pill,
             colors = ButtonDefaults.buttonColors(containerColor = accent),
         ) {
             Text("新建跟进", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
@@ -282,11 +282,11 @@ internal fun NewCarFollowCreateScreen(onBack: () -> Unit) {
                         label,
                         color = if (selected) Color.White else DemoColors.TextPrimary,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(DemoRadius.Pill)
                             .background(if (selected) DemoColors.Accent else Color.White)
-                            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(16.dp))
+                            .border(0.5.dp, DemoColors.Divider, DemoRadius.Pill)
                             .clickable { level = label }
-                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                 }
             }
@@ -298,7 +298,7 @@ internal fun NewCarFollowCreateScreen(onBack: () -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(DemoRadius.Pill)
                     .background(DemoColors.Accent)
                     .clickable {
                         val err = HomeSecondaryStore.validateNewCarFollowCreate(

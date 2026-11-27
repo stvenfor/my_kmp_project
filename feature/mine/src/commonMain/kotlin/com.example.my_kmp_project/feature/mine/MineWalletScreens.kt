@@ -31,6 +31,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +40,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoElevation
+import com.example.my_kmp_project.core.design.DemoGradients
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.launch
@@ -101,18 +106,24 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .shadow(
+                        elevation = DemoElevation.Floating,
+                        shape = cardShape,
+                        ambientColor = DemoColors.GradientEnd.copy(alpha = 0.22f),
+                        spotColor = DemoColors.GradientEnd.copy(alpha = 0.22f),
+                    )
                     .clip(cardShape)
-                    .background(MineTheme.Surface)
-                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
-                    .padding(horizontal = 16.dp, vertical = 20.dp),
+                    .background(DemoGradients.brandHorizontal())
+                    .padding(horizontal = 18.dp, vertical = 22.dp),
             ) {
-                Text("余额（元）", color = MineTheme.LabelTertiary, fontSize = MineTheme.CaptionSize)
+                Text("余额（元）", color = Color.White.copy(alpha = 0.82f), fontSize = MineTheme.CaptionSize)
                 Spacer(Modifier.height(8.dp))
                 Text(
                     WalletMockStore.balanceYuan(),
-                    fontSize = 28.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MineTheme.LabelPrimary,
+                    letterSpacing = (-0.8).sp,
+                    color = Color.White,
                 )
             }
             if (WalletMockStore.loading) {
@@ -124,9 +135,7 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(cardShape)
-                    .background(MineTheme.Surface)
-                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .mineCard()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -138,8 +147,8 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                     textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(cardShape)
-                        .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                        .clip(RoundedCornerShape(DemoRadius.Md))
+                        .background(MineTheme.FillSecondary)
                         .padding(12.dp),
                     decorationBox = { inner ->
                         if (amount.isEmpty()) {
@@ -155,8 +164,8 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                             color = MineTheme.Accent,
                             fontSize = 13.sp,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .border(MineTheme.Hairline, MineTheme.Accent, RoundedCornerShape(16.dp))
+                                .clip(DemoRadius.Pill)
+                                .background(DemoColors.PrimarySoft)
                                 .clickable { amount = quick }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                         )
@@ -170,7 +179,7 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                             color = if (selected) DemoColors.OnPrimary else MineTheme.LabelPrimary,
                             fontSize = 13.sp,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(DemoRadius.Pill)
                                 .background(if (selected) MineTheme.Accent else MineTheme.FillSecondary)
                                 .clickable { channel = id }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -185,7 +194,7 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(22.dp))
-                        .background(MineTheme.Accent)
+                        .background(DemoGradients.brandHorizontal())
                         .clickable {
                             val err = WalletMockStore.validateRecharge(amount)
                             if (err != null) {
@@ -213,9 +222,7 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(cardShape)
-                    .background(MineTheme.Surface)
-                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .mineCard()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -272,8 +279,8 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                     textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(cardShape)
-                        .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                        .clip(RoundedCornerShape(DemoRadius.Md))
+                        .background(MineTheme.FillSecondary)
                         .padding(12.dp),
                     decorationBox = { inner ->
                         if (bank.isEmpty()) Text("银行名", color = MineTheme.LabelTertiary, fontSize = MineTheme.BodySize)
@@ -287,8 +294,8 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
                     textStyle = TextStyle(fontSize = MineTheme.BodySize, color = MineTheme.LabelPrimary),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(cardShape)
-                        .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                        .clip(RoundedCornerShape(DemoRadius.Md))
+                        .background(MineTheme.FillSecondary)
                         .padding(12.dp),
                     decorationBox = { inner ->
                         if (last4.isEmpty()) Text("卡号后四位", color = MineTheme.LabelTertiary, fontSize = MineTheme.BodySize)
@@ -326,9 +333,7 @@ internal fun WalletScreen(onBack: () -> Unit, onPay: () -> Unit) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(cardShape)
-                    .background(MineTheme.Surface)
-                    .border(MineTheme.Hairline, MineTheme.Separator, cardShape)
+                    .mineCard()
                     .padding(16.dp),
             ) {
                 Text("流水", fontWeight = FontWeight.SemiBold, fontSize = MineTheme.HeadlineSize, color = MineTheme.LabelPrimary)

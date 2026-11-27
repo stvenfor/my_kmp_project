@@ -1,5 +1,6 @@
 package com.example.my_kmp_project.core.network
 
+import com.example.my_kmp_project.core.log.AppLog
 import kotlin.concurrent.Volatile
 
 /** Mutable network session config for the demo skeleton. */
@@ -48,7 +49,17 @@ public object NetworkConfig {
 
     fun effectiveBaseUrl(): String {
         if (buildMode == BuildMode.Release) {
-            return remapBackendLocalhost(DemoApiHosts.PRODUCT.trimEnd('/'))
+            // Release 只允许 https；配成 http（dev/test/staging 默认值）时回落到 prod，
+            // 避免明文流量被 release 包带出去。
+            val configured = DemoApiHosts.forEnvironment(netEnvironment).trimEnd('/')
+            if (!configured.startsWith("https://", ignoreCase = true)) {
+                AppLog.e(
+                    "NetworkConfig",
+                    "release build refuses non-https host ($configured); falling back to PRODUCT",
+                )
+                return remapBackendLocalhost(DemoApiHosts.PRODUCT.trimEnd('/'))
+            }
+            return remapBackendLocalhost(configured)
         }
         val override = baseUrlOverride.trim().trimEnd('/')
         val raw = if (override.isNotEmpty()) {

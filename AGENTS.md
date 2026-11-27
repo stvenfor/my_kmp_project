@@ -30,7 +30,7 @@ Ruflo MCP (Cursor): `.cursor/mcp.json` → `npx -y ruflo@latest mcp start`. Heal
 
 | Path | Role |
 |------|------|
-| `core/{base,network,router,account,design,platform,ui,analytics,storage,database}/` | ④ horizontal commons — 10 real Gradle modules (`:core:*`) |
+| `core/{base,network,router,account,design,platform,ui,analytics,storage,database,audio}/` | ④ horizontal commons — 11 real Gradle modules (`:core:*`); `audio` 只承载 OHOS AVPlayer/AVSession cinterop（无 Compose 依赖） |
 | `component/` | ③ vertical ports: pay / push / chat / webview / auth / routing / realtime (`:component`) |
 | `feature/{home,mine,auth,shell,chat,friend,community,media,classroom,commerce,content,live,scan,web,ai,pay,wallet}/` | ② 17 business modules (`:feature:*`) — **no sibling feature deps**, each testable alone |
 | `composeApp/` | ① assembly only: `app/` shell + 三端入口 + RouteHost 分发; **the only binary producer** (iOS framework + OHOS `libkn.so`) |
@@ -142,6 +142,21 @@ OHOS KV / persistence: `core.storage.KeyValueStore` is the only KV contract. **b
 - Match existing naming: `Platform` expect/actual, `App()` composable, platform entrypoints as above.
 - Keep changes scoped: one concern per edit; reuse existing patterns in neighboring files.
 - New dependencies: add to `gradle/libs.versions.toml`, then reference from the right source set in `composeApp/build.gradle.kts`.
+
+## 数据来源：禁止 mock
+
+页面业务数据一律来自后端 `/api/v1/*`（经 `*Api` / `*Repository`）。禁止在 `commonMain` 生产代码里保留业务假数据。
+
+| 允许 | 禁止 |
+|------|------|
+| UI 文案、Tab 标签、枚举选项、表单校验提示 | 写死的列表/订单/地址/金额/统计/曲目/帖子 |
+| 本地偏好（主题、语言、环境地址） | 「假成功」toast、假扫码结果、假支付结果 |
+| `commonTest` 测试夹具 | 用本地常量兜底网络失败（失败只写 `errorMessage`，保留上次成功缓存） |
+
+- 后端没有的接口 → **先补后端接口 + 种子数据**，再接线；不得用前端假数据撑界面。
+- 第三方 SDK 未接入（RTC / 融云 / 课堂）→ 只允许 honest 空态（「xx 未接入」），不允许 mock 交互。
+- 历史遗留的 `*MockStore` / `HomeMockData` 命名只是历史包袱，内部必须已是真实 HTTP。
+- 审计基线与缺口清单：`notes/page-data-source-audit.md`。
 
 ## Compose
 

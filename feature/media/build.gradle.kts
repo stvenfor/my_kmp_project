@@ -19,10 +19,17 @@ kotlin {
         }
         getByName("androidMain").dependencies {
             implementation(libs.composemediaplayer.video)
+            implementation(libs.androidx.media3.exoplayer)
+            implementation(libs.androidx.media3.session)
+            implementation(projects.core.storage) // AndroidAppContext（进程级 application context）
         }
         // iosMain 由根工程共享接线创建；-PandroidOnly=true（CI）时它不存在，用 matching 兼容两者。
         matching { it.name == "iosMain" }.all {
             dependencies { implementation(libs.composemediaplayer.video) }
+        }
+        // OHOS 音频原生桥（AVPlayer + AVSession），cinterop 在 core:audio 内。
+        matching { it.name == "ohosMain" }.all {
+            dependencies { implementation(projects.core.audio) }
         }
         getByName("commonTest").dependencies {
             implementation(projects.core.network)

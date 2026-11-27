@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.my_kmp_project.app.AppContainer
+import com.example.my_kmp_project.app.di.AuthModule
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.AdaptiveWindowClass
 import com.example.my_kmp_project.core.design.adaptiveWindowClass
@@ -84,8 +85,7 @@ import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.mine.MineRouteHost
 import com.example.my_kmp_project.feature.media.MiniPlayerBar
 import com.example.my_kmp_project.feature.media.MusicNowPlayingRoute
-import com.example.my_kmp_project.feature.media.MusicSession
-import com.example.my_kmp_project.feature.media.SharedVideoPlayer
+import com.example.my_kmp_project.feature.media.VideoPlayerHost
 import com.example.my_kmp_project.core.router.MineRoutes
 import com.example.my_kmp_project.feature.scan.ScanScreen
 import com.example.my_kmp_project.feature.shell.MainBottomBar
@@ -594,11 +594,13 @@ internal fun NativeAndroidMain() {
             MineIsland(
                 initialRoute = islandRoute,
                 onRequestClose = { closeOverlay() },
+                api = AppContainer.get().network.api(),
             )
         }
         ShellOverlay.AllServices -> {
             AllServicesScreen(
                 onBack = { closeOverlay() },
+                content = AppContainer.get().home.content,
                 onOpen = { label ->
                     closeOverlay()
                     openDeferred(label)
@@ -610,6 +612,7 @@ internal fun NativeAndroidMain() {
             HomeRouteHost(
                 route = route,
                 onBack = { popHomeRoute() },
+                content = AppContainer.get().home.content,
                 onNavigate = { navigateSecondary(it) },
             )
         }
@@ -622,7 +625,9 @@ internal fun NativeAndroidMain() {
                 previewIndex = communityPreviewIndex,
                 videoUrl = communityVideoUrl,
                 videoPlayer = { url, playing, modifier, onPlayingChange ->
-                    SharedVideoPlayer(
+                    // 播放页临时解锁横屏，离开时恢复；仅播放路由渲染时生效。
+                    PlayerLandscapeEffect()
+                    VideoPlayerHost(
                         url = url,
                         isPlaying = playing,
                         onPlayingChange = onPlayingChange,
@@ -645,6 +650,7 @@ internal fun NativeAndroidMain() {
                         navigateSecondary(next)
                     }
                 },
+                api = AppContainer.get().network.api(),
             )
         }
         ShellOverlay.ContentRoute -> {
@@ -661,7 +667,11 @@ internal fun NativeAndroidMain() {
             )
         }
         ShellOverlay.Membership -> {
-            MembershipScreen(onBack = { closeOverlay() })
+            MembershipScreen(
+                onBack = { closeOverlay() },
+                gateway = com.example.my_kmp_project.app.di.LegacyGraph.require().pay,
+                api = AppContainer.get().network.api(),
+            )
         }
         ShellOverlay.InAppWeb -> {
             InAppWebScreen(
@@ -706,6 +716,7 @@ internal fun NativeAndroidMain() {
             AuthOverlay.Login -> LoginScreen(
                 onLoginSuccess = { afterAuthSuccess() },
                 onOpenRegister = { authOverlay = AuthOverlay.Register },
+                controller = AuthModule.loginController(),
                 onBack = {
                     softAuth.dismissGate()
                     pendingRouteAfterLogin = null
@@ -745,8 +756,11 @@ internal fun NativeAndroidMain() {
                         bottomBar = {
                             Column {
                                 // 音乐仅应用内跨 Tab 续播；active 才显示，点击回到 Now Playing。
-                                if (MusicSession.isActive) {
-                                    MiniPlayerBar(onOpenNowPlaying = { showNowPlaying = true })
+                                if (com.example.my_kmp_project.app.di.LegacyGraph.require().musicSession.isActive) {
+                                    MiniPlayerBar(
+                                        music = com.example.my_kmp_project.app.di.LegacyGraph.require().musicSession,
+                                        onOpenNowPlaying = { showNowPlaying = true },
+                                    )
                                 }
                                 if (bottomBarVisible && !showNavigationRail) {
                                     MainBottomBar(selected = tab, onSelect = { selectTab(it) })
@@ -790,6 +804,7 @@ internal fun NativeAndroidMain() {
                                     when (t) {
                                         MainTab.Home -> JetpackHomeRoot(
                                             onDeferred = { openDeferred(it) },
+                                            dashboard = AppContainer.get().home.dashboard,
                                             displayName = authState.displayName,
                                             loggedIn = authState.isLoggedIn,
                                         )
@@ -846,6 +861,7 @@ internal fun NativeAndroidMain() {
                                                 bottomBarVisible = false
                                             },
                                             onDeferred = { msg -> openDeferred(msg) },
+                                            api = AppContainer.get().network.api(),
                                         )
                                     }
                                 }
@@ -868,7 +884,10 @@ internal fun NativeAndroidMain() {
                     .background(DemoColors.PageBg)
                     .zIndex(10f),
             ) {
-                MusicNowPlayingRoute(onBack = { showNowPlaying = false })
+                MusicNowPlayingRoute(
+                    onBack = { showNowPlaying = false },
+                    music = com.example.my_kmp_project.app.di.LegacyGraph.require().musicSession,
+                )
             }
         }
 

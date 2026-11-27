@@ -69,6 +69,24 @@ object HomeServiceAssets {
     }
 
     /**
+     * 功能宫格图标：后端 `icon` key → 本地资源。
+     * 未知 key 回退到按文案映射（最终仍是默认「全部功能」图）。
+     */
+    fun featureForIcon(icon: String, label: String): DrawableResource = when (icon) {
+        "h5" -> Res.drawable.home_feature_sales
+        "life" -> Res.drawable.home_feature_life
+        "used_car" -> Res.drawable.home_feature_usedcar
+        "new_car_deal" -> Res.drawable.home_feature_newcar
+        "new_car_follow" -> Res.drawable.home_feature_data
+        "ai_stone" -> Res.drawable.home_feature_ai_stone
+        "club" -> Res.drawable.home_feature_order
+        "live" -> Res.drawable.home_feature_live
+        "market" -> Res.drawable.home_feature_market
+        "more" -> Res.drawable.home_feature_more
+        else -> featureForLabel(label)
+    }
+
+    /**
      * Home root feature grid icons — synced from Flutter SoT
      * (`picsum.photos/seed/{sales,life,...}/200/200` bundled as local PNG).
      */

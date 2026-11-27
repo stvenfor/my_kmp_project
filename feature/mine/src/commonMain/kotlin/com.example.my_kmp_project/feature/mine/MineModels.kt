@@ -46,19 +46,12 @@ object MineCatalog {
         MineStat("0", "累计客户"),
     )
 
-    val demoStats = listOf(
-        MineStat("1028", "加入天数"),
-        MineStat("28", "员工数"),
-        MineStat("2059", "店铺天数"),
-        MineStat("9366", "累计客户"),
-    )
-
-    /** Flutter SoT logged-in defaults (`MineController._syncUser` + `MineQuickServiceData`). */
+    /** 登录态骨架：真实昵称 / 门店 / 统计由 MineAccountController 从 /me/profile 拉取后覆盖。 */
     val goldDemoProfile = MineProfileUi(
         displayName = "qa_user",
-        roleBadge = "销售顾问",
-        storeName = "[4S]北京沃德龙鼎吉利",
-        maskedPhone = "138****5172",
+        roleBadge = "",
+        storeName = "",
+        maskedPhone = "",
         stats = guestStats,
     )
 

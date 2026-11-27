@@ -1879,7 +1879,7 @@ struct NativeAiStreamPage: View {
             return "二手车入口：首页「二手车」或全部服务 → 二手车（路由 /home/used_car）。需登录后查看车源列表。（mock）"
         }
         if q.contains("登录") {
-            return "登录：我的 Tab 点头像/登录，或打开 /auth/login；支持密码与验证码（mock，真微信登录见 gap）。"
+            return "登录：我的 Tab 点头像/登录，或打开 /auth/login；支持密码与验证码登录。"
         }
         if q.contains("数据") {
             return "数据分析：首页/全部服务 →「数据分析」（/home/data_analytics），登录后可看门店指标。（mock）"

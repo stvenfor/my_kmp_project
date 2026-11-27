@@ -1,10 +1,13 @@
 package com.example.my_kmp_project
 
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.window.ComposeUIViewController
 import com.example.my_kmp_project.core.network.platformNetworkBootstrap
+import com.example.my_kmp_project.core.ui.LocalVideoPositionMemory
 import com.example.my_kmp_project.core.router.DeepLinkRouter
 import com.example.my_kmp_project.feature.auth.AuthBridge
 import com.example.my_kmp_project.app.ShellBootstrap
+import com.example.my_kmp_project.app.AppContainer
 import com.example.my_kmp_project.feature.mine.MineIsland
 import com.example.my_kmp_project.core.router.MineIslandRoute
 import com.example.my_kmp_project.feature.shell.SecondaryRouteIsland
@@ -37,6 +40,7 @@ fun MineIslandViewController(route: String = "settings"): UIViewController {
             onRequestClose = {
                 controller.dismissViewControllerAnimated(true, completion = null)
             },
+            api = AppContainer.get().network.api(),
         )
     }
     return controller
@@ -53,12 +57,16 @@ fun SecondaryRouteViewController(routeOrLabel: String): UIViewController {
     ShellBootstrap.install()
     lateinit var controller: UIViewController
     controller = ComposeUIViewController {
-        SecondaryRouteIsland(
-            initialRoute = routeOrLabel,
-            onRequestClose = {
-                controller.dismissViewControllerAnimated(true, completion = null)
-            },
-        )
+        CompositionLocalProvider(
+            LocalVideoPositionMemory provides AppContainer.get().videoPositions,
+        ) {
+            SecondaryRouteIsland(
+                initialRoute = routeOrLabel,
+                onRequestClose = {
+                    controller.dismissViewControllerAnimated(true, completion = null)
+                },
+            )
+        }
     }
     return controller
 }

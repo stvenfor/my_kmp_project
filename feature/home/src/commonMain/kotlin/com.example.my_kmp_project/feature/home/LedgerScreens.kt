@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlin.math.abs
@@ -137,8 +138,7 @@ private fun TransactionListItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 0.dp)
             .padding(bottom = 12.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Background)
+            .demoCard()
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.Top,

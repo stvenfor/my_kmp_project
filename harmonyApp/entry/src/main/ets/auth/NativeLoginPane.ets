@@ -2,6 +2,8 @@ import { promptAction } from '@kit.ArkUI';
 import { AuthSession, sharedSessionStore } from './SessionStore';
 import { HuaweiQuickLoginPane } from './HuaweiQuickLoginPane';
 import {
+  availableLoginMethods,
+  LoginMethodInfo,
   loginWithOtp,
   loginWithPassword,
   registerWithEmail,
@@ -31,6 +33,22 @@ export struct NativeLoginPane {
   @State otpHint: string = '';
   @State showRegister: boolean = false;
   @State showHuawei: boolean = false;
+  @State otherMethods: LoginMethodInfo[] = [];
+
+  aboutToAppear(): void {
+    this.otherMethods = availableLoginMethods().filter(
+      (method: LoginMethodInfo) =>
+        method.available && method.id !== 'password' && method.id !== 'phone_otp'
+    );
+  }
+
+  private handleOtherMethod(method: LoginMethodInfo): void {
+    if (method.id === 'huawei') {
+      this.showHuawei = true;
+      return;
+    }
+    this.error = `${method.displayName}暂不可用`;
+  }
 
   private greeting(): string {
     const h = new Date().getHours();
@@ -283,27 +301,23 @@ export struct NativeLoginPane {
             .borderRadius(14)
             .onClick(() => this.submit())
 
-          Text('微信登录')
-            .fontSize(17).fontWeight(FontWeight.Medium).fontColor('#007AFF')
-            .width('100%').height(52)
-            .textAlign(TextAlign.Center)
-            .margin({ top: 16 })
-            .border({ width: 1, color: '#C6C6C8' })
-            .borderRadius(14)
-            .onClick(() => { this.error = '微信登录需接入微信 SDK（见 platform-gap-registry）'; })
-
-          Text('华为账号一键登录')
-            .fontSize(14).fontColor('#007AFF')
-            .width('100%').textAlign(TextAlign.Center)
-            .margin({ top: 12 })
-            .onClick(() => { this.showHuawei = true; })
+          ForEach(this.otherMethods, (method: LoginMethodInfo) => {
+            Text(method.displayName)
+              .fontSize(17).fontWeight(FontWeight.Medium).fontColor('#007AFF')
+              .width('100%').height(52)
+              .textAlign(TextAlign.Center)
+              .margin({ top: 16 })
+              .border({ width: 1, color: '#C6C6C8' })
+              .borderRadius(14)
+              .onClick(() => this.handleOtherMethod(method))
+          }, (method: LoginMethodInfo) => method.id)
 
           Row() {
             Text('我要注册').fontSize(13).fontWeight(FontWeight.Medium).fontColor('#007AFF')
               .onClick(() => { this.showRegister = true; })
             Column().width(1).height(12).backgroundColor('#C6C6C8').margin({ left: 16, right: 16 })
             Text('忘记密码').fontSize(13).fontWeight(FontWeight.Medium).fontColor('#007AFF')
-              .onClick(() => { this.error = '忘记密码功能暂未开放'; })
+              .onClick(() => { this.error = '请联系管理员重置密码'; })
           }
           .margin({ top: 24 })
           .justifyContent(FlexAlign.Center)

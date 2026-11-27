@@ -7,7 +7,7 @@ import {
   APP_USER_SERVICE_URL,
   HUAWEI_USER_AUTH_PROTOCOL,
 } from './AuthConfig';
-import { loginWithHuaweiCode } from './AuthApiClient';
+import { loginWithMethod } from './AuthApiClient';
 import { AuthSession, sharedSessionStore } from './SessionStore';
 import libentry from 'libentry.so';
 
@@ -154,7 +154,7 @@ export struct HuaweiQuickLoginPane {
     this.tip = '正在登录…';
     try {
       const deviceId = sharedSessionStore.deviceId();
-      const session = await loginWithHuaweiCode(authCode, deviceId);
+      const session = await loginWithMethod('huawei', authCode, deviceId);
       sharedSessionStore.save(session);
       try {
         if (libentry !== undefined && libentry.ApplyAuthSession !== undefined) {

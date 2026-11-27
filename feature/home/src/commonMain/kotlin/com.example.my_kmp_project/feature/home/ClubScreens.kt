@@ -1,7 +1,6 @@
 package com.example.my_kmp_project.feature.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +35,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
@@ -94,9 +95,7 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
             Modifier
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.White)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                .demoCard()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -120,10 +119,10 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
                 "+ 加入",
                 color = Color.White,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(DemoRadius.Pill)
                     .background(DemoColors.Accent)
                     .clickable(onClick = onJoin)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 18.dp, vertical = 8.dp),
                 fontSize = 14.sp,
             )
         }
@@ -163,9 +162,7 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
                 Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .demoCard()
                     .padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -191,8 +188,8 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFF2F2F7))
+                            .clip(RoundedCornerShape(DemoRadius.Md))
+                            .background(DemoColors.SurfaceSunken)
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -221,9 +218,7 @@ private fun ClubContentBody(title: String, onBack: () -> Unit, onJoin: () -> Uni
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.White)
-                .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                .demoCard()
                 .clickable { showPlatformToast("社区") }
                 .padding(vertical = 14.dp),
         )

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
@@ -55,7 +56,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.loadStringList
 import com.example.my_kmp_project.core.platform.platformTodayYmd
 import com.example.my_kmp_project.core.platform.saveStringList
@@ -204,8 +207,7 @@ private fun CommunityPublishScreen(
                 Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 40.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White)
+                    .demoCard()
                     .padding(start = 22.dp, end = 22.dp, top = 28.dp, bottom = 22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -433,11 +435,11 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(DemoRadius.Pill)
                     .border(
                         0.5.dp,
                         if (u.isFollowed) DemoColors.Divider else Color(0xFF1677FF),
-                        RoundedCornerShape(14.dp),
+                        DemoRadius.Pill,
                     )
                     .clickable {
                         scope.launch {
@@ -462,8 +464,8 @@ private fun CommunitySearchScreen(onBack: () -> Unit) {
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth()
                 .height(44.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .border(1.5.dp, DemoColors.Accent, RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(DemoRadius.Card))
+                .border(1.dp, DemoColors.Accent, RoundedCornerShape(DemoRadius.Card))
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -762,18 +764,17 @@ private fun CommunityVideoPlayScreen(
 ) {
     var isPlaying by remember(videoUrl) { mutableStateOf(false) }
     ReportMainTabRoot(isRoot = false)
-    Column(Modifier.fillMaxSize().background(Color.Black)) {
-        MineTopBar(title = "视频", onBack = onBack, containerColor = Color.Black, titleColor = Color.White)
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
         if (videoPlayer != null) {
             videoPlayer(
                 videoUrl,
                 isPlaying,
-                Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                Modifier.fillMaxSize(),
                 { isPlaying = it },
             )
         } else {
             Box(
-                Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -782,6 +783,24 @@ private fun CommunityVideoPlayScreen(
                     fontSize = 15.sp,
                 )
             }
+        }
+        // 顶部返回按钮：圆形半透明黑底 + 白色箭头，叠在播放器上
+        Box(
+            Modifier
+                .statusBarsPadding()
+                .padding(start = 12.dp, top = 8.dp)
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.35f))
+                .clickable(onClick = onBack),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "‹",
+                color = Color.White,
+                fontSize = 26.sp,
+                modifier = Modifier.padding(bottom = 2.dp),
+            )
         }
     }
 }

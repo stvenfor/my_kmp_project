@@ -1,7 +1,6 @@
 package com.example.my_kmp_project.feature.chat
 
 import com.example.my_kmp_project.core.network.ApiClient
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
@@ -146,7 +145,7 @@ public interface ImBackupService {
  * [imUserId] 参数按 Dart 一样被忽略（不进 body）。
  */
 public class HttpImBackupService(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
 ) : ImBackupService {
 
     private val pending: MutableList<ImMessageBackupEvent> = mutableListOf()
@@ -350,7 +349,7 @@ public class MockImBackupService(
  * mock 开关为真用 [MockImBackupService]，否则 [HttpImBackupService]。
  */
 public fun createImBackupService(
-    client: ApiClient = NetworkFacade.api(),
+    client: ApiClient,
     useMock: () -> Boolean = { RongImConfig.useMockIm },
     sleep: suspend (Long) -> Unit = { delay(it) },
 ): ImBackupService = if (useMock()) MockImBackupService(sleep) else HttpImBackupService(client)

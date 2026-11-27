@@ -1,22 +1,26 @@
 package com.example.my_kmp_project.core.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoPrimaryButton
+import com.example.my_kmp_project.core.design.DemoRadius
 
 /**
  * 通用状态页语义类型：[Error] 表达加载/提交失败，[Empty] 表达无数据。
@@ -49,13 +53,39 @@ fun StateView(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(DemoRadius.Pill)
+                .background(
+                    when (type) {
+                        StateViewType.Error -> DemoColors.ErrorSoft
+                        StateViewType.Empty -> DemoColors.SurfaceSunken
+                    },
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = when (type) {
+                    StateViewType.Error -> "!"
+                    StateViewType.Empty -> "—"
+                },
+                color = when (type) {
+                    StateViewType.Error -> DemoColors.Danger
+                    StateViewType.Empty -> DemoColors.Muted
+                },
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        Spacer(Modifier.height(16.dp))
         Text(
             text = title,
             color = when (type) {
                 StateViewType.Error -> DemoColors.Danger
                 StateViewType.Empty -> DemoColors.TextPrimary
             },
-            fontSize = 16.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
@@ -65,20 +95,17 @@ fun StateView(
                 text = description,
                 color = DemoColors.TextSecondary,
                 fontSize = 14.sp,
+                lineHeight = 20.sp,
                 textAlign = TextAlign.Center,
             )
         }
         if (actionLabel != null && onAction != null) {
-            Spacer(Modifier.height(16.dp))
-            Button(
+            Spacer(Modifier.height(18.dp))
+            DemoPrimaryButton(
+                text = actionLabel,
                 onClick = onAction,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = DemoColors.Primary,
-                    contentColor = DemoColors.OnPrimary,
-                ),
-            ) {
-                Text(text = actionLabel)
-            }
+                modifier = Modifier.height(44.dp),
+            )
         }
     }
 }

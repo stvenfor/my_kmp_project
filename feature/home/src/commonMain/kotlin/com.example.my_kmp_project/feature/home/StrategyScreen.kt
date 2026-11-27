@@ -4,7 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 
 private val GainRed = Color(0xFFFF3B30)
@@ -49,10 +51,18 @@ private val GaugeGreen = Color(0xFF34C759)
 private val GaugeRed = Color(0xFFFF3B30)
 
 @Composable
-fun StrategyScreen(onBack: () -> Unit) {
+fun StrategyScreen(onBack: () -> Unit, content: HomeContentStore) {
     ReportMainTabRoot(isRoot = false)
+    val version = content.version
+    val tabs = remember(version) { content.strategyTabs() }
+    val periods = remember(version) { content.strategyPeriods() }
+    val assets = remember(version) { content.strategyAssets() }
     var selectedTab by remember { mutableStateOf(0) }
-    var periodIndex by remember { mutableStateOf(4) }
+    var periodIndex by remember { mutableStateOf(-1) }
+    // periodIndex 未指定时默认最后一个周期（与 Flutter 默认「近1年」一致）。
+    val effectivePeriod = if (periodIndex in periods.indices) periodIndex else (periods.lastIndex).coerceAtLeast(0)
+
+    LaunchedEffect(Unit) { content.refreshStrategy() }
 
     Column(
         modifier = Modifier
@@ -80,14 +90,18 @@ fun StrategyScreen(onBack: () -> Unit) {
                 .padding(horizontal = 16.dp)
                 .padding(top = 8.dp, bottom = 24.dp),
         ) {
-            StrategySubTabs(
-                tabs = HomeMockData.strategyTabs,
-                selectedIndex = selectedTab,
-                onSelected = { selectedTab = it },
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            if (tabs.isNotEmpty()) {
+                StrategySubTabs(
+                    tabs = tabs,
+                    selectedIndex = selectedTab.coerceIn(0, tabs.lastIndex),
+                    onSelected = { selectedTab = it },
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
             AssetGridCard(
-                periodIndex = periodIndex,
+                periodIndex = effectivePeriod,
+                periods = periods,
+                assets = assets,
                 onPeriodSelected = { periodIndex = it },
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -143,14 +157,14 @@ private fun StrategySubTabs(
 @Composable
 private fun AssetGridCard(
     periodIndex: Int,
+    periods: List<String>,
+    assets: List<StrategyAssetCell>,
     onPeriodSelected: (Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+            .demoCard()
             .padding(16.dp),
     ) {
         Text(
@@ -162,7 +176,7 @@ private fun AssetGridCard(
         )
         // Flutter SoT: intro block sits taller (font metrics) → grid starts ~38dp lower.
         Spacer(modifier = Modifier.height(54.dp))
-        val rows = HomeMockData.strategyAssets.chunked(3)
+        val rows = assets.chunked(3)
         rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -183,7 +197,7 @@ private fun AssetGridCard(
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            HomeMockData.strategyPeriods.forEachIndexed { index, label ->
+            periods.forEachIndexed { index, label ->
                 val active = index == periodIndex
                 Text(
                     text = label,
@@ -229,9 +243,7 @@ private fun StrategyPlanCard() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Background)
-            .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(12.dp))
+            .demoCard()
             .padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.Top) {
@@ -298,10 +310,10 @@ private fun StrategyPlanCard() {
             Box(
                 modifier = Modifier
                     .height(36.dp)
-                    .clip(RoundedCornerShape(18.dp))
+                    .clip(DemoRadius.Pill)
                     .background(DemoColors.Accent)
                     .clickable { }
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

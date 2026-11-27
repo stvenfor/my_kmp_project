@@ -29,6 +29,7 @@ internal fun JetpackMineRoot(
     onOpenSettings: () -> Unit,
     onOpenPersonalized: () -> Unit,
     onDeferred: (String) -> Unit,
+    api: com.example.my_kmp_project.core.network.ApiClient,
 ) {
     // CMP MineHomeContent already mirrors Flutter MinePage (header / quick / functions / menu).
     MineHomeContent(
@@ -45,5 +46,6 @@ internal fun JetpackMineRoot(
         // Soft-auth: openDeferred already gates mall/wallet/home routes via openWithSoftAuth.
         onRequireLogin = { redirect -> onDeferred(redirect) },
         snackbar = { label -> showPlatformToast(label) },
+        api = api,
     )
 }

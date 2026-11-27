@@ -2,7 +2,6 @@ package com.example.my_kmp_project.feature.chat
 
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonObject
 
@@ -37,7 +36,7 @@ public data class ImUserProfile(
  * // 不在本工程可用产物内，故此处不引入任何 SDK 依赖。
  */
 public class ImUserProfileApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
     private val useMock: () -> Boolean = { RongImConfig.useMockIm },
     private val sleep: suspend (Long) -> Unit = { delay(it) },
 ) {

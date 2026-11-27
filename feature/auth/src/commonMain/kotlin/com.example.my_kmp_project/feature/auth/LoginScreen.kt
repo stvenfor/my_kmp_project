@@ -30,14 +30,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.component.auth.LoginController
+import com.example.my_kmp_project.component.auth.LoginCredentials
+import com.example.my_kmp_project.component.auth.LoginOutcome
 import com.example.my_kmp_project.core.platform.PlatformBackHandler
+import com.example.my_kmp_project.core.design.DemoColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private enum class LoginMode { Email, Phone }
 
 /**
- * Flutter-aligned login (邮箱 / 短信) via remote [AuthRepository].
+ * Flutter-aligned login (邮箱 / 短信) via remote [LoginController].
+ *
+ * 策略模式第 1 批：方式可用性与登录动作来自注入的 [LoginController]；
+ * 密码 / 短信输入区布局与像素保持不变。
  */
 @Composable
 public fun LoginScreen(
@@ -45,6 +52,7 @@ public fun LoginScreen(
     onOpenRegister: () -> Unit,
     onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    controller: LoginController = AuthRepository.loginController(),
 ) {
     if (onBack != null) {
         PlatformBackHandler(onBack = onBack)
@@ -64,9 +72,16 @@ public fun LoginScreen(
     var otpHint by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(email, phone) {
-        AuthPendingCredentials.email = email
-        AuthPendingCredentials.phone = phone
+    // 方式清单来自注册表；本批注册表只有密码 / 短信，布局与旧版一致。
+    val methods = controller.descriptors()
+    val passwordAvailable = methods
+        .firstOrNull { it.id == LoginMethodIds.PASSWORD }?.available != false
+    val phoneAvailable = methods
+        .firstOrNull { it.id == LoginMethodIds.PHONE_OTP }?.available != false
+    val otherMethods = methods.filter {
+        it.available &&
+            it.id != LoginMethodIds.PASSWORD &&
+            it.id != LoginMethodIds.PHONE_OTP
     }
 
     LaunchedEffect(otpCooldown) {
@@ -152,7 +167,7 @@ public fun LoginScreen(
                             modifier = Modifier
                                 .height(AuthUiTokens.FieldHeight)
                                 .background(
-                                    AuthUiTokens.Surface,
+                                    DemoColors.SurfaceSunken,
                                     RoundedCornerShape(AuthUiTokens.RadiusMd),
                                 )
                                 .padding(horizontal = 16.dp),
@@ -251,11 +266,13 @@ public fun LoginScreen(
                 label = "登录",
                 enabled = when (mode) {
                     LoginMode.Email ->
-                        email.isNotBlank() &&
+                        passwordAvailable &&
+                            email.isNotBlank() &&
                             password.length >= AuthValidators.MIN_PASSWORD_LENGTH &&
                             agreedPrivacy
                     LoginMode.Phone ->
-                        AuthPhoneUtils.isValidChinaMobile(phone) &&
+                        phoneAvailable &&
+                            AuthPhoneUtils.isValidChinaMobile(phone) &&
                             AuthValidators.isValidOtp(otp) &&
                             agreedPrivacy
                 },
@@ -268,31 +285,60 @@ public fun LoginScreen(
                     scope.launch {
                         loading = true
                         error = null
-                        val result = when (mode) {
-                            LoginMode.Email ->
-                                AuthRepository.loginWithPassword(email, password)
-                            LoginMode.Phone ->
-                                AuthRepository.loginWithOtp(phone, otp)
+                        val outcome = when (mode) {
+                            LoginMode.Email -> controller.login(
+                                LoginMethodIds.PASSWORD,
+                                LoginCredentials.Password(email, password),
+                            )
+                            LoginMode.Phone -> controller.login(
+                                LoginMethodIds.PHONE_OTP,
+                                LoginCredentials.PhoneOtp(phone, otp),
+                            )
                         }
-                        result.fold(
-                            onSuccess = { onLoginSuccess() },
-                            onFailure = { error = it.message ?: "登录失败" },
-                        )
+                        when (outcome) {
+                            is LoginOutcome.Success -> onLoginSuccess()
+                            is LoginOutcome.Failure -> error = outcome.error.message
+                            LoginOutcome.Cancelled -> Unit
+                        }
                         loading = false
                     }
                 },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-            AuthWechatButton(
-                enabled = !loading,
-                onClick = { error = "微信登录暂未开放（见 platform-gap-registry）" },
-            )
+            if (otherMethods.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                otherMethods.forEach { method ->
+                    AuthMethodButton(
+                        label = method.displayName,
+                        enabled = method.available && !loading,
+                        onClick = {
+                            if (!agreedPrivacy) {
+                                error = "请先阅读并同意隐私条款"
+                            } else {
+                                scope.launch {
+                                    loading = true
+                                    error = null
+                                    when (val outcome = controller.login(
+                                        method.id,
+                                        LoginCredentials.Interactive,
+                                    )) {
+                                        is LoginOutcome.Success -> onLoginSuccess()
+                                        is LoginOutcome.Failure -> error = outcome.error.message
+                                        LoginOutcome.Cancelled -> Unit
+                                    }
+                                    loading = false
+                                }
+                            }
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
             AuthFooterLinks(
                 onRegister = onOpenRegister,
-                onForgotPassword = { error = "忘记密码功能暂未开放" },
+                onForgotPassword = { error = "请联系管理员重置密码" },
             )
         }
     }

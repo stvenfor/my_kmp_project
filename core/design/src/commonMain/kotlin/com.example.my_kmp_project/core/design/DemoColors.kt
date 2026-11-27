@@ -28,6 +28,19 @@ object DemoColors {
     val Toolbar = argb(DesignTokens.Color.Canvas)
     val TabBarBackground = argb(DesignTokens.Color.TabBarBackground)
 
+    // —— 表面分层 / 浅底 / 渐变（新增设计基线，优先在卡片与浮层中使用）——
+    val SurfaceRaised = argb(DesignTokens.Color.SurfaceRaised)
+    val SurfaceFloating = argb(DesignTokens.Color.SurfaceFloating)
+    val SurfaceSunken = argb(DesignTokens.Color.SurfaceSunken)
+    val PrimarySoft = argb(DesignTokens.Color.PrimarySoft)
+    val VioletSoft = argb(DesignTokens.Color.VioletSoft)
+    val CyanSoft = argb(DesignTokens.Color.CyanSoft)
+    val PinkSoft = argb(DesignTokens.Color.PinkSoft)
+    val Scrim = argb(DesignTokens.Color.Scrim)
+    val GradientStart = argb(DesignTokens.Color.GradientStart)
+    val GradientMid = argb(DesignTokens.Color.GradientMid)
+    val GradientEnd = argb(DesignTokens.Color.GradientEnd)
+
     // —— Flutter VercelTokens 强调色族（首页服务九宫格轮转用）——
     val LinkDeep = argb(DesignTokens.Color.LinkDeep)
     val LinkBgSoft = argb(DesignTokens.Color.LinkBgSoft)

@@ -8,10 +8,12 @@
   资源本体只有一份：composeApp/src/androidDebug/res/xml/network_security_config.xml。
   manifest 覆盖必须留在 AGP 标准 src/debug 源集，否则不会参与 manifest 合并。
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:networkSecurityConfig="@xml/network_security_config"
-        android:usesCleartextTraffic="true" />
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic" />
 
 </manifest>

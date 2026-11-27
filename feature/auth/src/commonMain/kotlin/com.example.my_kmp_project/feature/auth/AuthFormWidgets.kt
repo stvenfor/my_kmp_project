@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -38,7 +39,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoElevation
 import com.example.my_kmp_project.core.design.DemoFonts
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.DesignTokens
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -59,17 +62,17 @@ public object AuthUiTokens {
     val Separator = DemoColors.Divider
     /** 无独立 SoT 令牌：Mute 半透明，近似原禁用灰。 */
     val ButtonDisabled = DemoColors.Muted.copy(alpha = 0.5f)
-    /** Flutter `AuthTheme.radiusMd` / `radiusLg` == DesignTokens.Radius.Sm / Md. */
-    val RadiusMd = DesignTokens.Radius.Sm.dp
-    val RadiusLg = DesignTokens.Radius.Md.dp
+    /** 表单圆角跟随新设计基线：输入框 12dp、按钮药丸。 */
+    val RadiusMd = DesignTokens.Radius.Md.dp
+    val RadiusLg = DesignTokens.Radius.Lg.dp
     val FieldHeight = 52.dp
     val ButtonHeight = 52.dp
     /** 四个表单页统一的主标题 / 副标题规格。 */
-    val TitleSize = 32.sp
-    val TitleLineHeight = 36.sp
-    val TitleLetterSpacing = (-1.6).sp
+    val TitleSize = 30.sp
+    val TitleLineHeight = 34.sp
+    val TitleLetterSpacing = (-1.2).sp
     val TitleWeight = FontWeight.SemiBold
-    val SubtitleSize = 14.sp
+    val SubtitleSize = 15.sp
 }
 
 /** Local hour approximated as UTC+8 (product locale). */
@@ -99,7 +102,7 @@ public fun AuthSegmentedControl(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(AuthUiTokens.FillSecondary, RoundedCornerShape(AuthUiTokens.RadiusLg))
+            .background(DemoColors.SurfaceSunken, RoundedCornerShape(DemoRadius.Xl))
             .padding(4.dp),
     ) {
         AuthSegmentChip(
@@ -133,9 +136,15 @@ private fun AuthSegmentChip(
     Box(
         modifier = modifier
             .height(40.dp)
+            .shadow(
+                elevation = if (selected) 2.dp else 0.dp,
+                shape = RoundedCornerShape(DemoRadius.Card),
+                ambientColor = DemoElevation.CardShadow,
+                spotColor = DemoElevation.CardShadow,
+            )
             .background(
                 color = chipColor,
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(DemoRadius.Card),
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -164,8 +173,7 @@ public fun AuthFilledField(
         modifier = modifier
             .fillMaxWidth()
             .height(AuthUiTokens.FieldHeight)
-            .background(AuthUiTokens.Surface, RoundedCornerShape(AuthUiTokens.RadiusMd))
-            .border(0.5.dp, AuthUiTokens.Separator, RoundedCornerShape(AuthUiTokens.RadiusMd))
+            .background(DemoColors.SurfaceSunken, RoundedCornerShape(AuthUiTokens.RadiusMd))
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -225,7 +233,7 @@ public fun AuthPrimaryButton(
         modifier = modifier
             .fillMaxWidth()
             .height(AuthUiTokens.ButtonHeight),
-        shape = RoundedCornerShape(AuthUiTokens.RadiusLg),
+        shape = DemoRadius.Pill,
         colors = ButtonDefaults.buttonColors(
             containerColor = AuthUiTokens.Accent,
             contentColor = Color.White,
@@ -250,9 +258,10 @@ public fun AuthPrimaryButton(
     }
 }
 
-/** Flutter `LoginPage._buildWechatButton` — outline CTA (SDK may still be stubbed). */
+/** 注册表驱动的第三方登录按钮。 */
 @Composable
-public fun AuthWechatButton(
+public fun AuthMethodButton(
+    label: String,
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -261,7 +270,7 @@ public fun AuthWechatButton(
         modifier = modifier
             .fillMaxWidth()
             .height(AuthUiTokens.ButtonHeight)
-            .border(1.dp, AuthUiTokens.Separator, RoundedCornerShape(AuthUiTokens.RadiusLg))
+            .border(1.dp, AuthUiTokens.Separator, DemoRadius.Pill)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -273,7 +282,7 @@ public fun AuthWechatButton(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "微信登录",
+                text = label,
                 color = AuthUiTokens.Accent,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,

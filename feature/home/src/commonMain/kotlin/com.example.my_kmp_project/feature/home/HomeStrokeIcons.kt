@@ -52,6 +52,50 @@ object HomeStrokeIcons {
     /** 更多 / 全部服务（`Icons.apps_rounded` 的描边等价物）。 */
     val Apps: ImageVector by lazy { apps() }
 
+    /** 车辆（首页「二手车 / 新车成交」）。 */
+    val Car: ImageVector by lazy { car() }
+
+    /** 代码调试（首页「H5 调试」）。 */
+    val Code: ImageVector by lazy { code() }
+
+    /** 按后端 `icon` key 取服务图标；未知 key 回退到按文案映射，仍未知用「更多」。 */
+    fun forServiceIcon(icon: String, label: String): ImageVector = when (icon) {
+        "moments" -> PhotoCamera
+        "channels" -> Videocam
+        "live" -> LiveTv
+        "material" -> PhotoLibrary
+        "scripts" -> HomeIcons.ChatBubble
+        "training" -> School
+        "competitor" -> Insights
+        "more" -> Apps
+        else -> forServiceLabel(label)
+    }
+
+    /** 按首页功能图标 key 取矢量图（服务端下发 icon 字段）。 */
+    fun forFeatureIcon(icon: String, label: String): ImageVector = when (icon) {
+        "h5" -> Code
+        "life" -> Storefront
+        "used_car", "new_car_deal" -> Car
+        "new_car_follow" -> HomeIcons.Phone
+        "ai_stone" -> HomeIcons.ChatBubble
+        "club" -> HomeIcons.PersonOutline
+        "live" -> LiveTv
+        "more" -> Apps
+        else -> forFeatureLabel(label)
+    }
+
+    /** 按功能名兜底（顺序与首页宫格一致）。 */
+    fun forFeatureLabel(label: String): ImageVector = when (label) {
+        "H5 调试" -> Code
+        "生活服务" -> Storefront
+        "二手车", "新车成交" -> Car
+        "新车跟进" -> HomeIcons.Phone
+        "AI小石头" -> HomeIcons.ChatBubble
+        "Club" -> HomeIcons.PersonOutline
+        "直播带货" -> LiveTv
+        else -> Apps
+    }
+
     /** 按首页服务名取图标（Flutter `_ServiceGridItem._icon` 的 switch 同序）。 */
     fun forServiceLabel(label: String): ImageVector = when (label) {
         "朋友圈" -> PhotoCamera
@@ -248,5 +292,47 @@ object HomeStrokeIcons {
         roundRect(14.8f, 3.2f, 20.8f, 9.2f, 1.6f)
         roundRect(3.2f, 14.8f, 9.2f, 20.8f, 1.6f)
         roundRect(14.8f, 14.8f, 20.8f, 20.8f, 1.6f)
+    }
+
+    private fun car() = stroked {
+        // 车身
+        moveTo(3.2f, 16.2f)
+        verticalLineTo(12.4f)
+        lineTo(6.2f, 12.4f)
+        lineTo(8.4f, 7.8f)
+        lineTo(15.6f, 7.8f)
+        lineTo(17.8f, 12.4f)
+        horizontalLineTo(20.8f)
+        verticalLineTo(16.2f)
+        // 车窗
+        moveTo(9f, 12.1f)
+        lineTo(10.3f, 9.2f)
+        horizontalLineTo(13.7f)
+        lineTo(15f, 12.1f)
+        // 前轮
+        moveTo(6.4f, 16.6f)
+        curveToRelative(0f, 1.1f, -0.9f, 1.9f, -1.9f, 1.9f)
+        curveToRelative(-1f, 0f, -1.9f, -0.8f, -1.9f, -1.9f)
+        // 后轮
+        moveTo(21.4f, 16.6f)
+        curveToRelative(0f, 1.1f, -0.9f, 1.9f, -1.9f, 1.9f)
+        curveToRelative(-1f, 0f, -1.9f, -0.8f, -1.9f, -1.9f)
+    }
+
+    private fun code() = stroked {
+        // 显示器
+        roundRect(3f, 4.5f, 21f, 16.5f, 2.2f)
+        // 底座
+        moveTo(12f, 16.5f)
+        verticalLineTo(20.2f)
+        moveTo(8.5f, 20.2f)
+        horizontalLineTo(15.5f)
+        // 尖括号
+        moveTo(9.6f, 8.6f)
+        lineTo(7.2f, 10.8f)
+        lineTo(9.6f, 13f)
+        moveTo(14.4f, 8.6f)
+        lineTo(16.8f, 10.8f)
+        lineTo(14.4f, 13f)
     }
 }

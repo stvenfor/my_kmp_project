@@ -56,12 +56,13 @@ val DemoColorScheme: ColorScheme = lightColorScheme(
     outlineVariant = DemoColors.Divider,
 )
 
-/** 圆角来自 [DesignTokens.Radius]：Sm/Md/Lg = 8/12/16dp。 */
+/** 圆角来自 [DesignTokens.Radius]：8/12/16/20/28dp —— 卡片更大更柔和，弹层 28dp。 */
 val DemoShapes: Shapes = Shapes(
-    extraSmall = RoundedCornerShape(DesignTokens.Spacing.Xs.dp),
-    small = RoundedCornerShape(DesignTokens.Radius.Sm.dp),
-    medium = RoundedCornerShape(DesignTokens.Radius.Md.dp),
-    large = RoundedCornerShape(DesignTokens.Radius.Lg.dp),
+    extraSmall = RoundedCornerShape(DesignTokens.Radius.Sm.dp),
+    small = RoundedCornerShape(DesignTokens.Radius.Md.dp),
+    medium = RoundedCornerShape(DesignTokens.Radius.Lg.dp),
+    large = RoundedCornerShape(DesignTokens.Radius.Xl.dp),
+    extraLarge = RoundedCornerShape(DesignTokens.Radius.Xxl.dp),
 )
 
 /** 字体统一走 Geist（Flutter SoT 同款可变字体），字号取 [DesignTokens.Typography]。 */
@@ -85,21 +86,21 @@ val DemoTypography: Typography
             letterSpacing = letterSpacingSp.sp,
         )
         return Typography(
-            displayLarge = textStyle(28, 32, FontWeight.SemiBold, -1.6),
-            displayMedium = textStyle(DesignTokens.Typography.DisplayMdSp, 30, FontWeight.SemiBold, -0.75),
-            displaySmall = textStyle(22, 28, FontWeight.SemiBold, -0.5),
-            headlineLarge = textStyle(20, 26, FontWeight.SemiBold, -0.5),
-            headlineMedium = textStyle(18, 24, FontWeight.SemiBold, -0.54),
-            headlineSmall = textStyle(16, 22, FontWeight.SemiBold, -0.3),
-            titleLarge = textStyle(18, 24, FontWeight.SemiBold, -0.54),
-            titleMedium = textStyle(16, 22, FontWeight.SemiBold, -0.3),
-            titleSmall = textStyle(DesignTokens.Typography.BodySmSp, 20, FontWeight.SemiBold, -0.2),
+            displayLarge = textStyle(32, 38, FontWeight.Bold, -1.2),
+            displayMedium = textStyle(28, 34, FontWeight.SemiBold, -1.0),
+            displaySmall = textStyle(24, 30, FontWeight.SemiBold, -0.6),
+            headlineLarge = textStyle(22, 28, FontWeight.SemiBold, -0.5),
+            headlineMedium = textStyle(20, 26, FontWeight.SemiBold, -0.4),
+            headlineSmall = textStyle(18, 24, FontWeight.SemiBold, -0.3),
+            titleLarge = textStyle(18, 24, FontWeight.SemiBold, -0.3),
+            titleMedium = textStyle(16, 22, FontWeight.SemiBold, -0.2),
+            titleSmall = textStyle(DesignTokens.Typography.BodySmSp, 20, FontWeight.SemiBold, -0.1),
             bodyLarge = textStyle(DesignTokens.Typography.BodyMdSp, 24),
-            bodyMedium = textStyle(DesignTokens.Typography.BodySmSp, 20, letterSpacingSp = -0.28),
-            bodySmall = textStyle(DesignTokens.Typography.CaptionSp, 16, letterSpacingSp = -0.2),
+            bodyMedium = textStyle(DesignTokens.Typography.BodySmSp, 21, letterSpacingSp = -0.1),
+            bodySmall = textStyle(DesignTokens.Typography.CaptionSp, 17, letterSpacingSp = -0.1),
             labelLarge = textStyle(DesignTokens.Typography.BodySmSp, 20, FontWeight.Medium),
             labelMedium = textStyle(DesignTokens.Typography.CaptionSp, 16, FontWeight.Medium),
-            labelSmall = textStyle(DesignTokens.Typography.TabLabelSp, 16, FontWeight.Medium),
+            labelSmall = textStyle(DesignTokens.Typography.TabLabelSp, 14, FontWeight.Medium),
         )
     }
 

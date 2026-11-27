@@ -10,6 +10,12 @@ import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.router.AppNavigator
 import com.example.my_kmp_project.core.router.AppRoute
 import com.example.my_kmp_project.core.router.DeepLinkRouter
+import com.example.my_kmp_project.core.ui.VideoPositionMemory
+import com.example.my_kmp_project.feature.home.HomeContentStore
+import com.example.my_kmp_project.feature.home.HomeDashboardStore
+import com.example.my_kmp_project.feature.home.api.HomeContentApi
+import com.example.my_kmp_project.feature.home.api.HomeDashboardApi
+import com.example.my_kmp_project.feature.media.InMemoryVideoPositionMemory
 
 /**
  * Composition root (Spike I). Grouped subcomponents avoid a flat god object;
@@ -20,6 +26,9 @@ internal class AppContainer(
     val session: SessionComponent = SessionComponent(),
     val bridges: BridgeComponent = BridgeComponent(),
     val navigation: NavigationComponent = NavigationComponent(),
+    val home: HomeComponent = HomeComponent(),
+    /** 跨页视频进度记忆（AppScope，进程内）。 */
+    val videoPositions: VideoPositionMemory = InMemoryVideoPositionMemory(),
 ) {
     companion object {
         private val instance: AppContainer by lazy { AppContainer() }
@@ -41,6 +50,19 @@ internal class BridgeComponent(
     val pay: PayGateway = FlaggedPayGateway(),
     val chat: ChatPort = StubChatPort,
 )
+
+/**
+ * AppScope 首页看板：共享壳 [HomeScreen] 与 Android 原生壳 [JetpackHomeRoot]
+ * 复用同一份内存缓存，避免两套壳各拉一份。
+ */
+internal class HomeComponent {
+    val dashboard: HomeDashboardStore =
+        HomeDashboardStore(HomeDashboardApi(NetworkFacade.api()))
+
+    /** 首页本地静态内容（全部服务 / 搜索 / 热榜 / 学习报告 / 投资策略）的 AppScope 缓存。 */
+    val content: HomeContentStore =
+        HomeContentStore(HomeContentApi(NetworkFacade.api()))
+}
 
 internal class NavigationComponent {
     private var navigator: AppNavigator? = null

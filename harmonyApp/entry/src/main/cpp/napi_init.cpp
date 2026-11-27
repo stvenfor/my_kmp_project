@@ -51,6 +51,7 @@ extern "C" int KnAuthCopyToken(void* buf, int cap);
 extern "C" int KnAuthCopyDisplayName(void* buf, int cap);
 extern "C" int KnAuthCopyUserId(void* buf, int cap);
 extern "C" int KnAuthCopyPhone(void* buf, int cap);
+extern "C" int KnAuthCopyAvailableLoginMethods(void* buf, int cap);
 extern "C" int KnAuthIsLoggedIn(void);
 extern "C" void KnAuthLogout(void);
 
@@ -123,6 +124,7 @@ enum class AuthOp {
     SendOtp = 2,
     Register = 3,
     Huawei = 4,
+    LoginWithMethod = 5,
 };
 
 struct AuthResult {
@@ -264,6 +266,18 @@ static napi_value NapiAuthLoginWithHuawei(napi_env env, napi_callback_info info)
         nullptr);
 }
 
+static napi_value NapiAuthLoginWithMethod(napi_env env, napi_callback_info info) {
+    size_t argc = 3;
+    napi_value args[3] = {nullptr, nullptr, nullptr};
+    napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
+    return StartAuthPromise(
+        env,
+        AuthOp::LoginWithMethod,
+        argc >= 1 ? ReadUtf8Arg(env, args[0]) : nullptr,
+        argc >= 2 ? ReadUtf8Arg(env, args[1]) : nullptr,
+        argc >= 3 ? ReadUtf8Arg(env, args[2]) : nullptr);
+}
+
 static napi_value NapiCopyStringGetter(
     napi_env env,
     int (*copyFn)(void*, int)) {
@@ -295,6 +309,11 @@ static napi_value NapiAuthPhone(napi_env env, napi_callback_info info) {
     return NapiCopyStringGetter(env, KnAuthCopyPhone);
 }
 
+static napi_value NapiAuthAvailableLoginMethods(napi_env env, napi_callback_info info) {
+    (void)info;
+    return NapiCopyStringGetter(env, KnAuthCopyAvailableLoginMethods);
+}
+
 static napi_value NapiAuthIsLoggedIn(napi_env env, napi_callback_info info) {
     (void)info;
     napi_value out = nullptr;
@@ -322,10 +341,12 @@ static napi_value Init(napi_env env, napi_value exports) {
         {"AuthSendPhoneOtp", nullptr, NapiAuthSendPhoneOtp, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthRegister", nullptr, NapiAuthRegister, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthLoginWithHuawei", nullptr, NapiAuthLoginWithHuawei, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"AuthLoginWithMethod", nullptr, NapiAuthLoginWithMethod, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthToken", nullptr, NapiAuthToken, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthDisplayName", nullptr, NapiAuthDisplayName, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthUserId", nullptr, NapiAuthUserId, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthPhone", nullptr, NapiAuthPhone, nullptr, nullptr, nullptr, napi_default, nullptr},
+        {"AuthAvailableLoginMethods", nullptr, NapiAuthAvailableLoginMethods, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthIsLoggedIn", nullptr, NapiAuthIsLoggedIn, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AuthLogout", nullptr, NapiAuthLogout, nullptr, nullptr, nullptr, napi_default, nullptr},
         {"AudioOnPageHide", nullptr, AudioOnPageHide, nullptr, nullptr, nullptr, napi_default, nullptr},

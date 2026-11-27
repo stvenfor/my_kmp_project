@@ -2,7 +2,6 @@ package com.example.my_kmp_project.feature.auth
 
 import com.example.my_kmp_project.component.auth.AuthGate
 import com.example.my_kmp_project.component.auth.AuthSessionState
-import com.example.my_kmp_project.core.account.AccountFacade
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.AuthRefreshDecision
 import com.example.my_kmp_project.core.network.AuthRefreshPolicy
@@ -62,7 +61,7 @@ public object AuthTokenRefresh {
     }
 
     private suspend fun performRefresh(raw: ApiClient): String {
-        val session = AccountFacade.current()
+        val session = AuthDependencies.session.current()
         // Flutter：refreshToken 为空 → 刷新耗尽（不发起请求）。
         if (!session.isLoggedIn || session.refreshToken.isBlank()) {
             handleRefreshExhausted()
@@ -70,7 +69,7 @@ public object AuthTokenRefresh {
         }
         // 契约表 #3：HTTP 与 omit 规则在 UserAuthHttpApi.refresh，本函数只负责会话落库与耗尽处理。
         // device_id / session_id / platform 为空白时由 AuthRefreshRequest.of 省略 key。
-        val result = UserAuthHttpApi.refresh(
+        val result = AuthDependencies.api.refresh(
             raw = raw,
             refreshToken = session.refreshToken,
             deviceId = session.deviceId.ifBlank { AuthDeviceContext.deviceId() },
@@ -84,7 +83,7 @@ public object AuthTokenRefresh {
                 result.exceptionOrNull()?.message ?: AuthFailure.SessionCleared().message,
             )
         }
-        AccountFacade.updateAuthTokens(
+        AuthDependencies.session.updateAuthTokens(
             token = data.token,
             // 服务端可能只轮换 access token：缺省时沿用旧 refresh/session。
             refreshToken = data.refreshToken.ifBlank { session.refreshToken },
@@ -98,8 +97,8 @@ public object AuthTokenRefresh {
      * 仅已登录才处理（幂等）；token 已废，不再请求远端 logout（Flutter 同款）。
      */
     fun handleRefreshExhausted() {
-        if (!AccountFacade.current().isLoggedIn) return
-        AccountFacade.logout()
+        if (!AuthDependencies.session.current().isLoggedIn) return
+        AuthDependencies.session.logout()
         AuthSessionState.clearLocal()
         AuthGate.clearPending()
     }

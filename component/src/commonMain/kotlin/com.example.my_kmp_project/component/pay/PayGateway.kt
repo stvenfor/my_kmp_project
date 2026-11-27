@@ -1,5 +1,7 @@
 package com.example.my_kmp_project.component.pay
 
+import com.example.my_kmp_project.core.network.platformIsReleaseBuild
+
 /** Pluggable pay gateway; UI depends on this contract, not a native SDK. */
 public interface PayGateway {
     fun availableChannels(): List<PayChannel>
@@ -42,13 +44,16 @@ public class StubPayGateway : PayGateway {
  *
  * - [weChatEnabled] / [alipayEnabled]: gate real OpenSDK adapters (flags alone ≠ Success).
  * - [sandboxEnabled]: registers [SandboxPayChannelAdapter] when platform adapters are null.
- *   Spike II debug default is on so Must matrix has a non-Unavailable path; turn off for release
- *   once real SDK adapters are wired.
+ *   Spike II debug default is on so Must matrix has a non-Unavailable path; release 构建
+ *   永远不允许开启（sandbox 返回的是 `sandbox = true` 的 Success，不是真实支付）。
  */
 public object PayFeatureFlags {
     var weChatEnabled: Boolean = false
     var alipayEnabled: Boolean = false
-    var sandboxEnabled: Boolean = true
+    var sandboxEnabled: Boolean = !platformIsReleaseBuild()
+        set(value) {
+            field = value && !platformIsReleaseBuild()
+        }
 }
 
 /** Native SDK (or sandbox) pay adapter for one channel. */
@@ -90,7 +95,11 @@ public object PlatformPayAdapters {
             ?: sandboxOrNull(PayChannel.Alipay)
 
     private fun sandboxOrNull(channel: PayChannel): PayChannelAdapter? =
-        if (PayFeatureFlags.sandboxEnabled) SandboxPayChannelAdapter(channel) else null
+        if (PayFeatureFlags.sandboxEnabled && !platformIsReleaseBuild()) {
+            SandboxPayChannelAdapter(channel)
+        } else {
+            null
+        }
 }
 
 /**
@@ -125,6 +134,8 @@ public class FlaggedPayGateway(
             PayChannel.Alipay -> PayFeatureFlags.alipayEnabled
         }
         if (realFlag) return true
-        return PayFeatureFlags.sandboxEnabled && adapter is SandboxPayChannelAdapter
+        return !platformIsReleaseBuild() &&
+            PayFeatureFlags.sandboxEnabled &&
+            adapter is SandboxPayChannelAdapter
     }
 }

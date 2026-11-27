@@ -109,28 +109,8 @@ public object ProductRouteDispatch {
         return ProductRouteTarget(input, ProductRouteHost.Unknown)
     }
 
-    fun hostForPath(path: String): ProductRouteHost {
-        val p = canonicalizePath(path)
-        return when {
-            p == AppRoutePath.homeAllServices -> ProductRouteHost.AllServices
-            p == AppRoutePath.web || p.startsWith("http://") || p.startsWith("https://") ->
-                ProductRouteHost.Web
-            p == "/scan" -> ProductRouteHost.Scan
-            p == AppRoutePath.login || p.startsWith("/login") || p.startsWith("/auth") ||
-                p == AppRoutePath.register -> ProductRouteHost.Auth
-            p == AppRoutePath.home || p == AppRoutePath.main || p == AppRoutePath.chat ||
-                p == AppRoutePath.community || p == AppRoutePath.mine -> ProductRouteHost.Tab
-            p.startsWith("/home/") -> ProductRouteHost.Home
-            p.startsWith("/community/") -> ProductRouteHost.Community
-            p.startsWith("/mine") || p.startsWith("/settings") ||
-                p.startsWith("/mall") || p.startsWith("/wallet") || p.startsWith("/pay") ->
-                ProductRouteHost.Mine
-            p.startsWith("/ai") || p.startsWith("/video") || p.startsWith("/classroom") ||
-                p.startsWith("/live") || p.startsWith("/friend") || p.startsWith("/music") ||
-                p.startsWith("/media") -> ProductRouteHost.Content
-            else -> ProductRouteHost.Unknown
-        }
-    }
+    /** 宿主归类表已收敛到 [DefaultRouteRegistry]；这里只保留旧签名做委托。 */
+    fun hostForPath(path: String): ProductRouteHost = DefaultRouteRegistry.hostFor(path)
 
     private fun target(path: String): ProductRouteTarget {
         val canon = canonicalizePath(path)

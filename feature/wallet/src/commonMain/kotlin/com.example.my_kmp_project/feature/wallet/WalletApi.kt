@@ -4,7 +4,6 @@ import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.NetworkCodes
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.decodeListPage
 import com.example.my_kmp_project.core.network.deleteApi
 import com.example.my_kmp_project.core.network.getApi
@@ -25,7 +24,7 @@ import kotlinx.serialization.json.JsonObject
  *   **失败一律吞掉且不阻塞主流程**——本方法因此返回可空且永不抛。
  */
 public class WalletApi(
-    public val client: ApiClient = NetworkFacade.api(),
+    public val client: ApiClient,
 ) {
     /** #84 完整钱包汇总：`GET /api/v1/wallet`。 */
     public suspend fun fetchSummary(): WalletSummary {

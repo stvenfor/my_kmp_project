@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.design.MineTopBar
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
@@ -75,8 +77,16 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-internal fun TransliterFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit) {
+internal fun TransliterFeedScreen(
+    onBack: () -> Unit,
+    content: HomeContentStore,
+    onOpenHotRank: () -> Unit,
+) {
     // Flutter TransliterHomePage — header / categories / banner / features / recent / expert + lower sections
+    // 顶部热榜条：取首个热榜 tab 的前 3 条（来自 /home/search/meta）。
+    val topRankTab = content.rankTabs().firstOrNull()
+    val topRankItems = if (topRankTab != null) content.rankItems(topRankTab).take(3) else emptyList()
+    LaunchedEffect(Unit) { content.refreshSearchMeta() }
     val tabAccent = DemoColors.Accent // Flutter VercelTokens.link
     val adBlue = Color(0xFF3B82F6)
     val svipGold = Color(0xFFE6A23C)
@@ -469,30 +479,32 @@ internal fun TransliterFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit)
                 action = "查看 >",
                 onAction = onOpenHotRank,
             )
-            Row(
-                Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                listOf("热度榜" to Color(0xFFFFE4EC), "热搜榜" to Color(0xFFE3F2FD)).forEach { (board, bg) ->
-                    Column(
-                        Modifier
-                            .width(200.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(bg)
-                            .clickable(onClick = onOpenHotRank)
-                            .padding(12.dp),
-                    ) {
-                        Text(board, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                        Spacer(Modifier.height(8.dp))
-                        HomeMockData.rankItemsForTab(0).take(3).forEach { item ->
-                            Text(
-                                "${item.rank}. ${item.title}",
-                                fontSize = 12.sp,
-                                maxLines = 1,
-                                modifier = Modifier.padding(vertical = 2.dp),
-                            )
+            if (topRankTab != null && topRankItems.isNotEmpty()) {
+                Row(
+                    Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    listOf(topRankTab to Color(0xFFFFE4EC)).forEach { (board, bg) ->
+                        Column(
+                            Modifier
+                                .width(200.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(bg)
+                                .clickable(onClick = onOpenHotRank)
+                                .padding(12.dp),
+                        ) {
+                            Text(board, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Spacer(Modifier.height(8.dp))
+                            topRankItems.forEach { item ->
+                                Text(
+                                    "${item.rank}. ${item.title}",
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    modifier = Modifier.padding(vertical = 2.dp),
+                                )
+                            }
                         }
                     }
                 }
@@ -569,8 +581,7 @@ internal fun TransliterFeedScreen(onBack: () -> Unit, onOpenHotRank: () -> Unit)
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White)
+                            .demoCard()
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {

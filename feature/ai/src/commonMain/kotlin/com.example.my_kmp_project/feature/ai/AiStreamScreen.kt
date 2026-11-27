@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.network.SseException
+import com.example.my_kmp_project.core.network.SseTransport
 import com.example.my_kmp_project.core.sse.AiStreamEvent
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.CancellationException
@@ -91,14 +92,18 @@ internal fun mapSseErrorMessage(error: SseException): String = when (error.statu
  * 增量 token 追加、加载中、错误、停止(stop) 四态都来自流本身，不再弹 toast。
  */
 @Composable
-public fun AiStreamScreen(onBack: () -> Unit) {
+public fun AiStreamScreen(
+    onBack: () -> Unit,
+    transport: SseTransport,
+) {
     ReportMainTabRoot(isRoot = false)
     val scope = rememberCoroutineScope()
+    val api = remember(transport) { AiSseApi(transport) }
     var state by remember { mutableStateOf(AiStreamUiState()) }
     var streamJob by remember { mutableStateOf<Job?>(null) }
     var requestSeq by remember { mutableStateOf(0) }
 
-    // 每次提问现取 NetworkFacade.api()（AiSseApi 默认参数），避免持有登录/会话刷新前的旧 client。
+    // 客户端来自 AppGraph 注入；token 由网络层按请求动态绑定，无需每次重建。
     fun startStream(prompt: String) {
         if (streamJob?.isActive == true) return
         val stickyConversationId = state.conversationId
@@ -106,7 +111,7 @@ public fun AiStreamScreen(onBack: () -> Unit) {
         state = state.copy(phase = AiStreamPhase.Loading, answer = "", errorMessage = "")
         streamJob = scope.launch {
             try {
-                AiSseApi().streamCompletion(
+                api.streamCompletion(
                     prompt = prompt,
                     conversationId = stickyConversationId,
                     clientRequestId = clientRequestId,

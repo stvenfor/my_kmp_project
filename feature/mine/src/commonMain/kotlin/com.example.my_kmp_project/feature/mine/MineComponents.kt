@@ -30,8 +30,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.my_kmp_project.core.design.demoCard
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.settings_personalized_settings_chevron_right
 import org.jetbrains.compose.resources.painterResource
@@ -44,13 +46,24 @@ fun MineGroupedCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(MineTheme.RadiusMd))
-            .background(MineTheme.Surface)
-            .border(MineTheme.Hairline, MineTheme.Separator, RoundedCornerShape(MineTheme.RadiusMd)),
+            .demoCard(
+                shape = RoundedCornerShape(MineTheme.RadiusMd),
+                color = MineTheme.Surface,
+                elevation = MineTheme.CardElevation,
+                borderColor = MineTheme.Separator.copy(alpha = 0.75f),
+            ),
     ) {
         content()
     }
 }
+
+/** Mine 页面统一卡片表面：阴影 + 16dp 圆角 + 低对比描边。 */
+fun Modifier.mineCard(radius: Dp = MineTheme.RadiusMd): Modifier = demoCard(
+    shape = RoundedCornerShape(radius),
+    color = MineTheme.Surface,
+    elevation = MineTheme.CardElevation,
+    borderColor = MineTheme.Separator.copy(alpha = 0.75f),
+)
 
 @Composable
 fun MineSectionHeader(label: String) {

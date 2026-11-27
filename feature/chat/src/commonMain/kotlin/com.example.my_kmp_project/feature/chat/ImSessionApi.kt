@@ -2,7 +2,6 @@ package com.example.my_kmp_project.feature.chat
 
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import com.example.my_kmp_project.core.platform.loadString
 import com.example.my_kmp_project.core.platform.saveString
@@ -138,7 +137,7 @@ public fun createPersistentImMockUserIdRegistry(
  * // 禁止伪装 SDK ready。
  */
 public class ImSessionApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
     private val registry: ImMockUserIdRegistry = ImMockUserIdRegistry(),
     private val useMock: () -> Boolean = { RongImConfig.useMockIm },
     private val sleep: suspend (Long) -> Unit = { delay(it) },

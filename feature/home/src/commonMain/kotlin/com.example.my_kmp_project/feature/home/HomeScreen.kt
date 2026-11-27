@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,6 +37,8 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun HomeScreen(
+    dashboard: HomeDashboardStore,
+    content: HomeContentStore,
     loggedIn: Boolean = false,
     displayName: String? = null,
 ) {
@@ -70,10 +71,12 @@ fun HomeScreen(
         null -> HomeRootContent(
             loggedIn = loggedIn,
             displayName = displayName,
+            dashboard = dashboard,
             onNavigate = ::go,
         )
         "services" -> AllServicesScreen(
             onBack = { destination = null },
+            content = content,
             onOpen = { label ->
                 destination = null
                 go(label)
@@ -84,6 +87,7 @@ fun HomeScreen(
                 ProductRouteHost.Home -> HomeRouteHost(
                     route = dest,
                     onBack = { destination = null },
+                    content = content,
                     onNavigate = { go(it) },
                 )
                 ProductRouteHost.Content -> CrossFeatureScreens.ContentRouteScreen(
@@ -99,6 +103,7 @@ fun HomeScreen(
                 else -> HomeRouteHost(
                     route = dest,
                     onBack = { destination = null },
+                    content = content,
                     onNavigate = { go(it) },
                 )
             }
@@ -111,23 +116,25 @@ fun HomeScreen(
 private fun HomeRootContent(
     loggedIn: Boolean,
     displayName: String?,
+    dashboard: HomeDashboardStore,
     onNavigate: (String) -> Unit,
 ) {
     ReportMainTabRoot(isRoot = true)
-    var metricTab by remember { mutableIntStateOf(0) }
     var showTodos by remember { mutableStateOf(false) }
     var showSwitchStore by remember { mutableStateOf(false) }
-    var storeName by remember { mutableStateOf(HomeMockData.storeName) }
     var showCheckIn by remember { mutableStateOf(false) }
+    var metricTab by remember { mutableStateOf(0) }
     val greeting = remember(displayName) { flutterStyleGreeting(displayName) }
-    // Read for recomposition when points / dialog ack change.
+    // Read for recomposition when points / dashboard / dialog ack change.
     HomePointsStore.version
+    dashboard.version
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(loggedIn) {
         if (loggedIn) {
             HomePointsStore.refresh()
             HomeTodoStore.refresh()
+            dashboard.refresh()
         }
     }
 
@@ -158,9 +165,10 @@ private fun HomeRootContent(
             selectedId = "1",
             onDismiss = { showSwitchStore = false },
             onPicked = { _, name ->
-                storeName = name
                 showSwitchStore = false
                 showPlatformToast("已切换到 $name")
+                // 切换后重新拉取看板，门店名/统计以服务端为准。
+                scope.launch { dashboard.refresh() }
             },
         )
     }
@@ -207,17 +215,20 @@ private fun HomeRootContent(
             item { HomeGreetingSection(greeting = greeting) }
             item {
                 HomeSearchBar(
-                    placeholder = HomeMockData.searchPlaceholder,
+                    placeholder = HomeSearchPlaceholder,
                     onSearch = { onNavigate(HomeRoutes.Search) },
                     onScan = { onNavigate("扫一扫") },
                 )
             }
             item { HomeBannerSection() }
-            item {
-                HomeFeatureGrid(
-                    items = HomeMockData.features,
-                    onFeature = { label -> onNavigate(label) },
-                )
+            val features = dashboard.features()
+            if (features.isNotEmpty()) {
+                item {
+                    HomeFeatureGrid(
+                        items = features,
+                        onFeature = { label -> onNavigate(label) },
+                    )
+                }
             }
             if (showTodos) {
                 item {
@@ -234,15 +245,11 @@ private fun HomeRootContent(
             }
             item {
                 HomeStoreMetricsCard(
-                    storeName = storeName,
+                    storeName = dashboard.storeName,
                     selectedTab = metricTab,
-                    tabs = MetricTabs,
-                    metrics = when (metricTab) {
-                        1 -> HomeMockData.metricsYesterday
-                        2 -> HomeMockData.metricsMonth
-                        else -> HomeMockData.metricsToday
-                    },
-                    details = HomeMockData.metricDetails,
+                    tabs = DashboardMetricTabs,
+                    metrics = dashboard.metrics(metricTab),
+                    details = emptyList(),
                     onTabSelected = { metricTab = it },
                     onStoreTap = {
                         if (loggedIn) showSwitchStore = true
@@ -259,18 +266,27 @@ private fun HomeRootContent(
                     onClick = { onNavigate(HomeRoutes.Strategy) },
                 )
             }
-            item {
-                HomeServiceGrid(
-                    items = HomeMockData.services,
-                    // Flutter HomeServiceGrid: 只有「更多」/「全部」跳全部服务。
-                    onService = { label ->
-                        if (label == "更多" || label == "全部") onNavigate(HomeRoutes.AllServices)
-                    },
-                    onOpenAll = { onNavigate(HomeRoutes.AllServices) },
-                )
+            val services = dashboard.services()
+            if (services.isNotEmpty()) {
+                item {
+                    HomeServiceGrid(
+                        items = services,
+                        // Flutter HomeServiceGrid: 只有「更多」/「全部」跳全部服务。
+                        onService = { label ->
+                            if (label == "更多" || label == "全部") onNavigate(HomeRoutes.AllServices)
+                        },
+                        onOpenAll = { onNavigate(HomeRoutes.AllServices) },
+                    )
+                }
             }
-            item { HomeContactList(items = HomeMockData.contacts, onContact = {}) }
-            item { HomeNewsList(items = HomeMockData.news, onOpenAll = {}) }
+            val contacts = dashboard.contacts()
+            if (contacts.isNotEmpty()) {
+                item { HomeContactList(items = contacts, onContact = {}) }
+            }
+            val news = dashboard.news()
+            if (news.isNotEmpty()) {
+                item { HomeNewsList(items = news, onOpenAll = {}) }
+            }
             item {
                 HomeHubEntryCard(
                     title = "学习报告",
@@ -284,8 +300,8 @@ private fun HomeRootContent(
     }
 }
 
-/** Flutter `HomeController.metricTabs` */
-private val MetricTabs = listOf("今日", "昨日", "近30天")
+/** 公司数据三档：今日 / 昨日 / 本月（wys_home_metrics.period）。 */
+internal val DashboardMetricTabs = listOf("今日", "昨日", "本月")
 
 @OptIn(ExperimentalTime::class)
 private fun flutterStyleGreeting(displayName: String?): String {

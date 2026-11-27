@@ -53,63 +53,9 @@ public object DeepLinkRouter {
     /** Pure parse without mutating [pendingDeepLink]. */
     fun parse(uri: String): ParsedDeepLink? {
         val path = extractPath(uri) ?: return null
-        return when (path) {
-            AppRoutes.Home.HOME, "home" ->
-                ParsedDeepLink(rawUri = uri, tab = MainTab.Home, route = AppRoutes.Home.HOME)
-            AppRoutes.Chat.CHAT, "chat" ->
-                ParsedDeepLink(rawUri = uri, tab = MainTab.Chat, route = AppRoutes.Chat.CHAT)
-            AppRoutes.Chat.DETAIL, AppRoutePath.chatDetail, "chat/detail" ->
-                ParsedDeepLink(rawUri = uri, tab = MainTab.Chat, route = AppRoutes.Chat.DETAIL)
-            AppRoutes.Community.COMMUNITY, "community" ->
-                ParsedDeepLink(
-                    rawUri = uri,
-                    tab = MainTab.Community,
-                    route = AppRoutes.Community.COMMUNITY,
-                )
-            AppRoutePath.friend, "friend" ->
-                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.friend)
-            AppRoutes.Mine.MINE, "mine" ->
-                ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = AppRoutes.Mine.MINE)
-            // `myai://auth/login` → `/auth/login` (AppRoutes.Auth.LOGIN). Also accept bare login paths.
-            AppRoutes.Auth.LOGIN, "auth/login",
-            AppRoutePath.login, "login",
-            ->
-                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutes.Auth.LOGIN)
-            AppRoutePath.loginPassword, "login/password" ->
-                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.loginPassword)
-            AppRoutePath.loginOtp, "login/otp" ->
-                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.loginOtp)
-            AppRoutePath.register, "register" ->
-                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.register)
-            AppRoutePath.web, "web" ->
-                ParsedDeepLink(rawUri = uri, tab = null, route = AppRoutePath.web)
-            else -> {
-                // Secondary product routes (Flutter RoutePath / AppRoutePath)
-                when {
-                    path.startsWith("/home/") ->
-                        ParsedDeepLink(rawUri = uri, tab = MainTab.Home, route = path)
-                    path.startsWith("/chat/") ->
-                        ParsedDeepLink(rawUri = uri, tab = MainTab.Chat, route = path)
-                    path.startsWith("/community/") ->
-                        ParsedDeepLink(rawUri = uri, tab = MainTab.Community, route = path)
-                    path.startsWith("/mall") ->
-                        ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
-                    path.startsWith("/wallet") || path.startsWith("/pay") ->
-                        ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
-                    path.startsWith("/settings") ->
-                        ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
-                    path.startsWith("/mine/") ->
-                        ParsedDeepLink(rawUri = uri, tab = MainTab.Mine, route = path)
-                    path.startsWith("/video") ||
-                        path.startsWith("/music") ||
-                        path.startsWith("/classroom") ||
-                        path.startsWith("/live") ||
-                        path.startsWith("/ai/") ->
-                        ParsedDeepLink(rawUri = uri, tab = null, route = path)
-                    else -> null
-                }
-            }
-        }
+        // tab / route 的前缀判断已收敛到 [DefaultRouteRegistry]；这里只做 URI 抽取。
+        val match = DefaultRouteRegistry.match(path) ?: return null
+        return ParsedDeepLink(rawUri = uri, tab = match.tab, route = match.route)
     }
 
     private fun extractPath(uri: String): String? {

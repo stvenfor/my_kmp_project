@@ -25,9 +25,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,9 +42,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import my_kmp_project.core.design.generated.resources.Res
 import my_kmp_project.core.design.generated.resources.ic_nav_back
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 /** Flutter `SliverGridDelegateWithFixedCrossAxisCount` childAspectRatio. */
@@ -54,12 +58,20 @@ private val FlutterToolbarHeight = 56.dp
 @Composable
 fun AllServicesScreen(
     onBack: () -> Unit,
+    content: HomeContentStore,
     onOpen: (String) -> Unit = {},
 ) {
     ReportMainTabRoot(isRoot = false)
+    val favorites = remember(content) { HomeFavoritesStore(content) }
+    val scope = rememberCoroutineScope()
     var isEditing by remember { mutableStateOf(false) }
-    var favoriteIds by remember { mutableStateOf(HomeFavoritesStore.snapshot()) }
-    val favoriteItems = remember(favoriteIds) { HomeFavoritesStore.favoriteItems() }
+    // 读 version 触发重组；收藏与分组均来自服务端。
+    val version = content.version
+    var favoriteIds by remember(version) { mutableStateOf(content.favoriteIds()) }
+    val favoriteItems = remember(version) { content.favoriteItems() }
+    val sections = remember(version) { content.catalogSections() }
+
+    LaunchedEffect(Unit) { content.refreshCatalog() }
 
     // Flutter AllServicesTheme.background = canvas (white), not canvasSoft2.
     Column(
@@ -87,22 +99,26 @@ fun AllServicesScreen(
                     isFavoriteSection = true,
                     onEditTap = { isEditing = !isEditing },
                     onItemBadgeTap = { item ->
-                        if (isEditing && HomeFavoritesStore.remove(item.id)) {
-                            favoriteIds = HomeFavoritesStore.snapshot()
+                        if (isEditing) {
+                            scope.launch {
+                                if (favorites.remove(item.id)) favoriteIds = content.favoriteIds()
+                            }
                         }
                     },
                     onItemTap = { if (!isEditing) onOpen(it.label) },
                 )
             }
-            items(HomeMockData.catalogSections, key = { it.title }) { section ->
+            items(sections, key = { it.title }) { section ->
                 AllServicesSectionBlock(
                     section = section,
                     isEditing = isEditing,
                     isFavoriteSection = false,
                     favoriteIds = favoriteIds,
                     onItemBadgeTap = { item ->
-                        if (isEditing && HomeFavoritesStore.add(item.id)) {
-                            favoriteIds = HomeFavoritesStore.snapshot()
+                        if (isEditing) {
+                            scope.launch {
+                                if (favorites.add(item.id)) favoriteIds = content.favoriteIds()
+                            }
                         }
                     },
                     onItemTap = { if (!isEditing) onOpen(it.label) },
@@ -195,7 +211,7 @@ private fun AllServicesSectionBlock(
                     color = DemoColors.Accent,
                     fontSize = 12.sp,
                     modifier = Modifier
-                        .border(1.dp, DemoColors.Accent, RoundedCornerShape(14.dp))
+                        .border(1.dp, DemoColors.Accent, DemoRadius.Pill)
                         .clickable(onClick = onEditTap)
                         .padding(horizontal = 12.dp, vertical = 4.dp),
                 )

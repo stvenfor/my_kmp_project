@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 及以下的备份规则：不备份任何 SharedPreferences（会话 token 等）。 -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="." />
+</full-backup-content>

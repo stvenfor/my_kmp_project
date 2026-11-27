@@ -34,6 +34,9 @@
           ],
           "when": "inuse"
         }
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING"
       }
     ],
     "abilities": [
@@ -47,6 +50,9 @@
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "orientation": "auto_rotation",
+        "backgroundModes": [
+          "audioPlayback"
+        ],
         "skills": [
           {
             "entities": [

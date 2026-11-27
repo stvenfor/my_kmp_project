@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,7 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoPrimaryButton
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.CameraPermissionStatus
 import com.example.my_kmp_project.core.platform.PlatformBarcodeScanner
 import com.example.my_kmp_project.core.platform.rememberCameraPermissionController
@@ -68,55 +68,51 @@ public fun ScanScreen(
         ) {
             MineTopBar(title = "扫一扫", onBack = onBack, containerColor = DemoColors.PageBg)
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "扫码结果",
-                    color = DemoColors.TextPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = lastPayload.orEmpty(),
-                    color = DemoColors.Accent,
-                    fontSize = 13.sp,
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .demoCard()
+                        .padding(16.dp),
+                ) {
+                    Text(
+                        text = "扫码结果",
+                        color = DemoColors.TextPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = lastPayload.orEmpty(),
+                        color = DemoColors.Accent,
+                        fontSize = 14.sp,
+                    )
+                }
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
+                DemoPrimaryButton(
+                    text = "打开结果",
+                    modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         val payload = lastPayload.orEmpty()
                         if (payload.isNotEmpty()) onScanResult(payload)
                         onBack()
                     },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = DemoColors.Primary,
-                        contentColor = DemoColors.OnPrimary,
-                    ),
-                ) {
-                    Text("打开结果", fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                }
-                Spacer(modifier = Modifier.height(10.dp))
+                )
+                Spacer(modifier = Modifier.height(6.dp))
                 TextButton(onClick = { lastPayload = null }) {
-                    Text("继续扫码", color = DemoColors.Primary)
+                    Text("继续扫码", color = DemoColors.Accent, fontSize = 15.sp)
                 }
             }
         }
         return
     }
 
-    // OHOS / no camera: WysScan mock shell (same chrome as Flutter, mock decode).
+    // OHOS / no camera: 如实提示能力不可用，不生成假扫码结果。
     if (permission.status == CameraPermissionStatus.Unavailable) {
         WysScanChrome(
             torchOn = torchOn,
             onToggleTorch = { torchOn = !torchOn },
             onBack = onBack,
-            showMockButton = true,
-            onMockSuccess = {
-                val payload = "myai://mall/orders?id=A1024"
-                lastPayload = payload
-                onScanResult(payload)
-            },
+            hint = "当前平台相机扫码不可用",
             scanner = null,
         )
         return
@@ -141,8 +137,7 @@ public fun ScanScreen(
                 torchOn = torchOn,
                 onToggleTorch = { torchOn = !torchOn },
                 onBack = onBack,
-                showMockButton = false,
-                onMockSuccess = {},
+                hint = "将二维码放入框内，即可自动扫码",
                 scanner = {
                     PlatformBarcodeScanner(
                         onBarcode = { payload ->
@@ -162,8 +157,7 @@ private fun WysScanChrome(
     torchOn: Boolean,
     onToggleTorch: () -> Unit,
     onBack: () -> Unit,
-    showMockButton: Boolean,
-    onMockSuccess: () -> Unit,
+    hint: String,
     scanner: (@Composable () -> Unit)?,
 ) {
     Box(
@@ -227,27 +221,13 @@ private fun WysScanChrome(
                 )
             }
             Text(
-                "将二维码放入框内，即可自动扫码",
+                hint,
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = 14.sp,
                 modifier = Modifier.padding(top = 20.dp),
             )
             Spacer(modifier = Modifier.weight(1f))
-            if (showMockButton) {
-                Button(
-                    onClick = onMockSuccess,
-                    modifier = Modifier.padding(bottom = 40.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = WysScanPink,
-                        contentColor = Color.White,
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                ) {
-                    Text("模拟扫码成功")
-                }
-            } else {
-                Spacer(modifier = Modifier.height(40.dp))
-            }
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }

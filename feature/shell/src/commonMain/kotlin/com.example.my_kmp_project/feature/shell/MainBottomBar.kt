@@ -28,6 +28,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -85,6 +88,11 @@ fun MainBottomBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .shadow(
+                    elevation = 8.dp,
+                    ambientColor = Color(0x14171717),
+                    spotColor = Color(0x14171717),
+                )
                 .background(DemoColors.TabBarBackground),
         ) {
             Row(
@@ -158,10 +166,15 @@ private fun MainTabItem(
         animationSpec = tween(durationMillis = 200),
         label = "tabTint",
     )
-    val pillAlpha by animateFloatAsState(
-        targetValue = if (selected) 0.12f else 0f,
+    val pillColor by animateColorAsState(
+        targetValue = if (selected) DemoColors.PrimarySoft else Color.Transparent,
         animationSpec = tween(durationMillis = 200),
         label = "tabPill",
+    )
+    val iconScale by animateFloatAsState(
+        targetValue = if (selected) 1.06f else 1f,
+        animationSpec = tween(durationMillis = 200),
+        label = "tabIconScale",
     )
     Column(
         modifier = modifier
@@ -174,7 +187,7 @@ private fun MainTabItem(
             modifier = Modifier
                 .size(width = 44.dp, height = 28.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(DemoColors.Accent.copy(alpha = pillAlpha)),
+                .background(pillColor),
             contentAlignment = Alignment.Center,
         ) {
             Image(
@@ -182,7 +195,9 @@ private fun MainTabItem(
                     if (selected) item.selectedIcon() else item.unselectedIcon(),
                 ),
                 contentDescription = item.label,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier
+                    .size(22.dp)
+                    .scale(iconScale),
                 colorFilter = ColorFilter.tint(tint),
             )
         }

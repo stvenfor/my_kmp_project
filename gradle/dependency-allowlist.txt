@@ -1,0 +1,8 @@
+# 依赖治理白名单（只减不增）。
+#
+# 每行一个 key：
+#   unused:<alias>            允许某个 library/plugin 别名暂不引用（需写明理由）
+#   version:<name>            允许某个 [versions] 条目暂不引用（需写明理由）
+#   coord:<group:artifact>    允许模块脚本里出现某个硬编码坐标（需写明理由）
+#
+# 当前为空：所有别名与版本都必须被引用。

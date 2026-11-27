@@ -5,7 +5,6 @@ import com.example.my_kmp_project.core.network.ApiEnvelope
 import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.FlexibleIntSerializer
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import com.example.my_kmp_project.core.network.decodeEnvelopeData
 import com.example.my_kmp_project.core.network.queryOf
@@ -396,7 +395,7 @@ public data class MePermissionsData(
  * 逐条对照见 `notes/backend-contract-matrix.md`。
  */
 public class MeProfileApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
 ) {
     /** `GET /api/v1/me/profile`（BackendJSON 直出）。 */
     public suspend fun getProfile(storeId: String? = null): MeProfileData =

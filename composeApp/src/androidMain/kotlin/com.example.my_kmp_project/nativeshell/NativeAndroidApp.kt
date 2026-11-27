@@ -17,6 +17,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,7 @@ import com.example.my_kmp_project.core.account.createPrivacyConsentStore
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.DemoTheme
 import com.example.my_kmp_project.core.design.DesignTokens
+import com.example.my_kmp_project.core.ui.LocalVideoPositionMemory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import my_kmp_project.core.design.generated.resources.Res
@@ -57,21 +59,25 @@ fun NativeAndroidApp() {
     val scope = rememberCoroutineScope()
 
     DemoTheme {
-        when (phase) {
-            NativePhase.Splash -> NativeSplash {
-                phase = if (privacyAccepted) NativePhase.Main else NativePhase.Privacy
+        CompositionLocalProvider(
+            LocalVideoPositionMemory provides AppContainer.get().videoPositions,
+        ) {
+            when (phase) {
+                NativePhase.Splash -> NativeSplash {
+                    phase = if (privacyAccepted) NativePhase.Main else NativePhase.Privacy
+                }
+                NativePhase.Privacy -> NativePrivacy(
+                    onAccept = {
+                        privacyStore.setAccepted(true)
+                        privacyAccepted = true
+                        scope.launch {
+                            runCatching { AppContainer.get().bridges.push.registerForPush() }
+                        }
+                        phase = NativePhase.Main
+                    },
+                )
+                NativePhase.Main -> NativeAndroidMain()
             }
-            NativePhase.Privacy -> NativePrivacy(
-                onAccept = {
-                    privacyStore.setAccepted(true)
-                    privacyAccepted = true
-                    scope.launch {
-                        runCatching { AppContainer.get().bridges.push.registerForPush() }
-                    }
-                    phase = NativePhase.Main
-                },
-            )
-            NativePhase.Main -> NativeAndroidMain()
         }
     }
 }

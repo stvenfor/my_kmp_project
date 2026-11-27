@@ -1,5 +1,8 @@
 package com.example.my_kmp_project.feature.home
 
+import com.example.my_kmp_project.feature.home.api.HomeRecordingApiClient
+import com.example.my_kmp_project.feature.home.api.PointsApi
+import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -138,13 +141,18 @@ class HomePointsStoreTest {
     }
 
     @Test
-    fun checkInOncePerDay() {
-        val first = HomePointsStore.checkIn()
+    fun checkInOncePerDay() = runBlocking {
+        val client = HomeRecordingApiClient()
+        client.stub(
+            """{"code":0,"message":"success","data":{"points":5,"balance":5,"streak":1,"day":"2026-09-29"}}""",
+        )
+        val api = PointsApi(client)
+        val first = HomePointsStore.checkIn(api)
         assertNotNull(first)
         assertEquals(5, first.points)
         assertTrue(HomePointsStore.checkedInToday)
         assertEquals(5, HomePointsStore.balance)
-        assertNull(HomePointsStore.checkIn())
+        assertNull(HomePointsStore.checkIn(api))
     }
 
     @Test

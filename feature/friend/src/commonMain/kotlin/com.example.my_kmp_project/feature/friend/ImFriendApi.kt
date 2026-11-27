@@ -2,7 +2,6 @@ package com.example.my_kmp_project.feature.friend
 
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -115,7 +114,7 @@ public data class ImFriendRespondRequest(
  * // 这里不引入 SDK、不伪装 ready。
  */
 public class ImFriendApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
 ) {
 
     /** Dart `ImFriendApi.search`（im_friend_api.dart:75-96）：`GET /im/users/search?q=`。 */

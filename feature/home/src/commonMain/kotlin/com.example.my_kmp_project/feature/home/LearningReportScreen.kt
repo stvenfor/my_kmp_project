@@ -23,6 +23,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,9 +66,16 @@ private object ReportColors {
 @Composable
 fun LearningReportScreen(
     onBack: () -> Unit,
+    content: HomeContentStore,
     onOpenMembership: (() -> Unit)? = null,
 ) {
     ReportMainTabRoot(isRoot = false)
+    val version = content.version
+    val highlights = remember(version) { content.reportHighlights() }
+    val records = remember(version) { content.reportRecords() }
+
+    LaunchedEffect(Unit) { content.refreshReport() }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -97,9 +107,9 @@ fun LearningReportScreen(
                         .background(ReportColors.HighlightCard)
                         .border(1.dp, ReportColors.HighlightBorder, RoundedCornerShape(16.dp)),
                 ) {
-                    HomeMockData.reportHighlights.forEachIndexed { index, item ->
+                    highlights.forEachIndexed { index, item ->
                         HighlightRow(item)
-                        if (index < HomeMockData.reportHighlights.lastIndex) {
+                        if (index < highlights.lastIndex) {
                             HorizontalDivider(
                                 color = ReportColors.Divider,
                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -119,7 +129,7 @@ fun LearningReportScreen(
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    HomeMockData.reportRecords.forEach { record ->
+                    records.forEach { record ->
                         RecordRow(record)
                     }
                 }
@@ -196,7 +206,7 @@ private fun HighlightRow(item: ReportHighlight) {
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = item.emoji, fontSize = 22.sp)
+            Text(text = item.emoji.ifBlank { "•" }, fontSize = 22.sp)
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -263,7 +273,7 @@ private fun RecordRow(item: ReportRecord) {
                 .border(1.dp, ReportColors.Divider, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = item.emoji, fontSize = 22.sp)
+            Text(text = item.emoji.ifBlank { "•" }, fontSize = 22.sp)
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -284,13 +294,15 @@ private fun RecordRow(item: ReportRecord) {
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(text = item.time, color = ReportColors.MetaGrey, fontSize = 12.sp)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = item.status,
-                color = if (item.statusHighlight) ReportColors.Orange else ReportColors.MetaGrey,
-                fontWeight = if (item.statusHighlight) FontWeight.SemiBold else FontWeight.Normal,
-                fontSize = 12.sp,
-            )
+            if (item.status.isNotBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = item.status,
+                    color = if (item.statusHighlight) ReportColors.Orange else ReportColors.MetaGrey,
+                    fontWeight = if (item.statusHighlight) FontWeight.SemiBold else FontWeight.Normal,
+                    fontSize = 12.sp,
+                )
+            }
         }
     }
 }

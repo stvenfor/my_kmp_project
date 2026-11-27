@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 fun MineIsland(
     initialRoute: MineIslandRoute = MineIslandRoute.Settings,
     onRequestClose: () -> Unit,
+    api: com.example.my_kmp_project.core.network.ApiClient,
 ) {
     var stack by remember { mutableStateOf(listOf(initialRoute.toPath())) }
     val current = stack.last()
@@ -38,6 +39,7 @@ fun MineIsland(
                 onNavigate = { next ->
                     stack = stack + next
                 },
+                api = api,
             )
         }
     }

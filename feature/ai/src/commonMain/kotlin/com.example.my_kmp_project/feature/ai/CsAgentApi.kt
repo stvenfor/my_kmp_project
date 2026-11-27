@@ -1,6 +1,5 @@
 package com.example.my_kmp_project.feature.ai
 
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import com.example.my_kmp_project.core.network.SseTransport
 import com.example.my_kmp_project.core.sse.AiStreamEvent
@@ -31,7 +30,7 @@ import kotlinx.serialization.encodeToString
  * 但帧协议一致，故共用 `core/sse` 解码。
  */
 public class CsAgentApi(
-    private val transport: SseTransport = NetworkFacade.api(),
+    private val transport: SseTransport,
 ) {
     /**
      * 一次提问 → 一段 `meta`/`delta`/`done`/`error` 事件流（冷流，collect 才发请求）。

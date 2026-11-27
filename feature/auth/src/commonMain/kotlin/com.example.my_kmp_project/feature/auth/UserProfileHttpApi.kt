@@ -1,8 +1,8 @@
 package com.example.my_kmp_project.feature.auth
 
+import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.ApiResponse
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.getApi
 import com.example.my_kmp_project.core.network.patchApi
 import com.example.my_kmp_project.core.network.postApi
@@ -16,7 +16,9 @@ import kotlinx.coroutines.CancellationException
  * 四个出口都经 [NetworkFacade.api]（带 401 刷新装饰），与 Dart 走全局
  * `AuthTokenRefreshInterceptor` 一致；本对象不落库、不改会话。
  */
-public object UserProfileHttpApi {
+public class UserProfileHttpApi(
+    private val client: ApiClient,
+) {
 
     /**
      * 契约表 #8 `GET /profiles/me`（`user_profile_api.dart:12-24`）。
@@ -25,7 +27,7 @@ public object UserProfileHttpApi {
      * 空白/ null 则省略 query key（[profileMeQuery]）。
      */
     suspend fun fetchMe(storeId: String? = null): Result<UserProfileData> = guard {
-        val response = NetworkFacade.api()
+        val response = client
             .getApi<UserProfileData>(
                 path = ProfileApiPaths.ME,
                 query = profileMeQuery(storeId),
@@ -41,7 +43,7 @@ public object UserProfileHttpApi {
      * 已选门店（契约表 §5.5）。
      */
     suspend fun listMyStores(): Result<UserStoreListData> = guard {
-        val response = NetworkFacade.api().getApi<UserStoreListData>(ProfileApiPaths.MY_STORES)
+        val response = client.getApi<UserStoreListData>(ProfileApiPaths.MY_STORES)
         requireData(response)
     }
 
@@ -50,7 +52,7 @@ public object UserProfileHttpApi {
      * `{store_id:int}`，返回**切换后的 `UserStoreStats`**（不是布尔成功位）。
      */
     suspend fun switchStore(storeId: Int): Result<UserStoreStatsData> = guard {
-        val response = NetworkFacade.api()
+        val response = client
             .postApi<UserStoreSwitchBody, UserStoreStatsData>(
                 path = ProfileApiPaths.ME_STORE,
                 body = UserStoreSwitchBody(storeId = storeId),
@@ -66,7 +68,7 @@ public object UserProfileHttpApi {
      * （Dart `UnknownAuthFailure`，`user_profile_api.dart:97-102`）。
      */
     suspend fun updateMe(request: UserProfileUpdateBody): Result<UserProfileData> = guard {
-        val response = NetworkFacade.api()
+        val response = client
             .patchApi<UserProfileUpdateBody, UserProfileData>(
                 path = ProfileApiPaths.ME,
                 body = request,

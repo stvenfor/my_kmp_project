@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Release / 默认网络安全配置：禁止明文 HTTP。
+
+  Debug 变体由 composeApp/src/androidDebug/res/xml/network_security_config.xml 覆盖，
+  只为本机联调放行 127.0.0.1 / 10.0.2.2 等地址。
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

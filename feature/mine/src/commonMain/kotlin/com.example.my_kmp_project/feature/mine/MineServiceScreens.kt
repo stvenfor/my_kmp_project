@@ -99,8 +99,7 @@ internal fun ShopQrScreen(onBack: () -> Unit) {
             Modifier
                 .padding(horizontal = 24.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(MineTheme.Surface)
+                .mineCard()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -355,8 +354,7 @@ internal fun PosterScreen(onBack: () -> Unit) {
                         Column(
                             Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MineTheme.Surface)
+                                .mineCard()
                                 .padding(12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {

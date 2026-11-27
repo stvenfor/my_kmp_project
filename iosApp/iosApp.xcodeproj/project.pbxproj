@@ -152,7 +152,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\nGRADLE_ARGS=\"\"\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  GRADLE_ARGS=\"-Papp.release=true\"\n  if [ -z \"$APP_ENV\" ]; then APP_ENV=prod; fi\nfi\nif [ -n \"$APP_ENV\" ]; then GRADLE_ARGS=\"$GRADLE_ARGS -Papp.env=$APP_ENV\"; fi\nif [ -n \"$APP_VERSION_NAME\" ]; then GRADLE_ARGS=\"$GRADLE_ARGS -Papp.versionName=$APP_VERSION_NAME\"; fi\nif [ -n \"$APP_VERSION_CODE\" ]; then GRADLE_ARGS=\"$GRADLE_ARGS -Papp.versionCode=$APP_VERSION_CODE\"; fi\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode $GRADLE_ARGS\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

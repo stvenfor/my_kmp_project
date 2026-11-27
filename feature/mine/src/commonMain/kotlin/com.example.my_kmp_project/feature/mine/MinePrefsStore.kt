@@ -14,6 +14,7 @@ import com.example.my_kmp_project.core.platform.saveStringList
  * (Flutter CurrentStoreService / MineFunctionRepository / SettingsViewModel).
  */
 object MinePrefsStore {
+    const val DefaultStoreId = "1"
     const val SelectedStoreIdKey = "current_store.selected_store_id"
     const val FunctionOrderKey = "mine_function_order_ids"
     const val DarkModeKey = "settings.dark_mode"
@@ -37,28 +38,13 @@ object MinePrefsStore {
     val localeZh: Boolean get() = localeZhState.value
 
     fun loadSelectedStoreId(): String =
-        loadString(SelectedStoreIdKey)?.takeIf { it.isNotBlank() }
-            ?: MineStoreCatalog.defaultStoreId
+        loadString(SelectedStoreIdKey)?.takeIf { it.isNotBlank() } ?: DefaultStoreId
 
-    fun switchStore(id: String): MineStoreOption? {
-        val store = MineStoreCatalog.stores.firstOrNull { it.id == id } ?: return null
-        selectedStoreId = store.id
-        saveString(SelectedStoreIdKey, store.id)
+    /** 只持久化本地选中门店；门店真实切换由 MineAccountController.switchStore 调后端。 */
+    fun selectStore(id: String) {
+        selectedStoreId = id
+        saveString(SelectedStoreIdKey, id)
         bump()
-        return store
-    }
-
-    fun storeName(): String = MineStoreCatalog.resolveName(selectedStoreId)
-
-    /** Per-store demo stats (Flutter MineRepository after switch). */
-    fun statsForStore(storeId: String): List<MineStat> = when (storeId) {
-        "2" -> listOf(
-            MineStat("860", "加入天数"),
-            MineStat("16", "员工数"),
-            MineStat("1402", "店铺天数"),
-            MineStat("5120", "累计客户"),
-        )
-        else -> MineCatalog.demoStats
     }
 
     fun functionOrderIds(): List<String> {

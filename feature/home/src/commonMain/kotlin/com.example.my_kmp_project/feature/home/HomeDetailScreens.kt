@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +36,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoPrimaryButton
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
+import com.example.my_kmp_project.feature.home.newcar.NewCarFollowApi
+import com.example.my_kmp_project.feature.home.newcar.NewCarFollowLog
+import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
 data class AfterSalesDetailRow(
@@ -76,9 +83,7 @@ fun AfterSalesServiceDetailScreen(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(DemoColors.Background)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(16.dp))
+                    .demoCard()
                     .padding(18.dp),
             ) {
                 Box(
@@ -113,8 +118,7 @@ fun AfterSalesServiceDetailScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DemoColors.Background)
+                        .demoCard()
                         .padding(16.dp),
                 ) {
                     Text("备注", fontWeight = FontWeight.Bold, fontSize = 15.sp)
@@ -206,8 +210,7 @@ fun AnalyticsDetailScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(DemoColors.Background)
+                        .demoCard()
                         .padding(16.dp),
                 ) {
                     Text(current.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -226,8 +229,7 @@ fun AnalyticsDetailScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DemoColors.Background)
+                        .demoCard()
                         .padding(16.dp),
                 ) {
                     Text("漏斗占比", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -250,14 +252,28 @@ fun NewCarFollowArchiveDetailScreen(
     row: NewCarFollowRow,
     onBack: () -> Unit,
 ) {
+    val followApi = remember { NewCarFollowApi() }
+    val scope = rememberCoroutineScope()
     var level by remember { mutableStateOf(row.intentBand) }
     var logBody by remember { mutableStateOf("") }
-    val logs = remember {
-        listOf(
-            "首访介绍车型配置，客户关注智驾",
-            "报价已发，待配偶到店试驾",
-        )
+    var logs by remember { mutableStateOf<List<NewCarFollowLog>>(emptyList()) }
+    var logsLoading by remember { mutableStateOf(false) }
+    var logsError by remember { mutableStateOf<String?>(null) }
+    var submitting by remember { mutableStateOf(false) }
+
+    suspend fun loadLogs() {
+        logsLoading = true
+        logsError = null
+        try {
+            logs = followApi.fetchLogs(row.id).list
+        } catch (e: Exception) {
+            logsError = e.message ?: "加载跟进记录失败"
+        } finally {
+            logsLoading = false
+        }
     }
+
+    LaunchedEffect(row.id) { loadLogs() }
     ReportMainTabRoot(isRoot = false)
     Column(
         modifier = Modifier
@@ -274,8 +290,7 @@ fun NewCarFollowArchiveDetailScreen(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(DemoColors.Background)
+                    .demoCard()
                     .padding(16.dp),
             ) {
                 Text(row.customerName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -296,8 +311,7 @@ fun NewCarFollowArchiveDetailScreen(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Background)
+                    .demoCard()
                     .padding(16.dp),
             ) {
                 Text("调整级别", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -317,16 +331,16 @@ fun NewCarFollowArchiveDetailScreen(
                             fontWeight = FontWeight.Medium,
                             fontSize = 13.sp,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
+                                .clip(DemoRadius.Pill)
                                 .background(
-                                    if (selected) DemoColors.Accent.copy(alpha = 0.15f) else DemoColors.Background,
+                                    if (selected) DemoColors.Accent.copy(alpha = 0.15f) else DemoColors.SurfaceRaised,
                                 )
                                 .border(
                                     1.dp,
                                     if (selected) DemoColors.Accent else DemoColors.Divider,
-                                    RoundedCornerShape(16.dp),
+                                    DemoRadius.Pill,
                                 )
-                                .padding(horizontal = 14.dp, vertical = 13.dp)
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
                                 .clickable { level = label },
                         )
                     }
@@ -335,8 +349,7 @@ fun NewCarFollowArchiveDetailScreen(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Background)
+                    .demoCard()
                     .padding(16.dp),
             ) {
                 Text("写一条跟进", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -349,38 +362,63 @@ fun NewCarFollowArchiveDetailScreen(
                     minLines = 3,
                 )
                 Spacer(Modifier.height(10.dp))
-                Text(
-                    "提交跟进",
-                    color = DemoColors.OnPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(DemoColors.Accent)
-                        .clickable {
-                            if (logBody.isBlank()) {
-                                showPlatformToast("请填写跟进内容")
-                            } else {
-                                showPlatformToast("已记录跟进")
-                                logBody = ""
+                DemoPrimaryButton(
+                    text = if (submitting) "提交中…" else "提交跟进",
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !submitting,
+                    onClick = {
+                        if (logBody.isBlank()) {
+                            showPlatformToast("请填写跟进内容")
+                        } else {
+                            scope.launch {
+                                submitting = true
+                                try {
+                                    val created = followApi.createLog(
+                                        fileId = row.id,
+                                        body = logBody.trim(),
+                                        followLevel = newCarFollowLevel(level),
+                                    )
+                                    logs = listOf(created) + logs
+                                    logBody = ""
+                                    showPlatformToast("已记录跟进")
+                                } catch (e: Exception) {
+                                    showPlatformToast(e.message ?: "提交失败")
+                                } finally {
+                                    submitting = false
+                                }
                             }
                         }
-                        .padding(vertical = 12.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    },
                 )
             }
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(DemoColors.Background)
+                    .demoCard()
                     .padding(16.dp),
             ) {
                 Text("跟进记录", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                 Spacer(Modifier.height(10.dp))
-                logs.forEachIndexed { i, line ->
-                    Text("${i + 1}. $line", color = DemoColors.TextPrimary, fontSize = 14.sp, lineHeight = 20.sp)
-                    if (i != logs.lastIndex) Spacer(Modifier.height(8.dp))
+                when {
+                    logsLoading && logs.isEmpty() ->
+                        Text("加载跟进记录中…", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                    logsError != null && logs.isEmpty() ->
+                        Text(logsError ?: "加载跟进记录失败", color = DemoColors.Danger, fontSize = 13.sp)
+                    logs.isEmpty() ->
+                        Text("暂无跟进记录", color = DemoColors.TextSecondary, fontSize = 13.sp)
+                    else -> logs.forEachIndexed { i, log ->
+                        Column {
+                            Text("${i + 1}. ${log.body}", color = DemoColors.TextPrimary, fontSize = 14.sp, lineHeight = 20.sp)
+                            if (log.authorDisplayName.isNotBlank() || log.createdAt.isNotBlank()) {
+                                Text(
+                                    listOf(log.authorDisplayName, log.createdAt).filter { it.isNotBlank() }.joinToString(" · "),
+                                    color = DemoColors.TextSecondary,
+                                    fontSize = 12.sp,
+                                )
+                            }
+                        }
+                        if (i != logs.lastIndex) Spacer(Modifier.height(8.dp))
+                    }
                 }
             }
         }
@@ -392,8 +430,7 @@ private fun DetailSection(title: String, rows: List<Pair<String, String>>) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(DemoColors.Background)
+            .demoCard()
             .padding(16.dp),
     ) {
         Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = DemoColors.TextPrimary)
@@ -417,9 +454,9 @@ private fun CueBanner(color: Color, title: String, subtitle: String) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(DemoRadius.Md))
             .background(color.copy(alpha = 0.1f))
-            .border(0.5.dp, color.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+            .border(0.5.dp, color.copy(alpha = 0.35f), RoundedCornerShape(DemoRadius.Md))
             .padding(14.dp),
     ) {
         Text(title, color = color, fontWeight = FontWeight.Bold, fontSize = 15.sp)

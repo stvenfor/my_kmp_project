@@ -18,9 +18,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -36,7 +38,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -47,6 +52,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +70,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
+import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.PlatformNetworkImage
 import com.example.my_kmp_project.core.ui.PlaybackControls as SharedPlaybackControls
@@ -106,6 +114,7 @@ internal fun shortPlayVideoId(route: String): String? =
 fun VideoRouteHost(
     route: String,
     onBack: () -> Unit,
+    api: ApiClient,
     onNavigate: (String) -> Unit = {},
     onOpenComments: (videoId: String) -> Unit = {},
 ) {
@@ -117,12 +126,14 @@ fun VideoRouteHost(
         )
         VideoRoutes.Short -> ShortVideoPage(
             onBack = onBack,
+            api = api,
             onHelp = { onNavigate(VideoRoutes.ShortHelp) },
             onPublish = { onNavigate(VideoRoutes.ShortPublish) },
             onPlay = { videoId -> onNavigate("${VideoRoutes.ShortPlay}?videoId=$videoId") },
         )
         VideoRoutes.ShortPlay -> ShortVideoPlayPage(
             onBack = onBack,
+            api = api,
             videoId = shortPlayVideoId(route),
             onOpenComments = onOpenComments,
         )
@@ -188,9 +199,7 @@ private fun HubMediaCard(
     Row(
         Modifier
             .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(14.dp))
-            .clip(RoundedCornerShape(14.dp))
-            .background(Color.White)
+            .demoCard()
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -252,12 +261,13 @@ private const val ShortVideoPageSize = 5
 @Composable
 private fun ShortVideoPage(
     onBack: () -> Unit,
+    api: ApiClient,
     onHelp: () -> Unit,
     onPublish: () -> Unit,
     onPlay: (videoId: String) -> Unit,
 ) {
     ReportMainTabRoot(isRoot = false)
-    val repository = remember { HttpShortVideoRepository() }
+    val repository = remember(api) { HttpShortVideoRepository(api) }
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
     var profile by remember { mutableStateOf<ShortVideoProfileModel?>(null) }
@@ -491,9 +501,7 @@ private fun ShortVideoProfileCard(profile: ShortVideoProfileModel) {
         Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp)
-            .shadow(8.dp, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
+            .demoCard()
             .padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.Top) {
@@ -670,7 +678,15 @@ private const val DemoVideoUrl =
     "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 
 /**
- * 社区视频 / 短视频 / 跟读详情共用的播放 UI：真实 [VideoPlaybackSurface] + 统一状态与控制栏。
+ * 社区视频 / 短视频 / 跟读详情共用的播放 UI：真实 [VideoPlaybackSurface] + 自研视觉控制层。
+ *
+ * 视觉规范（对标抖音/小红书）：
+ *  - 顶/底渐变遮罩：半透明黑，叠在视频画面上
+ *  - 居中大播放按钮（暂停态）/ 圆形 loading（缓冲态）
+ *  - 红白色进度条：白色细轨道 + 红色高亮 + 白色 thumb
+ *  - 时间戳：左当前 / 右总时长，白色小字
+ *  - 控制层默认隐藏，点屏幕切换显隐
+ *
  * 手机优先、平板居中单栏；不接亮度/音量手势。状态与进度来自 core.ui 快照，seek 由 surface 消费。
  */
 @Composable
@@ -680,6 +696,9 @@ fun SharedVideoPlayer(
     onPlayingChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     title: String? = null,
+    onBack: (() -> Unit)? = null,
+    initialPositionMs: Long = 0L,
+    onSnapshot: (PlaybackSnapshot) -> Unit = {},
 ) {
     // 快照与 seek 目标由 surface 回传/消费；换源时重置，避免把旧进度带到新视频。
     var snapshot by remember(url) {
@@ -689,9 +708,44 @@ fun SharedVideoPlayer(
             ),
         )
     }
-    var seekToMs by remember(url) { mutableStateOf<Long?>(null) }
+    var seekToMs by remember(url) {
+        mutableStateOf(initialPositionMs.takeIf { it > 0L })
+    }
     val playable = !url.isNullOrBlank()
-    Box(modifier.fillMaxSize().background(Color.Black)) {
+
+    // seek 是一次性指令：等播放位置真正追上目标后再清空（seek 后可能短暂缓冲导致
+    // surface 延迟执行，过早清空会让 seek 丢失）；另加超时兜底。
+    LaunchedEffect(snapshot.positionMs, seekToMs) {
+        val target = seekToMs ?: return@LaunchedEffect
+        if (kotlin.math.abs(snapshot.positionMs - target) < 800L) seekToMs = null
+    }
+    LaunchedEffect(seekToMs) {
+        if (seekToMs != null) {
+            kotlinx.coroutines.delay(3_000)
+            seekToMs = null
+        }
+    }
+
+    // 把真实快照交给页面作用域保存进度；平台无回传时自然保持 0。
+    val reportSnapshot = rememberUpdatedState(onSnapshot)
+    LaunchedEffect(snapshot) {
+        reportSnapshot.value(snapshot)
+    }
+
+    // 控制层显隐：播放时自动隐藏，暂停/缓冲时自动显示，点击屏幕可手动切换。
+    var controlsVisible by remember { mutableStateOf(true) }
+    LaunchedEffect(snapshot.status) {
+        controlsVisible = when (snapshot.status) {
+            PlaybackStatus.Playing -> false
+            else -> true
+        }
+    }
+
+    Box(
+        modifier
+            .fillMaxSize()
+            .background(Color.Black),
+    ) {
         if (playable) {
             VideoPlaybackSurface(
                 url = url!!,
@@ -700,69 +754,292 @@ fun SharedVideoPlayer(
                 onSnapshot = { snapshot = it },
                 seekToMs = seekToMs,
             )
-            Text(
-                "公开示例视频 · 演示数据，非业务素材",
-                color = Color.White.copy(alpha = 0.8f),
-                fontSize = 11.sp,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(12.dp),
+            // 透明点击层：AndroidView 内的 PlayerView 会吞掉触摸，用 Compose 覆盖层接管显隐切换。
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                    ) {
+                        if (snapshot.status != PlaybackStatus.Loading &&
+                            snapshot.status != PlaybackStatus.Buffering
+                        ) {
+                            controlsVisible = !controlsVisible
+                        }
+                    },
             )
         }
-        Column(
-            Modifier
-                .align(Alignment.BottomCenter)
-                .widthIn(max = 720.dp)
-                .fillMaxWidth(),
-        ) {
-            if (title != null) {
-                Text(
-                    title,
-                    color = Color.White,
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+
+        // ── 顶部渐变遮罩 + 返回按钮 + 标题（全屏叠加） ──
+        if (controlsVisible) {
+            Box(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .height(112.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.55f),
+                                Color.Black.copy(alpha = 0.0f),
+                            ),
+                        ),
+                    ),
+            ) {
+                Row(
+                    Modifier
+                        .statusBarsPadding()
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (onBack != null) {
+                        Box(
+                            Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.35f))
+                                .clickable(onClick = onBack),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = "‹",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Light,
+                                modifier = Modifier.padding(bottom = 2.dp),
+                            )
+                        }
+                    }
+                    if (title != null) {
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = title,
+                            color = Color.White.copy(alpha = 0.95f),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+        }
+
+        // ── 居中播放/缓冲状态 ──
+        when (snapshot.status) {
+            PlaybackStatus.Loading, PlaybackStatus.Buffering -> {
+                Box(
+                    Modifier
+                        .align(Alignment.Center)
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.45f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(28.dp),
+                        strokeWidth = 2.dp,
+                    )
+                }
+            }
+            PlaybackStatus.Paused, PlaybackStatus.Ended, PlaybackStatus.Idle -> {
+                if (playable) {
+                    // 大圆形播放按钮：白底 + 黑三角
+                    Box(
+                        Modifier
+                            .align(Alignment.Center)
+                            .size(72.dp)
+                            .shadow(12.dp, CircleShape)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .clickable { onPlayingChange(true) },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        // 用几何三角替代字符 ▶（避免字体 fallback 不一致）
+                        Box(
+                            Modifier
+                                .padding(start = 4.dp)
+                                .size(0.dp),
+                        )
+                        Text(
+                            text = "▶",
+                            color = Color.Black,
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 4.dp),
+                        )
+                    }
+                }
+            }
+            PlaybackStatus.Playing -> {
+                // 播放中唤出控制层时给暂停按钮（几何双竖条，避免字符字体差异）
+                if (controlsVisible) {
+                    Box(
+                        Modifier
+                            .align(Alignment.Center)
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.4f))
+                            .clickable { onPlayingChange(false) },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            repeat(2) {
+                                Box(
+                                    Modifier
+                                        .size(width = 5.dp, height = 20.dp)
+                                        .background(Color.White, RoundedCornerShape(2.dp)),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            PlaybackStatus.Error -> {
+                Column(
+                    Modifier
+                        .align(Alignment.Center)
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = snapshot.errorMessage ?: "播放出错",
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 14.sp,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color.White.copy(alpha = 0.2f))
+                            .clickable { onPlayingChange(true) }
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                    ) {
+                        Text("重试", color = Color.White, fontSize = 13.sp)
+                    }
+                }
+            }
+            else -> { /* Playing/Unsupported 不显示中央覆盖 */ }
+        }
+
+        // ── 底部控制层：渐变遮罩 + 时间轴（贴屏幕底部，不贴视频底部） ──
+        if (controlsVisible && playable) {
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.0f),
+                                Color.Black.copy(alpha = 0.65f),
+                            ),
+                        ),
+                    ),
+            ) {
+                VideoTimeBar(
+                    snapshot = snapshot,
+                    onSeek = { seekToMs = it },
                     modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.55f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 12.dp),
                 )
             }
-            Text(
-                when (snapshot.status) {
-                    PlaybackStatus.Idle -> "视频地址不可用，无法播放"
-                    PlaybackStatus.Loading -> "正在加载视频…"
-                    PlaybackStatus.Buffering -> "缓冲中…"
-                    PlaybackStatus.Playing -> "播放中"
-                    PlaybackStatus.Paused -> "已暂停"
-                    PlaybackStatus.Ended -> "播放已结束"
-                    PlaybackStatus.Error -> snapshot.errorMessage ?: "播放出错"
-                    PlaybackStatus.Unsupported -> "当前平台不支持进度回传，播放仍可用"
-                },
-                color = Color.White,
-                fontSize = 12.sp,
-                modifier = Modifier
-                    .background(Color.Black.copy(alpha = 0.55f))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-            )
-            SharedPlaybackControls(
-                snapshot = snapshot,
-                isPlaying = isPlaying,
-                onPlayPause = { onPlayingChange(!isPlaying) },
-                onSeek = { seekToMs = it },
-                modifier = Modifier.padding(horizontal = 4.dp),
-            )
         }
+    }
+}
+
+/** 视频时间轴：白色细轨道 + 红色高亮 + 白色 thumb，左右时间戳。 */
+@Composable
+private fun VideoTimeBar(
+    snapshot: PlaybackSnapshot,
+    onSeek: (positionMs: Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val durationMs = snapshot.durationMs.coerceAtLeast(0L)
+    val positionMs = snapshot.positionMs.coerceIn(0L, durationMs)
+    val canSeek = durationMs > 0L &&
+        snapshot.status != PlaybackStatus.Loading &&
+        snapshot.status != PlaybackStatus.Error &&
+        snapshot.status != PlaybackStatus.Unsupported
+
+    // 拖拽期间及 seek 之后都用本地值显示：ComposeMediaPlayer 在暂停态不回报
+    // 播放位置（currentTime 恒为 0），若直接跟随 snapshot 会「拖完又跳回 00:00」。
+    // 一旦播放器开始回报新位置（positionMs 变化），就交还给真实值。
+    var dragMs by remember { mutableStateOf<Long?>(null) }
+    var dragging by remember { mutableStateOf(false) }
+    LaunchedEffect(positionMs) {
+        if (!dragging) dragMs = null
+    }
+
+    val shownMs = (dragMs ?: positionMs).coerceIn(0L, durationMs)
+
+    Row(
+        modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            text = formatPlaybackTime(shownMs),
+            color = Color.White.copy(alpha = 0.85f),
+            fontSize = 12.sp,
+            modifier = Modifier.widthIn(min = 36.dp),
+        )
+        Slider(
+            value = if (canSeek) shownMs.toFloat() else 0f,
+            onValueChange = {
+                dragging = true
+                dragMs = it.toLong().coerceIn(0L, durationMs)
+            },
+            onValueChangeFinished = {
+                dragging = false
+                dragMs?.let(onSeek)
+            },
+            modifier = Modifier.weight(1f),
+            enabled = canSeek,
+            valueRange = if (canSeek) 0f..durationMs.coerceAtLeast(1L).toFloat() else 0f..1f,
+            colors = SliderDefaults.colors(
+                thumbColor = Color.White,
+                activeTrackColor = Color(0xFFFF4D4F),
+                inactiveTrackColor = Color.White.copy(alpha = 0.35f),
+                disabledActiveTrackColor = Color.White.copy(alpha = 0.35f),
+                disabledInactiveTrackColor = Color.White.copy(alpha = 0.2f),
+            ),
+        )
+        Text(
+            text = formatPlaybackTime(durationMs),
+            color = Color.White.copy(alpha = 0.7f),
+            fontSize = 12.sp,
+            modifier = Modifier.widthIn(min = 36.dp),
+        )
+    }
+}
+
+private fun formatPlaybackTime(positionMs: Long): String {
+    val totalSeconds = positionMs.coerceAtLeast(0L) / 1_000L
+    val hours = totalSeconds / 3_600L
+    val minutes = (totalSeconds % 3_600L) / 60L
+    val seconds = totalSeconds % 60L
+    return if (hours > 0L) {
+        "${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
+    } else {
+        "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
     }
 }
 
 @Composable
 private fun ShortVideoPlayPage(
     onBack: () -> Unit,
+    api: ApiClient,
     videoId: String?,
     onOpenComments: (String) -> Unit,
 ) {
     ReportMainTabRoot(isRoot = false)
-    val repository = remember { HttpShortVideoRepository() }
+    val repository = remember(api) { HttpShortVideoRepository(api) }
     val scope = rememberCoroutineScope()
     var reloadToken by remember(videoId) { mutableStateOf(0) }
     var loading by remember(videoId) { mutableStateOf(!videoId.isNullOrBlank()) }
@@ -843,7 +1120,7 @@ private fun ShortVideoPlayPage(
                     }
                 }
                 else -> {
-                    SharedVideoPlayer(
+                    VideoPlayerHost(
                         url = current.videoUrl,
                         isPlaying = playing,
                         onPlayingChange = { playing = it },
@@ -990,7 +1267,7 @@ private fun TransliterVideoDetailPage(onBack: () -> Unit, onWorks: () -> Unit) {
             titleColor = Color.White,
             actions = { TextButton(onClick = onWorks) { Text("作品", color = Color.White) } },
         )
-        SharedVideoPlayer(
+        VideoPlayerHost(
             url = DemoVideoUrl,
             isPlaying = playing,
             onPlayingChange = { playing = it },

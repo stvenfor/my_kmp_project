@@ -2,7 +2,6 @@ package com.example.my_kmp_project.feature.chat
 
 import com.example.my_kmp_project.core.network.ApiClient
 import com.example.my_kmp_project.core.network.NetworkError
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -82,7 +81,7 @@ public data class ImStoreGroupSyncRequest(
  * // 本 lane 只移植 HTTP 契约。
  */
 public class ImGroupApi(
-    private val client: ApiClient = NetworkFacade.api(),
+    private val client: ApiClient,
 ) {
 
     /** Dart `ImGroupApi.syncStoreGroup`（im_group_api.dart:42-59）。 */

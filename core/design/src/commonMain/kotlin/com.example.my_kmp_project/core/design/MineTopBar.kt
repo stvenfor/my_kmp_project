@@ -37,9 +37,10 @@ fun MineTopBar(
         title = {
             Text(
                 text = title,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = titleColor,
                 fontSize = titleFontSize,
+                letterSpacing = (-0.3).sp,
             )
         },
         navigationIcon = {

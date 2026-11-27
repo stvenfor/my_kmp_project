@@ -44,7 +44,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.my_kmp_project.core.design.DemoColors
+import com.example.my_kmp_project.core.design.DemoRadius
 import com.example.my_kmp_project.core.design.MineTopBar
+import com.example.my_kmp_project.core.design.demoCard
 import com.example.my_kmp_project.core.platform.showPlatformToast
 import com.example.my_kmp_project.core.ui.ReportMainTabRoot
 import kotlinx.coroutines.launch
@@ -285,8 +287,7 @@ internal fun UsedCarListScreen(
                         Modifier
                             .padding(horizontal = 16.dp, vertical = 5.dp)
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
+                            .demoCard()
                             .clickable { onItem(row) }
                             .padding(14.dp),
                     ) {
@@ -386,11 +387,11 @@ internal fun UsedCarCreateScreen(onBack: () -> Unit) {
                         label,
                         color = if (selected) Color.White else Color(0xFF1C2430),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(DemoRadius.Pill)
                             .background(if (selected) accent else Color.White)
-                            .border(0.5.dp, if (selected) accent else DemoColors.Divider, RoundedCornerShape(16.dp))
+                            .border(0.5.dp, if (selected) accent else DemoColors.Divider, DemoRadius.Pill)
                             .clickable { kind = label }
-                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                 }
             }
@@ -402,9 +403,9 @@ internal fun UsedCarCreateScreen(onBack: () -> Unit) {
                 }?.ifBlank { "客户 #${selectedCustomer?.resolvedCustomerId}" } ?: "暂无可选客户",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(DemoRadius.Md))
                     .background(Color.White)
-                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(8.dp))
+                    .border(0.5.dp, DemoColors.Divider, RoundedCornerShape(DemoRadius.Md))
                     .clickable {
                         if (customers.isEmpty()) {
                             showPlatformToast("暂无可选客户")
@@ -428,7 +429,7 @@ internal fun UsedCarCreateScreen(onBack: () -> Unit) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(DemoRadius.Pill)
                     .background(accent)
                     .clickable {
                         val mileageInt = mileage.trim().toIntOrNull()
@@ -493,8 +494,7 @@ internal fun UsedCarDetailScreen(order: UsedCarOrderRow, onBack: () -> Unit) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
+                    .demoCard()
                     .padding(18.dp),
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

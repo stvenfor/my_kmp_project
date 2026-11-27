@@ -1,6 +1,5 @@
 package com.example.my_kmp_project.feature.ai
 
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.NetworkJson
 import com.example.my_kmp_project.core.network.SseTransport
 import com.example.my_kmp_project.core.sse.AiStreamEvent
@@ -25,7 +24,7 @@ import kotlinx.serialization.json.put
  * 其余端点的 snake_case 不同 —— 契约表 §2.17 行 #96 明确标注，别「顺手统一」。
  */
 public class AiSseApi(
-    private val transport: SseTransport = NetworkFacade.api(),
+    private val transport: SseTransport,
 ) {
     public companion object {
         /** Dart `AiSseApi.completionsPath`（ai_sse_api.dart:10）。 */

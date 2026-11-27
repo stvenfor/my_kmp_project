@@ -9,6 +9,8 @@ export default {
   AuthSendPhoneOtp: async (_phone: string): Promise<void> => {},
   AuthRegister: async (_email: string, _password: string, _displayName: string): Promise<void> => {},
   AuthLoginWithHuawei: async (_code: string, _deviceId: string): Promise<void> => {},
+  AuthLoginWithMethod: async (_methodId: string, _code: string, _deviceId: string): Promise<void> => {},
+  AuthAvailableLoginMethods: (): string => '[]',
   AuthToken: (): string => '',
   AuthDisplayName: (): string => '用户',
   AuthUserId: (): string => '',

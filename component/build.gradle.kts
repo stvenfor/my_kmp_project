@@ -1,7 +1,8 @@
 // component —— 平台能力组件层（auth / chat / pay / push / realtime / routing / webview）。
 //
 // 依赖只允许向下：core.network（含 realtime）、core.base（core.uuid 住在这里）、
-// core.account、core.router；绝不允许 import feature. 或 app.（scripts/check-layer-deps.sh 拦截）。
+// core.account、core.storage（KV 绑定）、core.router；绝不允许 import feature. 或 app.
+// （scripts/check-layer-deps.sh 拦截）。
 //
 // 注意：本模块路径是 `:component`，不在根 build.gradle.kts 的 `:core:*` / `:feature:*`
 // 共享接线命中范围内，所以 target 集、android 基础配置、公共依赖都要在这里完整声明
@@ -38,7 +39,10 @@ kotlin {
             api(projects.core.network)
             api(projects.core.base)
             api(projects.core.account)
+            api(projects.core.storage)
             api(projects.core.router)
+            // AppGraph 暴露 MusicSessionPort（AppScope 音乐会话）——端口类型住在 core.ui。
+            api(projects.core.ui)
             api(compose.runtime)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)

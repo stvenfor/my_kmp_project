@@ -6,7 +6,6 @@ import com.example.my_kmp_project.core.network.ListPage
 import com.example.my_kmp_project.core.network.NetworkCodes
 import com.example.my_kmp_project.core.network.NetworkError
 import com.example.my_kmp_project.core.network.NetworkJson
-import com.example.my_kmp_project.core.network.NetworkFacade
 import com.example.my_kmp_project.core.network.getApi
 import com.example.my_kmp_project.core.network.getListPage
 import com.example.my_kmp_project.core.network.pageQuery
@@ -25,7 +24,7 @@ import kotlinx.serialization.json.JsonObject
  * UI lane 只消费本类的返回值/异常，不再自己判 `code`。
  */
 public class MallApi(
-    public val client: ApiClient = NetworkFacade.api(),
+    public val client: ApiClient,
 ) {
     /**
      * #27 货架分页：`GET /api/v1/mall/stores/{storeId}/products?page&size`（page 1-based，size 默认 10）。
